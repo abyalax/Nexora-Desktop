@@ -3,15 +3,6 @@
 version = 4
 
 [[package]]
-name = "nexora-guard"
-version = "0.4.0"
-dependencies = [
- "nacre-core",
- "nacre-platform",
- "windows 0.62.2",
-]
-
-[[package]]
 name = "android_system_properties"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -247,6 +238,15 @@ dependencies = [
  "windows 0.62.2",
  "windows-core 0.62.2",
  "windows-numerics",
+]
+
+[[package]]
+name = "nexora-guard"
+version = "0.4.0"
+dependencies = [
+ "nacre-core",
+ "nacre-platform",
+ "windows 0.62.2",
 ]
 
 [[package]]
