@@ -1,7 +1,8 @@
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, FlashWindow, GetAncestor, GetForegroundWindow, IsIconic, IsWindow, IsWindowVisible,
-    PostMessageW, SetForegroundWindow, ShowWindow, GA_ROOTOWNER, SW_MINIMIZE, SW_RESTORE, SW_SHOW, WM_CLOSE,
+    BringWindowToTop, FlashWindow, GetAncestor, GetForegroundWindow, IsIconic, IsWindow,
+    IsWindowVisible, PostMessageW, SetForegroundWindow, ShowWindow, GA_ROOTOWNER, SW_MINIMIZE,
+    SW_RESTORE, SW_SHOW, WM_CLOSE,
 };
 
 fn h(x: isize) -> HWND {
@@ -55,7 +56,9 @@ pub fn activate(target: isize, dock: isize) -> bool {
             return true;
         }
         let _ = BringWindowToTop(hwnd);
-        if GetForegroundWindow() == hwnd || (SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd) {
+        if GetForegroundWindow() == hwnd
+            || (SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd)
+        {
             return true;
         }
         let _ = FlashWindow(hwnd, true);
@@ -71,7 +74,9 @@ pub fn request_close(hwnd: isize) {
 
 pub fn force_foreground(target: isize) -> bool {
     use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-    use windows::Win32::UI::Input::KeyboardAndMouse::{keybd_event, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, VK_MENU};
+    use windows::Win32::UI::Input::KeyboardAndMouse::{
+        keybd_event, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, VK_MENU,
+    };
     use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
     unsafe {
         let hwnd = h(target);

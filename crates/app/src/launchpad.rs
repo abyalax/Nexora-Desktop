@@ -5,6 +5,7 @@ pub fn init(_comp: &Compositor) -> windows_core::Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn shutdown() {}
 
 pub fn toggle() {

@@ -1,5 +1,8 @@
 use windows::Foundation::TimeSpan;
-use windows::UI::Composition::{AnimationDelayBehavior, CompositionEasingFunction, CompositionObject, Compositor, ContainerVisual};
+use windows::UI::Composition::{
+    AnimationDelayBehavior, CompositionEasingFunction, CompositionObject, Compositor,
+    ContainerVisual,
+};
 use windows_core::{Interface, Result, HSTRING};
 use windows_numerics::{Vector2, Vector3};
 
@@ -10,6 +13,7 @@ pub const SWITCHER_MOVE_MS: u32 = 90;
 pub const CC_OPEN_MS: u32 = 420;
 pub const CC_CLOSE_MS: u32 = 170;
 pub const CC_STAGGER_MS: u32 = 22;
+#[allow(dead_code)]
 pub const MISSION_MS: u32 = 260;
 
 pub fn stage_ms(base: u32) -> u32 {
@@ -17,29 +21,64 @@ pub fn stage_ms(base: u32) -> u32 {
 }
 
 fn dur(ms: u32) -> TimeSpan {
-    TimeSpan { Duration: ms as i64 * 10_000 }
+    TimeSpan {
+        Duration: ms as i64 * 10_000,
+    }
 }
 
 pub fn ease(comp: &Compositor) -> Result<CompositionEasingFunction> {
-    comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.2, Y: 0.0 }, Vector2 { X: 0.0, Y: 1.0 })?.cast()
+    comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.2, Y: 0.0 }, Vector2 { X: 0.0, Y: 1.0 })?
+        .cast()
 }
 
-pub fn pop_in(comp: &Compositor, v: &ContainerVisual, center: Vector3, from: f32, over: f32, delay_ms: u32, ms: u32) -> Result<()> {
+pub fn pop_in(
+    comp: &Compositor,
+    v: &ContainerVisual,
+    center: Vector3,
+    from: f32,
+    over: f32,
+    delay_ms: u32,
+    ms: u32,
+) -> Result<()> {
     v.SetCenterPoint(center)?;
     let e = ease(comp)?;
-    let bounce = |a: &dyn Fn() -> Result<windows::UI::Composition::KeyFrameAnimation>| -> Result<()> {
-        let a = a()?;
-        a.SetDuration(dur(ms))?;
-        if delay_ms > 0 {
-            a.SetDelayTime(dur(delay_ms))?;
-            a.SetDelayBehavior(AnimationDelayBehavior::SetInitialValueBeforeDelay)?;
-        }
-        Ok(())
-    };
+    let bounce =
+        |a: &dyn Fn() -> Result<windows::UI::Composition::KeyFrameAnimation>| -> Result<()> {
+            let a = a()?;
+            a.SetDuration(dur(ms))?;
+            if delay_ms > 0 {
+                a.SetDelayTime(dur(delay_ms))?;
+                a.SetDelayBehavior(AnimationDelayBehavior::SetInitialValueBeforeDelay)?;
+            }
+            Ok(())
+        };
     let s = comp.CreateVector3KeyFrameAnimation()?;
-    s.InsertKeyFrame(0.0, Vector3 { X: from, Y: from, Z: 1.0 })?;
-    s.InsertKeyFrameWithEasingFunction(0.62, Vector3 { X: over, Y: over, Z: 1.0 }, &e)?;
-    s.InsertKeyFrameWithEasingFunction(1.0, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 }, &e)?;
+    s.InsertKeyFrame(
+        0.0,
+        Vector3 {
+            X: from,
+            Y: from,
+            Z: 1.0,
+        },
+    )?;
+    s.InsertKeyFrameWithEasingFunction(
+        0.62,
+        Vector3 {
+            X: over,
+            Y: over,
+            Z: 1.0,
+        },
+        &e,
+    )?;
+    s.InsertKeyFrameWithEasingFunction(
+        1.0,
+        Vector3 {
+            X: 1.0,
+            Y: 1.0,
+            Z: 1.0,
+        },
+        &e,
+    )?;
     bounce(&|| s.cast())?;
     let o = comp.CreateScalarKeyFrameAnimation()?;
     o.InsertKeyFrame(0.0, 0.0)?;
@@ -51,12 +90,33 @@ pub fn pop_in(comp: &Compositor, v: &ContainerVisual, center: Vector3, from: f32
     obj.StartAnimation(&HSTRING::from("Opacity"), &o)
 }
 
-pub fn pop_out(comp: &Compositor, v: &ContainerVisual, center: Vector3, to: f32, ms: u32) -> Result<()> {
+pub fn pop_out(
+    comp: &Compositor,
+    v: &ContainerVisual,
+    center: Vector3,
+    to: f32,
+    ms: u32,
+) -> Result<()> {
     v.SetCenterPoint(center)?;
     let e = ease(comp)?;
     let s = comp.CreateVector3KeyFrameAnimation()?;
-    s.InsertKeyFrame(0.0, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 })?;
-    s.InsertKeyFrameWithEasingFunction(1.0, Vector3 { X: to, Y: to, Z: 1.0 }, &e)?;
+    s.InsertKeyFrame(
+        0.0,
+        Vector3 {
+            X: 1.0,
+            Y: 1.0,
+            Z: 1.0,
+        },
+    )?;
+    s.InsertKeyFrameWithEasingFunction(
+        1.0,
+        Vector3 {
+            X: to,
+            Y: to,
+            Z: 1.0,
+        },
+        &e,
+    )?;
     s.SetDuration(dur(ms))?;
     let o = comp.CreateScalarKeyFrameAnimation()?;
     o.InsertKeyFrame(0.0, 1.0)?;
@@ -67,29 +127,52 @@ pub fn pop_out(comp: &Compositor, v: &ContainerVisual, center: Vector3, to: f32,
     obj.StartAnimation(&HSTRING::from("Opacity"), &o)
 }
 
-pub fn scalar(comp: &Compositor, obj: &impl Interface, prop: &str, from: f32, to: f32, ms: u32) -> Result<()> {
+pub fn scalar(
+    comp: &Compositor,
+    obj: &impl Interface,
+    prop: &str,
+    from: f32,
+    to: f32,
+    ms: u32,
+) -> Result<()> {
     let e = ease(comp)?;
     let a = comp.CreateScalarKeyFrameAnimation()?;
     a.InsertKeyFrame(0.0, from)?;
     a.InsertKeyFrameWithEasingFunction(1.0, to, &e)?;
     a.SetDuration(dur(ms))?;
-    obj.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from(prop), &a)
+    obj.cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from(prop), &a)
 }
 
-pub fn color(comp: &Compositor, brush: &impl Interface, to: windows::UI::Color, ms: u32) -> Result<()> {
+pub fn color(
+    comp: &Compositor,
+    brush: &impl Interface,
+    to: windows::UI::Color,
+    ms: u32,
+) -> Result<()> {
     let a = comp.CreateColorKeyFrameAnimation()?;
     a.InsertKeyFrameWithEasingFunction(1.0, to, &ease(comp)?)?;
     a.SetDuration(dur(ms))?;
-    brush.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Color"), &a)
+    brush
+        .cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from("Color"), &a)
 }
 
-pub fn vec3(comp: &Compositor, obj: &impl Interface, prop: &str, from: Vector3, to: Vector3, ms: u32) -> Result<()> {
+pub fn vec3(
+    comp: &Compositor,
+    obj: &impl Interface,
+    prop: &str,
+    from: Vector3,
+    to: Vector3,
+    ms: u32,
+) -> Result<()> {
     let e = ease(comp)?;
     let a = comp.CreateVector3KeyFrameAnimation()?;
     a.InsertKeyFrame(0.0, from)?;
     a.InsertKeyFrameWithEasingFunction(1.0, to, &e)?;
     a.SetDuration(dur(ms))?;
-    obj.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from(prop), &a)
+    obj.cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from(prop), &a)
 }
 
 pub const HOVER_POP_MS: u32 = 280;
@@ -104,23 +187,36 @@ pub fn fit_pop(want: f32, half: f32, room: f32) -> f32 {
 }
 
 pub fn pop_ease(comp: &Compositor) -> Result<CompositionEasingFunction> {
-    comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.3, Y: 2.0 }, Vector2 { X: 0.32, Y: 1.0 })?.cast()
+    comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.3, Y: 2.0 }, Vector2 { X: 0.32, Y: 1.0 })?
+        .cast()
 }
 
 pub fn slide_pop(comp: &Compositor, v: &impl Interface, from: Vector3, to: Vector3) -> Result<()> {
-    let e: CompositionEasingFunction = comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.3, Y: 1.45 }, Vector2 { X: 0.35, Y: 1.0 })?.cast()?;
+    let e: CompositionEasingFunction = comp
+        .CreateCubicBezierEasingFunction(Vector2 { X: 0.3, Y: 1.45 }, Vector2 { X: 0.35, Y: 1.0 })?
+        .cast()?;
     let a = comp.CreateVector3KeyFrameAnimation()?;
     a.InsertKeyFrame(0.0, from)?;
     a.InsertKeyFrameWithEasingFunction(1.0, to, &e)?;
     a.SetDuration(dur(HOVER_POP_MS + 40))?;
-    v.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Offset"), &a)
+    v.cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from("Offset"), &a)
 }
 
 pub fn hover_pop(comp: &Compositor, v: &impl Interface, center: Vector3, to: f32) -> Result<()> {
     let vis: windows::UI::Composition::Visual = v.cast()?;
     vis.SetCenterPoint(center)?;
     let a = comp.CreateVector3KeyFrameAnimation()?;
-    a.InsertKeyFrameWithEasingFunction(1.0, Vector3 { X: to, Y: to, Z: 1.0 }, &pop_ease(comp)?)?;
+    a.InsertKeyFrameWithEasingFunction(
+        1.0,
+        Vector3 {
+            X: to,
+            Y: to,
+            Z: 1.0,
+        },
+        &pop_ease(comp)?,
+    )?;
     a.SetDuration(dur(HOVER_POP_MS))?;
-    vis.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Scale"), &a)
+    vis.cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from("Scale"), &a)
 }

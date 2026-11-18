@@ -29,7 +29,11 @@ pub fn grid(y: i32, m: u32, monday_first: bool) -> Grid {
     let wd = weekday(y, m, 1);
     let first_col = if monday_first { (wd + 6) % 7 } else { wd };
     let days = days_in_month(y, m);
-    Grid { first_col, days, rows: (first_col + days).div_ceil(7) }
+    Grid {
+        first_col,
+        days,
+        rows: (first_col + days).div_ceil(7),
+    }
 }
 
 pub fn shift_month(y: i32, m: u32, delta: i32) -> (i32, u32) {
@@ -39,7 +43,17 @@ pub fn shift_month(y: i32, m: u32, delta: i32) -> (i32, u32) {
 
 pub fn month_name(m: u32) -> &'static str {
     const N: [&str; 12] = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November",
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
         "Desember",
     ];
     N[(m.clamp(1, 12) - 1) as usize]
@@ -59,8 +73,12 @@ pub fn add_days(y: i32, m: u32, d: u32, delta: i32) -> (i32, u32, u32) {
 }
 
 pub fn month_short(m: u32, en: bool) -> &'static str {
-    const ID: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const EN: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const ID: [&str; 12] = [
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+    ];
+    const EN: [&str; 12] = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
     let i = (m.clamp(1, 12) - 1) as usize;
     if en {
         EN[i]
@@ -110,8 +128,22 @@ mod tests {
 
     #[test]
     fn grid_rows_depend_on_week_start() {
-        assert_eq!(grid(2026, 11, false), Grid { first_col: 0, days: 30, rows: 5 });
-        assert_eq!(grid(2026, 11, true), Grid { first_col: 6, days: 30, rows: 6 });
+        assert_eq!(
+            grid(2026, 11, false),
+            Grid {
+                first_col: 0,
+                days: 30,
+                rows: 5
+            }
+        );
+        assert_eq!(
+            grid(2026, 11, true),
+            Grid {
+                first_col: 6,
+                days: 30,
+                rows: 6
+            }
+        );
         assert_eq!(grid(2026, 2, false).rows, 4);
     }
 
@@ -133,7 +165,10 @@ mod tests {
         assert_eq!(add_days(2026, 1, 2, -40), (2025, 11, 23));
         assert_eq!(weekday_short(weekday(2026, 11, 13), false), "JUM");
         assert_eq!(weekday_short(4, true), "THU");
-        assert_eq!((month_short(8, false), month_short(8, true)), ("Agu", "Aug"));
+        assert_eq!(
+            (month_short(8, false), month_short(8, true)),
+            ("Agu", "Aug")
+        );
     }
 
     #[test]

@@ -1,19 +1,23 @@
 use std::sync::atomic::{AtomicIsize, AtomicU32, Ordering};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
-    CallNextHookEx, PostMessageW, SetWindowsHookExW, UnhookWindowsHookEx, HHOOK, MSLLHOOKSTRUCT, WH_MOUSE_LL,
-    WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN,
+    CallNextHookEx, PostMessageW, SetWindowsHookExW, UnhookWindowsHookEx, HHOOK, MSLLHOOKSTRUCT,
+    WH_MOUSE_LL, WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN,
 };
 
 static HOOK: AtomicIsize = AtomicIsize::new(0);
 static TARGET: AtomicIsize = AtomicIsize::new(0);
 static MSG: AtomicU32 = AtomicU32::new(0);
-static RECT: [std::sync::atomic::AtomicI32; 4] = [const { std::sync::atomic::AtomicI32::new(0) }; 4];
+static RECT: [std::sync::atomic::AtomicI32; 4] =
+    [const { std::sync::atomic::AtomicI32::new(0) }; 4];
 
 unsafe extern "system" fn proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT {
     if code >= 0 {
         let m = wp.0 as u32;
-        if matches!(m, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN | WM_XBUTTONDOWN) {
+        if matches!(
+            m,
+            WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN | WM_XBUTTONDOWN
+        ) {
             let pt = (*(lp.0 as *const MSLLHOOKSTRUCT)).pt;
             let (l, t, r, b) = (
                 RECT[0].load(Ordering::Relaxed),
@@ -24,7 +28,12 @@ unsafe extern "system" fn proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT {
             let inside = pt.x >= l && pt.x < r && pt.y >= t && pt.y < b;
             if !inside {
                 let packed = ((pt.y as i16 as u16 as u32) << 16) | (pt.x as i16 as u16 as u32);
-                let _ = PostMessageW(Some(HWND(TARGET.load(Ordering::Relaxed) as *mut _)), MSG.load(Ordering::Relaxed), WPARAM(0), LPARAM(packed as isize));
+                let _ = PostMessageW(
+                    Some(HWND(TARGET.load(Ordering::Relaxed) as *mut _)),
+                    MSG.load(Ordering::Relaxed),
+                    WPARAM(0),
+                    LPARAM(packed as isize),
+                );
                 return LRESULT(1);
             }
         }

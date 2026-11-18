@@ -25,10 +25,33 @@ thread_local! {
 pub fn init() -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraHotCorners");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-hc"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
-        HC.with(|c| *c.borrow_mut() = Some(Corners { hwnd, strips: [None, None, None, None] }));
+        let class = w!("NexoraHotCorners");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-hc"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
+        HC.with(|c| {
+            *c.borrow_mut() = Some(Corners {
+                hwnd,
+                strips: [None, None, None, None],
+            })
+        });
         prefs::listen(hwnd);
     }
     apply();
@@ -51,10 +74,18 @@ fn apply() {
                 continue;
             }
             if hc.strips[i].is_none() {
-                hc.strips[i] = Strip::new(hc.hwnd, ENTER_BASE + 2 * i as u32, LEAVE_BASE + 2 * i as u32).ok();
+                hc.strips[i] = Strip::new(
+                    hc.hwnd,
+                    ENTER_BASE + 2 * i as u32,
+                    LEAVE_BASE + 2 * i as u32,
+                )
+                .ok();
             }
             if let Some(s) = &hc.strips[i] {
-                let (x, y) = (if i % 2 == 0 { 0 } else { sw - 3 }, if i < 2 { 0 } else { sh - 3 });
+                let (x, y) = (
+                    if i % 2 == 0 { 0 } else { sw - 3 },
+                    if i < 2 { 0 } else { sh - 3 },
+                );
                 s.place(x, y, 3, 3);
                 s.set_visible(true);
             }
@@ -94,7 +125,8 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         WM_TIMER if (T_DWELL..T_DWELL + 4).contains(&wp.0) => {
             let i = wp.0 - T_DWELL;
             let _ = KillTimer(Some(hwnd), wp.0);
-            let down = GetAsyncKeyState(VK_LBUTTON.0 as i32) < 0 || GetAsyncKeyState(VK_RBUTTON.0 as i32) < 0;
+            let down = GetAsyncKeyState(VK_LBUTTON.0 as i32) < 0
+                || GetAsyncKeyState(VK_RBUTTON.0 as i32) < 0;
             if !down {
                 run(prefs::get().hot[i]);
             }

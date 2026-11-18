@@ -18,7 +18,11 @@ fn cover(idx: usize) -> Bitmap {
             b[o + 3] = 255;
         }
     }
-    Bitmap { w: n as u32, h: n as u32, bgra: b }
+    Bitmap {
+        w: n as u32,
+        h: n as u32,
+        bgra: b,
+    }
 }
 
 pub fn spawn(notify: impl Fn() + Send + 'static) -> Media {
@@ -27,7 +31,15 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Media {
     std::thread::spawn(move || {
         let (mut idx, mut playing, mut base_ms, mut since) = (0usize, true, 0i64, Instant::now());
         let mut art_dirty = true;
-        let pos = |playing: bool, base: i64, since: Instant| (base + if playing { since.elapsed().as_millis() as i64 } else { 0 }).min(DUR);
+        let pos = |playing: bool, base: i64, since: Instant| {
+            (base
+                + if playing {
+                    since.elapsed().as_millis() as i64
+                } else {
+                    0
+                })
+            .min(DUR)
+        };
         loop {
             let art = if art_dirty {
                 art_dirty = false;
@@ -62,7 +74,10 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Media {
                     base_ms = 0;
                     since = Instant::now();
                     art_dirty = true;
-                    crate::log::line("media-palsu", &format!("{} -> {}", if next { "Next" } else { "Prev" }, TITLES[idx]));
+                    crate::log::line(
+                        "media-palsu",
+                        &format!("{} -> {}", if next { "Next" } else { "Prev" }, TITLES[idx]),
+                    );
                 }
                 Command::SeekMs(ms) => {
                     base_ms = ms.clamp(0, DUR);
@@ -73,5 +88,8 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Media {
             }
         }
     });
-    Media { commands: cmd_tx, snapshots: snap_rx }
+    Media {
+        commands: cmd_tx,
+        snapshots: snap_rx,
+    }
 }

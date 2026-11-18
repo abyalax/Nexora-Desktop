@@ -20,7 +20,9 @@ fn inside(p: (f32, f32)) -> bool {
 }
 
 fn inside_with(p: (f32, f32), stroke: f32) -> bool {
-    SEGMENTS.iter().any(|(a, b)| seg_dist(p, *a, *b) <= stroke / 2.0)
+    SEGMENTS
+        .iter()
+        .any(|(a, b)| seg_dist(p, *a, *b) <= stroke / 2.0)
 }
 
 pub fn render(size: u32, rgb: [u8; 3]) -> Vec<u8> {
@@ -62,7 +64,10 @@ pub fn render_badge(size: u32, rgb: [u8; 3]) -> Vec<u8> {
             let mut hit = 0u32;
             for sy in 0..ss {
                 for sx in 0..ss {
-                    let p = ((x as f32 + (sx as f32 + 0.5) / ss as f32) / n as f32, (y as f32 + (sy as f32 + 0.5) / ss as f32) / n as f32);
+                    let p = (
+                        (x as f32 + (sx as f32 + 0.5) / ss as f32) / n as f32,
+                        (y as f32 + (sy as f32 + 0.5) / ss as f32) / n as f32,
+                    );
                     let (dx, dy) = (p.0 - 0.5, p.1 - 0.5);
                     let d2 = dx * dx + dy * dy;
                     if d2 <= outer * outer && d2 >= inner * inner {
@@ -102,15 +107,38 @@ pub fn render_battery(w: u32, h: u32, pct: u8, rgb: [u8; 3], fill: [u8; 3]) -> V
             let (mut a_line, mut a_fill) = (0f32, 0f32);
             for sy in 0..ss {
                 for sx in 0..ss {
-                    let (px, py) = (x as f32 + (sx as f32 + 0.5) / ss as f32, y as f32 + (sy as f32 + 0.5) / ss as f32);
+                    let (px, py) = (
+                        x as f32 + (sx as f32 + 0.5) / ss as f32,
+                        y as f32 + (sy as f32 + 0.5) / ss as f32,
+                    );
                     let d = rr_dist(px, py, bw / 2.0, hf / 2.0, bw / 2.0, hf / 2.0, r);
                     if d <= 0.0 && d >= -stroke {
                         a_line += 1.0;
                     }
-                    if rr_dist(px, py, bw + 1.0 + nub / 2.0 - nub * 0.5, hf / 2.0, nub, hf * 0.19, nub * 0.9) <= 0.0 && px > bw + 0.8 {
+                    if rr_dist(
+                        px,
+                        py,
+                        bw + 1.0 + nub / 2.0 - nub * 0.5,
+                        hf / 2.0,
+                        nub,
+                        hf * 0.19,
+                        nub * 0.9,
+                    ) <= 0.0
+                        && px > bw + 0.8
+                    {
                         a_line += 1.0;
                     }
-                    if inner_w > 0.5 && rr_dist(px, py, gap + inner_w / 2.0, hf / 2.0, inner_w / 2.0, hf / 2.0 - gap, (r - gap).max(0.8).min(inner_w / 2.0)) <= 0.0 {
+                    if inner_w > 0.5
+                        && rr_dist(
+                            px,
+                            py,
+                            gap + inner_w / 2.0,
+                            hf / 2.0,
+                            inner_w / 2.0,
+                            hf / 2.0 - gap,
+                            (r - gap).max(0.8).min(inner_w / 2.0),
+                        ) <= 0.0
+                    {
                         a_fill += 1.0;
                     }
                 }
@@ -129,13 +157,25 @@ pub fn render_battery(w: u32, h: u32, pct: u8, rgb: [u8; 3], fill: [u8; 3]) -> V
     out
 }
 
-pub fn render_battery_pill(w: u32, h: u32, pct: u8, rgb: [u8; 3], fill: [u8; 3], snug: bool) -> Vec<u8> {
+pub fn render_battery_pill(
+    w: u32,
+    h: u32,
+    pct: u8,
+    rgb: [u8; 3],
+    fill: [u8; 3],
+    snug: bool,
+) -> Vec<u8> {
     let (wf, hf) = (w as f32, h as f32);
     let nub = (wf * 0.06).max(1.5);
     let bw = wf - nub - 1.0;
     let stroke = (hf * 0.085).max(1.0);
     let r = hf * 0.38;
-    let gap = stroke + if snug { (hf * 0.05).max(0.6) } else { (hf * 0.11).max(1.0) };
+    let gap = stroke
+        + if snug {
+            (hf * 0.05).max(0.6)
+        } else {
+            (hf * 0.11).max(1.0)
+        };
     let inner = bw - 2.0 * gap;
     let cut = gap + inner * (pct.min(100) as f32 / 100.0);
     let ir = (r - gap).max(0.8);
@@ -146,12 +186,17 @@ pub fn render_battery_pill(w: u32, h: u32, pct: u8, rgb: [u8; 3], fill: [u8; 3],
             let (mut a_line, mut a_on, mut a_off) = (0f32, 0f32, 0f32);
             for sy in 0..ss {
                 for sx in 0..ss {
-                    let (px, py) = (x as f32 + (sx as f32 + 0.5) / ss as f32, y as f32 + (sy as f32 + 0.5) / ss as f32);
+                    let (px, py) = (
+                        x as f32 + (sx as f32 + 0.5) / ss as f32,
+                        y as f32 + (sy as f32 + 0.5) / ss as f32,
+                    );
                     let d = rr_dist(px, py, bw / 2.0, hf / 2.0, bw / 2.0, hf / 2.0, r);
                     if d <= 0.0 && d >= -stroke {
                         a_line += 1.0;
                     }
-                    if px > bw + 0.8 && rr_dist(px, py, bw + 1.0, hf / 2.0, nub, hf * 0.2, nub * 0.9) <= 0.0 {
+                    if px > bw + 0.8
+                        && rr_dist(px, py, bw + 1.0, hf / 2.0, nub, hf * 0.2, nub * 0.9) <= 0.0
+                    {
                         a_line += 1.0;
                     }
                     if rr_dist(px, py, bw / 2.0, hf / 2.0, inner / 2.0, hf / 2.0 - gap, ir) <= 0.0 {
@@ -169,7 +214,9 @@ pub fn render_battery_pill(w: u32, h: u32, pct: u8, rgb: [u8; 3], fill: [u8; 3],
             let a = (body + al * (1.0 - body)).min(1.0);
             let i = ((y * w + x) * 4) as usize;
             for c in 0..3 {
-                let col = fill[2 - c] as f32 * aon + rgb[2 - c] as f32 * aoff + rgb[2 - c] as f32 * al * (1.0 - body);
+                let col = fill[2 - c] as f32 * aon
+                    + rgb[2 - c] as f32 * aoff
+                    + rgb[2 - c] as f32 * al * (1.0 - body);
                 out[i + c] = col.round().min(255.0) as u8;
             }
             out[i + 3] = (a * 255.0).round() as u8;
@@ -191,7 +238,10 @@ pub fn render_wifi(n: u32, level: u8, rgb: [u8; 3], dim: f32) -> Vec<u8> {
             let mut acc = 0f32;
             for sy in 0..ss {
                 for sx in 0..ss {
-                    let (px, py) = (x as f32 + (sx as f32 + 0.5) / ss as f32 - cx, y as f32 + (sy as f32 + 0.5) / ss as f32 - cy);
+                    let (px, py) = (
+                        x as f32 + (sx as f32 + 0.5) / ss as f32 - cx,
+                        y as f32 + (sy as f32 + 0.5) / ss as f32 - cy,
+                    );
                     let d = (px * px + py * py).sqrt() / big;
                     let ang = px.atan2(-py);
                     if ang.abs() > half || py > 0.0 {
@@ -215,9 +265,20 @@ pub fn render_wifi(n: u32, level: u8, rgb: [u8; 3], dim: f32) -> Vec<u8> {
     out
 }
 
-pub fn render_grip(w: u32, h: u32, center: (f32, f32), radius: f32, thick: f32, from_deg: f32, to_deg: f32) -> Vec<u8> {
+pub fn render_grip(
+    w: u32,
+    h: u32,
+    center: (f32, f32),
+    radius: f32,
+    thick: f32,
+    from_deg: f32,
+    to_deg: f32,
+) -> Vec<u8> {
     let (a0, a1) = (from_deg.to_radians(), to_deg.to_radians());
-    let ends = [(center.0 + radius * a0.cos(), center.1 + radius * a0.sin()), (center.0 + radius * a1.cos(), center.1 + radius * a1.sin())];
+    let ends = [
+        (center.0 + radius * a0.cos(), center.1 + radius * a0.sin()),
+        (center.0 + radius * a1.cos(), center.1 + radius * a1.sin()),
+    ];
     let half = thick / 2.0;
     let ss = 4;
     let mut out = vec![0u8; (w * h * 4) as usize];
@@ -226,13 +287,18 @@ pub fn render_grip(w: u32, h: u32, center: (f32, f32), radius: f32, thick: f32, 
             let (mut fill, mut rim, mut shine) = (0f32, 0f32, 0f32);
             for sy in 0..ss {
                 for sx in 0..ss {
-                    let (px, py) = (x as f32 + (sx as f32 + 0.5) / ss as f32, y as f32 + (sy as f32 + 0.5) / ss as f32);
+                    let (px, py) = (
+                        x as f32 + (sx as f32 + 0.5) / ss as f32,
+                        y as f32 + (sy as f32 + 0.5) / ss as f32,
+                    );
                     let (dx, dy) = (px - center.0, py - center.1);
                     let ang = dy.atan2(dx);
                     let d = if ang >= a0 && ang <= a1 {
                         ((dx * dx + dy * dy).sqrt() - radius).abs()
                     } else {
-                        ends.iter().map(|e| ((px - e.0).powi(2) + (py - e.1).powi(2)).sqrt()).fold(f32::MAX, f32::min)
+                        ends.iter()
+                            .map(|e| ((px - e.0).powi(2) + (py - e.1).powi(2)).sqrt())
+                            .fold(f32::MAX, f32::min)
                     };
                     if d <= half {
                         fill += 1.0;
@@ -281,7 +347,15 @@ mod tests {
         assert!(a(&weak, top.0, top.1) < 100 && a(&weak, top.0, top.1) > 30);
         let dot = (20, (40.0 * 0.86 - 40.0 * 0.80 * 0.15) as u32);
         assert!(a(&weak, dot.0, dot.1) > 200);
-        assert_eq!((wifi_level(None), wifi_level(Some(1)), wifi_level(Some(3)), wifi_level(Some(5))), (0, 1, 2, 3));
+        assert_eq!(
+            (
+                wifi_level(None),
+                wifi_level(Some(1)),
+                wifi_level(Some(3)),
+                wifi_level(Some(5))
+            ),
+            (0, 1, 2, 3)
+        );
     }
 
     #[test]
@@ -291,7 +365,10 @@ mod tests {
         let g = render_grip(w, h, (10.0, 10.0), 36.0, 14.0, 10.0, 80.0);
         let a = |x: u32, y: u32| g[((y * w + x) * 4 + 3) as usize];
         let mid = 45f32.to_radians();
-        let (mx, my) = ((10.0 + 36.0 * mid.cos()) as u32, (10.0 + 36.0 * mid.sin()) as u32);
+        let (mx, my) = (
+            (10.0 + 36.0 * mid.cos()) as u32,
+            (10.0 + 36.0 * mid.sin()) as u32,
+        );
         assert!(a(mx, my) > 40, "pita di sudut terisi");
         assert_eq!(a(12, 12), 0, "pusat lengkung kosong");
         assert_eq!(a(58, 2), 0, "di luar busur kosong");
@@ -315,7 +392,10 @@ mod tests {
         let a = |b: &[u8], x: u32, y: u32| b[((y * w + x) * 4 + 3) as usize];
         assert!(a(&full, 24, 12) > 240, "isian penuh di tengah");
         assert_eq!(a(&empty, 24, 12), 0, "kosong: tengah transparan");
-        assert!(a(&empty, 24, 0) > 60 && a(&empty, 24, 0) < 160, "garis tepi semi-transparan");
+        assert!(
+            a(&empty, 24, 0) > 60 && a(&empty, 24, 0) < 160,
+            "garis tepi semi-transparan"
+        );
         assert!(a(&empty, w - 2, 12) > 40, "tonjolan kanan");
         assert_eq!(a(&empty, w - 1, 0), 0);
     }
@@ -356,7 +436,11 @@ mod tests {
         assert_eq!(alpha(&b, n, 1, 1), 0, "sudut luar kosong");
         assert!(alpha(&b, n, n / 2, 6) > 200, "cincin atas terisi");
         assert!(alpha(&b, n, 6, n / 2) > 200, "cincin kiri terisi");
-        assert_eq!(alpha(&b, n, n / 2, n / 2), 0, "tengah berlubang (tanpa latar)");
+        assert_eq!(
+            alpha(&b, n, n / 2, n / 2),
+            0,
+            "tengah berlubang (tanpa latar)"
+        );
         for y in 0..n {
             let (l, r) = (alpha(&b, n, 10, y) as i32, alpha(&b, n, n - 11, y) as i32);
             assert!((l - r).abs() <= 3);

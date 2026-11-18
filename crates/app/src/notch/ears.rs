@@ -43,9 +43,18 @@ mod tests {
     #[test]
     fn left_ear_is_filled_at_the_top_and_open_at_the_bottom_left() {
         let b = bitmap(16, (10, 10, 12), 240, true);
-        assert!(alpha(&b, 15, 0) >= 235, "sudut atas dekat panel terisi penuh");
-        assert!(alpha(&b, 15, 8) >= 235, "tepi panel di tengah tinggi terisi penuh");
-        assert!(alpha(&b, 15, 15) < 200, "ujung bawah busur adalah batas lengkung (tidak terisi penuh)");
+        assert!(
+            alpha(&b, 15, 0) >= 235,
+            "sudut atas dekat panel terisi penuh"
+        );
+        assert!(
+            alpha(&b, 15, 8) >= 235,
+            "tepi panel di tengah tinggi terisi penuh"
+        );
+        assert!(
+            alpha(&b, 15, 15) < 200,
+            "ujung bawah busur adalah batas lengkung (tidak terisi penuh)"
+        );
         assert_eq!(alpha(&b, 0, 15), 0, "pusat lengkung kosong (ke arah luar)");
         assert!(alpha(&b, 2, 12) < 40);
     }

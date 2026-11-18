@@ -1,12 +1,13 @@
 use nacre_platform::{audio, brightness};
 use std::sync::atomic::{AtomicIsize, Ordering};
-use std::sync::OnceLock;
 use std::sync::mpsc::Sender;
+use std::sync::OnceLock;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
 
 pub const WM_VOLUME: u32 = WM_APP + 20;
 pub const WM_BRIGHT: u32 = WM_APP + 21;
+#[allow(dead_code)]
 pub const WM_RADIO: u32 = WM_APP + 22;
 
 static HUD: AtomicIsize = AtomicIsize::new(0);
@@ -56,7 +57,9 @@ pub fn toggle_mute() {
 
 pub fn set_brightness(frac: f32) {
     if let Some(tx) = BRIGHT.get() {
-        let _ = tx.send(brightness::Cmd::Set((frac.clamp(0.0, 1.0) * 100.0).round() as u8));
+        let _ = tx.send(brightness::Cmd::Set(
+            (frac.clamp(0.0, 1.0) * 100.0).round() as u8
+        ));
     }
 }
 
@@ -78,7 +81,11 @@ pub fn set_notch(l: i32, r: i32, h: i32) {
 }
 
 pub fn notch() -> Option<(i32, i32, i32)> {
-    let (l, r, h) = (NOTCH_L.load(Ordering::Relaxed), NOTCH_R.load(Ordering::Relaxed), NOTCH_H.load(Ordering::Relaxed));
+    let (l, r, h) = (
+        NOTCH_L.load(Ordering::Relaxed),
+        NOTCH_R.load(Ordering::Relaxed),
+        NOTCH_H.load(Ordering::Relaxed),
+    );
     (r > l && h > 0).then_some((l, r, h))
 }
 

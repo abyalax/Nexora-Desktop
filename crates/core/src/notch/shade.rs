@@ -31,12 +31,23 @@ pub fn rounded(radius: f32, blur: f32, dy: f32) -> Shade {
             }
             let k = (0.45 * m).min(r - 1.0).max(0.0);
             let d = sdf(px, py, bx0 + k, by0 + dy, bx1 - k, by1 + dy, r - k);
-            let a = if d <= 0.0 { 0.9 } else { 0.9 * (1.0 - (d / m).clamp(0.0, 1.0)).powi(3) };
+            let a = if d <= 0.0 {
+                0.9
+            } else {
+                0.9 * (1.0 - (d / m).clamp(0.0, 1.0)).powi(3)
+            };
             bgra[((y * w + x) * 4 + 3) as usize] = (a * outside * 255.0).round() as u8;
         }
     }
     let side = m + r;
-    Shade { w, h, insets: (side, side, side, side + dy), margin: m as u32, dy: dy as u32, bgra }
+    Shade {
+        w,
+        h,
+        insets: (side, side, side, side + dy),
+        margin: m as u32,
+        dy: dy as u32,
+        bgra,
+    }
 }
 
 #[cfg(test)]
@@ -52,13 +63,23 @@ mod tests {
         let s = rounded(15.0, 14.0, 3.0);
         let cx = s.w / 2;
         let body_bottom = s.w - s.margin;
-        assert_eq!(alpha(&s, cx, s.w / 2), 0, "tidak terlihat dari balik badan kaca");
-        assert!(alpha(&s, cx, body_bottom + 1) > 200, "pita gelap tepat di bawah badan");
+        assert_eq!(
+            alpha(&s, cx, s.w / 2),
+            0,
+            "tidak terlihat dari balik badan kaca"
+        );
+        assert!(
+            alpha(&s, cx, body_bottom + 1) > 200,
+            "pita gelap tepat di bawah badan"
+        );
         let fade = alpha(&s, cx, body_bottom + s.dy + s.margin / 2);
         assert!(fade > 0 && fade < 120, "memudar: {fade}");
         assert_eq!(alpha(&s, cx, s.h - 1), 0);
         assert_eq!(alpha(&s, 0, s.h / 2), 0);
-        assert!(s.bgra.chunks_exact(4).all(|p| p[0] == 0 && p[1] == 0 && p[2] == 0));
+        assert!(s
+            .bgra
+            .chunks_exact(4)
+            .all(|p| p[0] == 0 && p[1] == 0 && p[2] == 0));
     }
 
     #[test]
@@ -66,6 +87,9 @@ mod tests {
         let s = rounded(28.0, 20.0, 5.0);
         assert_eq!((s.w, s.h), (98, 103));
         assert_eq!(s.insets, (48.0, 48.0, 48.0, 53.0));
-        assert!(s.insets.0 + s.insets.2 < s.w as f32 && s.insets.1 + s.insets.3 < s.h as f32, "masih ada bagian tengah untuk direntang");
+        assert!(
+            s.insets.0 + s.insets.2 < s.w as f32 && s.insets.1 + s.insets.3 < s.h as f32,
+            "masih ada bagian tengah untuk direntang"
+        );
     }
 }

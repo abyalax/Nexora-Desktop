@@ -31,7 +31,13 @@ pub fn merge(raw: Vec<Network>) -> Vec<Network> {
             None => out.push(n),
         }
     }
-    out.sort_by(|a, b| b.connected.cmp(&a.connected).then(b.known().cmp(&a.known())).then(b.signal.cmp(&a.signal)).then(a.ssid.cmp(&b.ssid)));
+    out.sort_by(|a, b| {
+        b.connected
+            .cmp(&a.connected)
+            .then(b.known().cmp(&a.known()))
+            .then(b.signal.cmp(&a.signal))
+            .then(a.ssid.cmp(&b.ssid))
+    });
     out
 }
 
@@ -115,7 +121,11 @@ pub fn merge_devices(raw: Vec<Device>) -> Vec<Device> {
             None => out.push(d),
         }
     }
-    out.sort_by(|a, b| b.connected.cmp(&a.connected).then(a.name.to_lowercase().cmp(&b.name.to_lowercase())));
+    out.sort_by(|a, b| {
+        b.connected
+            .cmp(&a.connected)
+            .then(a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+    });
     out
 }
 
@@ -124,12 +134,24 @@ mod tests {
     use super::*;
 
     fn net(ssid: &str, signal: u8, connected: bool, profile: Option<&str>) -> Network {
-        Network { ssid: ssid.into(), signal, secured: true, connected, profile: profile.map(Into::into) }
+        Network {
+            ssid: ssid.into(),
+            signal,
+            secured: true,
+            connected,
+            profile: profile.map(Into::into),
+        }
     }
 
     #[test]
     fn merge_joins_duplicates_and_sorts() {
-        let raw = vec![net("Cafe", 80, false, None), net("Rumah", 40, false, None), net("Rumah", 45, true, Some("Rumah")), net("", 99, false, None), net("Kantor", 60, false, Some("Kantor"))];
+        let raw = vec![
+            net("Cafe", 80, false, None),
+            net("Rumah", 40, false, None),
+            net("Rumah", 45, true, Some("Rumah")),
+            net("", 99, false, None),
+            net("Kantor", 60, false, Some("Kantor")),
+        ];
         let m = merge(raw);
         let names: Vec<&str> = m.iter().map(|n| n.ssid.as_str()).collect();
         assert_eq!(names, ["Rumah", "Kantor", "Cafe"]);
@@ -160,13 +182,30 @@ mod tests {
 
     #[test]
     fn devices_merge_by_name() {
-        let d = |n: &str, c: bool, k: DevKind| Device { name: n.into(), connected: c, kind: k, ..Default::default() };
-        let m = merge_devices(vec![d("buds", false, DevKind::Other), d("Mouse", false, DevKind::Mouse), d("buds", true, DevKind::Headphones), d(" ", true, DevKind::Other)]);
+        let d = |n: &str, c: bool, k: DevKind| Device {
+            name: n.into(),
+            connected: c,
+            kind: k,
+            ..Default::default()
+        };
+        let m = merge_devices(vec![
+            d("buds", false, DevKind::Other),
+            d("Mouse", false, DevKind::Mouse),
+            d("buds", true, DevKind::Headphones),
+            d(" ", true, DevKind::Other),
+        ]);
         assert_eq!(m.len(), 2);
         assert_eq!(m[0], d("buds", true, DevKind::Headphones));
         assert_eq!(m[1].name, "Mouse");
-        let le = Device { addr: 0x1111, ..d("buds", false, DevKind::Headphones) };
-        let classic = Device { addr: 0x2222, audio: true, ..d("buds", false, DevKind::Headphones) };
+        let le = Device {
+            addr: 0x1111,
+            ..d("buds", false, DevKind::Headphones)
+        };
+        let classic = Device {
+            addr: 0x2222,
+            audio: true,
+            ..d("buds", false, DevKind::Headphones)
+        };
         let m = merge_devices(vec![le, classic]);
         assert_eq!((m[0].addr, m[0].audio), (0x2222, true));
     }
@@ -175,8 +214,19 @@ mod tests {
     fn address_from_filter_path() {
         let p = r"{2}.\\?\bthenum#{0000110b-0000-1000-8000-00805f9b34fb}_vid&0001004c_pid&200e_ver&0300#8&2f1c8c4d&0&9C3E53ABCDEF_C00000000#{6994ad04-93ef-11d0-a3cc-00a0c9223196}\wavespeaker";
         assert_eq!(bt_addr_from_path(p), Some(0x9C3E53ABCDEF));
-        assert_eq!(bt_addr_from_path(r"{2}.\?\bthhfenum#bthhfpaudio#8&1234&0&97#{6994ad04}"), None, "hands-free tanpa alamat");
-        assert_eq!(bt_addr_from_path(r"{2}.\?\hdaudio#func_01&ven_10ec#4&0&0001#{6994ad04}\speaker"), None);
-        assert_eq!(bt_addr_from_path("bthenum#x_C00000000"), None, "terlalu pendek");
+        assert_eq!(
+            bt_addr_from_path(r"{2}.\?\bthhfenum#bthhfpaudio#8&1234&0&97#{6994ad04}"),
+            None,
+            "hands-free tanpa alamat"
+        );
+        assert_eq!(
+            bt_addr_from_path(r"{2}.\?\hdaudio#func_01&ven_10ec#4&0&0001#{6994ad04}\speaker"),
+            None
+        );
+        assert_eq!(
+            bt_addr_from_path("bthenum#x_C00000000"),
+            None,
+            "terlalu pendek"
+        );
     }
 }

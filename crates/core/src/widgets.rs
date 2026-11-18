@@ -18,7 +18,12 @@ pub enum Category {
 }
 
 impl Category {
-    pub const ALL: [Category; 4] = [Category::Clock, Category::Calendar, Category::Battery, Category::System];
+    pub const ALL: [Category; 4] = [
+        Category::Clock,
+        Category::Calendar,
+        Category::Battery,
+        Category::System,
+    ];
 
     pub fn title(self) -> &'static str {
         match self {
@@ -31,7 +36,15 @@ impl Category {
 }
 
 impl Kind {
-    pub const ALL: [Kind; 7] = [Kind::Clock, Kind::WorldClock, Kind::Digital, Kind::Calendar, Kind::Month, Kind::Battery, Kind::System];
+    pub const ALL: [Kind; 7] = [
+        Kind::Clock,
+        Kind::WorldClock,
+        Kind::Digital,
+        Kind::Calendar,
+        Kind::Month,
+        Kind::Battery,
+        Kind::System,
+    ];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -103,7 +116,10 @@ pub const GAP: f32 = 16.0;
 
 pub fn size_of(k: Kind, dpi: f32) -> (f32, f32) {
     let (cw, ch) = k.cells();
-    ((cw as f32 * CELL + (cw - 1) as f32 * GAP) * dpi, (ch as f32 * CELL + (ch - 1) as f32 * GAP) * dpi)
+    (
+        (cw as f32 * CELL + (cw - 1) as f32 * GAP) * dpi,
+        (ch as f32 * CELL + (ch - 1) as f32 * GAP) * dpi,
+    )
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -114,7 +130,9 @@ pub struct Placed {
 }
 
 pub fn to_text(list: &[Placed]) -> String {
-    list.iter().map(|p| format!("{} {} {}\n", p.kind.key(), p.x, p.y)).collect()
+    list.iter()
+        .map(|p| format!("{} {} {}\n", p.kind.key(), p.x, p.y))
+        .collect()
 }
 
 pub fn from_text(t: &str) -> Vec<Placed> {
@@ -160,9 +178,21 @@ pub fn free_spot(taken: &[Rect], size: (i32, i32), area: Rect, step: i32, gap: i
     (area.0, area.1)
 }
 
-pub fn nearest_free(taken: &[Rect], size: (i32, i32), want: (i32, i32), area: Rect, step: i32, gap: i32) -> (i32, i32) {
+pub fn nearest_free(
+    taken: &[Rect],
+    size: (i32, i32),
+    want: (i32, i32),
+    area: Rect,
+    step: i32,
+    gap: i32,
+) -> (i32, i32) {
     let step = step.max(1);
-    let clamp = |p: (i32, i32)| (p.0.clamp(area.0, (area.0 + area.2 - size.0).max(area.0)), p.1.clamp(area.1, (area.1 + area.3 - size.1).max(area.1)));
+    let clamp = |p: (i32, i32)| {
+        (
+            p.0.clamp(area.0, (area.0 + area.2 - size.0).max(area.0)),
+            p.1.clamp(area.1, (area.1 + area.3 - size.1).max(area.1)),
+        )
+    };
     let want = clamp(want);
     for r in 0..80i32 {
         let mut best: Option<((i32, i32), i64)> = None;
@@ -172,7 +202,10 @@ pub fn nearest_free(taken: &[Rect], size: (i32, i32), want: (i32, i32), area: Re
                     continue;
                 }
                 let p = clamp((want.0 + dx * step, want.1 + dy * step));
-                if taken.iter().any(|t| overlaps((p.0, p.1, size.0, size.1), *t, gap)) {
+                if taken
+                    .iter()
+                    .any(|t| overlaps((p.0, p.1, size.0, size.1), *t, gap))
+                {
                     continue;
                 }
                 let d = ((p.0 - want.0) as i64).pow(2) + ((p.1 - want.1) as i64).pow(2);
@@ -192,7 +225,12 @@ fn cell_hit(a: Rect, b: Rect) -> bool {
     a.0 < b.0 + b.2 && b.0 < a.0 + a.2 && a.1 < b.1 + b.3 && b.1 < a.1 + a.3
 }
 
-pub fn nearest_cell(taken: &[Rect], size: (i32, i32), want: (i32, i32), grid: (i32, i32)) -> Option<(i32, i32)> {
+pub fn nearest_cell(
+    taken: &[Rect],
+    size: (i32, i32),
+    want: (i32, i32),
+    grid: (i32, i32),
+) -> Option<(i32, i32)> {
     let (maxc, maxr) = ((grid.0 - size.0).max(0), (grid.1 - size.1).max(0));
     let want = (want.0.clamp(0, maxc), want.1.clamp(0, maxr));
     let mut best: Option<((i32, i32), i32)> = None;
@@ -227,18 +265,39 @@ pub struct City {
 }
 
 pub const CITIES: [City; 4] = [
-    City { name: "Jakarta", offset_min: 7 * 60 },
-    City { name: "Singapura", offset_min: 8 * 60 },
-    City { name: "Tokyo", offset_min: 9 * 60 },
-    City { name: "Dubai", offset_min: 4 * 60 },
+    City {
+        name: "Jakarta",
+        offset_min: 7 * 60,
+    },
+    City {
+        name: "Singapura",
+        offset_min: 8 * 60,
+    },
+    City {
+        name: "Tokyo",
+        offset_min: 9 * 60,
+    },
+    City {
+        name: "Dubai",
+        offset_min: 4 * 60,
+    },
 ];
 
-pub fn city_time(utc_min: i32, local_offset_min: i32, city_offset_min: i32) -> (u32, u32, i32, i32) {
+pub fn city_time(
+    utc_min: i32,
+    local_offset_min: i32,
+    city_offset_min: i32,
+) -> (u32, u32, i32, i32) {
     let local = utc_min + local_offset_min;
     let there = utc_min + city_offset_min;
     let day = |m: i32| m.div_euclid(1440);
     let mm = there.rem_euclid(1440);
-    ((mm / 60) as u32, (mm % 60) as u32, day(there) - day(local), (city_offset_min - local_offset_min) / 60)
+    (
+        (mm / 60) as u32,
+        (mm % 60) as u32,
+        day(there) - day(local),
+        (city_offset_min - local_offset_min) / 60,
+    )
 }
 
 pub fn hands(h: u32, m: u32, s: u32) -> (f32, f32, f32) {
@@ -287,7 +346,9 @@ pub fn ring(n: u32, thickness: f32, frac: f32, fg: [u8; 3], track: [u8; 4]) -> V
             let a = (fa + ta).min(1.0);
             let i = ((y * n + x) * 4) as usize;
             for k in 0..3 {
-                out[i + 2 - k] = (fg[k] as f32 * fa + track[k] as f32 * ta).round().min(255.0) as u8;
+                out[i + 2 - k] = (fg[k] as f32 * fa + track[k] as f32 * ta)
+                    .round()
+                    .min(255.0) as u8;
             }
             out[i + 3] = (a * 255.0).round() as u8;
         }
@@ -301,9 +362,27 @@ mod tests {
 
     #[test]
     fn placed_round_trips_and_skips_junk() {
-        let list = vec![Placed { kind: Kind::Clock, x: 10, y: -20 }, Placed { kind: Kind::WorldClock, x: 300, y: 40 }];
+        let list = vec![
+            Placed {
+                kind: Kind::Clock,
+                x: 10,
+                y: -20,
+            },
+            Placed {
+                kind: Kind::WorldClock,
+                x: 300,
+                y: 40,
+            },
+        ];
         assert_eq!(from_text(&to_text(&list)), list);
-        assert_eq!(from_text("nope 1 2\nclock x 3\nbattery 5 6\n"), vec![Placed { kind: Kind::Battery, x: 5, y: 6 }]);
+        assert_eq!(
+            from_text("nope 1 2\nclock x 3\nbattery 5 6\n"),
+            vec![Placed {
+                kind: Kind::Battery,
+                x: 5,
+                y: 6
+            }]
+        );
     }
 
     #[test]
@@ -314,18 +393,37 @@ mod tests {
         let b = free_spot(&[(0, 0, 164, 164)], (164, 164), area, 20, 16);
         assert_eq!(b.0, 0);
         assert!(b.1 >= 180);
-        let c = free_spot(&[(0, 0, 164, 164), (0, b.1, 164, 164)], (164, 164), area, 20, 16);
+        let c = free_spot(
+            &[(0, 0, 164, 164), (0, b.1, 164, 164)],
+            (164, 164),
+            area,
+            20,
+            16,
+        );
         assert!(c.0 >= 180);
     }
 
     #[test]
     fn nearest_free_slides_off_an_occupied_spot() {
         let area = (0, 0, 1000, 1000);
-        assert_eq!(nearest_free(&[], (100, 100), (300, 300), area, 10, 10), (300, 300));
-        let p = nearest_free(&[(300, 300, 100, 100)], (100, 100), (310, 300), area, 10, 10);
+        assert_eq!(
+            nearest_free(&[], (100, 100), (300, 300), area, 10, 10),
+            (300, 300)
+        );
+        let p = nearest_free(
+            &[(300, 300, 100, 100)],
+            (100, 100),
+            (310, 300),
+            area,
+            10,
+            10,
+        );
         assert!(!overlaps((p.0, p.1, 100, 100), (300, 300, 100, 100), 10));
         assert!((p.0 - 310).abs() <= 130 && (p.1 - 300).abs() <= 130);
-        assert_eq!(nearest_free(&[], (100, 100), (2000, -50), area, 10, 10), (900, 0));
+        assert_eq!(
+            nearest_free(&[], (100, 100), (2000, -50), area, 10, 10),
+            (900, 0)
+        );
     }
 
     #[test]
@@ -334,9 +432,15 @@ mod tests {
         assert_eq!(first_cell(&[], (1, 1), grid), Some((0, 0)));
         assert_eq!(first_cell(&[(0, 0, 1, 1)], (1, 1), grid), Some((0, 1)));
         assert_eq!(first_cell(&[(0, 0, 1, 4)], (2, 1), grid), Some((1, 0)));
-        assert_eq!(nearest_cell(&[(2, 1, 1, 1)], (1, 1), (2, 1), grid).map(|p| (p.0 - 2).abs() + (p.1 - 1).abs()), Some(1));
+        assert_eq!(
+            nearest_cell(&[(2, 1, 1, 1)], (1, 1), (2, 1), grid)
+                .map(|p| (p.0 - 2).abs() + (p.1 - 1).abs()),
+            Some(1)
+        );
         assert_eq!(nearest_cell(&[], (2, 1), (20, -3), grid), Some((6, 0)));
-        let full: Vec<Rect> = (0..8).flat_map(|c| (0..4).map(move |r| (c, r, 1, 1))).collect();
+        let full: Vec<Rect> = (0..8)
+            .flat_map(|c| (0..4).map(move |r| (c, r, 1, 1)))
+            .collect();
         assert_eq!(nearest_cell(&full, (1, 1), (0, 0), grid), None);
     }
 

@@ -1,7 +1,7 @@
 param([string]$Release = "$PSScriptRoot\..\..\target\release", [switch]$KillRunning)
 
-if ((Get-Process abra, abra-guard -ErrorAction SilentlyContinue) -and -not $KillRunning) {
-  Write-Host "ABRA is running. Quit it first, or re-run with -KillRunning to let this script stop it."
+if ((Get-Process nexora, nexora-guard -ErrorAction SilentlyContinue) -and -not $KillRunning) {
+  Write-Host "NEXORA is running. Quit it first, or re-run with -KillRunning to let this script stop it."
   exit 1
 }
 
@@ -30,12 +30,12 @@ public class Tb {
 }
 "@
 
-$exe = Join-Path $Release "abra.exe"
+$exe = Join-Path $Release "nexora.exe"
 $results = @()
 function Wait-Until($cond, $sec) { $sw = [Diagnostics.Stopwatch]::StartNew(); while ($sw.Elapsed.TotalSeconds -lt $sec) { if (& $cond) { return $true }; Start-Sleep -Milliseconds 100 }; return $false }
 function Fresh($name) { $d = Join-Path $env:TEMP "nacre-m1-$name"; Remove-Item $d -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory $d | Out-Null; $env:NACRE_CONFIG_DIR = $d; return $d }
 function Add-Result($n, $ok, $d) { $script:results += [pscustomobject]@{ Test = $n; Pass = $ok; Detail = $d }; Write-Host ("{0,-34} {1}  {2}" -f $n, $(if ($ok) { "PASS" } else { "FAIL" }), $d) }
-function Cleanup { Get-Process abra, abra-guard -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 500 }
+function Cleanup { Get-Process nexora, nexora-guard -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 500 }
 
 Cleanup
 [Tb]::Snapshot()
@@ -46,7 +46,7 @@ $d = Fresh "t1"
 $p = Start-Process $exe -ArgumentList "--hide-taskbar", "--exit-after", "6" -PassThru
 $hid = Wait-Until { -not [Tb]::Restored() } 4
 $marker = Test-Path "$d\taskbar_hidden.flag"
-$guard = [bool](Get-Process abra-guard -ErrorAction SilentlyContinue)
+$guard = [bool](Get-Process nexora-guard -ErrorAction SilentlyContinue)
 Add-Result "T1a taskbar tersembunyi" $hid ([Tb]::State())
 Add-Result "T1b marker + guard aktif" ($marker -and $guard) "marker=$marker guard=$guard"
 $p.WaitForExit()
@@ -55,7 +55,7 @@ Add-Result "T1c pulih setelah keluar normal" $back ([Tb]::State())
 $gone = Wait-Until { -not (Test-Path "$d\taskbar_hidden.flag") } 3
 Add-Result "T1d marker dihapus" $gone ""
 Start-Sleep 1
-Add-Result "T1e guard berhenti" (-not (Get-Process abra-guard -ErrorAction SilentlyContinue)) ""
+Add-Result "T1e guard berhenti" (-not (Get-Process nexora-guard -ErrorAction SilentlyContinue)) ""
 Cleanup
 
 $d = Fresh "t2"
@@ -72,7 +72,7 @@ Cleanup
 $d = Fresh "t3"
 $p = Start-Process $exe -ArgumentList "--hide-taskbar" -PassThru
 $hid = Wait-Until { -not [Tb]::Restored() } 4
-Get-Process abra-guard -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process nexora-guard -ErrorAction SilentlyContinue | Stop-Process -Force
 Stop-Process -Id $p.Id -Force
 Start-Sleep 1
 $still = -not [Tb]::Restored()
@@ -86,7 +86,7 @@ Cleanup
 $d = Fresh "t4"
 $p = Start-Process $exe -ArgumentList "--hide-taskbar" -PassThru
 $hid = Wait-Until { -not [Tb]::Restored() } 4
-Get-Process abra-guard -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process nexora-guard -ErrorAction SilentlyContinue | Stop-Process -Force
 Stop-Process -Id $p.Id -Force
 Set-Content "$d\taskbar_hidden.flag" "ini bukan marker"
 $p2 = Start-Process $exe -ArgumentList "--exit-after", "3" -PassThru
@@ -102,7 +102,7 @@ $p2 = Start-Process $exe -PassThru
 $p2.WaitForExit(3000) | Out-Null
 Add-Result "T5 instance kedua langsung keluar" $p2.HasExited ""
 Start-Sleep 0.5
-$log = Get-Content "$d\abra.log" -Raw
+$log = Get-Content "$d\nexora.log" -Raw
 Add-Result "T5b instance pertama dibangunkan" ($log -match "peluncuran kedua") ""
 $p.WaitForExit()
 Cleanup

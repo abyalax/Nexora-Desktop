@@ -3,11 +3,14 @@ use std::sync::Mutex;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::DataExchange::{
-    AddClipboardFormatListener, CloseClipboard, EmptyClipboard, GetClipboardData, IsClipboardFormatAvailable, OpenClipboard, RegisterClipboardFormatW,
+    AddClipboardFormatListener, CloseClipboard, EmptyClipboard, GetClipboardData,
+    IsClipboardFormatAvailable, OpenClipboard, RegisterClipboardFormatW,
     RemoveClipboardFormatListener, SetClipboardData,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalSize, GlobalUnlock, GMEM_MOVEABLE};
+use windows::Win32::System::Memory::{
+    GlobalAlloc, GlobalLock, GlobalSize, GlobalUnlock, GMEM_MOVEABLE,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
 const CF_UNICODETEXT: u32 = 13;
@@ -26,7 +29,10 @@ static ENABLED: AtomicBool = AtomicBool::new(true);
 static HWND_LISTENER: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
 
 fn now_secs() -> i64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
 }
 
 pub fn push(history: &mut Vec<Entry>, text: &str, now: i64) {
@@ -75,7 +81,9 @@ unsafe fn read_text(hwnd: HWND) -> Option<String> {
                     (f != 0 && IsClipboardFormatAvailable(f).is_ok()).then_some(f)
                 };
                 let can = has(w!("CanIncludeInClipboardHistory")).map(|f| {
-                    let Ok(h) = GetClipboardData(f) else { return Vec::new() };
+                    let Ok(h) = GetClipboardData(f) else {
+                        return Vec::new();
+                    };
                     let g = windows::Win32::Foundation::HGLOBAL(h.0);
                     let p = GlobalLock(g) as *const u8;
                     if p.is_null() {
@@ -85,7 +93,10 @@ unsafe fn read_text(hwnd: HWND) -> Option<String> {
                     let _ = GlobalUnlock(g);
                     v
                 });
-                if opted_out(has(w!("ExcludeClipboardContentFromMonitorProcessing")).is_some(), can.as_deref()) {
+                if opted_out(
+                    has(w!("ExcludeClipboardContentFromMonitorProcessing")).is_some(),
+                    can.as_deref(),
+                ) {
                     return None;
                 }
                 if IsClipboardFormatAvailable(CF_UNICODETEXT).is_err() {
@@ -127,9 +138,27 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
 pub fn init() -> windows_core::Result<()> {
     unsafe {
         let hi = GetModuleHandleW(None)?.into();
-        let class = w!("AbraClipboard");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-clip"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
+        let class = w!("NexoraClipboard");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-clip"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
         AddClipboardFormatListener(hwnd)?;
         HWND_LISTENER.store(hwnd.0 as isize, Ordering::Relaxed);
     }
@@ -160,7 +189,11 @@ pub fn copy_text(text: &str) -> bool {
                     }
                     std::ptr::copy_nonoverlapping(wide.as_ptr(), p, wide.len());
                     let _ = GlobalUnlock(h);
-                    SetClipboardData(CF_UNICODETEXT, Some(windows::Win32::Foundation::HANDLE(h.0))).ok()?;
+                    SetClipboardData(
+                        CF_UNICODETEXT,
+                        Some(windows::Win32::Foundation::HANDLE(h.0)),
+                    )
+                    .ok()?;
                     Some(())
                 })()
                 .is_some();
@@ -184,9 +217,18 @@ mod tests {
     fn penanda_sensitif_diabaikan() {
         assert!(!opted_out(false, None), "tanpa penanda: simpan");
         assert!(opted_out(true, None));
-        assert!(opted_out(false, Some(&0u32.to_le_bytes())), "CanIncludeInClipboardHistory=0");
-        assert!(!opted_out(false, Some(&1u32.to_le_bytes())), "CanIncludeInClipboardHistory=1");
-        assert!(opted_out(false, Some(&[1, 0])), "data rusak dianggap jangan");
+        assert!(
+            opted_out(false, Some(&0u32.to_le_bytes())),
+            "CanIncludeInClipboardHistory=0"
+        );
+        assert!(
+            !opted_out(false, Some(&1u32.to_le_bytes())),
+            "CanIncludeInClipboardHistory=1"
+        );
+        assert!(
+            opted_out(false, Some(&[1, 0])),
+            "data rusak dianggap jangan"
+        );
         assert!(opted_out(true, Some(&1u32.to_le_bytes())), "Exclude menang");
     }
 
@@ -197,12 +239,20 @@ mod tests {
         let h = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).unwrap();
         std::ptr::copy_nonoverlapping(wide.as_ptr(), GlobalLock(h) as *mut u16, wide.len());
         let _ = GlobalUnlock(h);
-        SetClipboardData(CF_UNICODETEXT, Some(windows::Win32::Foundation::HANDLE(h.0))).unwrap();
+        SetClipboardData(
+            CF_UNICODETEXT,
+            Some(windows::Win32::Foundation::HANDLE(h.0)),
+        )
+        .unwrap();
         if let Some(v) = can_include {
             let h = GlobalAlloc(GMEM_MOVEABLE, 4).unwrap();
             std::ptr::copy_nonoverlapping(v.to_le_bytes().as_ptr(), GlobalLock(h) as *mut u8, 4);
             let _ = GlobalUnlock(h);
-            SetClipboardData(RegisterClipboardFormatW(w!("CanIncludeInClipboardHistory")), Some(windows::Win32::Foundation::HANDLE(h.0))).unwrap();
+            SetClipboardData(
+                RegisterClipboardFormatW(w!("CanIncludeInClipboardHistory")),
+                Some(windows::Win32::Foundation::HANDLE(h.0)),
+            )
+            .unwrap();
         }
         let _ = CloseClipboard();
     }
@@ -226,7 +276,10 @@ mod tests {
         push(&mut h, "a", 1000);
         push(&mut h, "b\r\n", 1001);
         push(&mut h, "a", 1002);
-        assert_eq!(h.iter().map(|e| e.text.as_str()).collect::<Vec<_>>(), vec!["a", "b"]);
+        assert_eq!(
+            h.iter().map(|e| e.text.as_str()).collect::<Vec<_>>(),
+            vec!["a", "b"]
+        );
         push(&mut h, "   ", 1003);
         assert_eq!(h.len(), 2, "kosong diabaikan");
         push(&mut h, "baru", 1000 + KEEP_SECS + 10);

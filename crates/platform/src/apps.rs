@@ -1,8 +1,8 @@
 use std::sync::Mutex;
 use windows::Win32::System::Com::{CoInitializeEx, CoTaskMemFree, COINIT_MULTITHREADED};
 use windows::Win32::UI::Shell::{
-    BHID_EnumItems, FOLDERID_AppsFolder, IEnumShellItems, IShellItem, SHGetKnownFolderItem, KF_FLAG_DEFAULT, SIGDN_NORMALDISPLAY,
-    SIGDN_PARENTRELATIVEPARSING,
+    BHID_EnumItems, FOLDERID_AppsFolder, IEnumShellItems, IShellItem, SHGetKnownFolderItem,
+    KF_FLAG_DEFAULT, SIGDN_NORMALDISPLAY, SIGDN_PARENTRELATIVEPARSING,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -17,8 +17,14 @@ static LOADING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::n
 fn load() -> Vec<App> {
     let mut out = Vec::new();
     unsafe {
-        let Ok(folder) = SHGetKnownFolderItem::<IShellItem>(&FOLDERID_AppsFolder, KF_FLAG_DEFAULT, None) else { return out };
-        let Ok(en) = folder.BindToHandler::<_, IEnumShellItems>(None, &BHID_EnumItems) else { return out };
+        let Ok(folder) =
+            SHGetKnownFolderItem::<IShellItem>(&FOLDERID_AppsFolder, KF_FLAG_DEFAULT, None)
+        else {
+            return out;
+        };
+        let Ok(en) = folder.BindToHandler::<_, IEnumShellItems>(None, &BHID_EnumItems) else {
+            return out;
+        };
         loop {
             let mut batch: [Option<IShellItem>; 16] = Default::default();
             let mut got = 0u32;
@@ -31,14 +37,20 @@ fn load() -> Vec<App> {
                     CoTaskMemFree(Some(p.0 as *const _));
                     s
                 });
-                let rel = item.GetDisplayName(SIGDN_PARENTRELATIVEPARSING).ok().and_then(|p| {
-                    let s = p.to_string().ok();
-                    CoTaskMemFree(Some(p.0 as *const _));
-                    s
-                });
+                let rel = item
+                    .GetDisplayName(SIGDN_PARENTRELATIVEPARSING)
+                    .ok()
+                    .and_then(|p| {
+                        let s = p.to_string().ok();
+                        CoTaskMemFree(Some(p.0 as *const _));
+                        s
+                    });
                 if let (Some(name), Some(rel)) = (name, rel) {
                     if !name.trim().is_empty() {
-                        out.push(App { name, path: format!("shell:AppsFolder\\{rel}") });
+                        out.push(App {
+                            name,
+                            path: format!("shell:AppsFolder\\{rel}"),
+                        });
                     }
                 }
             }
@@ -66,7 +78,11 @@ pub fn refresh(notify: impl Fn() + Send + 'static) {
 }
 
 pub fn snapshot() -> Vec<App> {
-    CACHE.lock().unwrap_or_else(|e| e.into_inner()).clone().unwrap_or_default()
+    CACHE
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone()
+        .unwrap_or_default()
 }
 
 pub fn is_loaded() -> bool {

@@ -7,7 +7,13 @@ pub enum Cat {
     System,
 }
 
-pub const ALL: [Cat; 5] = [Cat::Productivity, Cat::Creative, Cat::Entertainment, Cat::Utility, Cat::System];
+pub const ALL: [Cat; 5] = [
+    Cat::Productivity,
+    Cat::Creative,
+    Cat::Entertainment,
+    Cat::Utility,
+    Cat::System,
+];
 
 impl Cat {
     pub fn title(self) -> &'static str {
@@ -22,20 +28,118 @@ impl Cat {
 }
 
 const SYSTEM: &[&str] = &[
-    "settings", "pengaturan", "control panel", "panel kontrol", "task manager", "device manager", "registry", "powershell", "command prompt", "terminal",
-    "windows tools", "event viewer", "services", "defender", "security", "update", "microsoft store", "disk", "resource monitor", "performance", "system", "msconfig", "regedit",
+    "settings",
+    "pengaturan",
+    "control panel",
+    "panel kontrol",
+    "task manager",
+    "device manager",
+    "registry",
+    "powershell",
+    "command prompt",
+    "terminal",
+    "windows tools",
+    "event viewer",
+    "services",
+    "defender",
+    "security",
+    "update",
+    "microsoft store",
+    "disk",
+    "resource monitor",
+    "performance",
+    "system",
+    "msconfig",
+    "regedit",
 ];
 const CREATIVE: &[&str] = &[
-    "photoshop", "illustrator", "premiere", "after effects", "figma", "blender", "paint", "gimp", "inkscape", "canva", "davinci", "obs ", "obs studio", "audacity", "capcut",
-    "lightroom", "krita", "photos", "video editor", "clipchamp", "snipping", "sketch", "design", "animate", "indesign", "fl studio",
+    "photoshop",
+    "illustrator",
+    "premiere",
+    "after effects",
+    "figma",
+    "blender",
+    "paint",
+    "gimp",
+    "inkscape",
+    "canva",
+    "davinci",
+    "obs ",
+    "obs studio",
+    "audacity",
+    "capcut",
+    "lightroom",
+    "krita",
+    "photos",
+    "video editor",
+    "clipchamp",
+    "snipping",
+    "sketch",
+    "design",
+    "animate",
+    "indesign",
+    "fl studio",
 ];
 const ENTERTAINMENT: &[&str] = &[
-    "game", "steam", "epic games", "spotify", "music", "media player", "vlc", "netflix", "youtube", "movies", "xbox", "discord", "whatsapp", "telegram", "tiktok", "twitch",
-    "pes", "fifa", "minecraft", "roblox", "tv", "podcast", "prime video",
+    "game",
+    "steam",
+    "epic games",
+    "spotify",
+    "music",
+    "media player",
+    "vlc",
+    "netflix",
+    "youtube",
+    "movies",
+    "xbox",
+    "discord",
+    "whatsapp",
+    "telegram",
+    "tiktok",
+    "twitch",
+    "pes",
+    "fifa",
+    "minecraft",
+    "roblox",
+    "tv",
+    "podcast",
+    "prime video",
 ];
 const PRODUCTIVITY: &[&str] = &[
-    "word", "excel", "powerpoint", "outlook", "onenote", "office", "notepad", "notion", "teams", "slack", "zoom", "acrobat", "pdf", "mail", "calendar", "todo", "to do", "sticky",
-    "libreoffice", "obsidian", "visual studio", "code", "browser", "chrome", "edge", "firefox", "brave", "opera", "claude", "chatgpt", "trello", "drive", "dropbox", "onedrive",
+    "word",
+    "excel",
+    "powerpoint",
+    "outlook",
+    "onenote",
+    "office",
+    "notepad",
+    "notion",
+    "teams",
+    "slack",
+    "zoom",
+    "acrobat",
+    "pdf",
+    "mail",
+    "calendar",
+    "todo",
+    "to do",
+    "sticky",
+    "libreoffice",
+    "obsidian",
+    "visual studio",
+    "code",
+    "browser",
+    "chrome",
+    "edge",
+    "firefox",
+    "brave",
+    "opera",
+    "claude",
+    "chatgpt",
+    "trello",
+    "drive",
+    "dropbox",
+    "onedrive",
 ];
 
 fn has(name: &str, list: &[&str]) -> bool {
@@ -46,7 +150,12 @@ pub fn guess(name: &str, path: &str) -> Cat {
     let n = name.to_lowercase();
     let p = path.to_lowercase().replace(char::from(92u8), "/");
     let both = format!("{n} {p}");
-    if has(&n, SYSTEM) || p.contains("/windows/system32/") && !n.contains("notepad") && !n.contains("paint") && !n.contains("calc") {
+    if has(&n, SYSTEM)
+        || p.contains("/windows/system32/")
+            && !n.contains("notepad")
+            && !n.contains("paint")
+            && !n.contains("calc")
+    {
         return Cat::System;
     }
     if has(&n, CREATIVE) {
@@ -73,7 +182,10 @@ mod tests {
         assert_eq!(guess("Spotify", ""), Cat::Entertainment);
         assert_eq!(guess("Task Manager", ""), Cat::System);
         assert_eq!(guess("7-Zip File Manager", ""), Cat::Utility);
-        assert_eq!(guess("Foo", "C:/Program Files/Steam/steamapps/common/foo.exe"), Cat::Entertainment);
+        assert_eq!(
+            guess("Foo", "C:/Program Files/Steam/steamapps/common/foo.exe"),
+            Cat::Entertainment
+        );
     }
 
     #[test]

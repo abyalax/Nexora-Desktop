@@ -59,7 +59,7 @@ const UWP_ALIASES: &[(&str, &str)] = &[
     ("gamingapp", "Games"),
 ];
 
-const SPECIAL: &[(&str, &str)] = &[("abra:launchpad", "Apps")];
+const SPECIAL: &[(&str, &str)] = &[("nexora:launchpad", "Apps")];
 
 #[derive(Default)]
 struct State {
@@ -83,20 +83,27 @@ fn scan(dir: &Path) -> HashMap<String, PathBuf> {
     for _ in 0..=MAX_DEPTH {
         let mut next = Vec::new();
         for d in level {
-            let Ok(rd) = std::fs::read_dir(&d) else { continue };
+            let Ok(rd) = std::fs::read_dir(&d) else {
+                continue;
+            };
             for e in rd.flatten() {
                 seen += 1;
                 if seen > MAX_FILES {
                     return out;
                 }
-                let Ok(md) = std::fs::symlink_metadata(e.path()) else { continue };
+                let Ok(md) = std::fs::symlink_metadata(e.path()) else {
+                    continue;
+                };
                 if md.file_type().is_symlink() {
                     continue;
                 }
                 let p = e.path();
                 if md.is_dir() {
                     next.push(p);
-                } else if md.is_file() && md.len() <= MAX_BYTES && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("png")) {
+                } else if md.is_file()
+                    && md.len() <= MAX_BYTES
+                    && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("png"))
+                {
                     if let Some(stem) = p.file_stem().and_then(|s| s.to_str()) {
                         out.entry(stem.to_lowercase()).or_insert(p);
                     }
@@ -111,7 +118,11 @@ fn scan(dir: &Path) -> HashMap<String, PathBuf> {
 pub fn configure(dir: &Path, enabled: bool) {
     with(|s| {
         if s.dir.as_deref() != Some(dir) {
-            s.index = if dir.is_dir() { scan(dir) } else { HashMap::new() };
+            s.index = if dir.is_dir() {
+                scan(dir)
+            } else {
+                HashMap::new()
+            };
             s.dir = Some(dir.to_path_buf());
             s.cache.clear();
         }
@@ -127,7 +138,11 @@ pub fn count() -> usize {
 }
 
 fn exe_stem(path: &str) -> String {
-    let file = path.rsplit(['\\', '/']).next().unwrap_or(path).to_lowercase();
+    let file = path
+        .rsplit(['\\', '/'])
+        .next()
+        .unwrap_or(path)
+        .to_lowercase();
     file.strip_suffix(".exe").unwrap_or(&file).to_string()
 }
 
@@ -143,7 +158,9 @@ fn resolve(s: &State, app: &str) -> Option<String> {
         let stem = exe_stem(&path);
         EXE_ALIASES.iter().find(|(e, _)| *e == stem)?.1
     };
-    s.index.get(&want.to_lowercase()).map(|p| p.to_string_lossy().to_string())
+    s.index
+        .get(&want.to_lowercase())
+        .map(|p| p.to_string_lossy().to_string())
 }
 
 pub fn lookup(app: &str) -> Option<String> {
@@ -169,9 +186,15 @@ mod tests {
     use super::*;
 
     fn state_with(names: &[&str]) -> State {
-        let mut s = State { enabled: true, ..Default::default() };
+        let mut s = State {
+            enabled: true,
+            ..Default::default()
+        };
         for n in names {
-            s.index.insert(n.to_lowercase(), PathBuf::from(format!("C:\\pack\\{n}.png")));
+            s.index.insert(
+                n.to_lowercase(),
+                PathBuf::from(format!("C:\\pack\\{n}.png")),
+            );
         }
         s
     }
@@ -179,18 +202,35 @@ mod tests {
     #[test]
     fn exe_and_uwp_map_to_matching_icons() {
         let s = state_with(&["Finder", "Calculator", "Terminal", "Mail", "Apps"]);
-        assert!(resolve(&s, "C:\\Windows\\explorer.exe").unwrap().ends_with("Finder.png"));
-        assert!(resolve(&s, "C:\\Windows\\System32\\calc.exe").unwrap().ends_with("Calculator.png"));
-        assert!(resolve(&s, "shell:AppsFolder\\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App").unwrap().ends_with("Calculator.png"));
+        assert!(resolve(&s, "C:\\Windows\\explorer.exe")
+            .unwrap()
+            .ends_with("Finder.png"));
+        assert!(resolve(&s, "C:\\Windows\\System32\\calc.exe")
+            .unwrap()
+            .ends_with("Calculator.png"));
+        assert!(resolve(
+            &s,
+            "shell:AppsFolder\\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App"
+        )
+        .unwrap()
+        .ends_with("Calculator.png"));
         assert!(resolve(&s, "shell:AppsFolder\\microsoft.windowscommunicationsapps_8wekyb3d8bbwe!microsoft.windowslive.mail").unwrap().ends_with("Mail.png"));
-        assert!(resolve(&s, "abra:launchpad").unwrap().ends_with("Apps.png"));
+        assert!(resolve(&s, "nexora:launchpad").unwrap().ends_with("Apps.png"));
     }
 
     #[test]
     fn third_party_apps_are_never_replaced() {
         let s = state_with(&["Finder", "Safari", "Notes"]);
-        assert!(resolve(&s, "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe").is_none());
-        assert!(resolve(&s, "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe").is_none());
+        assert!(resolve(
+            &s,
+            "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+        )
+        .is_none());
+        assert!(resolve(
+            &s,
+            "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+        )
+        .is_none());
         assert!(resolve(&s, "C:\\Apps\\Notes.exe").is_none());
     }
 

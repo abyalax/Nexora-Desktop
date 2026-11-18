@@ -4,9 +4,10 @@ use std::sync::{Mutex, MutexGuard};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Accessibility::{SetWinEventHook, HWINEVENTHOOK};
 use windows::Win32::UI::WindowsAndMessaging::{
-    EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, EVENT_OBJECT_HIDE, EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW, EVENT_OBJECT_UNCLOAKED,
-    EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MOVESIZEEND,
-    GetForegroundWindow, WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS,
+    GetForegroundWindow, EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, EVENT_OBJECT_HIDE,
+    EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW, EVENT_OBJECT_UNCLOAKED,
+    EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART,
+    EVENT_SYSTEM_MOVESIZEEND, WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS,
 };
 
 static FOCUS: Mutex<Option<HashMap<isize, i64>>> = Mutex::new(None);
@@ -31,7 +32,10 @@ pub fn now_ms() -> i64 {
 }
 
 pub fn recent(hwnd: isize) -> i64 {
-    focus_map().as_ref().and_then(|m| m.get(&hwnd).copied()).unwrap_or(0)
+    focus_map()
+        .as_ref()
+        .and_then(|m| m.get(&hwnd).copied())
+        .unwrap_or(0)
 }
 
 pub fn last_focused_except(exclude: isize, alive: impl Fn(isize) -> bool) -> Option<isize> {
@@ -63,9 +67,19 @@ unsafe extern "system" fn callback(
     }
     if matches!(
         event,
-        EVENT_SYSTEM_FOREGROUND | EVENT_SYSTEM_MINIMIZESTART | EVENT_SYSTEM_MINIMIZEEND | EVENT_OBJECT_DESTROY | EVENT_SYSTEM_MOVESIZEEND | EVENT_OBJECT_SHOW | EVENT_OBJECT_UNCLOAKED
-    ) || (event == EVENT_OBJECT_LOCATIONCHANGE && hwnd == GetForegroundWindow()) {
-        let fx: Vec<fn(u32, isize)> = FX_CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
+        EVENT_SYSTEM_FOREGROUND
+            | EVENT_SYSTEM_MINIMIZESTART
+            | EVENT_SYSTEM_MINIMIZEEND
+            | EVENT_OBJECT_DESTROY
+            | EVENT_SYSTEM_MOVESIZEEND
+            | EVENT_OBJECT_SHOW
+            | EVENT_OBJECT_UNCLOAKED
+    ) || (event == EVENT_OBJECT_LOCATIONCHANGE && hwnd == GetForegroundWindow())
+    {
+        let fx: Vec<fn(u32, isize)> = FX_CALLBACKS
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone();
         for f in fx {
             f(event, hwnd.0 as isize);
         }
@@ -77,7 +91,9 @@ unsafe extern "system" fn callback(
         return;
     }
     if event == EVENT_SYSTEM_FOREGROUND {
-        focus_map().get_or_insert_with(HashMap::new).insert(hwnd.0 as isize, now_ms());
+        focus_map()
+            .get_or_insert_with(HashMap::new)
+            .insert(hwnd.0 as isize, now_ms());
         EXTERNAL_FG.store(hwnd.0 as isize, Ordering::Relaxed);
     }
     let list: Vec<fn()> = CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
@@ -87,7 +103,10 @@ unsafe extern "system" fn callback(
 }
 
 pub fn install_fx(cb: fn(u32, isize)) {
-    FX_CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).push(cb);
+    FX_CALLBACKS
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .push(cb);
 }
 
 pub const EV_FOREGROUND: u32 = EVENT_SYSTEM_FOREGROUND;
@@ -100,12 +119,16 @@ pub const EV_SHOW: u32 = EVENT_OBJECT_SHOW;
 pub const EV_UNCLOAKED: u32 = EVENT_OBJECT_UNCLOAKED;
 
 pub fn install(on_change: fn()) {
-    CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).push(on_change);
+    CALLBACKS
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .push(on_change);
     unsafe {
         let fg = GetForegroundWindow();
         let mut pid = 0u32;
         windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId(fg, Some(&mut pid));
-        if !fg.0.is_null() && pid != std::process::id() && EXTERNAL_FG.load(Ordering::Relaxed) == 0 {
+        if !fg.0.is_null() && pid != std::process::id() && EXTERNAL_FG.load(Ordering::Relaxed) == 0
+        {
             EXTERNAL_FG.store(fg.0 as isize, Ordering::Relaxed);
         }
     }
@@ -125,7 +148,15 @@ pub fn install(on_change: fn()) {
         EVENT_OBJECT_UNCLOAKED,
     ] {
         unsafe {
-            let _ = SetWinEventHook(ev, ev, None, Some(callback), 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            let _ = SetWinEventHook(
+                ev,
+                ev,
+                None,
+                Some(callback),
+                0,
+                0,
+                WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS,
+            );
         }
     }
 }

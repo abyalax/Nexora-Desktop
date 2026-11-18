@@ -11,7 +11,11 @@ pub struct Lyrics {
 }
 
 fn stamp(tag: &str) -> Option<i64> {
-    if tag.is_empty() || !tag.bytes().all(|b| b.is_ascii_digit() || b == b':' || b == b'.') {
+    if tag.is_empty()
+        || !tag
+            .bytes()
+            .all(|b| b.is_ascii_digit() || b == b':' || b == b'.')
+    {
         return None;
     }
     let parts: Vec<&str> = tag.split(':').collect();
@@ -28,7 +32,11 @@ fn stamp(tag: &str) -> Option<i64> {
     if sec >= 60 || frac.len() > 3 {
         return None;
     }
-    let ms = if frac.is_empty() { 0 } else { frac.parse::<i64>().ok()? * 10i64.pow(3 - frac.len() as u32) };
+    let ms = if frac.is_empty() {
+        0
+    } else {
+        frac.parse::<i64>().ok()? * 10i64.pow(3 - frac.len() as u32)
+    };
     Some(min * 60_000 + sec * 1000 + ms)
 }
 
@@ -83,7 +91,10 @@ pub fn parse(src: &str) -> Lyrics {
             plain.push(text);
         } else {
             for ms in stamps {
-                timed.push(Line { at_ms: ms, text: text.clone() });
+                timed.push(Line {
+                    at_ms: ms,
+                    text: text.clone(),
+                });
             }
         }
     }
@@ -92,7 +103,10 @@ pub fn parse(src: &str) -> Lyrics {
             l.at_ms = (l.at_ms - offset).max(0);
         }
         timed.sort_by_key(|l| l.at_ms);
-        return Lyrics { lines: timed, synced: true };
+        return Lyrics {
+            lines: timed,
+            synced: true,
+        };
     }
     let mut lines: Vec<Line> = Vec::new();
     for t in plain {
@@ -104,7 +118,10 @@ pub fn parse(src: &str) -> Lyrics {
     while lines.last().is_some_and(|l| l.text.is_empty()) {
         lines.pop();
     }
-    Lyrics { lines, synced: false }
+    Lyrics {
+        lines,
+        synced: false,
+    }
 }
 
 impl Lyrics {
@@ -135,9 +152,15 @@ impl Lyrics {
     }
 
     pub fn progress(&self, t_ms: i64) -> f32 {
-        let Some(i) = self.index_at(t_ms) else { return 0.0 };
+        let Some(i) = self.index_at(t_ms) else {
+            return 0.0;
+        };
         let start = self.lines[i].at_ms;
-        let end = self.lines.get(i + 1).map_or(start + 4000, |l| l.at_ms).max(start + 1);
+        let end = self
+            .lines
+            .get(i + 1)
+            .map_or(start + 4000, |l| l.at_ms)
+            .max(start + 1);
         ((t_ms - start) as f32 / (end - start) as f32).clamp(0.0, 1.0)
     }
 
@@ -181,7 +204,14 @@ mod tests {
         let got: Vec<(i64, &str)> = l.lines.iter().map(|x| (x.at_ms, x.text.as_str())).collect();
         assert_eq!(
             got,
-            vec![(4800, "Baris satu"), (9300, "Baris dua di sini"), (13_920, "Reff"), (19_800, ""), (25_300, "Baris empat"), (29_800, "Reff")]
+            vec![
+                (4800, "Baris satu"),
+                (9300, "Baris dua di sini"),
+                (13_920, "Reff"),
+                (19_800, ""),
+                (25_300, "Baris empat"),
+                (29_800, "Reff")
+            ]
         );
     }
 
@@ -202,7 +232,10 @@ mod tests {
     #[test]
     fn window_centres_on_the_active_line() {
         let l = parse(SONG);
-        assert_eq!(l.window(10_000, 1, 1), vec![(0, false), (1, true), (2, false)]);
+        assert_eq!(
+            l.window(10_000, 1, 1),
+            vec![(0, false), (1, true), (2, false)]
+        );
         assert_eq!(l.window(0, 1, 1), vec![(0, false), (1, false)]);
         assert_eq!(l.window(99_000, 1, 1), vec![(4, false), (5, true)]);
     }

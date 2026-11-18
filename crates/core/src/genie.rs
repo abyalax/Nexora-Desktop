@@ -33,16 +33,30 @@ pub fn slice(i: usize, n: usize, tau: f32, win: Rect, icon: Rect) -> ((f32, f32)
     let sh = win.h / n as f32;
     let y_of = |j: usize| -> f32 {
         let down = smoother(progress(j, n, tau));
-        lerp(win.y + j as f32 * sh, icon.y + j as f32 * icon.h / n as f32, down)
+        lerp(
+            win.y + j as f32 * sh,
+            icon.y + j as f32 * icon.h / n as f32,
+            down,
+        )
     };
     let s = progress(i, n, tau);
     let y = y_of(i);
-    let y_next = if i + 1 < n { y_of(i + 1) } else { y + lerp(sh, icon.h / n as f32, smoother(s)) };
+    let y_next = if i + 1 < n {
+        y_of(i + 1)
+    } else {
+        y + lerp(sh, icon.h / n as f32, smoother(s))
+    };
     let row_h = (y_next - y).max(0.0);
     let k = smooth(s * NECK);
     let width = lerp(win.w, icon.w, k).max(1.0);
     let cx = lerp(win.x + win.w / 2.0, icon.x + icon.w / 2.0, k);
-    ((cx - width / 2.0, y), (width / win.w.max(1.0), ((row_h + 1.5) / sh.max(0.001)).max(0.001)))
+    (
+        (cx - width / 2.0, y),
+        (
+            width / win.w.max(1.0),
+            ((row_h + 1.5) / sh.max(0.001)).max(0.001),
+        ),
+    )
 }
 
 pub fn tau_at(t: f32, restore: bool) -> f32 {
@@ -59,18 +73,35 @@ pub fn tau_at(t: f32, restore: bool) -> f32 {
 mod tests {
     use super::*;
 
-    const WIN: Rect = Rect { x: 200.0, y: 100.0, w: 800.0, h: 600.0 };
-    const ICON: Rect = Rect { x: 900.0, y: 1000.0, w: 48.0, h: 48.0 };
+    const WIN: Rect = Rect {
+        x: 200.0,
+        y: 100.0,
+        w: 800.0,
+        h: 600.0,
+    };
+    const ICON: Rect = Rect {
+        x: 900.0,
+        y: 1000.0,
+        w: 48.0,
+        h: 48.0,
+    };
 
     #[test]
     fn starts_as_the_window_and_ends_in_the_icon() {
         let n = 60;
         for i in [0, 30, 59] {
             let ((x, y), (sx, _)) = slice(i, n, 0.0, WIN, ICON);
-            assert!((x - WIN.x).abs() < 0.01 && (y - (WIN.y + i as f32 * 10.0)).abs() < 0.01 && (sx - 1.0).abs() < 1e-4);
+            assert!(
+                (x - WIN.x).abs() < 0.01
+                    && (y - (WIN.y + i as f32 * 10.0)).abs() < 0.01
+                    && (sx - 1.0).abs() < 1e-4
+            );
             let ((x, y), (sx, _)) = slice(i, n, 1.0, WIN, ICON);
             assert!((x - ICON.x).abs() < 0.01, "irisan {i} x={x}");
-            assert!(y >= ICON.y - 0.01 && y <= ICON.y + ICON.h, "irisan {i} y={y}");
+            assert!(
+                y >= ICON.y - 0.01 && y <= ICON.y + ICON.h,
+                "irisan {i} y={y}"
+            );
             assert!((sx - ICON.w / WIN.w).abs() < 1e-3);
         }
     }
@@ -82,7 +113,10 @@ mod tests {
         let w_top = slice(0, n, tau, WIN, ICON).1 .0;
         let w_mid = slice(30, n, tau, WIN, ICON).1 .0;
         let w_bot = slice(59, n, tau, WIN, ICON).1 .0;
-        assert!(w_top > w_mid && w_mid > w_bot, "corong: atas {w_top} > tengah {w_mid} > bawah {w_bot}");
+        assert!(
+            w_top > w_mid && w_mid > w_bot,
+            "corong: atas {w_top} > tengah {w_mid} > bawah {w_bot}"
+        );
         assert!(progress(59, n, tau) > progress(0, n, tau));
     }
 
@@ -94,7 +128,10 @@ mod tests {
             for i in 1..n {
                 let a = slice(i - 1, n, tau, WIN, ICON).1 .0;
                 let b = slice(i, n, tau, WIN, ICON).1 .0;
-                assert!((a - b).abs() < 0.08, "lompatan lebar di tau={tau} irisan {i}: {a} → {b}");
+                assert!(
+                    (a - b).abs() < 0.08,
+                    "lompatan lebar di tau={tau} irisan {i}: {a} → {b}"
+                );
             }
         }
     }
@@ -108,7 +145,10 @@ mod tests {
                 let ((_, y), (_, sy)) = slice(i, n, tau, WIN, ICON);
                 let ((_, y2), _) = slice(i + 1, n, tau, WIN, ICON);
                 let bottom = y + sy * (WIN.h / n as f32);
-                assert!(bottom >= y2 - 0.01, "celah di tau={tau} irisan {i}: bawah {bottom} < atas berikutnya {y2}");
+                assert!(
+                    bottom >= y2 - 0.01,
+                    "celah di tau={tau} irisan {i}: bawah {bottom} < atas berikutnya {y2}"
+                );
             }
         }
     }

@@ -5,21 +5,23 @@ use crate::strip::Strip;
 use nacre_core::hud::slider;
 use nacre_core::hud::timeline::Timeline;
 use nacre_platform::icons::Bitmap;
-use nacre_platform::text::{self, Style, ICON_FACE};
+use nacre_platform::text::{self, Style};
 use nacre_platform::{audio, brightness, log, osd, sys};
 use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassParams, Tier};
+use nacre_ui::glass::Tier;
 use nacre_ui::host::Host;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 use windows::core::w;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionObject, CompositionStretch, Compositor, SpriteVisual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
-use windows::Win32::UI::Input::KeyboardAndMouse::{ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{CompositionObject, CompositionStretch, Compositor, SpriteVisual};
 use windows_core::{Interface, HSTRING};
 use windows_numerics::{Vector2, Vector3};
 
@@ -49,6 +51,7 @@ enum Kind {
     Brightness,
 }
 
+#[allow(dead_code)]
 struct Bar {
     kind: Kind,
     popup: Popup,
@@ -64,6 +67,7 @@ struct Bar {
     strip: Option<Strip>,
 }
 
+#[allow(dead_code)]
 pub struct Hud {
     hwnd: HWND,
     comp: Compositor,
@@ -84,7 +88,12 @@ unsafe extern "system" fn bar_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRE
     let ctl = HWND(CTL.load(Ordering::Relaxed) as *mut _);
     let idx = GetWindowLongPtrW(h, GWLP_USERDATA) as usize;
     let post = |kind: usize, y: f32| {
-        let _ = PostMessageW(Some(ctl), HUD_MOUSE, WPARAM(((idx.saturating_sub(1)) << 8) | kind), LPARAM(y as isize));
+        let _ = PostMessageW(
+            Some(ctl),
+            HUD_MOUSE,
+            WPARAM(((idx.saturating_sub(1)) << 8) | kind),
+            LPARAM(y as isize),
+        );
     };
     match m {
         WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
@@ -112,6 +121,7 @@ unsafe extern "system" fn bar_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRE
 
 static CTL: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
 
+#[allow(dead_code)]
 fn glyph_for(kind: Kind, level: f32, muted: bool) -> &'static str {
     match kind {
         Kind::Brightness => "\u{E706}",
@@ -129,8 +139,16 @@ impl Hud {
             let ctl_class = w!("NacreHudCtl");
             unsafe extern "system" fn ctl_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
                 match m {
-                    WM_VOLUME | WM_BRIGHT | HUD_MOUSE | WM_TIMER | STRIP_L_ENTER | STRIP_L_LEAVE | STRIP_R_ENTER
-                    | STRIP_R_LEAVE | WM_DISPLAYCHANGE | crate::prefs::WM_PREFS => {
+                    WM_VOLUME
+                    | WM_BRIGHT
+                    | HUD_MOUSE
+                    | WM_TIMER
+                    | STRIP_L_ENTER
+                    | STRIP_L_LEAVE
+                    | STRIP_R_ENTER
+                    | STRIP_R_LEAVE
+                    | WM_DISPLAYCHANGE
+                    | crate::prefs::WM_PREFS => {
                         let p = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut Hud;
                         if !p.is_null() {
                             (*p).on_message(m, w, l);
@@ -140,14 +158,36 @@ impl Hud {
                     _ => DefWindowProcW(h, m, w, l),
                 }
             }
-            RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: ctl_class, ..Default::default() });
-            let ctl = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, ctl_class, w!("nacre-hud"), WS_POPUP, 0, 0, 0, 0, None, None, Some(hi), None)?;
+            RegisterClassW(&WNDCLASSW {
+                lpfnWndProc: Some(ctl_proc),
+                hInstance: hi,
+                lpszClassName: ctl_class,
+                ..Default::default()
+            });
+            let ctl = CreateWindowExW(
+                WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+                ctl_class,
+                w!("nacre-hud"),
+                WS_POPUP,
+                0,
+                0,
+                0,
+                0,
+                None,
+                None,
+                Some(hi),
+                None,
+            )?;
             CTL.store(ctl.0 as isize, Ordering::Relaxed);
             let dpi = GetDpiForWindow(ctl).max(96) as f32 / 96.0;
             let screen = sys::screen_size();
             let tier = glass.unwrap_or_else(|| {
                 let c = sys::conditions();
-                if !c.transparency || c.battery_saver || c.remote_session { Tier::Solid } else { Tier::Full }
+                if !c.transparency || c.battery_saver || c.remote_session {
+                    Tier::Solid
+                } else {
+                    Tier::Full
+                }
             });
             let gfx = Gfx::shared(&host.compositor)?;
             let mut bars = Vec::new();
@@ -162,36 +202,95 @@ impl Hud {
                 let _ = popup.panel.set_tier(tier);
                 SetWindowLongPtrW(popup.hwnd, GWLP_USERDATA, (i + 1) as isize);
                 let (bw, bh) = (Self::box_w(dpi) as i32, Self::box_h(dpi) as i32);
-                popup.set_rect(screen.0 - bw - (12.0 * dpi) as i32, (34.0 * dpi) as i32, bw, bh)?;
+                popup.set_rect(
+                    screen.0 - bw - (12.0 * dpi) as i32,
+                    (34.0 * dpi) as i32,
+                    bw,
+                    bh,
+                )?;
                 popup.panel.set_radius(24.0 * dpi)?;
                 let tv = host.compositor.CreateSpriteVisual()?;
-                tv.SetOffset(Vector3 { X: 18.0 * dpi, Y: 10.0 * dpi, Z: 0.0 })?;
+                tv.SetOffset(Vector3 {
+                    X: 18.0 * dpi,
+                    Y: 10.0 * dpi,
+                    Z: 0.0,
+                })?;
                 tv.SetOpacity(0.95)?;
                 popup.content.Children()?.InsertAtTop(&tv)?;
                 let (track_w, track_h) = (Self::track_w(dpi), 5.0 * dpi);
                 let (tx, ty) = (Self::track_x(dpi), Self::track_y(dpi));
                 let track = host.compositor.CreateSpriteVisual()?;
-                track.SetSize(Vector2 { X: track_w, Y: track_h })?;
-                track.SetOffset(Vector3 { X: tx, Y: ty, Z: 0.0 })?;
-                track.SetBrush(&host.compositor.CreateColorBrushWithColor(Color { A: 60, R: 255, G: 255, B: 255 })?)?;
-                track.SetClip(&Self::clip(&host.compositor, track_w, track_h, track_h / 2.0)?)?;
+                track.SetSize(Vector2 {
+                    X: track_w,
+                    Y: track_h,
+                })?;
+                track.SetOffset(Vector3 {
+                    X: tx,
+                    Y: ty,
+                    Z: 0.0,
+                })?;
+                track.SetBrush(&host.compositor.CreateColorBrushWithColor(Color {
+                    A: 60,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                })?)?;
+                track.SetClip(&Self::clip(
+                    &host.compositor,
+                    track_w,
+                    track_h,
+                    track_h / 2.0,
+                )?)?;
                 popup.content.Children()?.InsertAtTop(&track)?;
                 let fill = host.compositor.CreateSpriteVisual()?;
                 fill.SetSize(Vector2 { X: 0.0, Y: track_h })?;
-                fill.SetOffset(Vector3 { X: tx, Y: ty, Z: 0.0 })?;
-                fill.SetBrush(&host.compositor.CreateColorBrushWithColor(Color { A: 245, R: 255, G: 255, B: 255 })?)?;
-                fill.SetClip(&Self::clip(&host.compositor, track_w, track_h, track_h / 2.0)?)?;
+                fill.SetOffset(Vector3 {
+                    X: tx,
+                    Y: ty,
+                    Z: 0.0,
+                })?;
+                fill.SetBrush(&host.compositor.CreateColorBrushWithColor(Color {
+                    A: 245,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                })?)?;
+                fill.SetClip(&Self::clip(
+                    &host.compositor,
+                    track_w,
+                    track_h,
+                    track_h / 2.0,
+                )?)?;
                 popup.content.Children()?.InsertAtTop(&fill)?;
                 let dot = (2.4 * dpi).max(2.0);
                 for k in 0..16 {
                     let d = host.compositor.CreateSpriteVisual()?;
                     d.SetSize(Vector2 { X: dot, Y: dot })?;
-                    d.SetOffset(Vector3 { X: tx + k as f32 * (track_w - dot) / 15.0, Y: ty + track_h + 7.0 * dpi, Z: 0.0 })?;
-                    d.SetBrush(&host.compositor.CreateColorBrushWithColor(Color { A: 120, R: 255, G: 255, B: 255 })?)?;
+                    d.SetOffset(Vector3 {
+                        X: tx + k as f32 * (track_w - dot) / 15.0,
+                        Y: ty + track_h + 7.0 * dpi,
+                        Z: 0.0,
+                    })?;
+                    d.SetBrush(&host.compositor.CreateColorBrushWithColor(Color {
+                        A: 120,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    })?)?;
                     d.SetClip(&Self::clip(&host.compositor, dot, dot, dot / 2.0)?)?;
                     popup.content.Children()?.InsertAtTop(&d)?;
                 }
-                let (sl, sr) = if i == 0 { (nacre_core::symbols::Sym::Speaker, nacre_core::symbols::Sym::SpeakerWave) } else { (nacre_core::symbols::Sym::SunSmall, nacre_core::symbols::Sym::Sun) };
+                let (sl, sr) = if i == 0 {
+                    (
+                        nacre_core::symbols::Sym::Speaker,
+                        nacre_core::symbols::Sym::SpeakerWave,
+                    )
+                } else {
+                    (
+                        nacre_core::symbols::Sym::SunSmall,
+                        nacre_core::symbols::Sym::Sun,
+                    )
+                };
                 let isz = (16.0 * dpi).round() as u32;
                 let mk = |sym, x: f32| -> windows_core::Result<SpriteVisual> {
                     let data = nacre_core::symbols::render(sym, isz, [255, 255, 255]);
@@ -200,8 +299,15 @@ impl Hud {
                     br.SetStretch(CompositionStretch::None)?;
                     let v = host.compositor.CreateSpriteVisual()?;
                     v.SetBrush(&br)?;
-                    v.SetSize(Vector2 { X: isz as f32, Y: isz as f32 })?;
-                    v.SetOffset(Vector3 { X: x, Y: ty + track_h / 2.0 - isz as f32 / 2.0, Z: 0.0 })?;
+                    v.SetSize(Vector2 {
+                        X: isz as f32,
+                        Y: isz as f32,
+                    })?;
+                    v.SetOffset(Vector3 {
+                        X: x,
+                        Y: ty + track_h / 2.0 - isz as f32 / 2.0,
+                        Z: 0.0,
+                    })?;
                     v.SetOpacity(0.9)?;
                     Ok(v)
                 };
@@ -209,7 +315,11 @@ impl Hud {
                 let icon2 = mk(sr, bw as f32 - 16.0 * dpi - isz as f32)?;
                 popup.content.Children()?.InsertAtTop(&icon)?;
                 popup.content.Children()?.InsertAtTop(&icon2)?;
-                let (enter, leave) = if i == 0 { (STRIP_L_ENTER, STRIP_L_LEAVE) } else { (STRIP_R_ENTER, STRIP_R_LEAVE) };
+                let (enter, leave) = if i == 0 {
+                    (STRIP_L_ENTER, STRIP_L_LEAVE)
+                } else {
+                    (STRIP_R_ENTER, STRIP_R_LEAVE)
+                };
                 let _ = (enter, leave);
                 let strip: Option<Strip> = None;
                 if let Some(s) = &strip {
@@ -217,7 +327,20 @@ impl Hud {
                     s.place(sx, (screen.1 - bh) / 2, 2, bh);
                     s.set_visible(true);
                 }
-                bars.push(Bar { kind, popup, title: tv, title_text: String::new(), fill, icon, icon2, time: Timeline::default(), shown: false, edge: false, over: false, strip });
+                bars.push(Bar {
+                    kind,
+                    popup,
+                    title: tv,
+                    title_text: String::new(),
+                    fill,
+                    icon,
+                    icon2,
+                    time: Timeline::default(),
+                    shown: false,
+                    edge: false,
+                    over: false,
+                    strip,
+                });
             }
             let mut hud = Box::new(Hud {
                 hwnd: ctl,
@@ -256,7 +379,12 @@ impl Hud {
     fn track_y(dpi: f32) -> f32 {
         40.0 * dpi
     }
-    fn clip(c: &Compositor, w: f32, h: f32, r: f32) -> windows_core::Result<windows::UI::Composition::CompositionClip> {
+    fn clip(
+        c: &Compositor,
+        w: f32,
+        h: f32,
+        r: f32,
+    ) -> windows_core::Result<windows::UI::Composition::CompositionClip> {
         let g = c.CreateRoundedRectangleGeometry()?;
         g.SetSize(Vector2 { X: w, Y: h })?;
         g.SetCornerRadius(Vector2 { X: r, Y: r })?;
@@ -284,7 +412,10 @@ impl Hud {
             let a = self.comp.CreateSpringScalarAnimation()?;
             a.SetDampingRatio(0.85)?;
             a.SetPeriod(windows::Foundation::TimeSpan { Duration: 500_000 })?;
-            a.SetFinalValue(&windows::Foundation::PropertyValue::CreateSingle(v)?.cast::<windows::Foundation::IReference<f32>>()?)?;
+            a.SetFinalValue(
+                &windows::Foundation::PropertyValue::CreateSingle(v)?
+                    .cast::<windows::Foundation::IReference<f32>>()?,
+            )?;
             obj.StartAnimation(&HSTRING::from(prop), &a)
         };
         let _ = go();
@@ -293,7 +424,9 @@ impl Hud {
     fn update_values(&mut self, animate: bool) {
         for i in 0..self.bars.len() {
             let kind = self.bars[i].kind;
-            let Some((level, muted)) = Self::value_of(kind) else { continue };
+            let Some((level, muted)) = Self::value_of(kind) else {
+                continue;
+            };
             let shown_level = if muted { 0.0 } else { level };
             let fill_w = Self::track_w(self.dpi) * shown_level;
             let bar = &self.bars[i];
@@ -301,7 +434,10 @@ impl Hud {
                 let f: CompositionObject = bar.fill.cast().unwrap();
                 self.spring(&f, "Size.X", fill_w);
             } else {
-                let _ = bar.fill.SetSize(Vector2 { X: fill_w, Y: 5.0 * self.dpi });
+                let _ = bar.fill.SetSize(Vector2 {
+                    X: fill_w,
+                    Y: 5.0 * self.dpi,
+                });
             }
             let _ = (level, muted, &self.last_glyph, kind);
         }
@@ -311,7 +447,11 @@ impl Hud {
         let t = match self.bars[i].kind {
             Kind::Volume => {
                 let n = audio::output_name();
-                if n.is_empty() { crate::prefs::tr("Volume").to_string() } else { n }
+                if n.is_empty() {
+                    crate::prefs::tr("Volume").to_string()
+                } else {
+                    n
+                }
             }
             Kind::Brightness => crate::prefs::tr("Layar").to_string(),
         };
@@ -319,16 +459,24 @@ impl Hud {
             return;
         }
         let d = self.dpi;
-        let style = Style { px: (13.0 * d).round() as i32, weight: 600 };
+        let style = Style {
+            px: (13.0 * d).round() as i32,
+            weight: 600,
+        };
         let (tw, th) = text::measure(&t, &style);
         let tw = (tw + 2).min((Self::box_w(d) - 36.0 * d) as i32);
-        let Some(bmp) = text::render(&t, &style, tw, th) else { return };
+        let Some(bmp) = text::render(&t, &style, tw, th) else {
+            return;
+        };
         let go = || -> windows_core::Result<()> {
             let surf = self.gfx.surface_from_bgra(bmp.w, bmp.h, &bmp.bgra)?;
             let br = self.comp.CreateSurfaceBrushWithSurface(&surf)?;
             br.SetStretch(CompositionStretch::None)?;
             self.bars[i].title.SetBrush(&br)?;
-            self.bars[i].title.SetSize(Vector2 { X: bmp.w as f32, Y: bmp.h as f32 })
+            self.bars[i].title.SetSize(Vector2 {
+                X: bmp.w as f32,
+                Y: bmp.h as f32,
+            })
         };
         if go().is_ok() {
             self.bars[i].title_text = t;
@@ -354,8 +502,20 @@ impl Hud {
             unsafe {
                 let _ = KillTimer(Some(self.hwnd), T_FIN0 + i);
             }
-            let center = Vector3 { X: Self::box_w(self.dpi) - 28.0 * self.dpi, Y: 0.0, Z: 0.0 };
-            let _ = motion::pop_in(&self.comp, self.bars[i].popup.root(), center, 0.72, 1.035, 0, 380);
+            let center = Vector3 {
+                X: Self::box_w(self.dpi) - 28.0 * self.dpi,
+                Y: 0.0,
+                Z: 0.0,
+            };
+            let _ = motion::pop_in(
+                &self.comp,
+                self.bars[i].popup.root(),
+                center,
+                0.72,
+                1.035,
+                0,
+                380,
+            );
         }
         self.schedule_hide(i);
     }
@@ -372,8 +532,18 @@ impl Hud {
         let now = self.now();
         if self.bars[i].shown && !self.bars[i].time.visible(now) {
             self.bars[i].shown = false;
-            let center = Vector3 { X: Self::box_w(self.dpi) - 28.0 * self.dpi, Y: 0.0, Z: 0.0 };
-            let _ = motion::pop_out(&self.comp, self.bars[i].popup.root(), center, 0.8, motion::CC_CLOSE_MS);
+            let center = Vector3 {
+                X: Self::box_w(self.dpi) - 28.0 * self.dpi,
+                Y: 0.0,
+                Z: 0.0,
+            };
+            let _ = motion::pop_out(
+                &self.comp,
+                self.bars[i].popup.root(),
+                center,
+                0.8,
+                motion::CC_CLOSE_MS,
+            );
             unsafe {
                 SetTimer(Some(self.hwnd), T_FIN0 + i, motion::CC_CLOSE_MS + 40, None);
             }
@@ -501,7 +671,8 @@ impl Hud {
             }
             WM_DISPLAYCHANGE => {}
             crate::prefs::WM_PREFS => {
-                let p = crate::prefs::glass((10.0, 10.0), 22.0 * self.dpi, crate::prefs::Role::Dark);
+                let p =
+                    crate::prefs::glass((10.0, 10.0), 22.0 * self.dpi, crate::prefs::Role::Dark);
                 for b in self.bars.iter_mut() {
                     let _ = b.popup.panel.set_params(p);
                 }
@@ -511,6 +682,7 @@ impl Hud {
     }
 }
 
+#[allow(dead_code)]
 fn center(b: &Bitmap) -> Option<Bitmap> {
     let (w, h) = (b.w as usize, b.h as usize);
     let (mut minx, mut miny, mut maxx, mut maxy) = (w, h, 0usize, 0usize);
@@ -537,5 +709,9 @@ fn center(b: &Bitmap) -> Option<Bitmap> {
             out[d..d + 4].copy_from_slice(&b.bgra[s..s + 4]);
         }
     }
-    Some(Bitmap { w: b.w, h: b.h, bgra: out })
+    Some(Bitmap {
+        w: b.w,
+        h: b.h,
+        bgra: out,
+    })
 }

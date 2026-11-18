@@ -28,7 +28,12 @@ impl Item {
 }
 
 pub fn key_of(path: &str) -> String {
-    path.replace('/', "\\").to_lowercase().split('\\').map(stable_segment).collect::<Vec<_>>().join("\\")
+    path.replace('/', "\\")
+        .to_lowercase()
+        .split('\\')
+        .map(stable_segment)
+        .collect::<Vec<_>>()
+        .join("\\")
 }
 
 fn is_version(s: &str) -> bool {
@@ -94,16 +99,30 @@ pub fn name_from_path(path: &str) -> String {
     stem.to_string()
 }
 
-pub fn merge(pins: &[Pin], wins: &[Win], recent: &dyn Fn(isize) -> i64, seen: &mut Vec<String>) -> Vec<Item> {
+pub fn merge(
+    pins: &[Pin],
+    wins: &[Win],
+    recent: &dyn Fn(isize) -> i64,
+    seen: &mut Vec<String>,
+) -> Vec<Item> {
     let mut items: Vec<Item> = pins
         .iter()
-        .map(|p| Item { key: key_of(&p.path), name: p.name.clone(), path: p.path.clone(), pinned: true, hwnds: vec![] })
+        .map(|p| Item {
+            key: key_of(&p.path),
+            name: p.name.clone(),
+            path: p.path.clone(),
+            pinned: true,
+            hwnds: vec![],
+        })
         .collect();
 
     let mut extra: Vec<Item> = Vec::new();
     for w in wins {
         let key = key_of(&w.path);
-        let slot = items.iter_mut().chain(extra.iter_mut()).find(|i| i.key == key);
+        let slot = items
+            .iter_mut()
+            .chain(extra.iter_mut())
+            .find(|i| i.key == key);
         match slot {
             Some(i) => {
                 if i.hwnds.is_empty() && !w.path.is_empty() {
@@ -141,24 +160,45 @@ mod tests {
     use super::*;
 
     fn pin(p: &str) -> Pin {
-        Pin { path: p.into(), name: name_from_path(p) }
+        Pin {
+            path: p.into(),
+            name: name_from_path(p),
+        }
     }
     fn win(h: isize, p: &str) -> Win {
-        Win { hwnd: h, path: p.into(), title: String::new(), name: String::new() }
+        Win {
+            hwnd: h,
+            path: p.into(),
+            title: String::new(),
+            name: String::new(),
+        }
     }
 
     #[test]
     fn pins_come_first_in_pin_order_even_when_not_running() {
         let mut seen = vec![];
-        let items = merge(&[pin("C:\\a.exe"), pin("C:\\b.exe")], &[], &|_| 0, &mut seen);
-        assert_eq!(items.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(), ["a", "b"]);
+        let items = merge(
+            &[pin("C:\\a.exe"), pin("C:\\b.exe")],
+            &[],
+            &|_| 0,
+            &mut seen,
+        );
+        assert_eq!(
+            items.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(),
+            ["a", "b"]
+        );
         assert!(items.iter().all(|i| i.pinned && !i.running()));
     }
 
     #[test]
     fn running_pinned_app_gets_its_windows_and_stays_in_place() {
         let mut seen = vec![];
-        let items = merge(&[pin("C:\\a.exe"), pin("C:\\b.exe")], &[win(5, "c:\\B.EXE")], &|_| 0, &mut seen);
+        let items = merge(
+            &[pin("C:\\a.exe"), pin("C:\\b.exe")],
+            &[win(5, "c:\\B.EXE")],
+            &|_| 0,
+            &mut seen,
+        );
         assert!(!items[0].running());
         assert_eq!(items[1].hwnds, vec![5]);
     }
@@ -179,15 +219,26 @@ mod tests {
 
     #[test]
     fn squirrel_versioned_folder_is_ignored_in_key() {
-        assert_eq!(key_of("C:\\Users\\u\\AppData\\Local\\Discord\\app-1.0.9001\\Discord.exe"), key_of("C:\\Users\\u\\AppData\\Local\\Discord\\app-1.0.9002\\Discord.exe"));
-        assert_ne!(key_of("C:\\a\\app-data\\x.exe"), key_of("C:\\a\\app-1.0\\x.exe"));
+        assert_eq!(
+            key_of("C:\\Users\\u\\AppData\\Local\\Discord\\app-1.0.9001\\Discord.exe"),
+            key_of("C:\\Users\\u\\AppData\\Local\\Discord\\app-1.0.9002\\Discord.exe")
+        );
+        assert_ne!(
+            key_of("C:\\a\\app-data\\x.exe"),
+            key_of("C:\\a\\app-1.0\\x.exe")
+        );
     }
 
     #[test]
     fn unpinned_apps_keep_first_seen_order_across_calls() {
         let mut seen = vec![];
         merge(&[], &[win(1, "C:\\x.exe")], &|_| 0, &mut seen);
-        let items = merge(&[], &[win(2, "C:\\y.exe"), win(1, "C:\\x.exe")], &|_| 0, &mut seen);
+        let items = merge(
+            &[],
+            &[win(2, "C:\\y.exe"), win(1, "C:\\x.exe")],
+            &|_| 0,
+            &mut seen,
+        );
         assert_eq!(items[0].name, "x");
         assert_eq!(items[1].name, "y");
     }
@@ -195,9 +246,19 @@ mod tests {
     #[test]
     fn closed_apps_are_forgotten_so_they_reappear_last() {
         let mut seen = vec![];
-        merge(&[], &[win(1, "C:\\x.exe"), win(2, "C:\\y.exe")], &|_| 0, &mut seen);
+        merge(
+            &[],
+            &[win(1, "C:\\x.exe"), win(2, "C:\\y.exe")],
+            &|_| 0,
+            &mut seen,
+        );
         merge(&[], &[win(2, "C:\\y.exe")], &|_| 0, &mut seen);
-        let items = merge(&[], &[win(2, "C:\\y.exe"), win(1, "C:\\x.exe")], &|_| 0, &mut seen);
+        let items = merge(
+            &[],
+            &[win(2, "C:\\y.exe"), win(1, "C:\\x.exe")],
+            &|_| 0,
+            &mut seen,
+        );
         assert_eq!(items[0].name, "y");
         assert_eq!(items[1].name, "x");
     }
@@ -211,7 +272,16 @@ mod tests {
             12 => 200,
             _ => 0,
         };
-        let items = merge(&[], &[win(10, "C:\\x.exe"), win(11, "C:\\x.exe"), win(12, "C:\\x.exe")], &recent, &mut seen);
+        let items = merge(
+            &[],
+            &[
+                win(10, "C:\\x.exe"),
+                win(11, "C:\\x.exe"),
+                win(12, "C:\\x.exe"),
+            ],
+            &recent,
+            &mut seen,
+        );
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].hwnds, vec![11, 12, 10]);
     }
@@ -219,7 +289,12 @@ mod tests {
     #[test]
     fn store_apps_are_named_from_their_window_title() {
         let mut seen = vec![];
-        let w = Win { hwnd: 1, path: "shell:AppsFolder\\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App".into(), title: "Calculator - Standard".into(), name: String::new() };
+        let w = Win {
+            hwnd: 1,
+            path: "shell:AppsFolder\\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App".into(),
+            title: "Calculator - Standard".into(),
+            name: String::new(),
+        };
         let items = merge(&[], &[w], &|_| 0, &mut seen);
         assert_eq!(items[0].name, "Calculator");
     }
@@ -227,14 +302,22 @@ mod tests {
     #[test]
     fn friendly_name_from_metadata_wins_over_file_stem() {
         let mut seen = vec![];
-        let w = Win { hwnd: 1, path: "C:\\Office\\WINWORD.EXE".into(), title: "Doc1 - Word".into(), name: "Microsoft Word".into() };
+        let w = Win {
+            hwnd: 1,
+            path: "C:\\Office\\WINWORD.EXE".into(),
+            title: "Doc1 - Word".into(),
+            name: "Microsoft Word".into(),
+        };
         let items = merge(&[], &[w], &|_| 0, &mut seen);
         assert_eq!(items[0].name, "Microsoft Word");
     }
 
     #[test]
     fn names_come_from_file_stem() {
-        assert_eq!(name_from_path("C:\\Program Files\\App\\my.app.exe"), "my.app");
+        assert_eq!(
+            name_from_path("C:\\Program Files\\App\\my.app.exe"),
+            "my.app"
+        );
         assert_eq!(name_from_path("noext"), "noext");
     }
 }

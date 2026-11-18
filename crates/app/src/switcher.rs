@@ -10,7 +10,9 @@ use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
-use windows::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VK_ESCAPE, VK_LEFT, VK_LMENU, VK_RIGHT, VK_RMENU, VK_SHIFT, VK_TAB};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    GetKeyState, VK_ESCAPE, VK_LEFT, VK_LMENU, VK_RIGHT, VK_RMENU, VK_SHIFT, VK_TAB,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::UI::Color;
 use windows::UI::Composition::{CompositionStretch, Compositor, SpriteVisual};
@@ -42,6 +44,7 @@ struct Ui {
     dpi: f32,
 }
 
+#[allow(dead_code)]
 struct Ctl {
     hwnd: HWND,
     comp: Compositor,
@@ -60,11 +63,36 @@ fn with<R>(f: impl FnOnce(&mut Ctl) -> R) -> Option<R> {
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraSwitcherCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-switcher"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
+        let class = w!("NexoraSwitcherCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-switcher"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
         TARGET.store(hwnd.0 as isize, Ordering::Relaxed);
-        CTL.with(|c| *c.borrow_mut() = Some(Ctl { hwnd, comp: comp.clone(), gfx: None, ui: None }));
+        CTL.with(|c| {
+            *c.borrow_mut() = Some(Ctl {
+                hwnd,
+                comp: comp.clone(),
+                gfx: None,
+                ui: None,
+            })
+        });
         prefs::listen(hwnd);
     }
     sync();
@@ -118,7 +146,12 @@ unsafe extern "system" fn ll_proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT 
             let vk = k.vkCode as u16;
             if vk == VK_TAB.0 && down && (alt || open) {
                 let shift = GetKeyState(VK_SHIFT.0 as i32) < 0;
-                let _ = PostMessageW(Some(target), if shift { WM_PREV } else { WM_NEXT }, WPARAM(0), LPARAM(0));
+                let _ = PostMessageW(
+                    Some(target),
+                    if shift { WM_PREV } else { WM_NEXT },
+                    WPARAM(0),
+                    LPARAM(0),
+                );
                 return LRESULT(1);
             }
             if open && down && vk == VK_ESCAPE.0 {
@@ -126,7 +159,12 @@ unsafe extern "system" fn ll_proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT 
                 return LRESULT(1);
             }
             if open && down && (vk == VK_RIGHT.0 || vk == VK_LEFT.0) {
-                let _ = PostMessageW(Some(target), if vk == VK_RIGHT.0 { WM_NEXT } else { WM_PREV }, WPARAM(0), LPARAM(0));
+                let _ = PostMessageW(
+                    Some(target),
+                    if vk == VK_RIGHT.0 { WM_NEXT } else { WM_PREV },
+                    WPARAM(0),
+                    LPARAM(0),
+                );
                 return LRESULT(1);
             }
             if open && up && (vk == VK_LMENU.0 || vk == VK_RMENU.0) {
@@ -177,15 +215,29 @@ impl Ctl {
                 continue;
             }
             let rec = tracker::recent(w.hwnd);
-            let title = if w.title.is_empty() { name_of(w) } else { w.title.clone() };
-            if let Some(e) = apps.iter_mut().find(|(_, e)| e.path.to_ascii_lowercase() == key) {
+            let title = if w.title.is_empty() {
+                name_of(w)
+            } else {
+                w.title.clone()
+            };
+            if let Some(e) = apps
+                .iter_mut()
+                .find(|(_, e)| e.path.to_ascii_lowercase() == key)
+            {
                 if rec > e.0 {
                     e.0 = rec;
                     e.1.hwnd = w.hwnd;
                     e.1.title = title;
                 }
             } else {
-                apps.push((rec, Entry { path: w.path.clone(), title, hwnd: w.hwnd }));
+                apps.push((
+                    rec,
+                    Entry {
+                        path: w.path.clone(),
+                        title,
+                        hwnd: w.hwnd,
+                    },
+                ));
             }
         }
         apps.sort_by(|a, b| b.0.cmp(&a.0));
@@ -202,27 +254,44 @@ impl Ctl {
             let mut look = prefs::look(prefs::Role::Dark);
             look.blur_sigma = look.blur_sigma.max(18.0);
             let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 10.0);
-            let mut popup = Popup::new(&comp, w!("AbraSwitcher"), Some(sw_proc), WINDOW_EX_STYLE(0), prefs::apply(base, &look))?;
+            let mut popup = Popup::new(
+                &comp,
+                w!("NexoraSwitcher"),
+                Some(sw_proc),
+                WINDOW_EX_STYLE(0),
+                prefs::apply(base, &look),
+            )?;
             let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0;
             let (sw, sh) = nacre_platform::sys::screen_size();
 
             let shots: Vec<Option<Bitmap>> = entries
                 .iter()
                 .map(|e| {
-                    let live = nacre_platform::wins::snapshot::capture(e.hwnd, 2).map(|s| s.bmp).filter(|b| !crate::stage::blank(b));
+                    let live = nacre_platform::wins::snapshot::capture(e.hwnd, 2)
+                        .map(|s| s.bmp)
+                        .filter(|b| !crate::stage::blank(b));
                     live.or_else(|| crate::stage::shot_for(&e.path))
                 })
                 .collect();
             let (hdr, thumb_h, gap, pad) = (38.0f32, 258.0f32, 35.0f32, 58.0f32);
             let widths: Vec<f32> = shots
                 .iter()
-                .map(|b| b.as_ref().map(|b| (thumb_h * b.w as f32 / b.h.max(1) as f32).clamp(260.0, 470.0)).unwrap_or(380.0))
+                .map(|b| {
+                    b.as_ref()
+                        .map(|b| (thumb_h * b.w as f32 / b.h.max(1) as f32).clamp(260.0, 470.0))
+                        .unwrap_or(380.0)
+                })
                 .collect();
             let total = widths.iter().sum::<f32>() + gap * (widths.len() as f32 - 1.0) + 2.0 * pad;
             let k = ((sw as f32 - 80.0 * dpi) / (total * dpi)).min(1.0);
             let u = dpi * k;
             let (pw, ph) = (total * u, (thumb_h + hdr + 2.0 * pad) * u);
-            popup.set_rect(((sw as f32 - pw) / 2.0) as i32, ((sh as f32 - ph) / 2.0) as i32, pw as i32, ph as i32)?;
+            popup.set_rect(
+                ((sw as f32 - pw) / 2.0) as i32,
+                ((sh as f32 - ph) / 2.0) as i32,
+                pw as i32,
+                ph as i32,
+            )?;
             popup.panel.set_radius(10.0 * u)?;
             let content = popup.content.clone();
             let kids = content.Children()?;
@@ -238,10 +307,40 @@ impl Ctl {
                 v.SetClip(&cl)?;
                 Ok(v)
             };
-            kids.InsertAtTop(&rrect(pw, ph, 10.0 * u, Color { A: 120, R: 128, G: 128, B: 128 })?)?;
+            kids.InsertAtTop(&rrect(
+                pw,
+                ph,
+                10.0 * u,
+                Color {
+                    A: 120,
+                    R: 128,
+                    G: 128,
+                    B: 128,
+                },
+            )?)?;
             let ch = (thumb_h + hdr) * u;
-            let ring = rrect(widths[0] * u + 14.0 * u, ch + 14.0 * u, 14.0 * u, Color { A: 255, R: 0, G: 103, B: 192 })?;
-            let ring_in = rrect(widths[0] * u + 6.0 * u, ch + 6.0 * u, 11.0 * u, Color { A: 255, R: 116, G: 116, B: 116 })?;
+            let ring = rrect(
+                widths[0] * u + 14.0 * u,
+                ch + 14.0 * u,
+                14.0 * u,
+                Color {
+                    A: 255,
+                    R: 0,
+                    G: 103,
+                    B: 192,
+                },
+            )?;
+            let ring_in = rrect(
+                widths[0] * u + 6.0 * u,
+                ch + 6.0 * u,
+                11.0 * u,
+                Color {
+                    A: 255,
+                    R: 116,
+                    G: 116,
+                    B: 116,
+                },
+            )?;
             kids.InsertAtTop(&ring)?;
             kids.InsertAtTop(&ring_in)?;
             let mut cards = Vec::new();
@@ -250,16 +349,28 @@ impl Ctl {
                 let cw = widths[i] * u;
                 let cont = comp.CreateContainerVisual()?;
                 cont.SetSize(Vector2 { X: cw, Y: ch })?;
-                cont.SetOffset(Vector3 { X: x, Y: pad * u, Z: 0.0 })?;
+                cont.SetOffset(Vector3 {
+                    X: x,
+                    Y: pad * u,
+                    Z: 0.0,
+                })?;
                 let g = comp.CreateRoundedRectangleGeometry()?;
                 g.SetSize(Vector2 { X: cw, Y: ch })?;
-                g.SetCornerRadius(Vector2 { X: 8.0 * u, Y: 8.0 * u })?;
+                g.SetCornerRadius(Vector2 {
+                    X: 8.0 * u,
+                    Y: 8.0 * u,
+                })?;
                 let cl = comp.CreateGeometricClip()?;
                 cl.SetGeometry(&g)?;
                 cont.SetClip(&cl)?;
                 let bg = comp.CreateSpriteVisual()?;
                 bg.SetSize(Vector2 { X: cw, Y: ch })?;
-                bg.SetBrush(&comp.CreateColorBrushWithColor(Color { A: 255, R: 250, G: 250, B: 250 })?)?;
+                bg.SetBrush(&comp.CreateColorBrushWithColor(Color {
+                    A: 255,
+                    R: 250,
+                    G: 250,
+                    B: 250,
+                })?)?;
                 cont.Children()?.InsertAtTop(&bg)?;
                 if let Some(b) = &shots[i] {
                     let surf = gfx.surface_from_bgra(b.w, b.h, &b.bgra)?;
@@ -267,8 +378,15 @@ impl Ctl {
                     br.SetStretch(CompositionStretch::Fill)?;
                     let t = comp.CreateSpriteVisual()?;
                     t.SetBrush(&br)?;
-                    t.SetSize(Vector2 { X: cw, Y: thumb_h * u })?;
-                    t.SetOffset(Vector3 { X: 0.0, Y: hdr * u, Z: 0.0 })?;
+                    t.SetSize(Vector2 {
+                        X: cw,
+                        Y: thumb_h * u,
+                    })?;
+                    t.SetOffset(Vector3 {
+                        X: 0.0,
+                        Y: hdr * u,
+                        Z: 0.0,
+                    })?;
                     cont.Children()?.InsertAtTop(&t)?;
                 }
                 if let Some(b) = icons::load(&e.path, (20.0 * u) as i32) {
@@ -277,11 +395,21 @@ impl Ctl {
                     br.SetStretch(CompositionStretch::Uniform)?;
                     let v = comp.CreateSpriteVisual()?;
                     v.SetBrush(&br)?;
-                    v.SetSize(Vector2 { X: 20.0 * u, Y: 20.0 * u })?;
-                    v.SetOffset(Vector3 { X: 12.0 * u, Y: 9.0 * u, Z: 0.0 })?;
+                    v.SetSize(Vector2 {
+                        X: 20.0 * u,
+                        Y: 20.0 * u,
+                    })?;
+                    v.SetOffset(Vector3 {
+                        X: 12.0 * u,
+                        Y: 9.0 * u,
+                        Z: 0.0,
+                    })?;
                     cont.Children()?.InsertAtTop(&v)?;
                 }
-                let style = Style { px: (14.0 * u).round() as i32, weight: 400 };
+                let style = Style {
+                    px: (14.0 * u).round() as i32,
+                    weight: 400,
+                };
                 let (tw, th) = measure(&e.title, &style);
                 let tw = (tw + 2).min((cw - 54.0 * u) as i32).max(8);
                 if let Some(bmp) = render(&e.title, &style, tw, th) {
@@ -290,8 +418,15 @@ impl Ctl {
                     br.SetStretch(CompositionStretch::None)?;
                     let v = comp.CreateSpriteVisual()?;
                     v.SetBrush(&br)?;
-                    v.SetSize(Vector2 { X: tw as f32, Y: th as f32 })?;
-                    v.SetOffset(Vector3 { X: 42.0 * u, Y: (hdr * u - th as f32) / 2.0, Z: 0.0 })?;
+                    v.SetSize(Vector2 {
+                        X: tw as f32,
+                        Y: th as f32,
+                    })?;
+                    v.SetOffset(Vector3 {
+                        X: 42.0 * u,
+                        Y: (hdr * u - th as f32) / 2.0,
+                        Z: 0.0,
+                    })?;
                     cont.Children()?.InsertAtTop(&v)?;
                 }
                 kids.InsertAtTop(&cont)?;
@@ -299,8 +434,28 @@ impl Ctl {
                 x += cw + gap * u;
             }
             popup.show();
-            motion::pop_in(&comp, popup.root(), Vector3 { X: pw / 2.0, Y: ph / 2.0, Z: 0.0 }, 0.94, 1.0, 0, 160)?;
-            Ok(Ui { popup, entries, sel: 0, cards, ring, ring_in, dpi: u })
+            motion::pop_in(
+                &comp,
+                popup.root(),
+                Vector3 {
+                    X: pw / 2.0,
+                    Y: ph / 2.0,
+                    Z: 0.0,
+                },
+                0.94,
+                1.0,
+                0,
+                160,
+            )?;
+            Ok(Ui {
+                popup,
+                entries,
+                sel: 0,
+                cards,
+                ring,
+                ring_in,
+                dpi: u,
+            })
         };
         match go() {
             Ok(mut ui) => {
@@ -330,11 +485,23 @@ impl Ctl {
         let comp = self.comp.clone();
         let Some(ui) = self.ui.as_mut() else { return };
         ui.sel = i;
-        let Some(&(x, y, w, h)) = ui.cards.get(i) else { return };
+        let Some(&(x, y, w, h)) = ui.cards.get(i) else {
+            return;
+        };
         let u = ui.dpi;
-        for (v, grow, r) in [(&ui.ring, 7.0 * u, 14.0 * u), (&ui.ring_in, 3.0 * u, 11.0 * u)] {
-            let to = Vector3 { X: x - grow, Y: y - grow, Z: 0.0 };
-            let size = Vector2 { X: w + 2.0 * grow, Y: h + 2.0 * grow };
+        for (v, grow, r) in [
+            (&ui.ring, 7.0 * u, 14.0 * u),
+            (&ui.ring_in, 3.0 * u, 11.0 * u),
+        ] {
+            let to = Vector3 {
+                X: x - grow,
+                Y: y - grow,
+                Z: 0.0,
+            };
+            let size = Vector2 {
+                X: w + 2.0 * grow,
+                Y: h + 2.0 * grow,
+            };
             if animate {
                 let from = v.Offset().unwrap_or(to);
                 let _ = motion::vec3(&comp, v, "Offset", from, to, motion::SWITCHER_MOVE_MS);
@@ -353,7 +520,11 @@ impl Ctl {
     }
 
     fn commit(&mut self) {
-        let path = self.ui.as_ref().and_then(|u| u.entries.get(u.sel)).map(|e| e.path.clone());
+        let path = self
+            .ui
+            .as_ref()
+            .and_then(|u| u.entries.get(u.sel))
+            .map(|e| e.path.clone());
         self.close();
         if let Some(p) = path {
             crate::stage::bring_app(&p);

@@ -12,12 +12,17 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use windows::core::w;
 use windows::Foundation::TimeSpan;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionObject, CompositionStretch, Compositor, ContainerVisual, SpriteVisual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::UI::Input::KeyboardAndMouse::{ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_ESCAPE};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_ESCAPE,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionObject, CompositionStretch, Compositor, ContainerVisual,
+    SpriteVisual,
+};
 use windows_core::{Interface, HSTRING};
 use windows_numerics::{Vector2, Vector3};
 
@@ -114,7 +119,12 @@ fn list_file() -> std::path::PathBuf {
 }
 
 fn col(rgb: [u8; 3], a: u8) -> Color {
-    Color { A: a, R: rgb[0], G: rgb[1], B: rgb[2] }
+    Color {
+        A: a,
+        R: rgb[0],
+        G: rgb[1],
+        B: rgb[2],
+    }
 }
 
 fn recolor(b: &nacre_platform::icons::Bitmap, rgb: [u8; 3]) -> Vec<u8> {
@@ -145,7 +155,20 @@ fn en() -> bool {
 }
 
 fn month_label(m: u32) -> String {
-    const EN: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const EN: [&str; 12] = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
     if en() {
         EN[((m + 11) % 12) as usize].to_string()
     } else {
@@ -154,9 +177,24 @@ fn month_label(m: u32) -> String {
 }
 
 fn weekday_label(wd: u32) -> String {
-    const ID: [&str; 7] = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const EN: [&str; 7] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    if en() { EN[(wd % 7) as usize] } else { ID[(wd % 7) as usize] }.to_string()
+    const ID: [&str; 7] = [
+        "Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu",
+    ];
+    const EN: [&str; 7] = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ];
+    if en() {
+        EN[(wd % 7) as usize]
+    } else {
+        ID[(wd % 7) as usize]
+    }
+    .to_string()
 }
 
 fn hhmm(h: u32, m: u32) -> String {
@@ -189,20 +227,62 @@ fn palette(kind: Kind) -> (Option<Color>, [u8; 3]) {
     }
     let dark = prefs::look(prefs::Role::Themed).dark;
     if dark || kind.dark_card() {
-        (Some(Color { A: 240, R: 28, G: 28, B: 30 }), [255, 255, 255])
+        (
+            Some(Color {
+                A: 240,
+                R: 28,
+                G: 28,
+                B: 30,
+            }),
+            [255, 255, 255],
+        )
     } else if kind.frosted_card() {
-        (Some(Color { A: 205, R: 246, G: 246, B: 248 }), [22, 22, 24])
+        (
+            Some(Color {
+                A: 205,
+                R: 246,
+                G: 246,
+                B: 248,
+            }),
+            [22, 22, 24],
+        )
     } else {
-        (Some(Color { A: 248, R: 255, G: 255, B: 255 }), [22, 22, 24])
+        (
+            Some(Color {
+                A: 248,
+                R: 255,
+                G: 255,
+                B: 255,
+            }),
+            [22, 22, 24],
+        )
     }
 }
 
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraWidgetsCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let ctl = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-widgets"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
+        let class = w!("NexoraWidgetsCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let ctl = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-widgets"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
         let dpi = windows::Win32::UI::HiDpi::GetDpiForSystem().max(96) as f32 / 96.0;
         MGR.with(|c| {
             *c.borrow_mut() = Some(Mgr {
@@ -247,12 +327,19 @@ impl Mgr {
         let ar = area(self.dpi);
         let step = self.pitch();
         let gap = (widgets::GAP * self.dpi).round() as i32;
-        ((ar.0, ar.1), step, (((ar.2 + gap) / step).max(1), ((ar.3 + gap) / step).max(1)))
+        (
+            (ar.0, ar.1),
+            step,
+            (((ar.2 + gap) / step).max(1), ((ar.3 + gap) / step).max(1)),
+        )
     }
 
     fn cell_of(&self, pos: (i32, i32)) -> (i32, i32) {
         let (o, step, _) = self.grid();
-        (((pos.0 - o.0) as f32 / step as f32).round() as i32, ((pos.1 - o.1) as f32 / step as f32).round() as i32)
+        (
+            ((pos.0 - o.0) as f32 / step as f32).round() as i32,
+            ((pos.1 - o.1) as f32 / step as f32).round() as i32,
+        )
     }
 
     fn cell_px(&self, cell: (i32, i32)) -> (i32, i32) {
@@ -276,12 +363,21 @@ impl Mgr {
     fn slot_kind(&self, skip: Option<usize>, kind: Kind, pos: (i32, i32)) -> (i32, i32) {
         let (_, _, grid) = self.grid();
         let (cw, ch) = kind.cells();
-        let cell = widgets::nearest_cell(&self.cells_taken(skip), (cw as i32, ch as i32), self.cell_of(pos), grid).unwrap_or_else(|| self.cell_of(pos));
+        let cell = widgets::nearest_cell(
+            &self.cells_taken(skip),
+            (cw as i32, ch as i32),
+            self.cell_of(pos),
+            grid,
+        )
+        .unwrap_or_else(|| self.cell_of(pos));
         self.cell_px(cell)
     }
 
     fn slot_for(&self, skip: Option<usize>, _size: (i32, i32), pos: (i32, i32)) -> (i32, i32) {
-        let kind = skip.and_then(|i| self.list.get(i)).map(|w| w.kind).unwrap_or(Kind::Clock);
+        let kind = skip
+            .and_then(|i| self.list.get(i))
+            .map(|w| w.kind)
+            .unwrap_or(Kind::Clock);
         self.slot_kind(skip, kind, pos)
     }
 
@@ -300,7 +396,15 @@ impl Mgr {
     }
 
     fn save(&self) {
-        let list: Vec<Placed> = self.list.iter().map(|w| Placed { kind: w.kind, x: w.pos.0, y: w.pos.1 }).collect();
+        let list: Vec<Placed> = self
+            .list
+            .iter()
+            .map(|w| Placed {
+                kind: w.kind,
+                x: w.pos.0,
+                y: w.pos.1,
+            })
+            .collect();
         let _ = std::fs::create_dir_all(paths::config_dir());
         let _ = std::fs::write(list_file(), widgets::to_text(&list));
     }
@@ -323,12 +427,32 @@ impl Mgr {
         let (w, h) = widgets::size_of(kind, d);
         let m = MARGIN * d;
         let base = GlassParams::dark((w, h), RADIUS * d);
-        let glass = if style() == 1 { prefs::glass((w, h), RADIUS * d, prefs::Role::Dock) } else { base };
-        let mut popup = Popup::new(&self.comp, w!("AbraWidget"), Some(widget_proc), WINDOW_EX_STYLE(0), glass).ok()?;
-        let _ = popup.set_rect(pos.0 - m as i32, pos.1 - m as i32, (w + 2.0 * m) as i32, (h + 2.0 * m) as i32);
+        let glass = if style() == 1 {
+            prefs::glass((w, h), RADIUS * d, prefs::Role::Dock)
+        } else {
+            base
+        };
+        let mut popup = Popup::new(
+            &self.comp,
+            w!("NexoraWidget"),
+            Some(widget_proc),
+            WINDOW_EX_STYLE(0),
+            glass,
+        )
+        .ok()?;
+        let _ = popup.set_rect(
+            pos.0 - m as i32,
+            pos.1 - m as i32,
+            (w + 2.0 * m) as i32,
+            (h + 2.0 * m) as i32,
+        );
         if style() == 1 {
             let c = sys::conditions();
-            let _ = popup.panel.set_tier(if !c.transparency || c.battery_saver { Tier::Solid } else { Tier::Full });
+            let _ = popup.panel.set_tier(if !c.transparency || c.battery_saver {
+                Tier::Solid
+            } else {
+                Tier::Full
+            });
             let _ = popup.panel.set_rect(m, m, w, h);
             let _ = popup.panel.set_radius(RADIUS * d);
         } else {
@@ -336,15 +460,40 @@ impl Mgr {
         }
         let _ = popup.content.SetOffset(Vector3 { X: m, Y: m, Z: 0.0 });
         unsafe {
-            let _ = SetWindowPos(popup.hwnd, Some(HWND_BOTTOM), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                popup.hwnd,
+                Some(HWND_BOTTOM),
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
         popup.show();
-        self.list.push(Widget { kind, popup, pos, size: (w, h), hands: vec![], sig: String::new(), hover: false, tracking: false });
+        self.list.push(Widget {
+            kind,
+            popup,
+            pos,
+            size: (w, h),
+            hands: vec![],
+            sig: String::new(),
+            hover: false,
+            tracking: false,
+        });
         let i = self.list.len() - 1;
         self.paint(i);
         if pop {
             let wd = &self.list[i];
-            let _ = motion::pop_in(&self.comp, wd.popup.root(), self.center(i), 0.4, 1.06, 0, 380);
+            let _ = motion::pop_in(
+                &self.comp,
+                wd.popup.root(),
+                self.center(i),
+                0.4,
+                1.06,
+                0,
+                380,
+            );
         }
         Some(i)
     }
@@ -352,7 +501,11 @@ impl Mgr {
     fn center(&self, i: usize) -> Vector3 {
         let w = &self.list[i];
         let m = MARGIN * self.dpi;
-        Vector3 { X: m + w.size.0 / 2.0, Y: m + w.size.1 / 2.0, Z: 0.0 }
+        Vector3 {
+            X: m + w.size.0 / 2.0,
+            Y: m + w.size.1 / 2.0,
+            Z: 0.0,
+        }
     }
 
     fn sig_for(&self, kind: Kind) -> String {
@@ -388,17 +541,50 @@ impl Mgr {
     fn badge(&self, c: &ContainerVisual) {
         let d = self.dpi;
         let s = 22.0 * d;
-        let _ = self.rr(c, (-7.0 * d, -7.0 * d, s, s), s / 2.0, Color { A: 240, R: 72, G: 72, B: 76 });
-        let _ = self.rr(c, (-7.0 * d + 6.0 * d, -7.0 * d + s / 2.0 - 1.0 * d, s - 12.0 * d, 2.0 * d), d, Color { A: 255, R: 255, G: 255, B: 255 });
+        let _ = self.rr(
+            c,
+            (-7.0 * d, -7.0 * d, s, s),
+            s / 2.0,
+            Color {
+                A: 240,
+                R: 72,
+                G: 72,
+                B: 76,
+            },
+        );
+        let _ = self.rr(
+            c,
+            (
+                -7.0 * d + 6.0 * d,
+                -7.0 * d + s / 2.0 - 1.0 * d,
+                s - 12.0 * d,
+                2.0 * d,
+            ),
+            d,
+            Color {
+                A: 255,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        );
     }
 
     fn badge_hit(&self, i: usize, x: f32, y: f32) -> bool {
         let d = self.dpi;
         let m = MARGIN * d;
-        self.edit && hit((m - 9.0 * d, m - 9.0 * d, 26.0 * d, 26.0 * d), x, y) && i < self.list.len()
+        self.edit
+            && hit((m - 9.0 * d, m - 9.0 * d, 26.0 * d, 26.0 * d), x, y)
+            && i < self.list.len()
     }
 
-    fn text_surf(&mut self, s: &str, px: i32, weight: i32, rgb: [u8; 3]) -> Option<(CompositionDrawingSurface, i32, i32)> {
+    fn text_surf(
+        &mut self,
+        s: &str,
+        px: i32,
+        weight: i32,
+        rgb: [u8; 3],
+    ) -> Option<(CompositionDrawingSurface, i32, i32)> {
         let key = format!("{px}|{weight}|{rgb:?}|{s}");
         if let Some(v) = self.cache.get(&key) {
             return Some(v.clone());
@@ -406,7 +592,11 @@ impl Mgr {
         let st = Style { px, weight };
         let (tw, th) = measure(s, &st);
         let bmp = render(s, &st, tw + 2, th)?;
-        let surf = self.gfx.as_ref()?.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb)).ok()?;
+        let surf = self
+            .gfx
+            .as_ref()?
+            .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb))
+            .ok()?;
         if self.cache.len() > 500 {
             self.cache.clear();
         }
@@ -415,27 +605,49 @@ impl Mgr {
         Some(v)
     }
 
-    fn glyph_surf(&mut self, g: &str, px: i32, rgb: [u8; 3]) -> Option<(CompositionDrawingSurface, i32, i32)> {
+    fn glyph_surf(
+        &mut self,
+        g: &str,
+        px: i32,
+        rgb: [u8; 3],
+    ) -> Option<(CompositionDrawingSurface, i32, i32)> {
         let key = format!("g|{px}|{rgb:?}|{g}");
         if let Some(v) = self.cache.get(&key) {
             return Some(v.clone());
         }
         let b = (px as f32 * 1.6) as i32;
         let bmp = render_face(g, &Style { px, weight: 400 }, ICON_FACE, b, b)?;
-        let surf = self.gfx.as_ref()?.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb)).ok()?;
+        let surf = self
+            .gfx
+            .as_ref()?
+            .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb))
+            .ok()?;
         let v = (surf, bmp.w as i32, bmp.h as i32);
         self.cache.insert(key, v.clone());
         Some(v)
     }
 
-    fn put(&self, p: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, op: f32) -> Option<SpriteVisual> {
+    fn put(
+        &self,
+        p: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        op: f32,
+    ) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
             b.SetStretch(CompositionStretch::None)?;
             let v = self.comp.CreateSpriteVisual()?;
             v.SetBrush(&b)?;
             v.SetSize(Vector2 { X: w, Y: h })?;
-            v.SetOffset(Vector3 { X: x.round(), Y: y.round(), Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: x.round(),
+                Y: y.round(),
+                Z: 0.0,
+            })?;
             v.SetOpacity(op)?;
             p.Children()?.InsertAtTop(&v)?;
             Ok(v)
@@ -444,8 +656,21 @@ impl Mgr {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn text(&mut self, p: &ContainerVisual, s: &str, px: f32, weight: i32, rgb: [u8; 3], x: f32, y: f32, anchor: u8, op: f32) -> f32 {
-        let Some((surf, w, h)) = self.text_surf(s, px.round() as i32, weight, rgb) else { return 0.0 };
+    fn text(
+        &mut self,
+        p: &ContainerVisual,
+        s: &str,
+        px: f32,
+        weight: i32,
+        rgb: [u8; 3],
+        x: f32,
+        y: f32,
+        anchor: u8,
+        op: f32,
+    ) -> f32 {
+        let Some((surf, w, h)) = self.text_surf(s, px.round() as i32, weight, rgb) else {
+            return 0.0;
+        };
         let x = match anchor {
             1 => x - w as f32 / 2.0,
             2 => x - w as f32,
@@ -455,21 +680,47 @@ impl Mgr {
         w as f32
     }
 
-    fn glyph(&mut self, p: &ContainerVisual, g: &str, px: f32, rgb: [u8; 3], cx: f32, cy: f32, op: f32) {
-        let Some((surf, w, h)) = self.glyph_surf(g, px.round() as i32, rgb) else { return };
-        self.put(p, &surf, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, op);
+    fn glyph(
+        &mut self,
+        p: &ContainerVisual,
+        g: &str,
+        px: f32,
+        rgb: [u8; 3],
+        cx: f32,
+        cy: f32,
+        op: f32,
+    ) {
+        let Some((surf, w, h)) = self.glyph_surf(g, px.round() as i32, rgb) else {
+            return;
+        };
+        self.put(
+            p,
+            &surf,
+            cx - w as f32 / 2.0,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
     }
 
     fn rr(&self, p: &ContainerVisual, r: Rect, radius: f32, c: Color) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-            v.SetOffset(Vector3 { X: r.0, Y: r.1, Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: r.0,
+                Y: r.1,
+                Z: 0.0,
+            })?;
             v.SetBrush(&self.comp.CreateColorBrushWithColor(c)?)?;
             if radius > 0.0 {
                 let g = self.comp.CreateRoundedRectangleGeometry()?;
                 g.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-                g.SetCornerRadius(Vector2 { X: radius, Y: radius })?;
+                g.SetCornerRadius(Vector2 {
+                    X: radius,
+                    Y: radius,
+                })?;
                 let clip = self.comp.CreateGeometricClip()?;
                 clip.SetGeometry(&g)?;
                 v.SetClip(&clip)?;
@@ -495,8 +746,15 @@ impl Mgr {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetBrush(&ng)?;
             let mg = s.margin as f32;
-            v.SetOffset(Vector3 { X: -mg, Y: -mg, Z: 0.0 })?;
-            v.SetSize(Vector2 { X: w + 2.0 * mg, Y: h + 2.0 * mg + s.dy as f32 })?;
+            v.SetOffset(Vector3 {
+                X: -mg,
+                Y: -mg,
+                Z: 0.0,
+            })?;
+            v.SetSize(Vector2 {
+                X: w + 2.0 * mg,
+                Y: h + 2.0 * mg + s.dy as f32,
+            })?;
             v.SetOpacity(op)?;
             p.Children()?.InsertAtTop(&v)?;
             Ok(())
@@ -504,7 +762,14 @@ impl Mgr {
         let _ = go();
     }
 
-    fn draw(&mut self, p: &ContainerVisual, kind: Kind, w: f32, h: f32, preview: bool) -> Vec<Hand> {
+    fn draw(
+        &mut self,
+        p: &ContainerVisual,
+        kind: Kind,
+        w: f32,
+        h: f32,
+        preview: bool,
+    ) -> Vec<Hand> {
         let d = self.dpi;
         let radius = RADIUS * d;
         let (card, fg) = palette(kind);
@@ -514,7 +779,17 @@ impl Mgr {
                 let _ = self.rr(p, (0.0, 0.0, w, h), radius, c);
             }
             None if preview => {
-                let _ = self.rr(p, (0.0, 0.0, w, h), radius, Color { A: 70, R: 255, G: 255, B: 255 });
+                let _ = self.rr(
+                    p,
+                    (0.0, 0.0, w, h),
+                    radius,
+                    Color {
+                        A: 70,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
             }
             None => {}
         }
@@ -541,20 +816,74 @@ impl Mgr {
                         1 => prefs::tr("Besok"),
                         _ => prefs::tr("Kemarin"),
                     };
-                    self.text(p, city.name, 11.5 * d, 600, fg, cx, cy + r + 7.0 * d, 1, 1.0);
-                    let rel = if diff == 0 { when.to_string() } else { format!("{when} {diff:+}{}", prefs::tr("JAM")) };
+                    self.text(
+                        p,
+                        city.name,
+                        11.5 * d,
+                        600,
+                        fg,
+                        cx,
+                        cy + r + 7.0 * d,
+                        1,
+                        1.0,
+                    );
+                    let rel = if diff == 0 {
+                        when.to_string()
+                    } else {
+                        format!("{when} {diff:+}{}", prefs::tr("JAM"))
+                    };
                     self.text(p, &rel, 9.5 * d, 500, fg, cx, cy + r + 23.0 * d, 1, 0.6);
                 }
             }
             Kind::Calendar => {
                 let wd = calendar::weekday(n.year, n.month, n.day);
-                self.text(p, &weekday_label(wd).to_uppercase(), 12.5 * d, 700, RED, 16.0 * d, 14.0 * d, 0, 1.0);
-                self.text(p, &n.day.to_string(), 52.0 * d, 300, fg, 13.0 * d, 30.0 * d, 0, 1.0);
-                self.text(p, &format!("{} {}", month_label(n.month), n.year), 12.5 * d, 500, fg, 16.0 * d, h - 32.0 * d, 0, 0.6);
+                self.text(
+                    p,
+                    &weekday_label(wd).to_uppercase(),
+                    12.5 * d,
+                    700,
+                    RED,
+                    16.0 * d,
+                    14.0 * d,
+                    0,
+                    1.0,
+                );
+                self.text(
+                    p,
+                    &n.day.to_string(),
+                    52.0 * d,
+                    300,
+                    fg,
+                    13.0 * d,
+                    30.0 * d,
+                    0,
+                    1.0,
+                );
+                self.text(
+                    p,
+                    &format!("{} {}", month_label(n.month), n.year),
+                    12.5 * d,
+                    500,
+                    fg,
+                    16.0 * d,
+                    h - 32.0 * d,
+                    0,
+                    0.6,
+                );
             }
             Kind::Month => {
                 let g = calendar::grid(n.year, n.month, !en());
-                self.text(p, &month_label(n.month).to_uppercase(), 11.0 * d, 700, RED, 14.0 * d, 11.0 * d, 0, 1.0);
+                self.text(
+                    p,
+                    &month_label(n.month).to_uppercase(),
+                    11.0 * d,
+                    700,
+                    RED,
+                    14.0 * d,
+                    11.0 * d,
+                    0,
+                    1.0,
+                );
                 let labels = calendar::weekday_labels(!en());
                 let (gx, gy) = (10.0 * d, 30.0 * d);
                 let cw = (w - 2.0 * gx) / 7.0;
@@ -562,52 +891,188 @@ impl Mgr {
                 let ch = (h - gy - 8.0 * d) / (rows + 1.0);
                 for (k, l) in labels.iter().enumerate() {
                     let s: String = l.chars().take(1).collect();
-                    self.text(p, &s, 9.0 * d, 600, fg, gx + cw * (k as f32 + 0.5), gy, 1, 0.5);
+                    self.text(
+                        p,
+                        &s,
+                        9.0 * d,
+                        600,
+                        fg,
+                        gx + cw * (k as f32 + 0.5),
+                        gy,
+                        1,
+                        0.5,
+                    );
                 }
                 for day in 1..=g.days {
                     let idx = g.first_col + day - 1;
-                    let (cx, cy) = (gx + cw * ((idx % 7) as f32 + 0.5), gy + ch * ((idx / 7) as f32 + 1.0));
+                    let (cx, cy) = (
+                        gx + cw * ((idx % 7) as f32 + 0.5),
+                        gy + ch * ((idx / 7) as f32 + 1.0),
+                    );
                     let today = day == n.day;
                     if today {
                         let s = ch.min(cw) * 0.92;
-                        let _ = self.rr(p, (cx - s / 2.0, cy - 1.5 * d, s, s), s / 2.0, col(RED, 255));
+                        let _ = self.rr(
+                            p,
+                            (cx - s / 2.0, cy - 1.5 * d, s, s),
+                            s / 2.0,
+                            col(RED, 255),
+                        );
                     }
-                    self.text(p, &day.to_string(), 9.5 * d, if today { 700 } else { 500 }, if today { [255, 255, 255] } else { fg }, cx, cy, 1, 1.0);
+                    self.text(
+                        p,
+                        &day.to_string(),
+                        9.5 * d,
+                        if today { 700 } else { 500 },
+                        if today { [255, 255, 255] } else { fg },
+                        cx,
+                        cy,
+                        1,
+                        1.0,
+                    );
                 }
             }
             Kind::Digital => {
                 let wd = calendar::weekday(n.year, n.month, n.day);
-                self.text(p, &hhmm(n.hour, n.minute), 46.0 * d, 600, fg, w / 2.0, h / 2.0 - 40.0 * d, 1, 1.0);
-                self.text(p, &weekday_label(wd), 13.0 * d, 600, ORANGE, w / 2.0, h / 2.0 + 18.0 * d, 1, 1.0);
-                self.text(p, &format!("{} {}", n.day, month_label(n.month)), 12.5 * d, 500, fg, w / 2.0, h / 2.0 + 36.0 * d, 1, 0.6);
+                self.text(
+                    p,
+                    &hhmm(n.hour, n.minute),
+                    46.0 * d,
+                    600,
+                    fg,
+                    w / 2.0,
+                    h / 2.0 - 40.0 * d,
+                    1,
+                    1.0,
+                );
+                self.text(
+                    p,
+                    &weekday_label(wd),
+                    13.0 * d,
+                    600,
+                    ORANGE,
+                    w / 2.0,
+                    h / 2.0 + 18.0 * d,
+                    1,
+                    1.0,
+                );
+                self.text(
+                    p,
+                    &format!("{} {}", n.day, month_label(n.month)),
+                    12.5 * d,
+                    500,
+                    fg,
+                    w / 2.0,
+                    h / 2.0 + 36.0 * d,
+                    1,
+                    0.6,
+                );
             }
             Kind::Battery => match sys::battery() {
                 Some((pct, charging)) => {
                     let n_ring = (58.0 * d).round() as u32;
                     let ring_c = if pct <= 20 && !charging { RED } else { GREEN };
-                    let track = if fg[0] > 128 { [255, 255, 255, 46] } else { [0, 0, 0, 30] };
+                    let track = if fg[0] > 128 {
+                        [255, 255, 255, 46]
+                    } else {
+                        [0, 0, 0, 30]
+                    };
                     let data = widgets::ring(n_ring, 5.5 * d, pct as f32 / 100.0, ring_c, track);
-                    if let Some(Ok(s)) = self.gfx.as_ref().map(|g| g.surface_from_bgra(n_ring, n_ring, &data)) {
+                    if let Some(Ok(s)) = self
+                        .gfx
+                        .as_ref()
+                        .map(|g| g.surface_from_bgra(n_ring, n_ring, &data))
+                    {
                         self.put(p, &s, 16.0 * d, 16.0 * d, n_ring as f32, n_ring as f32, 1.0);
                     }
                     let c = 16.0 * d + n_ring as f32 / 2.0;
-                    self.glyph(p, if charging { "\u{E83E}" } else { "\u{E7F8}" }, 17.0 * d, fg, c, c, 0.9);
-                    self.text(p, &format!("{pct}%"), 34.0 * d, 600, fg, 16.0 * d, h - 52.0 * d, 0, 1.0);
+                    self.glyph(
+                        p,
+                        if charging { "\u{E83E}" } else { "\u{E7F8}" },
+                        17.0 * d,
+                        fg,
+                        c,
+                        c,
+                        0.9,
+                    );
+                    self.text(
+                        p,
+                        &format!("{pct}%"),
+                        34.0 * d,
+                        600,
+                        fg,
+                        16.0 * d,
+                        h - 52.0 * d,
+                        0,
+                        1.0,
+                    );
                 }
                 None => {
-                    self.glyph(p, "\u{E83F}", 26.0 * d, fg, w / 2.0, h / 2.0 - 14.0 * d, 0.8);
-                    self.text(p, prefs::tr("Tidak ada baterai"), 12.5 * d, 500, fg, w / 2.0, h / 2.0 + 14.0 * d, 1, 0.65);
+                    self.glyph(
+                        p,
+                        "\u{E83F}",
+                        26.0 * d,
+                        fg,
+                        w / 2.0,
+                        h / 2.0 - 14.0 * d,
+                        0.8,
+                    );
+                    self.text(
+                        p,
+                        prefs::tr("Tidak ada baterai"),
+                        12.5 * d,
+                        500,
+                        fg,
+                        w / 2.0,
+                        h / 2.0 + 14.0 * d,
+                        1,
+                        0.65,
+                    );
                 }
             },
             Kind::System => {
-                self.text(p, prefs::tr("Sistem"), 13.0 * d, 700, fg, 16.0 * d, 14.0 * d, 0, 1.0);
+                self.text(
+                    p,
+                    prefs::tr("Sistem"),
+                    13.0 * d,
+                    700,
+                    fg,
+                    16.0 * d,
+                    14.0 * d,
+                    0,
+                    1.0,
+                );
                 let rows = [("CPU", self.cpu, BLUE), ("RAM", self.ram, GREEN)];
                 for (k, (label, v, c)) in rows.iter().enumerate() {
                     let y = 46.0 * d + k as f32 * 52.0 * d;
                     self.text(p, label, 12.0 * d, 600, fg, 16.0 * d, y, 0, 0.7);
-                    self.text(p, &format!("{v}%"), 15.0 * d, 700, fg, w - 16.0 * d, y - 2.0 * d, 2, 1.0);
+                    self.text(
+                        p,
+                        &format!("{v}%"),
+                        15.0 * d,
+                        700,
+                        fg,
+                        w - 16.0 * d,
+                        y - 2.0 * d,
+                        2,
+                        1.0,
+                    );
                     let bar = (16.0 * d, y + 22.0 * d, w - 32.0 * d, 8.0 * d);
-                    let track = if fg[0] > 128 { Color { A: 46, R: 255, G: 255, B: 255 } } else { Color { A: 26, R: 0, G: 0, B: 0 } };
+                    let track = if fg[0] > 128 {
+                        Color {
+                            A: 46,
+                            R: 255,
+                            G: 255,
+                            B: 255,
+                        }
+                    } else {
+                        Color {
+                            A: 26,
+                            R: 0,
+                            G: 0,
+                            B: 0,
+                        }
+                    };
                     let _ = self.rr(p, bar, 4.0 * d, track);
                     let fw = (bar.2 * *v as f32 / 100.0).max(8.0 * d);
                     let _ = self.rr(p, (bar.0, bar.1, fw, bar.3), 4.0 * d, col(*c, 255));
@@ -617,36 +1082,96 @@ impl Mgr {
         hands
     }
 
-    fn face(&mut self, p: &ContainerVisual, cx: f32, cy: f32, r: f32, offset: Option<i32>, numbers: bool, hands: &mut Vec<Hand>) {
+    fn face(
+        &mut self,
+        p: &ContainerVisual,
+        cx: f32,
+        cy: f32,
+        r: f32,
+        offset: Option<i32>,
+        numbers: bool,
+        hands: &mut Vec<Hand>,
+    ) {
         let ink = [24, 24, 26];
-        let _ = self.rr(p, (cx - r, cy - r, 2.0 * r, 2.0 * r), r, Color { A: 255, R: 252, G: 252, B: 253 });
+        let _ = self.rr(
+            p,
+            (cx - r, cy - r, 2.0 * r, 2.0 * r),
+            r,
+            Color {
+                A: 255,
+                R: 252,
+                G: 252,
+                B: 253,
+            },
+        );
         if numbers {
             for i in 1..=12u32 {
                 let a = (i as f32 * 30.0).to_radians();
                 let rr = r * 0.78;
                 let px = (r * 0.2).max(8.0);
-                self.text(p, &i.to_string(), px, 500, ink, cx + a.sin() * rr, cy - a.cos() * rr - px * 0.62, 1, 1.0);
+                self.text(
+                    p,
+                    &i.to_string(),
+                    px,
+                    500,
+                    ink,
+                    cx + a.sin() * rr,
+                    cy - a.cos() * rr - px * 0.62,
+                    1,
+                    1.0,
+                );
             }
         } else {
             for i in 0..12u32 {
                 let a = (i as f32 * 30.0).to_radians();
-                let (len, th) = if i % 3 == 0 { (r * 0.16, (r * 0.05).max(1.5)) } else { (r * 0.09, (r * 0.03).max(1.0)) };
-                if let Some(t) = self.rr(p, (cx - th / 2.0, cy - r + r * 0.08, th, len), th / 2.0, col(ink, 200)) {
-                    let _ = t.SetCenterPoint(Vector3 { X: th / 2.0, Y: r - r * 0.08, Z: 0.0 });
+                let (len, th) = if i % 3 == 0 {
+                    (r * 0.16, (r * 0.05).max(1.5))
+                } else {
+                    (r * 0.09, (r * 0.03).max(1.0))
+                };
+                if let Some(t) = self.rr(
+                    p,
+                    (cx - th / 2.0, cy - r + r * 0.08, th, len),
+                    th / 2.0,
+                    col(ink, 200),
+                ) {
+                    let _ = t.SetCenterPoint(Vector3 {
+                        X: th / 2.0,
+                        Y: r - r * 0.08,
+                        Z: 0.0,
+                    });
                     let _ = t.SetRotationAngleInDegrees(a.to_degrees());
                 }
             }
         }
-        let specs: [(u8, f32, f32, f32, [u8; 3]); 3] = [(0, r * 0.07, r * 0.5, 0.0, ink), (1, r * 0.05, r * 0.78, 0.0, ink), (2, r * 0.022, r * 0.86, r * 0.18, ORANGE)];
+        let specs: [(u8, f32, f32, f32, [u8; 3]); 3] = [
+            (0, r * 0.07, r * 0.5, 0.0, ink),
+            (1, r * 0.05, r * 0.78, 0.0, ink),
+            (2, r * 0.022, r * 0.86, r * 0.18, ORANGE),
+        ];
         for (which, th, len, tail, c) in specs {
             let th = th.max(1.2);
-            if let Some(v) = self.rr(p, (cx - th / 2.0, cy - len, th, len + tail), th / 2.0, col(c, 255)) {
-                let _ = v.SetCenterPoint(Vector3 { X: th / 2.0, Y: len, Z: 0.0 });
+            if let Some(v) = self.rr(
+                p,
+                (cx - th / 2.0, cy - len, th, len + tail),
+                th / 2.0,
+                col(c, 255),
+            ) {
+                let _ = v.SetCenterPoint(Vector3 {
+                    X: th / 2.0,
+                    Y: len,
+                    Z: 0.0,
+                });
                 hands.push(Hand { v, which, offset });
             }
         }
         let dot = (r * 0.12).max(4.0);
-        let _ = self.rr(p, (cx - dot / 2.0, cy - dot / 2.0, dot, dot), dot / 2.0, col(ORANGE, 255));
+        let _ = self.rr(
+            p,
+            (cx - dot / 2.0, cy - dot / 2.0, dot, dot),
+            dot / 2.0,
+            col(ORANGE, 255),
+        );
     }
 
     fn turn_hands(&mut self, i: usize, animate: bool) {
@@ -688,7 +1213,9 @@ impl Mgr {
         }
         for i in 0..self.list.len() {
             let kind = self.list[i].kind;
-            if self.sig_for(kind) != self.list[i].sig && self.drag.as_ref().map(|d| d.idx) != Some(i) {
+            if self.sig_for(kind) != self.list[i].sig
+                && self.drag.as_ref().map(|d| d.idx) != Some(i)
+            {
                 self.paint(i);
             }
             self.turn_hands(i, true);
@@ -701,7 +1228,12 @@ impl Mgr {
         }
         self.list[i].hover = on;
         let c = self.center(i);
-        let _ = motion::hover_pop(&self.comp, self.list[i].popup.root(), c, if on { 1.03 } else { 1.0 });
+        let _ = motion::hover_pop(
+            &self.comp,
+            self.list[i].popup.root(),
+            c,
+            if on { 1.03 } else { 1.0 },
+        );
     }
 
     fn move_to(&self, i: usize, pos: (i32, i32), topmost: bool) {
@@ -709,7 +1241,15 @@ impl Mgr {
         let w = &self.list[i];
         unsafe {
             let after = if topmost { HWND_TOPMOST } else { HWND_BOTTOM };
-            let _ = SetWindowPos(w.popup.hwnd, Some(after), pos.0 - m, pos.1 - m, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                w.popup.hwnd,
+                Some(after),
+                pos.0 - m,
+                pos.1 - m,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
     }
 
@@ -731,7 +1271,15 @@ impl Mgr {
         let spot = self.slot_for(Some(i), size, pos);
         self.show_slot((spot.0, spot.1, size.0, size.1));
         unsafe {
-            let _ = SetWindowPos(self.list[i].popup.hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                self.list[i].popup.hwnd,
+                Some(HWND_TOPMOST),
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
     }
 
@@ -743,14 +1291,27 @@ impl Mgr {
         let m = (MARGIN * d) as i32;
         if self.slot.is_none() {
             let base = GlassParams::dark((10.0, 10.0), 0.0);
-            self.slot = Popup::new(&self.comp, w!("AbraWidgetSlot"), Some(slot_proc), WS_EX_TRANSPARENT, base).ok();
+            self.slot = Popup::new(
+                &self.comp,
+                w!("NexoraWidgetSlot"),
+                Some(slot_proc),
+                WS_EX_TRANSPARENT,
+                base,
+            )
+            .ok();
         }
         let resized = self.slot_at.map(|s| (s.2, s.3)) != Some((r.2, r.3));
         let comp = self.comp.clone();
-        let Some(slot) = self.slot.as_mut() else { return };
+        let Some(slot) = self.slot.as_mut() else {
+            return;
+        };
         let _ = slot.set_rect(r.0 - m, r.1 - m, r.2 + 2 * m, r.3 + 2 * m);
         let _ = slot.panel.set_rect(0.0, 0.0, 0.0, 0.0);
-        let _ = slot.content.SetOffset(Vector3 { X: m as f32, Y: m as f32, Z: 0.0 });
+        let _ = slot.content.SetOffset(Vector3 {
+            X: m as f32,
+            Y: m as f32,
+            Z: 0.0,
+        });
         let content = slot.content.clone();
         let root = slot.root().clone();
         let hwnd = slot.hwnd;
@@ -759,20 +1320,56 @@ impl Mgr {
                 let _ = k.RemoveAll();
             }
             let (w, h) = (r.2 as f32, r.3 as f32);
-            let _ = self.rr(&content, (0.0, 0.0, w, h), RADIUS * d, Color { A: 70, R: 255, G: 255, B: 255 });
+            let _ = self.rr(
+                &content,
+                (0.0, 0.0, w, h),
+                RADIUS * d,
+                Color {
+                    A: 70,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                },
+            );
             let t = 2.0 * d;
-            let _ = self.rr(&content, (t, t, w - 2.0 * t, h - 2.0 * t), RADIUS * d - t, Color { A: 40, R: 120, G: 120, B: 128 });
+            let _ = self.rr(
+                &content,
+                (t, t, w - 2.0 * t, h - 2.0 * t),
+                RADIUS * d - t,
+                Color {
+                    A: 40,
+                    R: 120,
+                    G: 120,
+                    B: 128,
+                },
+            );
         }
-        let center = Vector3 { X: m as f32 + r.2 as f32 / 2.0, Y: m as f32 + r.3 as f32 / 2.0, Z: 0.0 };
+        let center = Vector3 {
+            X: m as f32 + r.2 as f32 / 2.0,
+            Y: m as f32 + r.3 as f32 / 2.0,
+            Z: 0.0,
+        };
         if self.slot_at.is_none() {
             let _ = motion::pop_in(&comp, &root, center, 0.85, 1.03, 0, 260);
         } else {
             let _ = root.SetCenterPoint(center);
-            let _ = root.SetScale(Vector3 { X: 0.94, Y: 0.94, Z: 1.0 });
+            let _ = root.SetScale(Vector3 {
+                X: 0.94,
+                Y: 0.94,
+                Z: 1.0,
+            });
             let _ = motion::hover_pop(&comp, &root, center, 1.0);
         }
         unsafe {
-            let _ = SetWindowPos(hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            let _ = SetWindowPos(
+                hwnd,
+                Some(HWND_TOPMOST),
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW,
+            );
         }
         self.slot_at = Some(r);
     }
@@ -793,13 +1390,26 @@ impl Mgr {
         self.list[i].pos = spot;
         FLOAT.store(false, Ordering::Relaxed);
         unsafe {
-            let _ = SetWindowPos(self.list[i].popup.hwnd, Some(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                self.list[i].popup.hwnd,
+                Some(HWND_NOTOPMOST),
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
         let c = self.center(i);
         let root = self.list[i].popup.root().clone();
         let _ = motion::hover_pop(&self.comp, &root, c, 1.0);
         self.finish_snap();
-        self.snap = Some((self.list[i].popup.hwnd, from, spot, std::time::Instant::now()));
+        self.snap = Some((
+            self.list[i].popup.hwnd,
+            from,
+            spot,
+            std::time::Instant::now(),
+        ));
         unsafe {
             SetTimer(Some(self.ctl), T_SNAP, 15, None);
         }
@@ -820,7 +1430,15 @@ impl Mgr {
         let x = from.0 as f32 + (to.0 - from.0) as f32 * e;
         let y = from.1 as f32 + (to.1 - from.1) as f32 * e;
         unsafe {
-            let _ = SetWindowPos(h, None, x.round() as i32 - m, y.round() as i32 - m, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                h,
+                None,
+                x.round() as i32 - m,
+                y.round() as i32 - m,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE,
+            );
         }
         if t >= 1.0 {
             self.finish_snap();
@@ -834,7 +1452,15 @@ impl Mgr {
         if let Some((h, _, to, _)) = self.snap.take() {
             let m = (MARGIN * self.dpi) as i32;
             unsafe {
-                let _ = SetWindowPos(h, Some(HWND_BOTTOM), to.0 - m, to.1 - m, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+                let _ = SetWindowPos(
+                    h,
+                    Some(HWND_BOTTOM),
+                    to.0 - m,
+                    to.1 - m,
+                    0,
+                    0,
+                    SWP_NOSIZE | SWP_NOACTIVATE,
+                );
             }
         }
     }
@@ -848,7 +1474,9 @@ impl Mgr {
             None => {
                 let (_, _, grid) = self.grid();
                 let (cw, ch) = kind.cells();
-                let cell = widgets::first_cell(&self.cells_taken(None), (cw as i32, ch as i32), grid).unwrap_or((0, 0));
+                let cell =
+                    widgets::first_cell(&self.cells_taken(None), (cw as i32, ch as i32), grid)
+                        .unwrap_or((0, 0));
                 self.cell_px(cell)
             }
         };
@@ -878,7 +1506,9 @@ impl Mgr {
         unsafe {
             let _ = KillTimer(Some(self.ctl), T_REMOVE);
         }
-        let Some(h) = self.pending_remove.take() else { return };
+        let Some(h) = self.pending_remove.take() else {
+            return;
+        };
         if let Some(i) = self.list.iter().position(|w| w.popup.hwnd == h) {
             let w = self.list.remove(i);
             unsafe {
@@ -907,7 +1537,10 @@ impl Mgr {
         if self.menu.is_none() {
             self.menu = Menu::new(&self.comp, self.ctl, d, sys::screen_size(), Tier::Full).ok();
         }
-        let items = vec![MItem::action(CMD_EDIT, prefs::tr("Edit Widget\u{2026}"), true), MItem::action(CMD_REMOVE, prefs::tr("Hapus Widget"), true)];
+        let items = vec![
+            MItem::action(CMD_EDIT, prefs::tr("Edit Widget\u{2026}"), true),
+            MItem::action(CMD_REMOVE, prefs::tr("Hapus Widget"), true),
+        ];
         self.menu_for = Some(i);
         let comp = self.comp.clone();
         if let (Some(m), Some(g)) = (self.menu.as_mut(), self.gfx.as_ref()) {
@@ -923,7 +1556,15 @@ impl Mgr {
         for i in 0..self.list.len() {
             self.paint(i);
             let c = self.center(i);
-            let _ = motion::pop_in(&self.comp, self.list[i].popup.root(), c, 0.9, 1.04, i as u32 * 18, 320);
+            let _ = motion::pop_in(
+                &self.comp,
+                self.list[i].popup.root(),
+                c,
+                0.9,
+                1.04,
+                i as u32 * 18,
+                320,
+            );
         }
     }
 
@@ -935,27 +1576,77 @@ impl Mgr {
         let (gw, gh) = (760.0 * d, 500.0 * d);
         let mut glass = prefs::glass((gw, gh), 26.0 * d, prefs::Role::Themed);
         glass.blur_sigma = glass.blur_sigma.max(22.0);
-        let Ok(mut popup) = Popup::new_with(&self.comp, w!("AbraWidgetGallery"), Some(gallery_proc), WINDOW_EX_STYLE(0), glass, true) else { return };
+        let Ok(mut popup) = Popup::new_with(
+            &self.comp,
+            w!("NexoraWidgetGallery"),
+            Some(gallery_proc),
+            WINDOW_EX_STYLE(0),
+            glass,
+            true,
+        ) else {
+            return;
+        };
         let (sw, sh) = sys::screen_size();
-        let _ = popup.set_rect(((sw as f32 - gw) / 2.0) as i32, (sh as f32 - gh - 110.0 * d).max(40.0 * d) as i32, gw as i32, gh as i32);
+        let _ = popup.set_rect(
+            ((sw as f32 - gw) / 2.0) as i32,
+            (sh as f32 - gh - 110.0 * d).max(40.0 * d) as i32,
+            gw as i32,
+            gh as i32,
+        );
         let _ = popup.panel.set_radius(26.0 * d);
-        self.gallery = Some(Gallery { popup, cat: None, query: String::new(), cards: vec![], cats: vec![], done: (0.0, 0.0, 0.0, 0.0), conts: vec![], hover: None, tracking: false, press: None, closing: false });
+        self.gallery = Some(Gallery {
+            popup,
+            cat: None,
+            query: String::new(),
+            cards: vec![],
+            cats: vec![],
+            done: (0.0, 0.0, 0.0, 0.0),
+            conts: vec![],
+            hover: None,
+            tracking: false,
+            press: None,
+            closing: false,
+        });
         self.refresh_gallery();
         self.set_edit(true);
         if let Some(g) = &self.gallery {
             g.popup.show_active();
-            let _ = motion::pop_in(&self.comp, g.popup.root(), Vector3 { X: gw / 2.0, Y: gh, Z: 0.0 }, 0.82, 1.02, 0, 340);
+            let _ = motion::pop_in(
+                &self.comp,
+                g.popup.root(),
+                Vector3 {
+                    X: gw / 2.0,
+                    Y: gh,
+                    Z: 0.0,
+                },
+                0.82,
+                1.02,
+                0,
+                340,
+            );
         }
     }
 
     fn close_gallery(&mut self) {
-        let Some(g) = self.gallery.as_mut() else { return };
+        let Some(g) = self.gallery.as_mut() else {
+            return;
+        };
         if g.closing {
             return;
         }
         g.closing = true;
         let (gw, gh) = (g.popup.rect.2 as f32, g.popup.rect.3 as f32);
-        let _ = motion::pop_out(&self.comp, g.popup.root(), Vector3 { X: gw / 2.0, Y: gh, Z: 0.0 }, 0.86, 180);
+        let _ = motion::pop_out(
+            &self.comp,
+            g.popup.root(),
+            Vector3 {
+                X: gw / 2.0,
+                Y: gh,
+                Z: 0.0,
+            },
+            0.86,
+            180,
+        );
         unsafe {
             SetTimer(Some(self.ctl), T_GCLOSE, 190, None);
         }
@@ -976,7 +1667,9 @@ impl Mgr {
     }
 
     fn refresh_gallery(&mut self) {
-        let Some(g) = self.gallery.as_ref() else { return };
+        let Some(g) = self.gallery.as_ref() else {
+            return;
+        };
         let d = self.dpi;
         let (cat, raw_query) = (g.cat, g.query.clone());
         let query = raw_query.to_lowercase();
@@ -992,12 +1685,35 @@ impl Mgr {
         let _ = self.rr(&content, (side, 0.0, 1.0, gh), 0.0, col(fg, 26));
         let sb: Rect = (14.0 * d, 16.0 * d, side - 28.0 * d, 30.0 * d);
         let _ = self.rr(&content, sb, 9.0 * d, col(fg, 22));
-        self.glyph(&content, "\u{E721}", 11.0 * d, fg, sb.0 + 14.0 * d, sb.1 + sb.3 / 2.0, 0.6);
-        let q = if query.is_empty() { prefs::tr("Cari Widget").to_string() } else { format!("{raw_query}|") };
-        self.text(&content, &q, 13.0 * d, 400, fg, sb.0 + 28.0 * d, sb.1 + 7.0 * d, 0, if query.is_empty() { 0.5 } else { 1.0 });
+        self.glyph(
+            &content,
+            "\u{E721}",
+            11.0 * d,
+            fg,
+            sb.0 + 14.0 * d,
+            sb.1 + sb.3 / 2.0,
+            0.6,
+        );
+        let q = if query.is_empty() {
+            prefs::tr("Cari Widget").to_string()
+        } else {
+            format!("{raw_query}|")
+        };
+        self.text(
+            &content,
+            &q,
+            13.0 * d,
+            400,
+            fg,
+            sb.0 + 28.0 * d,
+            sb.1 + 7.0 * d,
+            0,
+            if query.is_empty() { 0.5 } else { 1.0 },
+        );
         let mut cats = Vec::new();
         let mut y = 60.0 * d;
-        let mut entries: Vec<(Option<Category>, &'static str, &'static str, [u8; 3])> = vec![(None, "Semua Widget", "\u{E71D}", [99, 99, 108])];
+        let mut entries: Vec<(Option<Category>, &'static str, &'static str, [u8; 3])> =
+            vec![(None, "Semua Widget", "\u{E71D}", [99, 99, 108])];
         for c in Category::ALL {
             let (gl, cc) = match c {
                 Category::Clock => ("\u{E917}", ORANGE),
@@ -1009,7 +1725,9 @@ impl Mgr {
         }
         for (c, title, gl, cc) in entries {
             let r: Rect = (10.0 * d, y, side - 20.0 * d, 34.0 * d);
-            let Ok(row) = self.comp.CreateContainerVisual() else { continue };
+            let Ok(row) = self.comp.CreateContainerVisual() else {
+                continue;
+            };
             let _ = content.Children().and_then(|k| k.InsertAtTop(&row));
             conts.push((r, row.clone(), motion::HOVER_ROW));
             if c == cat {
@@ -1017,19 +1735,53 @@ impl Mgr {
             }
             let ic: Rect = (r.0 + 8.0 * d, r.1 + 6.0 * d, 22.0 * d, 22.0 * d);
             let _ = self.rr(&row, ic, 6.0 * d, col(cc, 255));
-            self.glyph(&row, gl, 12.0 * d, [255, 255, 255], ic.0 + ic.2 / 2.0, ic.1 + ic.3 / 2.0, 1.0);
-            self.text(&row, prefs::tr(title), 13.0 * d, if c == cat { 600 } else { 500 }, if c == cat { [255, 255, 255] } else { fg }, r.0 + 40.0 * d, r.1 + 8.0 * d, 0, 1.0);
+            self.glyph(
+                &row,
+                gl,
+                12.0 * d,
+                [255, 255, 255],
+                ic.0 + ic.2 / 2.0,
+                ic.1 + ic.3 / 2.0,
+                1.0,
+            );
+            self.text(
+                &row,
+                prefs::tr(title),
+                13.0 * d,
+                if c == cat { 600 } else { 500 },
+                if c == cat { [255, 255, 255] } else { fg },
+                r.0 + 40.0 * d,
+                r.1 + 8.0 * d,
+                0,
+                1.0,
+            );
             cats.push((c, r));
             y += 38.0 * d;
         }
         let x0 = side + 24.0 * d;
         let header = cat.map(|c| c.title()).unwrap_or("Semua Widget");
-        self.text(&content, prefs::tr(header), 15.0 * d, 700, fg, x0, 16.0 * d, 0, 1.0);
+        self.text(
+            &content,
+            prefs::tr(header),
+            15.0 * d,
+            700,
+            fg,
+            x0,
+            16.0 * d,
+            0,
+            1.0,
+        );
         let list: Vec<Kind> = Kind::ALL
             .iter()
             .copied()
             .filter(|k| cat.map(|c| k.category() == c).unwrap_or(true))
-            .filter(|k| query.is_empty() || prefs::tr(k.title()).to_lowercase().contains(&query) || prefs::tr(k.category().title()).to_lowercase().contains(&query))
+            .filter(|k| {
+                query.is_empty()
+                    || prefs::tr(k.title()).to_lowercase().contains(&query)
+                    || prefs::tr(k.category().title())
+                        .to_lowercase()
+                        .contains(&query)
+            })
             .collect();
         let (mut cx, mut cy) = (x0, 52.0 * d);
         let row_h = widgets::size_of(Kind::Clock, d).1 * PREVIEW + 62.0 * d;
@@ -1047,12 +1799,24 @@ impl Mgr {
                 break;
             }
             let r: Rect = (cx + (cell_w - pw) / 2.0, cy, pw, ph);
-            let Ok(card) = self.comp.CreateContainerVisual() else { continue };
+            let Ok(card) = self.comp.CreateContainerVisual() else {
+                continue;
+            };
             let _ = content.Children().and_then(|kk| kk.InsertAtTop(&card));
-            let Ok(inner) = self.comp.CreateContainerVisual() else { continue };
+            let Ok(inner) = self.comp.CreateContainerVisual() else {
+                continue;
+            };
             let _ = card.Children().and_then(|kk| kk.InsertAtTop(&inner));
-            let _ = inner.SetOffset(Vector3 { X: r.0, Y: r.1, Z: 0.0 });
-            let _ = inner.SetScale(Vector3 { X: PREVIEW, Y: PREVIEW, Z: 1.0 });
+            let _ = inner.SetOffset(Vector3 {
+                X: r.0,
+                Y: r.1,
+                Z: 0.0,
+            });
+            let _ = inner.SetScale(Vector3 {
+                X: PREVIEW,
+                Y: PREVIEW,
+                Z: 1.0,
+            });
             let mut hands = self.draw(&inner, k, w, h, true);
             let n = time::local_now();
             for hd in hands.drain(..) {
@@ -1063,19 +1827,64 @@ impl Mgr {
                     _ => c,
                 });
             }
-            self.text(&card, prefs::tr(k.title()), 12.0 * d, 600, fg, cx + cell_w / 2.0, cy + ph + 8.0 * d, 1, 1.0);
-            self.text(&card, prefs::tr(k.desc()), 10.5 * d, 400, fg, cx + cell_w / 2.0, cy + ph + 26.0 * d, 1, 0.6);
+            self.text(
+                &card,
+                prefs::tr(k.title()),
+                12.0 * d,
+                600,
+                fg,
+                cx + cell_w / 2.0,
+                cy + ph + 8.0 * d,
+                1,
+                1.0,
+            );
+            self.text(
+                &card,
+                prefs::tr(k.desc()),
+                10.5 * d,
+                400,
+                fg,
+                cx + cell_w / 2.0,
+                cy + ph + 26.0 * d,
+                1,
+                0.6,
+            );
             conts.push((r, card, 1.06));
             cards.push((k, r));
             cx += cell_w + 22.0 * d;
         }
-        let _ = self.rr(&content, (side, gh - 52.0 * d, gw - side, 1.0), 0.0, col(fg, 26));
-        self.text(&content, prefs::tr("Seret widget ke desktop, atau klik untuk menambahkannya."), 12.0 * d, 400, fg, x0, gh - 34.0 * d, 0, 0.6);
+        let _ = self.rr(
+            &content,
+            (side, gh - 52.0 * d, gw - side, 1.0),
+            0.0,
+            col(fg, 26),
+        );
+        self.text(
+            &content,
+            prefs::tr("Seret widget ke desktop, atau klik untuk menambahkannya."),
+            12.0 * d,
+            400,
+            fg,
+            x0,
+            gh - 34.0 * d,
+            0,
+            0.6,
+        );
         let done: Rect = (gw - 104.0 * d, gh - 42.0 * d, 86.0 * d, 30.0 * d);
         if let Ok(dc) = self.comp.CreateContainerVisual() {
             let _ = content.Children().and_then(|k| k.InsertAtTop(&dc));
             let _ = self.rr(&dc, done, 15.0 * d, crate::prefs::accent_c(255));
-            self.text(&dc, prefs::tr("Selesai"), 13.0 * d, 600, [255, 255, 255], done.0 + done.2 / 2.0, done.1 + 6.0 * d, 1, 1.0);
+            self.text(
+                &dc,
+                prefs::tr("Selesai"),
+                13.0 * d,
+                600,
+                [255, 255, 255],
+                done.0 + done.2 / 2.0,
+                done.1 + 6.0 * d,
+                1,
+                1.0,
+            );
             conts.push((done, dc, motion::HOVER_BUTTON));
         }
         if let Some(g) = self.gallery.as_mut() {
@@ -1089,13 +1898,24 @@ impl Mgr {
 
     fn gallery_hover(&mut self, i: Option<usize>) {
         let comp = self.comp.clone();
-        let Some(g) = self.gallery.as_mut() else { return };
+        let Some(g) = self.gallery.as_mut() else {
+            return;
+        };
         if g.hover == i {
             return;
         }
         for (k, on) in [(g.hover, false), (i, true)] {
             if let Some((r, c, to)) = k.and_then(|k| g.conts.get(k)) {
-                let _ = motion::hover_pop(&comp, c, Vector3 { X: r.0 + r.2 / 2.0, Y: r.1 + r.3 / 2.0, Z: 0.0 }, if on { *to } else { 1.0 });
+                let _ = motion::hover_pop(
+                    &comp,
+                    c,
+                    Vector3 {
+                        X: r.0 + r.2 / 2.0,
+                        Y: r.1 + r.3 / 2.0,
+                        Z: 0.0,
+                    },
+                    if on { *to } else { 1.0 },
+                );
             }
         }
         g.hover = i;
@@ -1106,8 +1926,11 @@ fn sweep(comp: &Compositor, v: &SpriteVisual, from: f32, to: f32) -> windows_cor
     let a = comp.CreateScalarKeyFrameAnimation()?;
     a.InsertKeyFrame(0.0, from)?;
     a.InsertKeyFrameWithEasingFunction(1.0, to, &comp.CreateLinearEasingFunction()?)?;
-    a.SetDuration(TimeSpan { Duration: 1000 * 10_000 })?;
-    v.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("RotationAngleInDegrees"), &a)
+    a.SetDuration(TimeSpan {
+        Duration: 1000 * 10_000,
+    })?;
+    v.cast::<CompositionObject>()?
+        .StartAnimation(&HSTRING::from("RotationAngleInDegrees"), &a)
 }
 
 fn xy(lp: LPARAM) -> (f32, f32) {
@@ -1175,7 +1998,8 @@ unsafe extern "system" fn widget_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
         WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
         WM_WINDOWPOSCHANGING => {
             let p = lp.0 as *mut WINDOWPOS;
-            if !p.is_null() && !FLOAT.load(Ordering::Relaxed) && (*p).flags.0 & SWP_NOZORDER.0 == 0 {
+            if !p.is_null() && !FLOAT.load(Ordering::Relaxed) && (*p).flags.0 & SWP_NOZORDER.0 == 0
+            {
                 (*p).hwndInsertAfter = HWND_BOTTOM;
             }
             DefWindowProcW(hwnd, msg, wp, lp)
@@ -1191,7 +2015,12 @@ unsafe extern "system" fn widget_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 }
                 let c = cursor();
                 let pos = m.list[i].pos;
-                m.drag = Some(Drag { idx: i, grab: (c.0 - pos.0, c.1 - pos.1), start: c, moved: false });
+                m.drag = Some(Drag {
+                    idx: i,
+                    grab: (c.0 - pos.0, c.1 - pos.1),
+                    start: c,
+                    moved: false,
+                });
                 SetCapture(hwnd);
             });
             LRESULT(0)
@@ -1214,7 +2043,12 @@ unsafe extern "system" fn widget_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     return;
                 }
                 if !m.list[i].tracking {
-                    let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                    let mut t = TRACKMOUSEEVENT {
+                        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                        dwFlags: TME_LEAVE,
+                        hwndTrack: hwnd,
+                        dwHoverTime: 0,
+                    };
                     m.list[i].tracking = TrackMouseEvent(&mut t).is_ok();
                 }
                 m.set_hover(i, true);
@@ -1307,7 +2141,12 @@ unsafe extern "system" fn gallery_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPA
                         FLOAT.store(true, Ordering::Relaxed);
                         if let Some(i) = m.add(k, Some((c.0 - grab.0, c.1 - grab.1))) {
                             m.lift(i);
-                            m.drag = Some(Drag { idx: i, grab, start, moved: true });
+                            m.drag = Some(Drag {
+                                idx: i,
+                                grab,
+                                start,
+                                moved: true,
+                            });
                         }
                         if let Some(g) = m.gallery.as_mut() {
                             g.press = None;
@@ -1317,7 +2156,12 @@ unsafe extern "system" fn gallery_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPA
                 }
                 let Some(g) = m.gallery.as_mut() else { return };
                 if !g.tracking {
-                    let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                    let mut t = TRACKMOUSEEVENT {
+                        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                        dwFlags: TME_LEAVE,
+                        hwndTrack: hwnd,
+                        dwHoverTime: 0,
+                    };
                     g.tracking = TrackMouseEvent(&mut t).is_ok();
                 }
                 let i = g.conts.iter().position(|(r, _, _)| hit(*r, x, y));

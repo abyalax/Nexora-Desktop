@@ -101,7 +101,9 @@ pub fn vdf_values<'a>(text: &'a str, key: &'a str) -> impl Iterator<Item = &'a s
 }
 
 pub fn steam_libraries(vdf: &str) -> Vec<String> {
-    vdf_values(vdf, "path").map(|p| p.replace("\\\\", "\\")).collect()
+    vdf_values(vdf, "path")
+        .map(|p| p.replace("\\\\", "\\"))
+        .collect()
 }
 
 const STEAM_RUNNING: u64 = 256 | 1024 | 1_048_576;
@@ -113,15 +115,26 @@ pub fn steam_progress(acf: &str) -> Option<(String, u64, u64)> {
         return None;
     }
     let total: u64 = vdf_value(acf, "BytesToDownload")?.parse().ok()?;
-    let done: u64 = vdf_value(acf, "BytesDownloaded").and_then(|v| v.parse().ok()).unwrap_or(0);
+    let done: u64 = vdf_value(acf, "BytesDownloaded")
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(0);
     if total == 0 || done >= total {
         return None;
     }
-    Some((vdf_value(acf, "name").unwrap_or("Steam").to_string(), done, total))
+    Some((
+        vdf_value(acf, "name").unwrap_or("Steam").to_string(),
+        done,
+        total,
+    ))
 }
 
 pub fn primary(list: &[Download]) -> Option<&Download> {
-    list.iter().max_by(|a, b| a.percent.is_some().cmp(&b.percent.is_some()).then(a.bytes.cmp(&b.bytes)))
+    list.iter().max_by(|a, b| {
+        a.percent
+            .is_some()
+            .cmp(&b.percent.is_some())
+            .then(a.bytes.cmp(&b.bytes))
+    })
 }
 
 #[cfg(test)]
@@ -129,7 +142,17 @@ mod tests {
     use super::*;
 
     fn dl(percent: Option<f32>, bytes: u64) -> Download {
-        Download { source: if percent.is_some() { Source::Store } else { Source::Browser }, app: String::new(), name: "x".into(), percent, bytes }
+        Download {
+            source: if percent.is_some() {
+                Source::Store
+            } else {
+                Source::Browser
+            },
+            app: String::new(),
+            name: "x".into(),
+            percent,
+            bytes,
+        }
     }
 
     #[test]
@@ -166,18 +189,37 @@ mod tests {
         };
         assert!(pa(270.0) > 200);
         assert_eq!(pa(0.0), 0);
-        assert!(arc_bitmap(n, r, 3.0, 0.5, 0.5, [0, 0, 0], 255).iter().all(|b| *b == 0));
+        assert!(arc_bitmap(n, r, 3.0, 0.5, 0.5, [0, 0, 0], 255)
+            .iter()
+            .all(|b| *b == 0));
     }
 
     #[test]
     fn steam_manifest() {
         let acf = "\"AppState\"\n{\n\t\"appid\"\t\t\"570\"\n\t\"name\"\t\t\"Game Uji\"\n\t\"StateFlags\"\t\t\"1026\"\n\t\"BytesToDownload\"\t\t\"2000\"\n\t\"BytesDownloaded\"\t\t\"500\"\n}\n";
-        assert_eq!(steam_progress(acf), Some(("Game Uji".to_string(), 500, 2000)));
-        assert_eq!(steam_progress(&acf.replace("1026", "4")), None, "terpasang penuh");
+        assert_eq!(
+            steam_progress(acf),
+            Some(("Game Uji".to_string(), 500, 2000))
+        );
+        assert_eq!(
+            steam_progress(&acf.replace("1026", "4")),
+            None,
+            "terpasang penuh"
+        );
         assert_eq!(steam_progress(&acf.replace("1026", "1538")), None, "dijeda");
-        assert_eq!(steam_progress(&acf.replace("\"500\"", "\"2000\"")), None, "selesai");
+        assert_eq!(
+            steam_progress(&acf.replace("\"500\"", "\"2000\"")),
+            None,
+            "selesai"
+        );
         let lib = "\"libraryfolders\"\n{\n\t\"0\"\n\t{\n\t\t\"path\"\t\t\"C:\\\\Program Files (x86)\\\\Steam\"\n\t}\n\t\"1\"\n\t{\n\t\t\"path\"\t\t\"D:\\\\SteamLibrary\"\n\t}\n}\n";
-        assert_eq!(steam_libraries(lib), vec!["C:\\Program Files (x86)\\Steam".to_string(), "D:\\SteamLibrary".to_string()]);
+        assert_eq!(
+            steam_libraries(lib),
+            vec![
+                "C:\\Program Files (x86)\\Steam".to_string(),
+                "D:\\SteamLibrary".to_string()
+            ]
+        );
     }
 
     #[test]

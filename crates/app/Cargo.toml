@@ -3,9 +3,10 @@ name = "nacre-app"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license = "PolyForm-Noncommercial-1.0.0"
 
 [[bin]]
-name = "abra"
+name = "nexora"
 path = "src/main.rs"
 
 [dependencies]

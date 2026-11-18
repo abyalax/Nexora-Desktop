@@ -11,7 +11,9 @@ const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const CREATE_BREAKAWAY_FROM_JOB: u32 = 0x0100_0000;
 
 pub fn spawn_once(guard_exe: &Path, parent_pid: u32, marker: &Path) -> std::io::Result<()> {
-    let mut started = STARTED.lock().map_err(|_| std::io::Error::other("lock poisoned"))?;
+    let mut started = STARTED
+        .lock()
+        .map_err(|_| std::io::Error::other("lock poisoned"))?;
     if *started {
         return Ok(());
     }

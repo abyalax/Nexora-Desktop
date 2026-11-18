@@ -6,10 +6,12 @@ use windows::Win32::Media::Audio::Endpoints::{
     IAudioEndpointVolume, IAudioEndpointVolumeCallback, IAudioEndpointVolumeCallback_Impl,
 };
 use windows::Win32::Media::Audio::{
-    eConsole, eRender, EDataFlow, ERole, IMMDeviceEnumerator, IMMNotificationClient, IMMNotificationClient_Impl,
-    MMDeviceEnumerator, AUDIO_VOLUME_NOTIFICATION_DATA, DEVICE_STATE,
+    eConsole, eRender, EDataFlow, ERole, IMMDeviceEnumerator, IMMNotificationClient,
+    IMMNotificationClient_Impl, MMDeviceEnumerator, AUDIO_VOLUME_NOTIFICATION_DATA, DEVICE_STATE,
 };
-use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED};
+use windows::Win32::System::Com::{
+    CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED,
+};
 
 static LEVEL: AtomicU32 = AtomicU32::new(0);
 static MUTED: AtomicBool = AtomicBool::new(false);
@@ -21,10 +23,15 @@ pub fn output_name() -> String {
 }
 
 fn read_name(device: &windows::Win32::Media::Audio::IMMDevice) -> Option<String> {
-    use windows::Win32::System::Com::StructuredStorage::{PropVariantClear, PropVariantToStringAlloc};
+    use windows::Win32::System::Com::StructuredStorage::{
+        PropVariantClear, PropVariantToStringAlloc,
+    };
     use windows::Win32::System::Com::{CoTaskMemFree, STGM_READ};
     use windows::Win32::UI::Shell::PropertiesSystem::IPropertyStore;
-    const KEY: PROPERTYKEY = PROPERTYKEY { fmtid: windows::core::GUID::from_u128(0xa45c254e_df1c_4efd_8020_67d146a850e0), pid: 14 };
+    const KEY: PROPERTYKEY = PROPERTYKEY {
+        fmtid: windows::core::GUID::from_u128(0xa45c254e_df1c_4efd_8020_67d146a850e0),
+        pid: 14,
+    };
     unsafe {
         let store: IPropertyStore = device.OpenPropertyStore(STGM_READ).ok()?;
         let mut pv = store.GetValue(&KEY).ok()?;
@@ -87,7 +94,11 @@ struct DevCb {
 }
 
 impl IMMNotificationClient_Impl for DevCb_Impl {
-    fn OnDeviceStateChanged(&self, _id: &PCWSTR, _state: DEVICE_STATE) -> windows::core::Result<()> {
+    fn OnDeviceStateChanged(
+        &self,
+        _id: &PCWSTR,
+        _state: DEVICE_STATE,
+    ) -> windows::core::Result<()> {
         Ok(())
     }
     fn OnDeviceAdded(&self, _id: &PCWSTR) -> windows::core::Result<()> {
@@ -96,13 +107,22 @@ impl IMMNotificationClient_Impl for DevCb_Impl {
     fn OnDeviceRemoved(&self, _id: &PCWSTR) -> windows::core::Result<()> {
         Ok(())
     }
-    fn OnDefaultDeviceChanged(&self, flow: EDataFlow, role: ERole, _id: &PCWSTR) -> windows::core::Result<()> {
+    fn OnDefaultDeviceChanged(
+        &self,
+        flow: EDataFlow,
+        role: ERole,
+        _id: &PCWSTR,
+    ) -> windows::core::Result<()> {
         if flow == eRender && role == eConsole {
             let _ = self.tx.send(Cmd::Refresh);
         }
         Ok(())
     }
-    fn OnPropertyValueChanged(&self, _id: &PCWSTR, _key: &PROPERTYKEY) -> windows::core::Result<()> {
+    fn OnPropertyValueChanged(
+        &self,
+        _id: &PCWSTR,
+        _key: &PROPERTYKEY,
+    ) -> windows::core::Result<()> {
         Ok(())
     }
 }
@@ -120,7 +140,10 @@ impl Drop for Attached {
     }
 }
 
-fn attach(enumerator: &IMMDeviceEnumerator, notify: &std::sync::Arc<dyn Fn() + Send + Sync>) -> Option<Attached> {
+fn attach(
+    enumerator: &IMMDeviceEnumerator,
+    notify: &std::sync::Arc<dyn Fn() + Send + Sync>,
+) -> Option<Attached> {
     unsafe {
         let device = enumerator.GetDefaultAudioEndpoint(eRender, eConsole).ok()?;
         if let (Some(n), Ok(mut g)) = (read_name(&device), NAME.lock()) {
@@ -128,7 +151,10 @@ fn attach(enumerator: &IMMDeviceEnumerator, notify: &std::sync::Arc<dyn Fn() + S
         }
         let ep: IAudioEndpointVolume = device.Activate(CLSCTX_ALL, None).ok()?;
         let n = notify.clone();
-        let cb: IAudioEndpointVolumeCallback = VolCb { notify: Box::new(move || n()) }.into();
+        let cb: IAudioEndpointVolumeCallback = VolCb {
+            notify: Box::new(move || n()),
+        }
+        .into();
         ep.RegisterControlChangeNotify(&cb).ok()?;
         if let Ok(v) = ep.GetMasterVolumeLevelScalar() {
             LEVEL.store(v.to_bits(), Ordering::Relaxed);
@@ -146,7 +172,9 @@ pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Audio {
     let notify: std::sync::Arc<dyn Fn() + Send + Sync> = std::sync::Arc::new(notify);
     std::thread::spawn(move || unsafe {
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
-        let Ok(enumerator) = CoCreateInstance::<_, IMMDeviceEnumerator>(&MMDeviceEnumerator, None, CLSCTX_ALL) else {
+        let Ok(enumerator) =
+            CoCreateInstance::<_, IMMDeviceEnumerator>(&MMDeviceEnumerator, None, CLSCTX_ALL)
+        else {
             crate::log::line("audio", "enumerator gagal");
             return;
         };

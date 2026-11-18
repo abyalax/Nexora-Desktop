@@ -4,8 +4,10 @@ pub fn config_dir() -> PathBuf {
     if let Some(d) = std::env::var_os("NACRE_CONFIG_DIR") {
         return PathBuf::from(d);
     }
-    let base = std::env::var_os("APPDATA").map(PathBuf::from).unwrap_or_else(std::env::temp_dir);
-    let dir = base.join("ABRA");
+    let base = std::env::var_os("APPDATA")
+        .map(PathBuf::from)
+        .unwrap_or_else(std::env::temp_dir);
+    let dir = base.join("NEXORA");
     migrate_legacy(&base.join("Nacre"), &dir);
     dir
 }
@@ -28,12 +30,12 @@ pub fn marker() -> PathBuf {
 }
 
 pub fn log() -> PathBuf {
-    config_dir().join("abra.log")
+    config_dir().join("nexora.log")
 }
 
 pub fn guard_exe() -> PathBuf {
     std::env::current_exe()
         .ok()
-        .and_then(|p| p.parent().map(|d| d.join("abra-guard.exe")))
-        .unwrap_or_else(|| PathBuf::from("abra-guard.exe"))
+        .and_then(|p| p.parent().map(|d| d.join("nexora-guard.exe")))
+        .unwrap_or_else(|| PathBuf::from("nexora-guard.exe"))
 }

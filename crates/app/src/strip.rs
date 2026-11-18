@@ -84,10 +84,25 @@ impl Strip {
                 class,
                 w!("nacre-strip"),
                 WS_POPUP,
-                0, 0, 10, 2,
-                None, None, Some(hi), None,
+                0,
+                0,
+                10,
+                2,
+                None,
+                None,
+                Some(hi),
+                None,
             )?;
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, Box::into_raw(Box::new(State { target, enter, leave, inside: false })) as isize);
+            SetWindowLongPtrW(
+                hwnd,
+                GWLP_USERDATA,
+                Box::into_raw(Box::new(State {
+                    target,
+                    enter,
+                    leave,
+                    inside: false,
+                })) as isize,
+            );
             SetLayeredWindowAttributes(hwnd, COLORREF(0), 1, LWA_ALPHA)?;
             Ok(Strip { hwnd })
         }

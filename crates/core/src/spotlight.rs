@@ -49,27 +49,97 @@ pub struct ActionDef {
 }
 
 pub const ACTIONS: &[ActionDef] = &[
-    ActionDef { id: "note", title: "Buat Catatan", app: "Notepad", default_key: "nn" },
-    ActionDef { id: "timer", title: "Mulai Timer", app: "Jam", default_key: "tm" },
-    ActionDef { id: "email", title: "Kirim Email", app: "Email", default_key: "" },
-    ActionDef { id: "screenshot", title: "Ambil Tangkapan Layar", app: "Snipping Tool", default_key: "ss" },
-    ActionDef { id: "lock", title: "Kunci Layar", app: "Sistem", default_key: "lk" },
-    ActionDef { id: "desktop", title: "Tampilkan Desktop", app: "Sistem", default_key: "" },
-    ActionDef { id: "dark", title: "Ganti Mode Gelap", app: "ABRA", default_key: "dm" },
-    ActionDef { id: "stage", title: "Nyalakan/Matikan Scene", app: "ABRA", default_key: "sm" },
-    ActionDef { id: "mission", title: "Overview", app: "ABRA", default_key: "mc" },
-    ActionDef { id: "calc", title: "Buka Kalkulator", app: "Kalkulator", default_key: "ca" },
-    ActionDef { id: "taskmgr", title: "Buka Task Manager", app: "Sistem", default_key: "" },
-    ActionDef { id: "settings", title: "Buka Pengaturan Windows", app: "Pengaturan", default_key: "st" },
-    ActionDef { id: "clearclip", title: "Hapus Riwayat Papan Klip", app: "ABRA", default_key: "" },
+    ActionDef {
+        id: "note",
+        title: "Buat Catatan",
+        app: "Notepad",
+        default_key: "nn",
+    },
+    ActionDef {
+        id: "timer",
+        title: "Mulai Timer",
+        app: "Jam",
+        default_key: "tm",
+    },
+    ActionDef {
+        id: "email",
+        title: "Kirim Email",
+        app: "Email",
+        default_key: "",
+    },
+    ActionDef {
+        id: "screenshot",
+        title: "Ambil Tangkapan Layar",
+        app: "Snipping Tool",
+        default_key: "ss",
+    },
+    ActionDef {
+        id: "lock",
+        title: "Kunci Layar",
+        app: "Sistem",
+        default_key: "lk",
+    },
+    ActionDef {
+        id: "desktop",
+        title: "Tampilkan Desktop",
+        app: "Sistem",
+        default_key: "",
+    },
+    ActionDef {
+        id: "dark",
+        title: "Ganti Mode Gelap",
+        app: "NEXORA",
+        default_key: "dm",
+    },
+    ActionDef {
+        id: "stage",
+        title: "Nyalakan/Matikan Scene",
+        app: "NEXORA",
+        default_key: "sm",
+    },
+    ActionDef {
+        id: "mission",
+        title: "Overview",
+        app: "NEXORA",
+        default_key: "mc",
+    },
+    ActionDef {
+        id: "calc",
+        title: "Buka Kalkulator",
+        app: "Kalkulator",
+        default_key: "ca",
+    },
+    ActionDef {
+        id: "taskmgr",
+        title: "Buka Task Manager",
+        app: "Sistem",
+        default_key: "",
+    },
+    ActionDef {
+        id: "settings",
+        title: "Buka Pengaturan Windows",
+        app: "Pengaturan",
+        default_key: "st",
+    },
+    ActionDef {
+        id: "clearclip",
+        title: "Hapus Riwayat Papan Klip",
+        app: "NEXORA",
+        default_key: "",
+    },
 ];
 
 pub fn parse_quick_keys(text: &str) -> HashMap<String, String> {
     let mut m = HashMap::new();
     for line in text.lines() {
-        let Some((id, key)) = line.split_once('=') else { continue };
+        let Some((id, key)) = line.split_once('=') else {
+            continue;
+        };
         let (id, key) = (id.trim(), key.trim().to_lowercase());
-        if ACTIONS.iter().any(|a| a.id == id) && key.chars().all(|c| c.is_ascii_alphanumeric()) && key.len() <= 6 {
+        if ACTIONS.iter().any(|a| a.id == id)
+            && key.chars().all(|c| c.is_ascii_alphanumeric())
+            && key.len() <= 6
+        {
             m.insert(id.to_string(), key);
         }
     }
@@ -86,7 +156,11 @@ pub fn key_of<'a>(a: &'a ActionDef, user: &'a HashMap<String, String>) -> &'a st
     user.get(a.id).map(|s| s.as_str()).unwrap_or(a.default_key)
 }
 
-pub fn rank_actions(query: &str, user: &HashMap<String, String>, titles: &dyn Fn(&ActionDef) -> String) -> Vec<usize> {
+pub fn rank_actions(
+    query: &str,
+    user: &HashMap<String, String>,
+    titles: &dyn Fn(&ActionDef) -> String,
+) -> Vec<usize> {
     let q = query.trim().to_lowercase();
     if q.is_empty() {
         return (0..ACTIONS.len()).collect();

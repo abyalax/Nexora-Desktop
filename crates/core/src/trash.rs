@@ -63,7 +63,11 @@ fn paper(u: f32, v: f32) -> Option<f32> {
         let facet = a.floor() as i32;
         let h = ((facet * 7 + i as i32 * 13).rem_euclid(5)) as f32 / 4.0;
         let lit = 0.5 - 0.5 * ((dx + dy) / r).clamp(-1.0, 1.0);
-        let crease = if (a - a.floor() < 0.06 || a - a.floor() > 0.94) && d > 0.2 { 0.84 } else { 1.0 };
+        let crease = if (a - a.floor() < 0.06 || a - a.floor() > 0.94) && d > 0.2 {
+            0.84
+        } else {
+            1.0
+        };
         let l = 255.0 * (0.74 + 0.12 * lit + 0.12 * h) * crease * (1.0 - 0.08 * d * d);
         hit = Some(l);
     }
@@ -157,7 +161,9 @@ mod tests {
         assert_eq!(alpha(&b, n, 0, 0), 0);
         assert_eq!(alpha(&b, n, n - 1, n - 1), 0);
         assert!(alpha(&b, n, n / 2, n * 3 / 5) > 200);
-        assert!(b.chunks_exact(4).all(|p| p[0] <= p[3] && p[1] <= p[3] && p[2] <= p[3]));
+        assert!(b
+            .chunks_exact(4)
+            .all(|p| p[0] <= p[3] && p[1] <= p[3] && p[2] <= p[3]));
     }
 
     #[test]

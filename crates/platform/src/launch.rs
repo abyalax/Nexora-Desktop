@@ -5,19 +5,25 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::Shell::ShellExecuteW;
 use windows::Win32::UI::WindowsAndMessaging::{
-    FindWindowW, GetForegroundWindow, GetWindowThreadProcessId, PostMessageW, SC_TASKLIST, SW_SHOWNORMAL,
-    WM_SYSCOMMAND,
+    FindWindowW, GetForegroundWindow, GetWindowThreadProcessId, PostMessageW, SC_TASKLIST,
+    SW_SHOWNORMAL, WM_SYSCOMMAND,
 };
 
 fn off_thread(job: impl FnOnce() + Send + 'static) {
-    let spawned = std::thread::Builder::new().name("abra-launch".into()).spawn(move || {
-        use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED, COINIT_DISABLE_OLE1DDE};
-        let com = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE) }.is_ok();
-        job();
-        if com {
-            unsafe { CoUninitialize() };
-        }
-    });
+    let spawned = std::thread::Builder::new()
+        .name("nexora-launch".into())
+        .spawn(move || {
+            use windows::Win32::System::Com::{
+                CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED, COINIT_DISABLE_OLE1DDE,
+            };
+            let com =
+                unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE) }
+                    .is_ok();
+            job();
+            if com {
+                unsafe { CoUninitialize() };
+            }
+        });
     if let Err(e) = spawned {
         crate::log::line("launch", &format!("thread gagal: {e}"));
     }
@@ -26,7 +32,14 @@ fn off_thread(job: impl FnOnce() + Send + 'static) {
 pub fn open(path: &str) {
     let path = path.split('?').next().unwrap_or(path).to_string();
     off_thread(move || unsafe {
-        ShellExecuteW(None, w!("open"), &HSTRING::from(path.as_str()), None, None, SW_SHOWNORMAL);
+        ShellExecuteW(
+            None,
+            w!("open"),
+            &HSTRING::from(path.as_str()),
+            None,
+            None,
+            SW_SHOWNORMAL,
+        );
     });
 }
 
@@ -39,7 +52,9 @@ pub fn is_start_open() -> bool {
         }
         GetWindowThreadProcessId(fg, Some(&mut pid));
     }
-    let Some(path) = crate::wins::enumerate::exe_path_of_pid(pid) else { return false };
+    let Some(path) = crate::wins::enumerate::exe_path_of_pid(pid) else {
+        return false;
+    };
     let file = path.rsplit('\\').next().unwrap_or("").to_lowercase();
     file == "startmenuexperiencehost.exe" || file == "searchhost.exe"
 }
@@ -47,7 +62,15 @@ pub fn is_start_open() -> bool {
 fn tap(vk: windows::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY) {
     let key = |flags| INPUT {
         r#type: INPUT_KEYBOARD,
-        Anonymous: INPUT_0 { ki: KEYBDINPUT { wVk: vk, wScan: 0, dwFlags: flags, time: 0, dwExtraInfo: 0 } },
+        Anonymous: INPUT_0 {
+            ki: KEYBDINPUT {
+                wVk: vk,
+                wScan: 0,
+                dwFlags: flags,
+                time: 0,
+                dwExtraInfo: 0,
+            },
+        },
     };
     let seq = [key(Default::default()), key(KEYEVENTF_KEYUP)];
     unsafe {
@@ -61,7 +84,12 @@ pub fn toggle_start(was_open_at_press: bool) {
     } else if !was_open_at_press {
         unsafe {
             if let Ok(tray) = FindWindowW(w!("Shell_TrayWnd"), None) {
-                let _ = PostMessageW(Some(tray), WM_SYSCOMMAND, WPARAM(SC_TASKLIST as usize), LPARAM(0));
+                let _ = PostMessageW(
+                    Some(tray),
+                    WM_SYSCOMMAND,
+                    WPARAM(SC_TASKLIST as usize),
+                    LPARAM(0),
+                );
             }
         }
     }
@@ -71,7 +99,14 @@ pub fn run(file: &str, params: &str) {
     let file = system_tool(file);
     let params = params.to_string();
     off_thread(move || unsafe {
-        ShellExecuteW(None, w!("open"), &HSTRING::from(file.as_str()), &HSTRING::from(params.as_str()), None, windows::Win32::UI::WindowsAndMessaging::SW_HIDE);
+        ShellExecuteW(
+            None,
+            w!("open"),
+            &HSTRING::from(file.as_str()),
+            &HSTRING::from(params.as_str()),
+            None,
+            windows::Win32::UI::WindowsAndMessaging::SW_HIDE,
+        );
     });
 }
 

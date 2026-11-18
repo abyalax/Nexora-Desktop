@@ -43,7 +43,11 @@ fn lan_ip() -> Option<Ipv4Addr> {
 fn random10() -> [u8; 10] {
     let mut b = [0u8; 10];
     unsafe {
-        let _ = windows::Win32::Security::Cryptography::BCryptGenRandom(None, &mut b, windows::Win32::Security::Cryptography::BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+        let _ = windows::Win32::Security::Cryptography::BCryptGenRandom(
+            None,
+            &mut b,
+            windows::Win32::Security::Cryptography::BCRYPT_USE_SYSTEM_PREFERRED_RNG,
+        );
     }
     b
 }
@@ -69,7 +73,11 @@ impl Shared {
         let p = Progress {
             sent: reached.iter().sum(),
             total,
-            files_done: reached.iter().zip(&self.files).filter(|(r, f)| **r >= f.2).count(),
+            files_done: reached
+                .iter()
+                .zip(&self.files)
+                .filter(|(r, f)| **r >= f.2)
+                .count(),
             active: *self.active.lock().unwrap() > 0,
         };
         let _ = self.tx.lock().unwrap().send(p);
@@ -114,7 +122,8 @@ fn respond(s: &mut TcpStream, status: &str, ctype: &str, body: &[u8]) {
 fn serve(mut s: TcpStream, tok: &str, sh: &Shared, en: bool) {
     let _ = s.set_write_timeout(Some(Duration::from_secs(30)));
     let Ok(clone) = s.try_clone() else { return };
-    let mut r = BufReader::new(Deadline(clone, Instant::now() + Duration::from_secs(10)).take(MAX_HEAD));
+    let mut r =
+        BufReader::new(Deadline(clone, Instant::now() + Duration::from_secs(10)).take(MAX_HEAD));
     let mut line = String::new();
     if r.read_line(&mut line).is_err() {
         return;
@@ -132,7 +141,12 @@ fn serve(mut s: TcpStream, tok: &str, sh: &Shared, en: bool) {
         }
     }
     if !done {
-        respond(&mut s, "431 Request Header Fields Too Large", "text/plain", b"");
+        respond(
+            &mut s,
+            "431 Request Header Fields Too Large",
+            "text/plain",
+            b"",
+        );
         return;
     }
     let mut parts = line.split_whitespace();
@@ -144,10 +158,19 @@ fn serve(mut s: TcpStream, tok: &str, sh: &Shared, en: bool) {
     let base = format!("/{tok}/");
     if path == format!("/{tok}") || path == base {
         let list: Vec<(String, u64)> = sh.files.iter().map(|f| (f.1.clone(), f.2)).collect();
-        respond(&mut s, "200 OK", "text/html; charset=utf-8", page(tok, &list, en).as_bytes());
+        respond(
+            &mut s,
+            "200 OK",
+            "text/html; charset=utf-8",
+            page(tok, &list, en).as_bytes(),
+        );
         return;
     }
-    let Some(i) = path.strip_prefix(&format!("{base}f/")).and_then(|n| n.parse::<usize>().ok()).filter(|i| *i < sh.files.len()) else {
+    let Some(i) = path
+        .strip_prefix(&format!("{base}f/"))
+        .and_then(|n| n.parse::<usize>().ok())
+        .filter(|i| *i < sh.files.len())
+    else {
         respond(&mut s, "404 Not Found", "text/plain", b"");
         return;
     };
@@ -187,19 +210,30 @@ fn serve(mut s: TcpStream, tok: &str, sh: &Shared, en: bool) {
     sh.report(true);
 }
 
-pub fn start(paths: &[String], en: bool, notify: impl Fn() + Send + Sync + 'static) -> Result<Server, String> {
+pub fn start(
+    paths: &[String],
+    en: bool,
+    notify: impl Fn() + Send + Sync + 'static,
+) -> Result<Server, String> {
     let files: Vec<(String, String, u64)> = paths
         .iter()
         .filter_map(|p| {
             let md = std::fs::metadata(p).ok().filter(|m| m.is_file())?;
-            let name = std::path::Path::new(p).file_name()?.to_string_lossy().to_string();
+            let name = std::path::Path::new(p)
+                .file_name()?
+                .to_string_lossy()
+                .to_string();
             Some((p.clone(), name, md.len()))
         })
         .collect();
     if files.is_empty() {
         return Err("tidak ada berkas (folder belum didukung)".into());
     }
-    let ip = if std::env::var_os("NACRE_SEND_LOOPBACK").is_some() { Ipv4Addr::LOCALHOST } else { lan_ip().ok_or("tidak tersambung ke jaringan lokal")? };
+    let ip = if std::env::var_os("NACRE_SEND_LOOPBACK").is_some() {
+        Ipv4Addr::LOCALHOST
+    } else {
+        lan_ip().ok_or("tidak tersambung ke jaringan lokal")?
+    };
     let listener = TcpListener::bind((ip, 0)).map_err(|e| e.to_string())?;
     let addr = listener.local_addr().map_err(|e| e.to_string())?;
     let tok = token(&random10());
@@ -207,7 +241,14 @@ pub fn start(paths: &[String], en: bool, notify: impl Fn() + Send + Sync + 'stat
     let (tx, rx) = channel();
     let stop = Arc::new(AtomicBool::new(false));
     let n = files.len();
-    let sh = Arc::new(Shared { files, reached: Mutex::new(vec![0; n]), active: Mutex::new(0), tx: Mutex::new(tx), last: Mutex::new(Instant::now()), notify: Box::new(notify) });
+    let sh = Arc::new(Shared {
+        files,
+        reached: Mutex::new(vec![0; n]),
+        active: Mutex::new(0),
+        tx: Mutex::new(tx),
+        last: Mutex::new(Instant::now()),
+        notify: Box::new(notify),
+    });
     let stop2 = stop.clone();
     let live = Arc::new(AtomicUsize::new(0));
     std::thread::spawn(move || {
@@ -228,8 +269,16 @@ pub fn start(paths: &[String], en: bool, notify: impl Fn() + Send + Sync + 'stat
             });
         }
     });
-    crate::log::line("kirim", &format!("sesi dimulai: {n} berkas, port {}", addr.port()));
-    Ok(Server { url: link, progress: rx, stop, addr })
+    crate::log::line(
+        "kirim",
+        &format!("sesi dimulai: {n} berkas, port {}", addr.port()),
+    );
+    Ok(Server {
+        url: link,
+        progress: rx,
+        stop,
+        addr,
+    })
 }
 
 #[cfg(test)]
@@ -259,14 +308,25 @@ mod tests {
         req.resize(req.len() + 20 * 1024, b'a');
         req.extend(b"\r\n\r\n");
         assert!(ask(srv.addr, &req).starts_with("HTTP/1.1 431"));
-        let tok = srv.url.rsplit('/').find(|s| !s.is_empty()).unwrap().to_string();
-        assert!(ask(srv.addr, format!("GET /{tok}/ HTTP/1.1\r\nHost: x\r\n\r\n").as_bytes()).starts_with("HTTP/1.1 200"));
+        let tok = srv
+            .url
+            .rsplit('/')
+            .find(|s| !s.is_empty())
+            .unwrap()
+            .to_string();
+        assert!(ask(
+            srv.addr,
+            format!("GET /{tok}/ HTTP/1.1\r\nHost: x\r\n\r\n").as_bytes()
+        )
+        .starts_with("HTTP/1.1 200"));
     }
 
     #[test]
     fn header_non_utf8_tetap_dilayani() {
         let srv = server("utf8");
-        assert!(ask(srv.addr, b"GET /x HTTP/1.1\r\nX-A: \xff\xfe\r\n\r\n").starts_with("HTTP/1.1 404"));
+        assert!(
+            ask(srv.addr, b"GET /x HTTP/1.1\r\nX-A: \xff\xfe\r\n\r\n").starts_with("HTTP/1.1 404")
+        );
     }
 
     #[test]
@@ -274,7 +334,11 @@ mod tests {
         let l = TcpListener::bind("127.0.0.1:0").unwrap();
         let mut c = TcpStream::connect(l.local_addr().unwrap()).unwrap();
         let (s, _) = l.accept().unwrap();
-        std::thread::spawn(move || while c.write_all(b"a").is_ok() { std::thread::sleep(Duration::from_millis(50)) });
+        std::thread::spawn(move || {
+            while c.write_all(b"a").is_ok() {
+                std::thread::sleep(Duration::from_millis(50))
+            }
+        });
         let t = Instant::now();
         let mut r = BufReader::new(Deadline(s, t + Duration::from_millis(300)).take(100));
         let e = r.read_line(&mut String::new()).unwrap_err();
@@ -285,12 +349,21 @@ mod tests {
     #[test]
     fn koneksi_dibatasi() {
         let srv = server("conn");
-        let idle: Vec<TcpStream> = (0..MAX_CONN).map(|_| TcpStream::connect(srv.addr).unwrap()).collect();
+        let idle: Vec<TcpStream> = (0..MAX_CONN)
+            .map(|_| TcpStream::connect(srv.addr).unwrap())
+            .collect();
         let mut extra = TcpStream::connect(srv.addr).unwrap();
-        extra.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        extra
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .unwrap();
         let r = extra.read(&mut [0u8; 1]);
-        let closed = matches!(r, Ok(0)) || matches!(&r, Err(e) if matches!(e.kind(), std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::ConnectionAborted));
-        assert!(closed, "koneksi ke-{} harus langsung ditutup: {r:?}", MAX_CONN + 1);
+        let closed = matches!(r, Ok(0))
+            || matches!(&r, Err(e) if matches!(e.kind(), std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::ConnectionAborted));
+        assert!(
+            closed,
+            "koneksi ke-{} harus langsung ditutup: {r:?}",
+            MAX_CONN + 1
+        );
         drop(idle);
         let t = Instant::now();
         while !ask(srv.addr, b"POST / HTTP/1.1\r\n\r\n").starts_with("HTTP/1.1 405") {

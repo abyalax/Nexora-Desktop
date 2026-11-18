@@ -25,8 +25,12 @@ pub struct Radios {
 }
 
 fn read_all() -> Vec<Radio> {
-    let Some(list) = Radio::GetRadiosAsync().ok().and_then(|o| o.join().ok()) else { return vec![] };
-    (0..list.Size().unwrap_or(0)).filter_map(|i| list.GetAt(i).ok()).collect()
+    let Some(list) = Radio::GetRadiosAsync().ok().and_then(|o| o.join().ok()) else {
+        return vec![];
+    };
+    (0..list.Size().unwrap_or(0))
+        .filter_map(|i| list.GetAt(i).ok())
+        .collect()
 }
 
 fn snapshot(radios: &[Radio]) -> Snapshot {
@@ -36,7 +40,10 @@ fn snapshot(radios: &[Radio]) -> Snapshot {
             .find(|r| r.Kind().ok() == Some(k))
             .map(|r| r.State().ok() == Some(RadioState::On))
     };
-    Snapshot { wifi: state(RadioKind::WiFi), bluetooth: state(RadioKind::Bluetooth) }
+    Snapshot {
+        wifi: state(RadioKind::WiFi),
+        bluetooth: state(RadioKind::Bluetooth),
+    }
 }
 
 pub fn spawn(notify: impl Fn() + Send + 'static) -> Radios {
@@ -67,5 +74,8 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Radios {
             notify();
         }
     });
-    Radios { commands: cmd_tx, snapshots: snap_rx }
+    Radios {
+        commands: cmd_tx,
+        snapshots: snap_rx,
+    }
 }

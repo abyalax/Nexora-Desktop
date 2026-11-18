@@ -7,15 +7,22 @@ use std::time::Duration;
 
 fn main() {
     let mut args = std::env::args_os().skip(1);
-    let (Some(pid), Some(marker)) = (args.next(), args.next()) else { return };
-    let Ok(pid) = pid.to_string_lossy().parse::<u32>() else { return };
+    let (Some(pid), Some(marker)) = (args.next(), args.next()) else {
+        return;
+    };
+    let Ok(pid) = pid.to_string_lossy().parse::<u32>() else {
+        return;
+    };
     let marker = PathBuf::from(marker);
 
-    nacre_platform::log::init(marker.with_file_name("abra-guard.log"));
+    nacre_platform::log::init(marker.with_file_name("nexora-guard.log"));
     nacre_platform::log::line("guard", &format!("menunggu pid {pid}"));
 
     if wait_for_exit(pid) == WaitOutcome::Unknown {
-        nacre_platform::log::line("guard", "tidak bisa memastikan proses induk; keluar tanpa tindakan");
+        nacre_platform::log::line(
+            "guard",
+            "tidak bisa memastikan proses induk; keluar tanpa tindakan",
+        );
         return;
     }
 

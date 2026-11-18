@@ -4,7 +4,10 @@ use nacre_platform::log;
 use nacre_ui::gfx::Gfx;
 use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
 use windows::UI::Color;
-use windows::UI::Composition::{CompositionBrush, CompositionDrawingSurface, CompositionObject, Compositor, ContainerVisual, InsetClip, SpriteVisual};
+use windows::UI::Composition::{
+    CompositionBrush, CompositionDrawingSurface, CompositionObject, Compositor, ContainerVisual,
+    InsetClip, SpriteVisual,
+};
 use windows_core::Interface;
 use windows_numerics::{Vector2, Vector3};
 
@@ -14,12 +17,27 @@ pub fn glass_params(radius: f32) -> GlassParams {
     let look = crate::prefs::look(crate::prefs::Role::Notch);
     let mut g = crate::prefs::apply(GlassParams::dark((10.0, 10.0), radius), &look);
     if is_black() {
-        g.tint = Color { A: 255, R: ONYX.0, G: ONYX.1, B: ONYX.2 };
-        g.solid = Color { A: 245, R: ONYX.0, G: ONYX.1, B: ONYX.2 };
+        g.tint = Color {
+            A: 255,
+            R: ONYX.0,
+            G: ONYX.1,
+            B: ONYX.2,
+        };
+        g.solid = Color {
+            A: 245,
+            R: ONYX.0,
+            G: ONYX.1,
+            B: ONYX.2,
+        };
     } else {
         g.tint.A = g.tint.A.max(96);
     }
-    g.rim = Color { A: 0, R: 255, G: 255, B: 255 };
+    g.rim = Color {
+        A: 0,
+        R: 255,
+        G: 255,
+        B: 255,
+    };
     g.highlight = 0.0;
     g
 }
@@ -44,13 +62,24 @@ pub struct Body {
 }
 
 impl Body {
-    pub fn new(comp: &Compositor, gfx: &Gfx, root: &ContainerVisual, win: (i32, i32), dpi: f32, tier: Tier) -> windows_core::Result<Body> {
+    pub fn new(
+        comp: &Compositor,
+        gfx: &Gfx,
+        root: &ContainerVisual,
+        win: (i32, i32),
+        dpi: f32,
+        tier: Tier,
+    ) -> windows_core::Result<Body> {
         let stage = comp.CreateContainerVisual()?;
         root.Children()?.InsertAtTop(&stage)?;
-        let mut panel = GlassPanel::new(comp, &stage, glass_params(15.0 * dpi))?;
+        let panel = GlassPanel::new(comp, &stage, glass_params(15.0 * dpi))?;
         panel.set_tier(tier)?;
         let ear = (13.0 * dpi).ceil();
-        let make_ear = |left: bool| -> windows_core::Result<(SpriteVisual, SpriteVisual, CompositionDrawingSurface)> {
+        let make_ear = |left: bool| -> windows_core::Result<(
+            SpriteVisual,
+            SpriteVisual,
+            CompositionDrawingSurface,
+        )> {
             let b = ears::bitmap(ear as u32, ONYX, 255, left);
             let s = gfx.surface_from_bgra(b.w, b.h, &b.bgra)?;
             let v = comp.CreateSpriteVisual()?;
@@ -68,7 +97,10 @@ impl Body {
         stage.Children()?.InsertAtTop(&content)?;
         let clip = comp.CreateInsetClip()?;
         for c in [&content, &ghost] {
-            c.SetSize(Vector2 { X: win.0 as f32, Y: win.1 as f32 })?;
+            c.SetSize(Vector2 {
+                X: win.0 as f32,
+                Y: win.1 as f32,
+            })?;
             c.SetClip(&clip)?;
         }
         let body = Body {
@@ -91,7 +123,10 @@ impl Body {
 
     pub fn resize(&self, win: (i32, i32)) {
         for c in [&self.content, &self.ghost] {
-            let _ = c.SetSize(Vector2 { X: win.0 as f32, Y: win.1 as f32 });
+            let _ = c.SetSize(Vector2 {
+                X: win.0 as f32,
+                Y: win.1 as f32,
+            });
         }
     }
 
@@ -102,8 +137,14 @@ impl Body {
             let b = ears::bitmap(self.ear as u32, ONYX, 255, left);
             if let Ok(s) = gfx.surface_from_bgra(b.w, b.h, &b.bgra) {
                 self.ear_mask[i] = s;
-                let _ = self.ears[i].SetSize(Vector2 { X: self.ear, Y: self.ear });
-                let _ = self.ear_tint[i].SetSize(Vector2 { X: self.ear, Y: self.ear });
+                let _ = self.ears[i].SetSize(Vector2 {
+                    X: self.ear,
+                    Y: self.ear,
+                });
+                let _ = self.ear_tint[i].SetSize(Vector2 {
+                    X: self.ear,
+                    Y: self.ear,
+                });
             }
         }
         self.paint_ears(tier);
@@ -122,7 +163,8 @@ impl Body {
                 let base: CompositionBrush = if tier == Tier::Solid {
                     self.comp.CreateColorBrushWithColor(g.solid)?.cast()?
                 } else {
-                    nacre_ui::glass::backdrop_blur_brush(&self.comp, g.blur_sigma, g.saturation)?.cast()?
+                    nacre_ui::glass::backdrop_blur_brush(&self.comp, g.blur_sigma, g.saturation)?
+                        .cast()?
                 };
                 let mb = self.comp.CreateMaskBrush()?;
                 mb.SetSource(&base)?;
@@ -141,25 +183,47 @@ impl Body {
         }
     }
 
-    pub fn set_geometry(&self, win: (i32, i32), x0: f32, w: f32, h: f32, radius: f32, springy: Option<(f32, u32)>) {
+    pub fn set_geometry(
+        &self,
+        win: (i32, i32),
+        x0: f32,
+        w: f32,
+        h: f32,
+        radius: f32,
+        springy: Option<(f32, u32)>,
+    ) {
         let island = self.island > 0.0;
         let (e, over) = (self.ear, if island { 0.0 } else { self.top_over });
         for v in &self.ears {
             let _ = v.SetOpacity(if island { 0.0 } else { 1.0 });
         }
-        let insets = (x0, (win.0 as f32 - (x0 + w)).max(0.0), (win.1 as f32 - h).max(0.0));
+        let insets = (
+            x0,
+            (win.0 as f32 - (x0 + w)).max(0.0),
+            (win.1 as f32 - h).max(0.0),
+        );
         match springy {
             None => {
                 let _ = self.panel.set_rect(x0, -over, w, h + over);
                 let _ = self.panel.set_radius(radius);
-                let _ = self.ears[0].SetOffset(Vector3 { X: x0 - e, Y: 0.0, Z: 0.0 });
-                let _ = self.ears[1].SetOffset(Vector3 { X: x0 + w, Y: 0.0, Z: 0.0 });
+                let _ = self.ears[0].SetOffset(Vector3 {
+                    X: x0 - e,
+                    Y: 0.0,
+                    Z: 0.0,
+                });
+                let _ = self.ears[1].SetOffset(Vector3 {
+                    X: x0 + w,
+                    Y: 0.0,
+                    Z: 0.0,
+                });
                 let _ = self.clip.SetLeftInset(insets.0);
                 let _ = self.clip.SetRightInset(insets.1);
                 let _ = self.clip.SetBottomInset(insets.2);
             }
             Some((ratio, period)) => {
-                let _ = self.panel.animate_rect(x0, -over, w, h + over, radius, ratio, period);
+                let _ = self
+                    .panel
+                    .animate_rect(x0, -over, w, h + over, radius, ratio, period);
                 let l: CompositionObject = self.ears[0].cast().unwrap();
                 let r: CompositionObject = self.ears[1].cast().unwrap();
                 spring(&self.comp, &l, "Offset.X", x0 - e, ratio, period);
@@ -186,7 +250,11 @@ impl Body {
             if let Ok(o) = self.stage.cast::<CompositionObject>() {
                 let _ = o.StopAnimation(&windows_core::HSTRING::from("Offset.Y"));
             }
-            let _ = self.stage.SetOffset(Vector3 { X: 0.0, Y: gap, Z: 0.0 });
+            let _ = self.stage.SetOffset(Vector3 {
+                X: 0.0,
+                Y: gap,
+                Z: 0.0,
+            });
         }
     }
 }

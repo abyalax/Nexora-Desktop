@@ -4,10 +4,13 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use windows::core::PCWSTR;
 use windows::Win32::Media::Audio::{
-    eConsole, eRender, IAudioCaptureClient, IAudioClient, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator,
-    AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, WAVEFORMATEX, WAVEFORMATEXTENSIBLE,
+    eConsole, eRender, IAudioCaptureClient, IAudioClient, IMMDevice, IMMDeviceEnumerator,
+    MMDeviceEnumerator, AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, WAVEFORMATEX,
+    WAVEFORMATEXTENSIBLE,
 };
-use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_MULTITHREADED};
+use windows::Win32::System::Com::{
+    CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_MULTITHREADED,
+};
 
 static OUT: [AtomicU32; BANDS] = [const { AtomicU32::new(0) }; BANDS];
 static PENDING: AtomicBool = AtomicBool::new(false);
@@ -75,21 +78,36 @@ fn device_id(d: &IMMDevice) -> String {
     }
 }
 
-fn session(stop: &AtomicBool, notify: &(dyn Fn() + Send), analyzer: &mut Analyzer) -> Result<(), &'static str> {
+fn session(
+    stop: &AtomicBool,
+    notify: &(dyn Fn() + Send),
+    analyzer: &mut Analyzer,
+) -> Result<(), &'static str> {
     unsafe {
         let enumerator: IMMDeviceEnumerator =
             CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL).map_err(|_| "enumerator")?;
-        let device = enumerator.GetDefaultAudioEndpoint(eRender, eConsole).map_err(|_| "tidak ada perangkat keluaran")?;
+        let device = enumerator
+            .GetDefaultAudioEndpoint(eRender, eConsole)
+            .map_err(|_| "tidak ada perangkat keluaran")?;
         let id = device_id(&device);
         let client: IAudioClient = device.Activate(CLSCTX_ALL, None).map_err(|_| "activate")?;
         let fmt = client.GetMixFormat().map_err(|_| "mixformat")?;
         let channels = (*fmt).nChannels as usize;
         let kind = sample_kind(fmt);
-        let init = client.Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 10_000_000, 0, fmt, None);
+        let init = client.Initialize(
+            AUDCLNT_SHAREMODE_SHARED,
+            AUDCLNT_STREAMFLAGS_LOOPBACK,
+            10_000_000,
+            0,
+            fmt,
+            None,
+        );
         let bytes_per = ((*fmt).wBitsPerSample / 8) as usize;
         CoTaskMemFree(Some(fmt as *const _));
         init.map_err(|_| "initialize")?;
-        let (Some(kind), true) = (kind, channels > 0 && bytes_per > 0) else { return Err("format tidak didukung") };
+        let (Some(kind), true) = (kind, channels > 0 && bytes_per > 0) else {
+            return Err("format tidak didukung");
+        };
         let capture: IAudioCaptureClient = client.GetService().map_err(|_| "service")?;
         client.Start().map_err(|_| "start")?;
 
@@ -107,12 +125,16 @@ fn session(stop: &AtomicBool, notify: &(dyn Fn() + Send), analyzer: &mut Analyze
                 }
             }
             loop {
-                let n = capture.GetNextPacketSize().map_err(|_| "perangkat tidak valid")?;
+                let n = capture
+                    .GetNextPacketSize()
+                    .map_err(|_| "perangkat tidak valid")?;
                 if n == 0 {
                     break;
                 }
                 let (mut data, mut frames, mut flags) = (std::ptr::null_mut::<u8>(), 0u32, 0u32);
-                capture.GetBuffer(&mut data, &mut frames, &mut flags, None, None).map_err(|_| "perangkat tidak valid")?;
+                capture
+                    .GetBuffer(&mut data, &mut frames, &mut flags, None, None)
+                    .map_err(|_| "perangkat tidak valid")?;
                 mono.clear();
                 let silent = flags & 0x2 != 0;
                 for f in 0..frames as usize {
@@ -123,7 +145,9 @@ fn session(stop: &AtomicBool, notify: &(dyn Fn() + Send), analyzer: &mut Analyze
                             acc += match kind {
                                 Sample::F32 => (p as *const f32).read_unaligned(),
                                 Sample::I16 => (p as *const i16).read_unaligned() as f32 / 32768.0,
-                                Sample::I32 => (p as *const i32).read_unaligned() as f32 / 2_147_483_648.0,
+                                Sample::I32 => {
+                                    (p as *const i32).read_unaligned() as f32 / 2_147_483_648.0
+                                }
                             };
                         }
                     }
@@ -166,5 +190,8 @@ pub fn start(notify: impl Fn() + Send + 'static) -> Loopback {
             unsafe { windows::Win32::System::Com::CoUninitialize() };
         }
     });
-    Loopback { stop, handle: Some(handle) }
+    Loopback {
+        stop,
+        handle: Some(handle),
+    }
 }

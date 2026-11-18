@@ -54,7 +54,12 @@ mod store {
 
     impl Manager {
         pub fn new() -> Option<Manager> {
-            let insp = unsafe { RoActivateInstance(&HSTRING::from("Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallManager")) }.ok()?;
+            let insp = unsafe {
+                RoActivateInstance(&HSTRING::from(
+                    "Windows.ApplicationModel.Store.Preview.InstallControl.AppInstallManager",
+                ))
+            }
+            .ok()?;
             let mut p: *mut c_void = std::ptr::null_mut();
             unsafe { insp.query(&IID_MANAGER, &mut p) }.ok().ok()?;
             own(p).map(Manager)
@@ -98,7 +103,12 @@ mod store {
                     let _ = slot::<GetI32>(s, 6)(s, &mut state);
                     let _ = slot::<GetU64>(s, 8)(s, &mut bytes);
                     let _ = slot::<GetF64>(s, 9)(s, &mut pct);
-                    out.push(Item { key, state, percent: pct, bytes });
+                    out.push(Item {
+                        key,
+                        state,
+                        percent: pct,
+                        bytes,
+                    });
                 }
             }
             out
@@ -117,9 +127,29 @@ fn reg_str(path: &str, name: &str) -> Option<String> {
     unsafe {
         let (p, n) = (HSTRING::from(path), HSTRING::from(name));
         let mut size = 0u32;
-        RegGetValueW(HKEY_CURRENT_USER, &p, &n, RRF_RT_REG_SZ, None, None, Some(&mut size)).ok().ok()?;
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            &p,
+            &n,
+            RRF_RT_REG_SZ,
+            None,
+            None,
+            Some(&mut size),
+        )
+        .ok()
+        .ok()?;
         let mut buf = vec![0u16; (size as usize).div_ceil(2).max(1)];
-        RegGetValueW(HKEY_CURRENT_USER, &p, &n, RRF_RT_REG_SZ, None, Some(buf.as_mut_ptr() as *mut _), Some(&mut size)).ok().ok()?;
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            &p,
+            &n,
+            RRF_RT_REG_SZ,
+            None,
+            Some(buf.as_mut_ptr() as *mut _),
+            Some(&mut size),
+        )
+        .ok()
+        .ok()?;
         let len = buf.iter().position(|c| *c == 0).unwrap_or(buf.len());
         Some(String::from_utf16_lossy(&buf[..len]))
     }
@@ -131,10 +161,19 @@ struct Steam {
 }
 
 fn steam() -> Option<Steam> {
-    let root = std::env::var("NACRE_TEST_STEAM").ok().or_else(|| reg_str("Software\\Valve\\Steam", "SteamPath"))?.replace('/', "\\");
-    let exe = reg_str("Software\\Valve\\Steam", "SteamExe").map(|e| e.replace('/', "\\")).unwrap_or_else(|| format!("{root}\\steam.exe"));
+    let root = std::env::var("NACRE_TEST_STEAM")
+        .ok()
+        .or_else(|| reg_str("Software\\Valve\\Steam", "SteamPath"))?
+        .replace('/', "\\");
+    let exe = reg_str("Software\\Valve\\Steam", "SteamExe")
+        .map(|e| e.replace('/', "\\"))
+        .unwrap_or_else(|| format!("{root}\\steam.exe"));
     let mut libs = vec![root.clone()];
-    if let Ok(vdf) = std::fs::read_to_string(Path::new(&root).join("steamapps").join("libraryfolders.vdf")) {
+    if let Ok(vdf) = std::fs::read_to_string(
+        Path::new(&root)
+            .join("steamapps")
+            .join("libraryfolders.vdf"),
+    ) {
         for l in steam_libraries(&vdf) {
             if !libs.iter().any(|x| x.eq_ignore_ascii_case(&l)) {
                 libs.push(l);
@@ -171,19 +210,35 @@ fn writer_of(path: &Path) -> Option<String> {
     use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::CloseHandle;
     use windows::Win32::System::RestartManager::*;
-    use windows::Win32::System::Threading::{OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION};
+    use windows::Win32::System::Threading::{
+        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32,
+        PROCESS_QUERY_LIMITED_INFORMATION,
+    };
     unsafe {
         let mut session = 0u32;
         let mut key = [0u16; 64];
         if RmStartSession(&mut session, None, PWSTR(key.as_mut_ptr())).is_err() {
             return None;
         }
-        let wide: Vec<u16> = path.as_os_str().to_string_lossy().encode_utf16().chain(std::iter::once(0)).collect();
+        let wide: Vec<u16> = path
+            .as_os_str()
+            .to_string_lossy()
+            .encode_utf16()
+            .chain(std::iter::once(0))
+            .collect();
         let mut result = None;
         if RmRegisterResources(session, Some(&[PCWSTR(wide.as_ptr())]), None, None).is_ok() {
             let (mut needed, mut count, mut reasons) = (0u32, 8u32, 0u32);
             let mut info = [RM_PROCESS_INFO::default(); 8];
-            if RmGetList(session, &mut needed, &mut count, Some(info.as_mut_ptr()), &mut reasons).is_ok() {
+            if RmGetList(
+                session,
+                &mut needed,
+                &mut count,
+                Some(info.as_mut_ptr()),
+                &mut reasons,
+            )
+            .is_ok()
+            {
                 let me = std::process::id();
                 for pi in info.iter().take(count as usize) {
                     let pid = pi.Process.dwProcessId;
@@ -193,7 +248,14 @@ fn writer_of(path: &Path) -> Option<String> {
                     if let Ok(h) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) {
                         let mut buf = [0u16; 520];
                         let mut len = buf.len() as u32;
-                        if QueryFullProcessImageNameW(h, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len).is_ok() {
+                        if QueryFullProcessImageNameW(
+                            h,
+                            PROCESS_NAME_WIN32,
+                            PWSTR(buf.as_mut_ptr()),
+                            &mut len,
+                        )
+                        .is_ok()
+                        {
                             result = Some(String::from_utf16_lossy(&buf[..len as usize]));
                         }
                         let _ = CloseHandle(h);
@@ -210,23 +272,40 @@ fn writer_of(path: &Path) -> Option<String> {
 }
 
 fn downloads_dir() -> Option<PathBuf> {
-    std::env::var_os("NACRE_TEST_DOWNLOADS").map(PathBuf::from).or_else(crate::downloads::folder)
+    std::env::var_os("NACRE_TEST_DOWNLOADS")
+        .map(PathBuf::from)
+        .or_else(crate::downloads::folder)
 }
 
 fn fake(kind: &str, t: f32) -> Snapshot {
-    let app = std::env::var("SystemRoot").map(|r| format!("{r}\\explorer.exe")).unwrap_or_default();
+    let app = std::env::var("SystemRoot")
+        .map(|r| format!("{r}\\explorer.exe"))
+        .unwrap_or_default();
     let pct = (t / 16.0 * 100.0).min(100.0);
     let d = Download {
-        source: if kind == "browser" { Source::Browser } else { Source::Store },
+        source: if kind == "browser" {
+            Source::Browser
+        } else {
+            Source::Store
+        },
         app,
         name: "Unduhan Uji".into(),
         percent: (kind != "browser").then_some(pct),
         bytes: (pct as f64 * 3_500_000.0) as u64,
     };
     if pct >= 100.0 {
-        Snapshot { active: vec![], finished: Some(Download { percent: Some(100.0), ..d }) }
+        Snapshot {
+            active: vec![],
+            finished: Some(Download {
+                percent: Some(100.0),
+                ..d
+            }),
+        }
     } else {
-        Snapshot { active: vec![d], finished: None }
+        Snapshot {
+            active: vec![d],
+            finished: None,
+        }
     }
 }
 
@@ -234,7 +313,10 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
     let (tx, rx) = channel::<Snapshot>();
     std::thread::spawn(move || {
         unsafe {
-            let _ = windows::Win32::System::Com::CoInitializeEx(None, windows::Win32::System::Com::COINIT_MULTITHREADED);
+            let _ = windows::Win32::System::Com::CoInitializeEx(
+                None,
+                windows::Win32::System::Com::COINIT_MULTITHREADED,
+            );
         }
         if let Ok(kind) = std::env::var("NACRE_FAKE_DOWNLOAD") {
             let t0 = Instant::now();
@@ -255,8 +337,21 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
             }
         }
         let store = store::Manager::new();
-        let states: Vec<i32> = store.as_ref().map(|m| m.items().iter().map(|i| i.state).collect()).unwrap_or_default();
-        crate::log::line("unduhan", &format!("pemantau mulai: Store {} (status antrean {states:?})", if store.is_some() { "terbaca" } else { "tidak tersedia" }));
+        let states: Vec<i32> = store
+            .as_ref()
+            .map(|m| m.items().iter().map(|i| i.state).collect())
+            .unwrap_or_default();
+        crate::log::line(
+            "unduhan",
+            &format!(
+                "pemantau mulai: Store {} (status antrean {states:?})",
+                if store.is_some() {
+                    "terbaca"
+                } else {
+                    "tidak tersedia"
+                }
+            ),
+        );
         let mut steam_info: Option<Steam> = None;
         let mut steam_checked: Option<Instant> = None;
         let mut parts: HashMap<PathBuf, Part> = HashMap::new();
@@ -272,7 +367,13 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
             let store_items = store.as_ref().map(|m| m.items()).unwrap_or_default();
             for it in &store_items {
                 if store::is_active(it.state) {
-                    let d = Download { source: Source::Store, app: STORE_ICON.into(), name: it.key.clone(), percent: Some(it.percent.clamp(0.0, 100.0) as f32), bytes: it.bytes };
+                    let d = Download {
+                        source: Source::Store,
+                        app: STORE_ICON.into(),
+                        name: it.key.clone(),
+                        percent: Some(it.percent.clamp(0.0, 100.0) as f32),
+                        bytes: it.bytes,
+                    };
                     active.push((format!("store:{}", it.key), d));
                 }
             }
@@ -284,14 +385,26 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
             if let Some(st) = &steam_info {
                 if tick % 2 == 0 {
                     for m in &st.manifests {
-                        let Ok(acf) = std::fs::read_to_string(m) else { continue };
+                        let Ok(acf) = std::fs::read_to_string(m) else {
+                            continue;
+                        };
                         if let Some((name, done, total)) = steam_progress(&acf) {
-                            let d = Download { source: Source::Steam, app: st.exe.clone(), name, percent: Some((done as f64 / total as f64 * 100.0) as f32), bytes: done };
+                            let d = Download {
+                                source: Source::Steam,
+                                app: st.exe.clone(),
+                                name,
+                                percent: Some((done as f64 / total as f64 * 100.0) as f32),
+                                bytes: done,
+                            };
                             active.push((format!("steam:{}", m.display()), d));
                         }
                     }
                 } else {
-                    active.extend(prev.iter().filter(|(k, _)| k.starts_with("steam:")).map(|(k, d)| (k.clone(), d.clone())));
+                    active.extend(
+                        prev.iter()
+                            .filter(|(k, _)| k.starts_with("steam:"))
+                            .map(|(k, d)| (k.clone(), d.clone())),
+                    );
                 }
             }
 
@@ -300,11 +413,20 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
                 if let Ok(rd) = std::fs::read_dir(&dir) {
                     for e in rd.flatten().take(4000) {
                         let name = e.file_name().to_string_lossy().to_string();
-                        let Some(suffix) = partial_suffix(&name) else { continue };
+                        let Some(suffix) = partial_suffix(&name) else {
+                            continue;
+                        };
                         let path = e.path();
-                        let Ok(md) = std::fs::metadata(&path) else { continue };
+                        let Ok(md) = std::fs::metadata(&path) else {
+                            continue;
+                        };
                         let size = md.len();
-                        let part = parts.entry(path.clone()).or_insert(Part { size, changed: Instant::now(), writer: None, tries: 0 });
+                        let part = parts.entry(path.clone()).or_insert(Part {
+                            size,
+                            changed: Instant::now(),
+                            writer: None,
+                            tries: 0,
+                        });
                         if part.size != size {
                             part.size = size;
                             part.changed = Instant::now();
@@ -316,22 +438,42 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
                         seen.push(path.clone());
                         if part.changed.elapsed() < STALL {
                             let shown = name[..name.len() - suffix.len()].to_string();
-                            let d = Download { source: Source::Browser, app: part.writer.clone().unwrap_or_default(), name: shown, percent: None, bytes: size };
+                            let d = Download {
+                                source: Source::Browser,
+                                app: part.writer.clone().unwrap_or_default(),
+                                name: shown,
+                                percent: None,
+                                bytes: size,
+                            };
                             active.push((format!("file:{}", path.display()), d));
                         }
                     }
                 }
             }
-            let gone: Vec<PathBuf> = parts.keys().filter(|p| !seen.contains(p)).cloned().collect();
+            let gone: Vec<PathBuf> = parts
+                .keys()
+                .filter(|p| !seen.contains(p))
+                .cloned()
+                .collect();
             for p in gone {
                 let part = parts.remove(&p);
                 let key = format!("file:{}", p.display());
                 let s = p.to_string_lossy().to_string();
-                let final_path = partial_suffix(&s).map(|suf| PathBuf::from(&s[..s.len() - suf.len()]));
+                let final_path =
+                    partial_suffix(&s).map(|suf| PathBuf::from(&s[..s.len() - suf.len()]));
                 if let (Some(fp), Some(part)) = (final_path, part) {
                     if fp.exists() && prev.contains_key(&key) {
                         let size = std::fs::metadata(&fp).map(|m| m.len()).unwrap_or(part.size);
-                        finished = Some(Download { source: Source::Browser, app: part.writer.unwrap_or_default(), name: fp.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), percent: Some(100.0), bytes: size });
+                        finished = Some(Download {
+                            source: Source::Browser,
+                            app: part.writer.unwrap_or_default(),
+                            name: fp
+                                .file_name()
+                                .map(|n| n.to_string_lossy().to_string())
+                                .unwrap_or_default(),
+                            percent: Some(100.0),
+                            bytes: size,
+                        });
                     }
                 }
             }
@@ -340,26 +482,43 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Watch {
                     continue;
                 }
                 let completed = match d.source {
-                    Source::Store => store_items.iter().any(|it| format!("store:{}", it.key) == *k && it.state == store::COMPLETED) || d.percent.unwrap_or(0.0) >= 95.0,
+                    Source::Store => {
+                        store_items.iter().any(|it| {
+                            format!("store:{}", it.key) == *k && it.state == store::COMPLETED
+                        }) || d.percent.unwrap_or(0.0) >= 95.0
+                    }
                     Source::Steam => {
                         let path = k.trim_start_matches("steam:");
-                        std::fs::read_to_string(path).ok().is_some_and(|acf| vdf_value(&acf, "StateFlags").and_then(|f| f.parse::<u64>().ok()).is_some_and(|f| f & 4 != 0))
+                        std::fs::read_to_string(path).ok().is_some_and(|acf| {
+                            vdf_value(&acf, "StateFlags")
+                                .and_then(|f| f.parse::<u64>().ok())
+                                .is_some_and(|f| f & 4 != 0)
+                        })
                     }
                     Source::Browser => false,
                 };
                 if completed {
-                    finished = Some(Download { percent: Some(100.0), ..d.clone() });
+                    finished = Some(Download {
+                        percent: Some(100.0),
+                        ..d.clone()
+                    });
                 }
             }
 
             prev = active.iter().cloned().collect();
-            let snap = Snapshot { active: active.into_iter().map(|(_, d)| d).collect(), finished };
+            let snap = Snapshot {
+                active: active.into_iter().map(|(_, d)| d).collect(),
+                finished,
+            };
             if snap != last {
                 if tx.send(snap.clone()).is_err() {
                     return;
                 }
                 notify();
-                last = Snapshot { finished: None, ..snap };
+                last = Snapshot {
+                    finished: None,
+                    ..snap
+                };
             }
         }
     });

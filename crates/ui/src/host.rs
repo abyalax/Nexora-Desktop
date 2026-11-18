@@ -1,11 +1,11 @@
 use windows::System::DispatcherQueueController;
-use windows::UI::Composition::Desktop::DesktopWindowTarget;
-use windows::UI::Composition::{Compositor, ContainerVisual};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::System::WinRT::Composition::ICompositorDesktopInterop;
 use windows::Win32::System::WinRT::{
     CreateDispatcherQueueController, DispatcherQueueOptions, DQTAT_COM_NONE, DQTYPE_THREAD_CURRENT,
 };
+use windows::UI::Composition::Desktop::DesktopWindowTarget;
+use windows::UI::Composition::{Compositor, ContainerVisual};
 use windows_core::{Interface, Result};
 use windows_numerics::Vector2;
 
@@ -28,7 +28,10 @@ impl Host {
                 apartmentType: DQTAT_COM_NONE,
             })?
         };
-        Ok(Host { compositor: Compositor::new()?, _queue: queue })
+        Ok(Host {
+            compositor: Compositor::new()?,
+            _queue: queue,
+        })
     }
 
     pub fn attach(&self, hwnd: HWND, size: (f32, f32)) -> Result<Surface> {
@@ -40,7 +43,10 @@ pub fn attach(compositor: &Compositor, hwnd: HWND, size: (f32, f32)) -> Result<S
     let interop: ICompositorDesktopInterop = compositor.cast()?;
     let target = unsafe { interop.CreateDesktopWindowTarget(hwnd, true)? };
     let root = compositor.CreateContainerVisual()?;
-    root.SetSize(Vector2 { X: size.0, Y: size.1 })?;
+    root.SetSize(Vector2 {
+        X: size.0,
+        Y: size.1,
+    })?;
     target.SetRoot(&root)?;
     Ok(Surface { target, root })
 }

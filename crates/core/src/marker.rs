@@ -22,18 +22,29 @@ pub struct Marker {
 
 impl Marker {
     pub fn new(abstate: i32, pid: u32) -> Self {
-        Marker { abstate, pid, primary: None, secondaries: Vec::new() }
+        Marker {
+            abstate,
+            pid,
+            primary: None,
+            secondaries: Vec::new(),
+        }
     }
 
     pub fn serialize(&self) -> String {
         let mut s = format!("abstate={}\npid={}\n", self.abstate, self.pid);
         if let Some(r) = self.primary {
-            s.push_str(&format!("primary={},{},{},{}\n", r.left, r.top, r.right, r.bottom));
+            s.push_str(&format!(
+                "primary={},{},{},{}\n",
+                r.left, r.top, r.right, r.bottom
+            ));
         }
         let mut sec = self.secondaries.clone();
         sec.sort_by_key(|(h, _)| *h);
         for (h, r) in sec {
-            s.push_str(&format!("secondary={h},{},{},{},{}\n", r.left, r.top, r.right, r.bottom));
+            s.push_str(&format!(
+                "secondary={h},{},{},{},{}\n",
+                r.left, r.top, r.right, r.bottom
+            ));
         }
         s
     }
@@ -57,11 +68,19 @@ impl Marker {
                 secondaries.push((h.parse().ok()?, parse_rect(rest)?));
             }
         }
-        Some(Marker { abstate, pid: pid?, primary, secondaries })
+        Some(Marker {
+            abstate,
+            pid: pid?,
+            primary,
+            secondaries,
+        })
     }
 
     pub fn secondary_rect(&self, hwnd: isize) -> Option<Rect> {
-        self.secondaries.iter().find(|(h, _)| *h == hwnd).map(|(_, r)| *r)
+        self.secondaries
+            .iter()
+            .find(|(h, _)| *h == hwnd)
+            .map(|(_, r)| *r)
     }
 }
 
@@ -69,8 +88,16 @@ fn parse_rect(parts: &[&str]) -> Option<Rect> {
     if parts.len() != 4 {
         return None;
     }
-    let n: Vec<i32> = parts.iter().map(|p| p.trim().parse().ok()).collect::<Option<_>>()?;
-    Some(Rect { left: n[0], top: n[1], right: n[2], bottom: n[3] })
+    let n: Vec<i32> = parts
+        .iter()
+        .map(|p| p.trim().parse().ok())
+        .collect::<Option<_>>()?;
+    Some(Rect {
+        left: n[0],
+        top: n[1],
+        right: n[2],
+        bottom: n[3],
+    })
 }
 
 #[cfg(test)]
@@ -81,10 +108,31 @@ mod tests {
         Marker {
             abstate: 2,
             pid: 4242,
-            primary: Some(Rect { left: 0, top: 1032, right: 1920, bottom: 1080 }),
+            primary: Some(Rect {
+                left: 0,
+                top: 1032,
+                right: 1920,
+                bottom: 1080,
+            }),
             secondaries: vec![
-                (900, Rect { left: 1920, top: 1032, right: 3840, bottom: 1080 }),
-                (100, Rect { left: -1920, top: 1032, right: 0, bottom: 1080 }),
+                (
+                    900,
+                    Rect {
+                        left: 1920,
+                        top: 1032,
+                        right: 3840,
+                        bottom: 1080,
+                    },
+                ),
+                (
+                    100,
+                    Rect {
+                        left: -1920,
+                        top: 1032,
+                        right: 0,
+                        bottom: 1080,
+                    },
+                ),
             ],
         }
     }
@@ -96,7 +144,15 @@ mod tests {
         assert_eq!(back.abstate, 2);
         assert_eq!(back.pid, 4242);
         assert_eq!(back.primary, m.primary);
-        assert_eq!(back.secondary_rect(100), Some(Rect { left: -1920, top: 1032, right: 0, bottom: 1080 }));
+        assert_eq!(
+            back.secondary_rect(100),
+            Some(Rect {
+                left: -1920,
+                top: 1032,
+                right: 0,
+                bottom: 1080
+            })
+        );
         assert_eq!(back.secondary_rect(900), m.secondary_rect(900));
         assert_eq!(back.secondaries.len(), 2);
     }
@@ -131,9 +187,33 @@ mod tests {
 
     #[test]
     fn parked_or_empty_rects_are_not_placed() {
-        assert!(!Rect { left: -10000, top: -10000, right: -9900, bottom: -9950 }.is_placed());
-        assert!(!Rect { left: 0, top: 0, right: 0, bottom: 0 }.is_placed());
-        assert!(Rect { left: 0, top: 1032, right: 1920, bottom: 1080 }.is_placed());
-        assert!(Rect { left: -1920, top: 1032, right: 0, bottom: 1080 }.is_placed());
+        assert!(!Rect {
+            left: -10000,
+            top: -10000,
+            right: -9900,
+            bottom: -9950
+        }
+        .is_placed());
+        assert!(!Rect {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0
+        }
+        .is_placed());
+        assert!(Rect {
+            left: 0,
+            top: 1032,
+            right: 1920,
+            bottom: 1080
+        }
+        .is_placed());
+        assert!(Rect {
+            left: -1920,
+            top: 1032,
+            right: 0,
+            bottom: 1080
+        }
+        .is_placed());
     }
 }

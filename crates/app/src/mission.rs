@@ -10,13 +10,17 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Instant;
 use windows::core::w;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
-use windows::Win32::UI::Input::KeyboardAndMouse::{RegisterHotKey, UnregisterHotKey, MOD_CONTROL, MOD_NOREPEAT, VK_ESCAPE, VK_UP};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    RegisterHotKey, UnregisterHotKey, MOD_CONTROL, MOD_NOREPEAT, VK_ESCAPE, VK_UP,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionStretch, Compositor, SpriteVisual,
+};
 use windows_numerics::{Vector2, Vector3};
 
 const HOTKEY_ID: i32 = 0xAB03;
@@ -48,6 +52,7 @@ struct Mc {
     text_cache: HashMap<String, (CompositionDrawingSurface, i32, i32)>,
 }
 
+#[allow(dead_code)]
 struct Ctl {
     hwnd: HWND,
     comp: Compositor,
@@ -59,7 +64,11 @@ thread_local! {
 }
 
 fn with_mc<R>(f: impl FnOnce(&mut Mc) -> R) -> Option<R> {
-    MC.with(|c| c.try_borrow_mut().ok().and_then(|mut b| b.as_mut().map(|b| f(b))))
+    MC.with(|c| {
+        c.try_borrow_mut()
+            .ok()
+            .and_then(|mut b| b.as_mut().map(|b| f(b)))
+    })
 }
 
 fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
@@ -76,17 +85,51 @@ fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraMissionCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-mc-ctl"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
-        if RegisterHotKey(Some(hwnd), HOTKEY_ID, MOD_CONTROL | MOD_NOREPEAT, VK_UP.0 as u32).is_err() {
-            log::line("mission", "Ctrl+Atas dipakai program lain; hot key tidak aktif");
+        let class = w!("NexoraMissionCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-mc-ctl"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
+        if RegisterHotKey(
+            Some(hwnd),
+            HOTKEY_ID,
+            MOD_CONTROL | MOD_NOREPEAT,
+            VK_UP.0 as u32,
+        )
+        .is_err()
+        {
+            log::line(
+                "mission",
+                "Ctrl+Atas dipakai program lain; hot key tidak aktif",
+            );
         }
-        CTL.with(|c| *c.borrow_mut() = Some(Ctl { hwnd, comp: comp.clone() }));
+        CTL.with(|c| {
+            *c.borrow_mut() = Some(Ctl {
+                hwnd,
+                comp: comp.clone(),
+            })
+        });
     }
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn shutdown() {
     CTL.with(|c| {
         if let Some(ctl) = c.borrow().as_ref() {
@@ -142,30 +185,67 @@ fn create(comp: &Compositor) -> windows_core::Result<Option<Box<Mc>>> {
     look.blur_sigma = look.blur_sigma.max(20.0);
     look.tint = [120, 12, 14, 18];
     let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
-    let mut popup = Popup::new_with(comp, w!("AbraMission"), Some(mc_proc), WINDOW_EX_STYLE(0), prefs::apply(base, &look), true)?;
+    let mut popup = Popup::new_with(
+        comp,
+        w!("NexoraMission"),
+        Some(mc_proc),
+        WINDOW_EX_STYLE(0),
+        prefs::apply(base, &look),
+        true,
+    )?;
     let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0;
     popup.set_rect(0, 0, screen.0, screen.1)?;
     popup.panel.set_radius(0.0)?;
     let dst = popup.hwnd.0 as isize;
 
-    let wins: Vec<_> = enumerate::list(std::process::id()).into_iter().filter(|w| !focus::is_minimized(w.hwnd)).collect();
+    let wins: Vec<_> = enumerate::list(std::process::id())
+        .into_iter()
+        .filter(|w| !focus::is_minimized(w.hwnd))
+        .collect();
     let mut tiles = Vec::new();
     let mut sizes = Vec::new();
     for w in &wins {
-        let Some(handle) = thumbnail::register(dst, w.hwnd) else { continue };
+        let Some(handle) = thumbnail::register(dst, w.hwnd) else {
+            continue;
+        };
         let Some((sw, sh)) = thumbnail::source_size(handle) else {
             thumbnail::unregister(handle);
             continue;
         };
         let (fx, fy, fw, fh) = snapshot::frame_rect(w.hwnd).unwrap_or((0, 0, sw, sh));
         sizes.push((sw as f32, sh as f32));
-        let title = if w.name.is_empty() { focus::title(w.hwnd) } else { w.name.clone() };
-        tiles.push(Tile { hwnd: w.hwnd, handle, from: Rect { x: fx as f32, y: fy as f32, w: fw as f32, h: fh as f32 }, to: Rect { x: 0.0, y: 0.0, w: 0.0, h: 0.0 }, title });
+        let title = if w.name.is_empty() {
+            focus::title(w.hwnd)
+        } else {
+            w.name.clone()
+        };
+        tiles.push(Tile {
+            hwnd: w.hwnd,
+            handle,
+            from: Rect {
+                x: fx as f32,
+                y: fy as f32,
+                w: fw as f32,
+                h: fh as f32,
+            },
+            to: Rect {
+                x: 0.0,
+                y: 0.0,
+                w: 0.0,
+                h: 0.0,
+            },
+            title,
+        });
     }
     if tiles.is_empty() {
         return Ok(None);
     }
-    let area = Rect { x: 60.0 * dpi, y: 150.0 * dpi, w: screen.0 as f32 - 120.0 * dpi, h: screen.1 as f32 - 210.0 * dpi };
+    let area = Rect {
+        x: 60.0 * dpi,
+        y: 150.0 * dpi,
+        w: screen.0 as f32 - 120.0 * dpi,
+        h: screen.1 as f32 - 210.0 * dpi,
+    };
     let g = grid(&sizes, area, 30.0 * dpi, 34.0 * dpi);
     for (t, r) in tiles.iter_mut().zip(g) {
         t.to = r;
@@ -174,7 +254,22 @@ fn create(comp: &Compositor) -> windows_core::Result<Option<Box<Mc>>> {
     highlight.SetOpacity(0.0)?;
     popup.content.Children()?.InsertAtTop(&highlight)?;
     let gfx = Gfx::shared(comp)?;
-    Ok(Some(Box::new(Mc { popup, gfx, comp: comp.clone(), dpi, tiles, t0: Instant::now(), done: false, hover: None, highlight, label: None, desks: vec![], plus: None, cur_desk: 0, text_cache: HashMap::new() })))
+    Ok(Some(Box::new(Mc {
+        popup,
+        gfx,
+        comp: comp.clone(),
+        dpi,
+        tiles,
+        t0: Instant::now(),
+        done: false,
+        hover: None,
+        highlight,
+        label: None,
+        desks: vec![],
+        plus: None,
+        cur_desk: 0,
+        text_cache: HashMap::new(),
+    })))
 }
 
 fn lerp(a: f32, b: f32, t: f32) -> f32 {
@@ -204,7 +299,16 @@ impl Mc {
         }
     }
 
-    fn put_text(&mut self, text: &str, px: i32, weight: i32, x: f32, y: f32, maxw: f32, op: f32) -> Option<SpriteVisual> {
+    fn put_text(
+        &mut self,
+        text: &str,
+        px: i32,
+        weight: i32,
+        x: f32,
+        y: f32,
+        maxw: f32,
+        op: f32,
+    ) -> Option<SpriteVisual> {
         let key = format!("{px}|{weight}|{text}|{}", maxw as i32);
         let hit = self.text_cache.get(&key).cloned();
         let (surf, w, h) = match hit {
@@ -214,7 +318,10 @@ impl Mc {
                 let (tw, th) = measure(text, &style);
                 let tw = (tw + 2).min(maxw.max(40.0) as i32);
                 let bmp = render(text, &style, tw, th)?;
-                let sf = self.gfx.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, [255, 255, 255])).ok()?;
+                let sf = self
+                    .gfx
+                    .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, [255, 255, 255]))
+                    .ok()?;
                 let v = (sf, tw, th);
                 self.text_cache.insert(key, v.clone());
                 v
@@ -225,8 +332,15 @@ impl Mc {
             b.SetStretch(CompositionStretch::None)?;
             let v = self.comp.CreateSpriteVisual()?;
             v.SetBrush(&b)?;
-            v.SetSize(Vector2 { X: w as f32, Y: h as f32 })?;
-            v.SetOffset(Vector3 { X: x + (maxw - w as f32) / 2.0, Y: y, Z: 0.0 })?;
+            v.SetSize(Vector2 {
+                X: w as f32,
+                Y: h as f32,
+            })?;
+            v.SetOffset(Vector3 {
+                X: x + (maxw - w as f32) / 2.0,
+                Y: y,
+                Z: 0.0,
+            })?;
             v.SetOpacity(op)?;
             self.popup.content.Children()?.InsertAtTop(&v)?;
             Ok(v)
@@ -238,11 +352,18 @@ impl Mc {
         let go = || -> windows_core::Result<()> {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetSize(Vector2 { X: r.w, Y: r.h })?;
-            v.SetOffset(Vector3 { X: r.x, Y: r.y, Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: r.x,
+                Y: r.y,
+                Z: 0.0,
+            })?;
             v.SetBrush(&self.comp.CreateColorBrushWithColor(c)?)?;
             let g = self.comp.CreateRoundedRectangleGeometry()?;
             g.SetSize(Vector2 { X: r.w, Y: r.h })?;
-            g.SetCornerRadius(Vector2 { X: radius, Y: radius })?;
+            g.SetCornerRadius(Vector2 {
+                X: radius,
+                Y: radius,
+            })?;
             let clip = self.comp.CreateGeometricClip()?;
             clip.SetGeometry(&g)?;
             v.SetClip(&clip)?;
@@ -264,17 +385,70 @@ impl Mc {
         let y = 28.0 * d;
         self.desks.clear();
         for (i, name) in names.iter().enumerate() {
-            let r = Rect { x: x0 + i as f32 * (cw + gap), y, w: cw, h: ch };
+            let r = Rect {
+                x: x0 + i as f32 * (cw + gap),
+                y,
+                w: cw,
+                h: ch,
+            };
             if i == cur {
-                self.card(Rect { x: r.x - 3.0 * d, y: r.y - 3.0 * d, w: r.w + 6.0 * d, h: r.h + 6.0 * d }, 14.0 * d, crate::prefs::accent_c(255));
+                self.card(
+                    Rect {
+                        x: r.x - 3.0 * d,
+                        y: r.y - 3.0 * d,
+                        w: r.w + 6.0 * d,
+                        h: r.h + 6.0 * d,
+                    },
+                    14.0 * d,
+                    crate::prefs::accent_c(255),
+                );
             }
-            self.card(r, 12.0 * d, Color { A: 110, R: 255, G: 255, B: 255 });
-            let _ = self.put_text(name, (13.0 * d) as i32, 600, r.x, r.y + r.h / 2.0 - 8.0 * d, r.w, 1.0);
+            self.card(
+                r,
+                12.0 * d,
+                Color {
+                    A: 110,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                },
+            );
+            let _ = self.put_text(
+                name,
+                (13.0 * d) as i32,
+                600,
+                r.x,
+                r.y + r.h / 2.0 - 8.0 * d,
+                r.w,
+                1.0,
+            );
             self.desks.push((r, i));
         }
-        let pr = Rect { x: x0 + n * (cw + gap), y, w: plus_w, h: ch };
-        self.card(pr, 12.0 * d, Color { A: 70, R: 255, G: 255, B: 255 });
-        let _ = self.put_text("+", (28.0 * d) as i32, 300, pr.x, pr.y + pr.h / 2.0 - 18.0 * d, pr.w, 1.0);
+        let pr = Rect {
+            x: x0 + n * (cw + gap),
+            y,
+            w: plus_w,
+            h: ch,
+        };
+        self.card(
+            pr,
+            12.0 * d,
+            Color {
+                A: 70,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        );
+        let _ = self.put_text(
+            "+",
+            (28.0 * d) as i32,
+            300,
+            pr.x,
+            pr.y + pr.h / 2.0 - 18.0 * d,
+            pr.w,
+            1.0,
+        );
         self.plus = Some(pr);
     }
 
@@ -300,19 +474,44 @@ impl Mc {
             let (r, title) = (self.tiles[idx].to, self.tiles[idx].title.clone());
             if !title.is_empty() {
                 let d = self.dpi;
-                self.label = self.put_text(&title, (13.0 * d) as i32, 600, r.x, r.y + r.h + 14.0 * d, r.w.max(120.0), 1.0);
+                self.label = self.put_text(
+                    &title,
+                    (13.0 * d) as i32,
+                    600,
+                    r.x,
+                    r.y + r.h + 14.0 * d,
+                    r.w.max(120.0),
+                    1.0,
+                );
             }
         }
         match i.map(|i| self.tiles[i].to) {
             Some(r) if self.done => {
                 let pad = 7.0 * self.dpi;
                 let go = || -> windows_core::Result<()> {
-                    self.highlight.SetSize(Vector2 { X: r.w + 2.0 * pad, Y: r.h + 2.0 * pad })?;
-                    self.highlight.SetOffset(Vector3 { X: r.x - pad, Y: r.y - pad, Z: 0.0 })?;
-                    self.highlight.SetBrush(&self.comp.CreateColorBrushWithColor(crate::prefs::accent_c(235))?)?;
+                    self.highlight.SetSize(Vector2 {
+                        X: r.w + 2.0 * pad,
+                        Y: r.h + 2.0 * pad,
+                    })?;
+                    self.highlight.SetOffset(Vector3 {
+                        X: r.x - pad,
+                        Y: r.y - pad,
+                        Z: 0.0,
+                    })?;
+                    self.highlight.SetBrush(
+                        &self
+                            .comp
+                            .CreateColorBrushWithColor(crate::prefs::accent_c(235))?,
+                    )?;
                     let g = self.comp.CreateRoundedRectangleGeometry()?;
-                    g.SetSize(Vector2 { X: r.w + 2.0 * pad, Y: r.h + 2.0 * pad })?;
-                    g.SetCornerRadius(Vector2 { X: 10.0 * self.dpi, Y: 10.0 * self.dpi })?;
+                    g.SetSize(Vector2 {
+                        X: r.w + 2.0 * pad,
+                        Y: r.h + 2.0 * pad,
+                    })?;
+                    g.SetCornerRadius(Vector2 {
+                        X: 10.0 * self.dpi,
+                        Y: 10.0 * self.dpi,
+                    })?;
                     let clip = self.comp.CreateGeometricClip()?;
                     clip.SetGeometry(&g)?;
                     self.highlight.SetClip(&clip)?;
@@ -365,16 +564,27 @@ unsafe extern "system" fn mc_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
                     let _ = p;
                     return Some(Err(()));
                 }
-                m.desks.iter().find(|(r, _)| in_r(r)).map(|(_, i)| Ok((*i as i32) - (m.cur_desk as i32)))
+                m.desks
+                    .iter()
+                    .find(|(r, _)| in_r(r))
+                    .map(|(_, i)| Ok((*i as i32) - (m.cur_desk as i32)))
             })
             .flatten();
             if let Some(act) = desk {
                 close();
                 match act {
-                    Err(()) => nacre_platform::keys::chord(&[nacre_platform::keys::WIN, nacre_platform::keys::CTRL, 0x44]),
+                    Err(()) => nacre_platform::keys::chord(&[
+                        nacre_platform::keys::WIN,
+                        nacre_platform::keys::CTRL,
+                        0x44,
+                    ]),
                     Ok(delta) => {
                         for _ in 0..delta.abs() {
-                            nacre_platform::keys::chord(&[nacre_platform::keys::WIN, nacre_platform::keys::CTRL, if delta > 0 { 0x27 } else { 0x25 }]);
+                            nacre_platform::keys::chord(&[
+                                nacre_platform::keys::WIN,
+                                nacre_platform::keys::CTRL,
+                                if delta > 0 { 0x27 } else { 0x25 },
+                            ]);
                         }
                     }
                 }

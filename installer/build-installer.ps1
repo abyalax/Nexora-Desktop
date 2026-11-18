@@ -18,7 +18,7 @@ if (-not $iscc) { throw "Inno Setup 6 not found. Install it from https://jrsoftw
 
 if (-not $NoBuild) {
   $sep = [char]0x1f
-  $env:CARGO_ENCODED_RUSTFLAGS = "--remap-path-prefix=$env:USERPROFILE=~$sep--remap-path-prefix=$root=abra"
+  $env:CARGO_ENCODED_RUSTFLAGS = "--remap-path-prefix=$env:USERPROFILE=~$sep--remap-path-prefix=$root=nexora"
   Push-Location $root
   try {
     cargo build --release
@@ -29,7 +29,7 @@ if (-not $NoBuild) {
   }
 }
 
-$files = @("abra.exe", "abra-guard.exe")
+$files = @("nexora.exe", "nexora-guard.exe")
 foreach ($f in $files) {
   if (-not (Test-Path (Join-Path $Source $f))) { throw "Missing $f in $Source." }
 }
@@ -48,18 +48,18 @@ foreach ($f in $files) {
 Write-Host "Privacy check passed: no local paths or user name inside the binaries."
 
 New-Item -ItemType Directory -Force $dist | Out-Null
-& $iscc "/DAppVersion=$Version" "/DSourceDir=$Source" (Join-Path $PSScriptRoot "ABRA.iss")
+& $iscc "/DAppVersion=$Version" "/DSourceDir=$Source" (Join-Path $PSScriptRoot "NEXORA.iss")
 if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
 
-$stage = Join-Path $dist "ABRA-$Version"
+$stage = Join-Path $dist "NEXORA-$Version"
 Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force (Join-Path $stage "fonts") | Out-Null
 foreach ($f in $files) { Copy-Item (Join-Path $Source $f) $stage }
 Copy-Item (Join-Path $root "LICENSE.md") $stage
 Copy-Item (Join-Path $root "assets\fonts\*") (Join-Path $stage "fonts")
-$zip = Join-Path $dist "ABRA-$Version-win-x64.zip"
+$zip = Join-Path $dist "NEXORA-$Version-win-x64.zip"
 Remove-Item -Force $zip -ErrorAction SilentlyContinue
 Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip
 Remove-Item -Recurse -Force $stage
 
-Write-Host "Done: dist\ABRA-Setup-$Version.exe and dist\ABRA-$Version-win-x64.zip"
+Write-Host "Done: dist\NEXORA-Setup-$Version.exe and dist\NEXORA-$Version-win-x64.zip"

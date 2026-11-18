@@ -23,7 +23,7 @@ impl Lang {
 
 const EN: &[(&str, &str)] = &[
     ("Pengaturan", "Settings"),
-    ("Pengaturan ABRA…", "ABRA Settings…"),
+    ("Pengaturan NEXORA…", "NEXORA Settings…"),
     ("MODE PENUH", "FULL MODE"),
     ("Sembunyikan taskbar Windows", "Hide the Windows taskbar"),
     ("DOCK", "DOCK"),
@@ -55,8 +55,14 @@ const EN: &[(&str, &str)] = &[
     ("Scene", "Scene"),
     ("Pusat Notifikasi", "Notification Center"),
     ("Aktifkan Scene", "Enable Scene"),
-    ("Ganti Alt+Tab dengan pengalih ABRA", "Replace Alt+Tab with the ABRA switcher"),
-    ("Klik wallpaper menyimpan semua jendela", "Click wallpaper to hide all windows"),
+    (
+        "Ganti Alt+Tab dengan pengalih NEXORA",
+        "Replace Alt+Tab with the NEXORA switcher",
+    ),
+    (
+        "Klik wallpaper menyimpan semua jendela",
+        "Click wallpaper to hide all windows",
+    ),
     ("Judul jendela saat hover", "Show window title on hover"),
     ("Jeda media app di latar", "Pause media of background apps"),
     ("Posisi daftar jendela", "Window list position"),
@@ -94,16 +100,22 @@ const EN: &[(&str, &str)] = &[
     ("teks", "text"),
     ("Disalin", "Copied"),
     ("Blur", "Blur"),
-    ("Paket ikon (folder iconpack)", "Icon pack (iconpack folder)"),
+    (
+        "Paket ikon (folder iconpack)",
+        "Icon pack (iconpack folder)",
+    ),
     ("Unduhan", "Downloads"),
     ("Buka folder Unduhan", "Open Downloads folder"),
     ("Tumpukan Unduhan", "Downloads stack"),
     ("App terakhir dipakai", "Recent apps"),
-    ("Pintasan cepat (Alt+` ganti jendela app)", "Quick shortcuts (Alt+` switches app windows)"),
+    (
+        "Pintasan cepat (Alt+` ganti jendela app)",
+        "Quick shortcuts (Alt+` switches app windows)",
+    ),
     ("Warna aksen", "Accent color"),
     ("Logo menu", "Menu logo"),
     ("Lingkaran", "Circle"),
-    ("ABRA", "ABRA"),
+    ("NEXORA", "NEXORA"),
     ("Deck", "Deck"),
     ("Visor", "Visor"),
     ("Rail", "Rail"),
@@ -123,9 +135,15 @@ const EN: &[(&str, &str)] = &[
     ("Papan Klip", "Clipboard"),
     ("Tambah kunci cepat", "Add quick keys"),
     ("Tidak ada hasil", "No results"),
-    ("Belum ada yang disalin dalam 8 jam terakhir.", "Nothing copied in the last 8 hours."),
+    (
+        "Belum ada yang disalin dalam 8 jam terakhir.",
+        "Nothing copied in the last 8 hours.",
+    ),
     ("Ketik untuk mencari berkas.", "Type to search files."),
-    ("Riwayat Papan Klip di Quick Search", "Clipboard history in Quick Search"),
+    (
+        "Riwayat Papan Klip di Quick Search",
+        "Clipboard history in Quick Search",
+    ),
     ("Buat Catatan", "Create Note"),
     ("Mulai Timer", "Start Timer"),
     ("Kirim Email", "Send Email"),
@@ -141,10 +159,16 @@ const EN: &[(&str, &str)] = &[
     ("Sedang", "Medium"),
     ("Besar", "Large"),
     ("Apps", "Apps"),
-    ("Selalu di atas jendela layar penuh", "Always on top of full-screen windows"),
+    (
+        "Selalu di atas jendela layar penuh",
+        "Always on top of full-screen windows",
+    ),
     ("Ikon seragam (squircle)", "Uniform icons (squircle)"),
     ("Kaca", "Glass"),
-    ("Sembunyikan ikon desktop saat ABRA berjalan", "Hide desktop icons while ABRA runs"),
+    (
+        "Sembunyikan ikon desktop saat NEXORA berjalan",
+        "Hide desktop icons while NEXORA runs",
+    ),
     ("Cari", "Search"),
     ("Cari Aplikasi", "Search Applications"),
     ("Tidak ada aplikasi", "No apps found"),
@@ -157,16 +181,28 @@ const EN: &[(&str, &str)] = &[
     ("Aktifkan Rail", "Enable Rail"),
     ("Jam 24 jam", "24-hour clock"),
     ("Logo Rail", "Rail logo"),
-    ("Skala Deck, Visor, Rail & Quick Panel", "Deck, Visor, Rail & Quick Panel scale"),
+    (
+        "Skala Deck, Visor, Rail & Quick Panel",
+        "Deck, Visor, Rail & Quick Panel scale",
+    ),
     ("Bentuk", "Shape"),
     ("Capsule", "Capsule"),
     ("Sinyal lemah", "Weak signal"),
     ("Jaringan Tersimpan", "Saved Networks"),
     ("Lebih sedikit", "Show fewer"),
     ("Jaringan tersimpan lainnya", "More saved networks"),
-    ("Jaringan sekitar perlu izin Lokasi Windows", "Nearby networks need Windows Location permission"),
-    ("ABRA tidak membaca atau menyimpan lokasimu", "ABRA never reads or stores your location"),
-    ("Izinkan di Pengaturan Lokasi\u{2026}", "Allow in Location Settings\u{2026}"),
+    (
+        "Jaringan sekitar perlu izin Lokasi Windows",
+        "Nearby networks need Windows Location permission",
+    ),
+    (
+        "NEXORA tidak membaca atau menyimpan lokasimu",
+        "NEXORA never reads or stores your location",
+    ),
+    (
+        "Izinkan di Pengaturan Lokasi\u{2026}",
+        "Allow in Location Settings\u{2026}",
+    ),
     ("Persentase baterai", "Battery percentage"),
     ("Di dalam", "Inside"),
     ("Di luar", "Outside"),
@@ -179,19 +215,37 @@ const EN: &[(&str, &str)] = &[
     ("Hapus Widget", "Remove Widget"),
     ("Cari Widget", "Search Widgets"),
     ("Semua Widget", "All Widgets"),
-    ("Seret widget ke desktop, atau klik untuk menambahkannya.", "Drag a widget to the desktop, or click to add it."),
+    (
+        "Seret widget ke desktop, atau klik untuk menambahkannya.",
+        "Drag a widget to the desktop, or click to add it.",
+    ),
     ("Jam Dunia", "World Clock"),
     ("Hari Ini", "Today"),
     ("Bulan", "Month"),
     ("Jam Digital", "Digital Clock"),
     ("Monitor Sistem", "System Monitor"),
     ("Lihat waktu saat ini.", "See the current time."),
-    ("Lihat waktu di kota-kota lain.", "See the time in other cities."),
-    ("Lihat hari dan tanggal hari ini.", "See today's day and date."),
+    (
+        "Lihat waktu di kota-kota lain.",
+        "See the time in other cities.",
+    ),
+    (
+        "Lihat hari dan tanggal hari ini.",
+        "See today's day and date.",
+    ),
     ("Lihat kalender bulan ini.", "See this month's calendar."),
-    ("Lihat jam dan tanggal dalam angka.", "See the time and date in digits."),
-    ("Lihat status baterai perangkat.", "See your device's battery status."),
-    ("Lihat pemakaian CPU dan memori.", "See CPU and memory usage."),
+    (
+        "Lihat jam dan tanggal dalam angka.",
+        "See the time and date in digits.",
+    ),
+    (
+        "Lihat status baterai perangkat.",
+        "See your device's battery status.",
+    ),
+    (
+        "Lihat pemakaian CPU dan memori.",
+        "See CPU and memory usage.",
+    ),
     ("Tidak ada baterai", "No battery"),
     ("Kemarin", "Yesterday"),
     ("JAM", "HRS"),
@@ -245,7 +299,6 @@ const EN: &[(&str, &str)] = &[
     ("Bantuan", "Help"),
     ("Cari Bantuan", "Search Help"),
     ("Quick Panel", "Quick Panel"),
-
     ("Kustom", "Custom"),
     ("Radius sudut jendela", "Window corner radius"),
     ("Sudut jendela app", "App window corners"),
@@ -253,9 +306,15 @@ const EN: &[(&str, &str)] = &[
     ("Kotak", "Square"),
     ("Kecil", "Small"),
     ("Bulat", "Round"),
-    ("Bayangan halus di bawah jendela aktif", "Soft shadow under the active window"),
+    (
+        "Bayangan halus di bawah jendela aktif",
+        "Soft shadow under the active window",
+    ),
     ("Jendela", "Windows"),
-    ("Buka otomatis saat kursor di Visor", "Open when the cursor is on the Visor"),
+    (
+        "Buka otomatis saat kursor di Visor",
+        "Open when the cursor is on the Visor",
+    ),
     ("Aktifkan Deck", "Enable Deck"),
     ("Aktifkan Visor", "Enable Visor"),
     ("Refraksi tepi kaca (Deck)", "Glass edge refraction (Deck)"),
@@ -288,8 +347,10 @@ const EN: &[(&str, &str)] = &[
     ("Kunci Layar", "Lock Screen"),
     ("Kalkulator", "Calculator"),
     ("Buka Pengaturan", "Open Settings"),
-    ("Klik kontrol untuk menambahkannya ke Quick Panel.", "Click a control to add it to Quick Panel."),
-
+    (
+        "Klik kontrol untuk menambahkannya ke Quick Panel.",
+        "Click a control to add it to Quick Panel.",
+    ),
     ("Volume", "Volume"),
     ("Kecerahan", "Brightness"),
     ("Naikkan Volume", "Volume Up"),
@@ -298,7 +359,10 @@ const EN: &[(&str, &str)] = &[
     ("Lebih Terang", "Brighter"),
     ("Lebih Redup", "Dimmer"),
     ("Tidak tersedia", "Unavailable"),
-    ("Animasi jendela (minimize, tutup, buka)", "Window animations (minimize, close, open)"),
+    (
+        "Animasi jendela (minimize, tutup, buka)",
+        "Window animations (minimize, close, open)",
+    ),
     ("Ukuran", "Layout"),
     ("Ukuran ikon", "Icon size"),
     ("Jarak antar ikon", "Icon spacing"),
@@ -325,15 +389,21 @@ const EN: &[(&str, &str)] = &[
     ("Pilih gambar ikon", "Choose an icon image"),
     ("Aplikasi", "Applications"),
     ("Gambar", "Images"),
-    ("Keluar dari ABRA", "Quit ABRA"),
+    ("Keluar dari NEXORA", "Quit NEXORA"),
     ("Sembunyikan taskbar (uji)", "Hide taskbar (test)"),
     ("Tidak ada media", "No media playing"),
     ("Putar", "Play"),
     ("Rak", "Shelf"),
     ("Rak kosong", "Shelf is empty"),
-    ("Seret berkas ke Visor untuk menaruhnya di sini.", "Drag files onto the Visor to keep them here."),
+    (
+        "Seret berkas ke Visor untuk menaruhnya di sini.",
+        "Drag files onto the Visor to keep them here.",
+    ),
     ("Lirik", "Lyrics"),
-    ("Lirik tampil di sini saat lagu diputar.", "Lyrics appear here while a song plays."),
+    (
+        "Lirik tampil di sini saat lagu diputar.",
+        "Lyrics appear here while a song plays.",
+    ),
     ("Mengisi daya", "Charging"),
     ("Berjalan", "Running"),
     ("Dijeda", "Paused"),
@@ -348,12 +418,18 @@ const EN: &[(&str, &str)] = &[
     ("Lirik tidak tersedia", "No lyrics available"),
     ("Lirik tanpa waktu", "Unsynced lyrics"),
     ("Tampilkan lirik di Visor", "Show lyrics in the Visor"),
-    ("Cari lirik online (LRCLIB)", "Look up lyrics online (LRCLIB)"),
+    (
+        "Cari lirik online (LRCLIB)",
+        "Look up lyrics online (LRCLIB)",
+    ),
     ("Folder lirik (.lrc)", "Lyrics folder (.lrc)"),
     ("Pintar", "Smart"),
     ("Funnel", "Funnel"),
     ("Tidur sekarang?", "Sleep now?"),
-    ("Mulai ulang komputer sekarang?", "Restart the computer now?"),
+    (
+        "Mulai ulang komputer sekarang?",
+        "Restart the computer now?",
+    ),
     ("Matikan komputer sekarang?", "Shut down the computer now?"),
     ("Keluar dari akun sekarang?", "Sign out now?"),
     ("Mulai", "Start"),
@@ -363,7 +439,10 @@ const EN: &[(&str, &str)] = &[
     ("Tidak ada jaringan lain", "No other networks"),
     ("Mencari jaringan…", "Looking for networks…"),
     ("Tidak ada adaptor Wi-Fi", "No Wi-Fi adapter"),
-    ("Lokasi mati: jaringan sekitar tersembunyi", "Location is off: nearby networks hidden"),
+    (
+        "Lokasi mati: jaringan sekitar tersembunyi",
+        "Location is off: nearby networks hidden",
+    ),
     ("Nyalakan Lokasi…", "Turn On Location…"),
     ("Pengaturan Wi-Fi…", "Wi-Fi Settings…"),
     ("Pengaturan Bluetooth…", "Bluetooth Settings…"),
@@ -377,17 +456,35 @@ const EN: &[(&str, &str)] = &[
     ("Musik & lirik", "Music & lyrics"),
     ("Kirim", "Send"),
     ("Kirim ke HP", "Send to phone"),
-    ("Pindai QR dengan kamera HP (Wi-Fi yang sama)", "Scan the QR with your phone camera (same Wi-Fi)"),
+    (
+        "Pindai QR dengan kamera HP (Wi-Fi yang sama)",
+        "Scan the QR with your phone camera (same Wi-Fi)",
+    ),
     ("Menunggu HP\u{2026}", "Waiting for phone\u{2026}"),
     ("Mengirim", "Sending"),
     ("Terkirim", "Sent"),
-    ("Tidak tersambung ke jaringan lokal", "Not connected to a local network"),
-    ("Sambungkan laptop ke Wi-Fi yang sama dengan HP.", "Connect this laptop to the same Wi-Fi as the phone."),
-    ("Izinkan ABRA di Windows Firewall bila diminta.", "Allow ABRA in Windows Firewall if asked."),
-    ("Kirim ke HP lewat QR (Wi-Fi yang sama)", "Send to phone via QR (same Wi-Fi)"),
+    (
+        "Tidak tersambung ke jaringan lokal",
+        "Not connected to a local network",
+    ),
+    (
+        "Sambungkan laptop ke Wi-Fi yang sama dengan HP.",
+        "Connect this laptop to the same Wi-Fi as the phone.",
+    ),
+    (
+        "Izinkan NEXORA di Windows Firewall bila diminta.",
+        "Allow NEXORA in Windows Firewall if asked.",
+    ),
+    (
+        "Kirim ke HP lewat QR (Wi-Fi yang sama)",
+        "Send to phone via QR (same Wi-Fi)",
+    ),
     ("Tidak ada acara hari ini", "Nothing for today"),
     ("Tidak ada acara", "No events"),
-    ("Tampilkan unduhan (Store, Steam, peramban)", "Show downloads (Store, Steam, browsers)"),
+    (
+        "Tampilkan unduhan (Store, Steam, peramban)",
+        "Show downloads (Store, Steam, browsers)",
+    ),
     ("(senyap)", "(muted)"),
     ("Timer", "Timer"),
     ("Simpan ke Rak", "Keep on Shelf"),
@@ -407,7 +504,11 @@ pub fn is_known(src: &str) -> bool {
 pub fn tr(lang: Lang, src: &'static str) -> &'static str {
     match lang {
         Lang::Id => src,
-        Lang::En => EN.iter().find(|(k, _)| *k == src).map(|(_, v)| *v).unwrap_or(src),
+        Lang::En => EN
+            .iter()
+            .find(|(k, _)| *k == src)
+            .map(|(_, v)| *v)
+            .unwrap_or(src),
     }
 }
 
@@ -415,8 +516,20 @@ pub fn month_name(lang: Lang, m: u32, id: &'static str) -> &'static str {
     match lang {
         Lang::Id => id,
         Lang::En => {
-            const N: [&str; 12] =
-                ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const N: [&str; 12] = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ];
             N.get((m.max(1) - 1) as usize % 12).copied().unwrap_or(id)
         }
     }
@@ -457,6 +570,13 @@ mod tests {
     fn calendar_names() {
         assert_eq!(month_name(Lang::En, 11, "November"), "November");
         assert_eq!(month_name(Lang::En, 1, "Januari"), "January");
-        assert_eq!(weekday_labels(Lang::En, true, ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"])[0], "Mon");
+        assert_eq!(
+            weekday_labels(
+                Lang::En,
+                true,
+                ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
+            )[0],
+            "Mon"
+        );
     }
 }

@@ -10,12 +10,13 @@ use std::sync::atomic::{AtomicIsize, Ordering};
 use std::sync::Mutex;
 use windows::core::w;
 use windows::Foundation::TimeSpan;
-use windows::UI::Composition::{
-    AnimationDelayBehavior, CompositionDrawingSurface, CompositionEasingFunction, CompositionObject, CompositionStretch, Compositor, ContainerVisual, SpriteVisual,
-};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Composition::{
+    AnimationDelayBehavior, CompositionDrawingSurface, CompositionEasingFunction,
+    CompositionObject, CompositionStretch, Compositor, ContainerVisual, SpriteVisual,
+};
 use windows_core::{Interface, HSTRING};
 use windows_numerics::{Matrix3x2, Vector2, Vector3};
 
@@ -126,7 +127,12 @@ fn hook(event: u32, hwnd: isize) {
     let h = FX_HWND.load(Ordering::Relaxed);
     if h != 0 {
         unsafe {
-            let _ = PostMessageW(Some(HWND(h as *mut _)), WM_FX, WPARAM(event as usize), LPARAM(hwnd));
+            let _ = PostMessageW(
+                Some(HWND(h as *mut _)),
+                WM_FX,
+                WPARAM(event as usize),
+                LPARAM(hwnd),
+            );
         }
     }
 }
@@ -134,22 +140,46 @@ fn hook(event: u32, hwnd: isize) {
 pub fn init(host: &Host) -> windows_core::Result<()> {
     let n = park::restore_file(&open_file());
     if n > 0 {
-        log::line("fx", &format!("{n} jendela yang sedang dibuka sesi lalu dikembalikan"));
+        log::line(
+            "fx",
+            &format!("{n} jendela yang sedang dibuka sesi lalu dikembalikan"),
+        );
     }
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraFx");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(proc), hInstance: hi, lpszClassName: class, ..Default::default() });
+        let class = w!("NexoraFx");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
         let screen = sys::screen_size();
         let hwnd = CreateWindowExW(
-            WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
+            WS_EX_NOREDIRECTIONBITMAP
+                | WS_EX_TOPMOST
+                | WS_EX_TOOLWINDOW
+                | WS_EX_NOACTIVATE
+                | WS_EX_TRANSPARENT
+                | WS_EX_LAYERED,
             class,
-            w!("abra-fx"),
+            w!("nexora-fx"),
             WS_POPUP,
-            0, 0, screen.0, screen.1,
-            None, None, Some(hi), None,
+            0,
+            0,
+            screen.0,
+            screen.1,
+            None,
+            None,
+            Some(hi),
+            None,
         )?;
-            let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), 255, LWA_ALPHA);
+        let _ = SetLayeredWindowAttributes(
+            hwnd,
+            windows::Win32::Foundation::COLORREF(0),
+            255,
+            LWA_ALPHA,
+        );
         let surface = attach(&host.compositor, hwnd, (screen.0 as f32, screen.1 as f32))?;
         let gfx = Gfx::shared(&host.compositor)?;
         FX_HWND.store(hwnd.0 as isize, Ordering::Relaxed);
@@ -256,7 +286,9 @@ fn openable(h: isize, screen: (i32, i32)) -> bool {
         }
     }
     match snapshot::frame_rect(h) {
-        Some((x, y, w, hh)) => w >= 120 && hh >= 80 && !(w >= screen.0 && hh >= screen.1) && x > -2000 && y > -2000,
+        Some((x, y, w, hh)) => {
+            w >= 120 && hh >= 80 && !(w >= screen.0 && hh >= screen.1) && x > -2000 && y > -2000
+        }
         None => false,
     }
 }
@@ -286,14 +318,21 @@ pub fn restore(target: isize, icon: (i32, i32, i32, i32), dock: isize) -> bool {
         if fx.pending_restore.is_some() {
             return false;
         }
-        let Some(pos) = fx.parked.iter().position(|p| p.hwnd == target) else { return false };
+        let Some(pos) = fx.parked.iter().position(|p| p.hwnd == target) else {
+            return false;
+        };
         let s = fx.parked.remove(pos);
         let (x, y, w, h) = s.rect;
         fx.play(s.surface.clone(), icon, (x, y, w, h), Kind::Restore);
         fx.snap = Some(s);
         fx.pending_restore = Some((target, dock));
         unsafe {
-            SetTimer(Some(fx.hwnd), T_RESTORE, START_DELAY + Kind::Restore.ms() - 30, None);
+            SetTimer(
+                Some(fx.hwnd),
+                T_RESTORE,
+                START_DELAY + Kind::Restore.ms() - 30,
+                None,
+            );
         }
         true
     })
@@ -312,8 +351,20 @@ impl Kind {
     fn ms(self) -> u32 {
         let g = genie_on();
         match self {
-            Kind::Minimize => if g { 540 } else { 380 },
-            Kind::Restore => if g { 470 } else { 340 },
+            Kind::Minimize => {
+                if g {
+                    540
+                } else {
+                    380
+                }
+            }
+            Kind::Restore => {
+                if g {
+                    470
+                } else {
+                    340
+                }
+            }
             Kind::Close => 270,
             Kind::Open => 300,
         }
@@ -321,15 +372,33 @@ impl Kind {
 }
 
 fn span(ms: u32) -> TimeSpan {
-    TimeSpan { Duration: ms as i64 * 10_000 }
+    TimeSpan {
+        Duration: ms as i64 * 10_000,
+    }
 }
 
 impl Fx {
-    fn ease(&self, a: (f32, f32), b: (f32, f32)) -> windows_core::Result<CompositionEasingFunction> {
-        self.comp.CreateCubicBezierEasingFunction(Vector2 { X: a.0, Y: a.1 }, Vector2 { X: b.0, Y: b.1 })?.cast()
+    fn ease(
+        &self,
+        a: (f32, f32),
+        b: (f32, f32),
+    ) -> windows_core::Result<CompositionEasingFunction> {
+        self.comp
+            .CreateCubicBezierEasingFunction(
+                Vector2 { X: a.0, Y: a.1 },
+                Vector2 { X: b.0, Y: b.1 },
+            )?
+            .cast()
     }
 
-    fn vec3(&self, obj: &CompositionObject, prop: &str, from: Vector3, frames: &[(f32, Vector3, (f32, f32), (f32, f32))], ms: u32) -> windows_core::Result<()> {
+    fn vec3(
+        &self,
+        obj: &CompositionObject,
+        prop: &str,
+        from: Vector3,
+        frames: &[(f32, Vector3, (f32, f32), (f32, f32))],
+        ms: u32,
+    ) -> windows_core::Result<()> {
         let a = self.comp.CreateVector3KeyFrameAnimation()?;
         a.InsertKeyFrame(0.0, from)?;
         for (t, v, c1, c2) in frames {
@@ -341,7 +410,13 @@ impl Fx {
         obj.StartAnimation(&HSTRING::from(prop), &a)
     }
 
-    fn scalar(&self, obj: &CompositionObject, prop: &str, frames: &[(f32, f32)], ms: u32) -> windows_core::Result<()> {
+    fn scalar(
+        &self,
+        obj: &CompositionObject,
+        prop: &str,
+        frames: &[(f32, f32)],
+        ms: u32,
+    ) -> windows_core::Result<()> {
         let a = self.comp.CreateScalarKeyFrameAnimation()?;
         for (t, v) in frames {
             a.InsertKeyFrame(*t, *v)?;
@@ -352,14 +427,43 @@ impl Fx {
         obj.StartAnimation(&HSTRING::from(prop), &a)
     }
 
-    fn play(&mut self, surface: CompositionDrawingSurface, a: (i32, i32, i32, i32), b: (i32, i32, i32, i32), kind: Kind) {
+    fn play(
+        &mut self,
+        surface: CompositionDrawingSurface,
+        a: (i32, i32, i32, i32),
+        b: (i32, i32, i32, i32),
+        kind: Kind,
+    ) {
         if matches!(kind, Kind::Minimize | Kind::Restore) && genie_on() {
-            let (win, icon) = if kind == Kind::Restore { (b, a) } else { (a, b) };
+            let (win, icon) = if kind == Kind::Restore {
+                (b, a)
+            } else {
+                (a, b)
+            };
             match self.play_genie(surface, win, icon, kind == Kind::Restore) {
                 Ok(()) => {
-                    log::line("fx", &format!("animasi {} genie ({} ms) jendela {win:?} ikon {icon:?}", if kind == Kind::Restore { "restore" } else { "minimize" }, kind.ms()));
+                    log::line(
+                        "fx",
+                        &format!(
+                            "animasi {} genie ({} ms) jendela {win:?} ikon {icon:?}",
+                            if kind == Kind::Restore {
+                                "restore"
+                            } else {
+                                "minimize"
+                            },
+                            kind.ms()
+                        ),
+                    );
                     unsafe {
-                        let _ = SetWindowPos(self.hwnd, Some(HWND_TOPMOST), 0, 0, self.screen.0, self.screen.1, SWP_NOACTIVATE);
+                        let _ = SetWindowPos(
+                            self.hwnd,
+                            Some(HWND_TOPMOST),
+                            0,
+                            0,
+                            self.screen.0,
+                            self.screen.1,
+                            SWP_NOACTIVATE,
+                        );
                         let _ = ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
                         SetTimer(Some(self.hwnd), T_HIDE, START_DELAY + kind.ms() + 80, None);
                     }
@@ -373,8 +477,18 @@ impl Fx {
                 Kind::Restore => (b, a),
                 _ => (a, b),
             };
-            let (wx, wy, ww, wh) = (win.0 as f32, win.1 as f32, win.2.max(1) as f32, win.3.max(1) as f32);
-            let (ix, iy, iw, ih) = (icon.0 as f32, icon.1 as f32, icon.2.max(1) as f32, icon.3.max(1) as f32);
+            let (wx, wy, ww, wh) = (
+                win.0 as f32,
+                win.1 as f32,
+                win.2.max(1) as f32,
+                win.3.max(1) as f32,
+            );
+            let (ix, iy, iw, ih) = (
+                icon.0 as f32,
+                icon.1 as f32,
+                icon.2.max(1) as f32,
+                icon.3.max(1) as f32,
+            );
             if let Some(old) = self.sprite.take() {
                 let _ = self.surface.root.Children()?.Remove(&old);
             }
@@ -383,42 +497,101 @@ impl Fx {
             brush.SetStretch(CompositionStretch::Fill)?;
             sprite.SetBrush(&brush)?;
             sprite.SetSize(Vector2 { X: ww, Y: wh })?;
-            sprite.SetCenterPoint(Vector3 { X: ww / 2.0, Y: wh / 2.0, Z: 0.0 })?;
+            sprite.SetCenterPoint(Vector3 {
+                X: ww / 2.0,
+                Y: wh / 2.0,
+                Z: 0.0,
+            })?;
             self.surface.root.Children()?.InsertAtTop(&sprite)?;
             let obj: CompositionObject = sprite.cast()?;
-            let at_win = Vector3 { X: wx, Y: wy, Z: 0.0 };
-            let at_icon = Vector3 { X: ix + iw / 2.0 - ww / 2.0, Y: iy + ih / 2.0 - wh / 2.0, Z: 0.0 };
+            let at_win = Vector3 {
+                X: wx,
+                Y: wy,
+                Z: 0.0,
+            };
+            let at_icon = Vector3 {
+                X: ix + iw / 2.0 - ww / 2.0,
+                Y: iy + ih / 2.0 - wh / 2.0,
+                Z: 0.0,
+            };
             let (sx, sy) = (iw / ww, ih / wh);
-            let one = Vector3 { X: 1.0, Y: 1.0, Z: 1.0 };
+            let one = Vector3 {
+                X: 1.0,
+                Y: 1.0,
+                Z: 1.0,
+            };
             let ms = kind.ms();
             match kind {
                 Kind::Minimize => {
                     sprite.SetOffset(at_win)?;
                     sprite.SetScale(one)?;
-                    self.vec3(&obj, "Offset", at_win, &[(1.0, at_icon, (0.45, 0.0), (0.2, 1.0))], ms)?;
+                    self.vec3(
+                        &obj,
+                        "Offset",
+                        at_win,
+                        &[(1.0, at_icon, (0.45, 0.0), (0.2, 1.0))],
+                        ms,
+                    )?;
                     self.vec3(
                         &obj,
                         "Scale",
                         one,
                         &[
-                            (0.55, Vector3 { X: 0.82, Y: 0.35, Z: 1.0 }, (0.3, 0.0), (0.5, 1.0)),
-                            (1.0, Vector3 { X: sx, Y: sy, Z: 1.0 }, (0.5, 0.0), (0.2, 1.0)),
+                            (
+                                0.55,
+                                Vector3 {
+                                    X: 0.82,
+                                    Y: 0.35,
+                                    Z: 1.0,
+                                },
+                                (0.3, 0.0),
+                                (0.5, 1.0),
+                            ),
+                            (
+                                1.0,
+                                Vector3 {
+                                    X: sx,
+                                    Y: sy,
+                                    Z: 1.0,
+                                },
+                                (0.5, 0.0),
+                                (0.2, 1.0),
+                            ),
                         ],
                         ms,
                     )?;
                     self.scalar(&obj, "Opacity", &[(0.0, 1.0), (0.82, 1.0), (1.0, 0.0)], ms)?;
                 }
                 Kind::Restore => {
-                    let from = Vector3 { X: sx, Y: sy, Z: 1.0 };
+                    let from = Vector3 {
+                        X: sx,
+                        Y: sy,
+                        Z: 1.0,
+                    };
                     sprite.SetOffset(at_icon)?;
                     sprite.SetScale(from)?;
-                    self.vec3(&obj, "Offset", at_icon, &[(1.0, at_win, (0.2, 0.8), (0.2, 1.0))], ms)?;
+                    self.vec3(
+                        &obj,
+                        "Offset",
+                        at_icon,
+                        &[(1.0, at_win, (0.2, 0.8), (0.2, 1.0))],
+                        ms,
+                    )?;
                     self.vec3(
                         &obj,
                         "Scale",
                         from,
                         &[
-                            (0.45, Vector3 { X: 0.82, Y: 0.35, Z: 1.0 }, (0.2, 0.7), (0.3, 1.0)),
+                            (
+                                0.45,
+                                Vector3 {
+                                    X: 0.82,
+                                    Y: 0.35,
+                                    Z: 1.0,
+                                },
+                                (0.2, 0.7),
+                                (0.3, 1.0),
+                            ),
                             (1.0, one, (0.2, 0.8), (0.2, 1.0)),
                         ],
                         ms,
@@ -428,22 +601,66 @@ impl Fx {
                 Kind::Close => {
                     sprite.SetOffset(at_win)?;
                     sprite.SetScale(one)?;
-                    self.vec3(&obj, "Scale", one, &[(1.0, Vector3 { X: 0.06, Y: 0.06, Z: 1.0 }, (0.33, 0.55), (0.45, 1.0))], ms)?;
+                    self.vec3(
+                        &obj,
+                        "Scale",
+                        one,
+                        &[(
+                            1.0,
+                            Vector3 {
+                                X: 0.06,
+                                Y: 0.06,
+                                Z: 1.0,
+                            },
+                            (0.33, 0.55),
+                            (0.45, 1.0),
+                        )],
+                        ms,
+                    )?;
                     self.scalar(&obj, "Opacity", &[(0.0, 1.0), (0.55, 0.92), (1.0, 0.0)], ms)?;
                 }
                 Kind::Open => {
-                    let from = Vector3 { X: 0.86, Y: 0.86, Z: 1.0 };
+                    let from = Vector3 {
+                        X: 0.86,
+                        Y: 0.86,
+                        Z: 1.0,
+                    };
                     sprite.SetOffset(at_win)?;
                     sprite.SetScale(from)?;
                     sprite.SetOpacity(0.0)?;
-                    self.vec3(&obj, "Scale", from, &[(1.0, one, (0.16, 1.0), (0.3, 1.0))], ms)?;
+                    self.vec3(
+                        &obj,
+                        "Scale",
+                        from,
+                        &[(1.0, one, (0.16, 1.0), (0.3, 1.0))],
+                        ms,
+                    )?;
                     self.scalar(&obj, "Opacity", &[(0.0, 0.0), (0.45, 1.0), (1.0, 1.0)], ms)?;
                 }
             }
             self.sprite = Some(sprite);
-            log::line("fx", &format!("animasi {} ({ms} ms) dari {a:?} ke {b:?}", match kind { Kind::Minimize => "minimize", Kind::Restore => "restore", Kind::Close => "tutup", Kind::Open => "buka" }));
+            log::line(
+                "fx",
+                &format!(
+                    "animasi {} ({ms} ms) dari {a:?} ke {b:?}",
+                    match kind {
+                        Kind::Minimize => "minimize",
+                        Kind::Restore => "restore",
+                        Kind::Close => "tutup",
+                        Kind::Open => "buka",
+                    }
+                ),
+            );
             unsafe {
-                let _ = SetWindowPos(self.hwnd, Some(HWND_TOPMOST), 0, 0, self.screen.0, self.screen.1, SWP_NOACTIVATE);
+                let _ = SetWindowPos(
+                    self.hwnd,
+                    Some(HWND_TOPMOST),
+                    0,
+                    0,
+                    self.screen.0,
+                    self.screen.1,
+                    SWP_NOACTIVATE,
+                );
                 let _ = ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
                 SetTimer(Some(self.hwnd), T_HIDE, START_DELAY + ms + 80, None);
             }
@@ -454,7 +671,13 @@ impl Fx {
         }
     }
 
-    fn play_genie(&mut self, surface: CompositionDrawingSurface, win: (i32, i32, i32, i32), icon: (i32, i32, i32, i32), reverse: bool) -> windows_core::Result<()> {
+    fn play_genie(
+        &mut self,
+        surface: CompositionDrawingSurface,
+        win: (i32, i32, i32, i32),
+        icon: (i32, i32, i32, i32),
+        reverse: bool,
+    ) -> windows_core::Result<()> {
         use nacre_core::genie::{self, Rect as GRect};
         if let Some(old) = self.genie.take() {
             let _ = self.surface.root.Children()?.Remove(&old);
@@ -462,24 +685,53 @@ impl Fx {
         if let Some(old) = self.sprite.take() {
             let _ = self.surface.root.Children()?.Remove(&old);
         }
-        let w = GRect { x: win.0 as f32, y: win.1 as f32, w: win.2.max(1) as f32, h: win.3.max(1) as f32 };
-        let ic = GRect { x: icon.0 as f32, y: icon.1 as f32, w: icon.2.max(1) as f32, h: icon.3.max(1) as f32 };
+        let w = GRect {
+            x: win.0 as f32,
+            y: win.1 as f32,
+            w: win.2.max(1) as f32,
+            h: win.3.max(1) as f32,
+        };
+        let ic = GRect {
+            x: icon.0 as f32,
+            y: icon.1 as f32,
+            w: icon.2.max(1) as f32,
+            h: icon.3.max(1) as f32,
+        };
         let n = ((w.h / 5.0) as usize).clamp(48, 120);
         let sh = w.h / n as f32;
-        let ms = if reverse { Kind::Restore.ms() } else { Kind::Minimize.ms() };
+        let ms = if reverse {
+            Kind::Restore.ms()
+        } else {
+            Kind::Minimize.ms()
+        };
         let samples = ((ms / 12) as usize).clamp(24, 48);
         let root = self.comp.CreateContainerVisual()?;
         self.surface.root.Children()?.InsertAtTop(&root)?;
         let (dur, delay) = (span(ms), span(START_DELAY));
-        let v3 = |p: (f32, f32), z: f32| Vector3 { X: p.0, Y: p.1, Z: z };
+        let v3 = |p: (f32, f32), z: f32| Vector3 {
+            X: p.0,
+            Y: p.1,
+            Z: z,
+        };
         for i in 0..n {
             let s = self.comp.CreateSpriteVisual()?;
             let b = self.comp.CreateSurfaceBrushWithSurface(&surface)?;
             b.SetStretch(CompositionStretch::Fill)?;
-            b.SetTransformMatrix(Matrix3x2 { M11: 1.0, M12: 0.0, M21: 0.0, M22: n as f32, M31: 0.0, M32: -(i as f32) * sh })?;
+            b.SetTransformMatrix(Matrix3x2 {
+                M11: 1.0,
+                M12: 0.0,
+                M21: 0.0,
+                M22: n as f32,
+                M31: 0.0,
+                M32: -(i as f32) * sh,
+            })?;
             s.SetBrush(&b)?;
             s.SetSize(Vector2 { X: w.w, Y: sh })?;
-            s.SetCenterPoint(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 })?;
+            s.SetCenterPoint(Vector3 {
+                X: 0.0,
+                Y: 0.0,
+                Z: 0.0,
+            })?;
             let (o0, s0) = genie::slice(i, n, genie::tau_at(0.0, reverse), w, ic);
             s.SetOffset(v3(o0, 0.0))?;
             s.SetScale(v3(s0, 1.0))?;
@@ -516,7 +768,8 @@ impl Fx {
         fade.SetDelayTime(delay)?;
         fade.SetDelayBehavior(AnimationDelayBehavior::SetInitialValueBeforeDelay)?;
         root.SetOpacity(if reverse { 0.0 } else { 1.0 })?;
-        root.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Opacity"), &fade)?;
+        root.cast::<CompositionObject>()?
+            .StartAnimation(&HSTRING::from("Opacity"), &fade)?;
         self.genie = Some(root);
         Ok(())
     }
@@ -533,7 +786,9 @@ impl Fx {
             self.opened.retain(|x| focus::is_alive(*x));
         }
         self.end_open();
-        let Some(target) = snapshot::frame_rect(h) else { return };
+        let Some(target) = snapshot::frame_rect(h) else {
+            return;
+        };
         flag(h);
         let Some(p) = park::park(h) else { return };
         if !park::is_parked(h) {
@@ -541,14 +796,23 @@ impl Fx {
             return;
         }
         hold_parked(Some(p));
-        self.opening = Some(Opening { hwnd: h, target, since: std::time::Instant::now(), playing: false });
+        self.opening = Some(Opening {
+            hwnd: h,
+            target,
+            since: std::time::Instant::now(),
+            playing: false,
+        });
         unsafe {
             SetTimer(Some(self.hwnd), T_OPEN_POLL, 16, None);
         }
     }
 
     fn poll_open(&mut self) {
-        let Some((h, target, waited, playing)) = self.opening.as_ref().map(|o| (o.hwnd, o.target, o.since.elapsed().as_millis(), o.playing)) else {
+        let Some((h, target, waited, playing)) = self
+            .opening
+            .as_ref()
+            .map(|o| (o.hwnd, o.target, o.since.elapsed().as_millis(), o.playing))
+        else {
             unsafe {
                 let _ = KillTimer(Some(self.hwnd), T_OPEN_POLL);
             }
@@ -571,15 +835,27 @@ impl Fx {
                 unsafe {
                     let _ = KillTimer(Some(self.hwnd), T_OPEN_POLL);
                 }
-                match self.gfx.surface_from_bgra(shot.bmp.w, shot.bmp.h, &shot.bmp.bgra) {
+                match self
+                    .gfx
+                    .surface_from_bgra(shot.bmp.w, shot.bmp.h, &shot.bmp.bgra)
+                {
                     Ok(surface) => {
                         if let Some(o) = self.opening.as_mut() {
                             o.playing = true;
                         }
                         self.play(surface.clone(), target, target, Kind::Open);
-                        self.snap = Some(Snap { hwnd: h, rect: target, surface });
+                        self.snap = Some(Snap {
+                            hwnd: h,
+                            rect: target,
+                            surface,
+                        });
                         unsafe {
-                            SetTimer(Some(self.hwnd), T_OPEN_END, START_DELAY + Kind::Open.ms() - 16, None);
+                            SetTimer(
+                                Some(self.hwnd),
+                                T_OPEN_END,
+                                START_DELAY + Kind::Open.ms() - 16,
+                                None,
+                            );
                         }
                     }
                     Err(_) => self.end_open(),
@@ -605,15 +881,35 @@ impl Fx {
         if h == 0 || !enabled() || !eligible(h) || focus::is_minimized(h) || park::is_parked(h) {
             return;
         }
-        let Some(shot) = snapshot::capture(h, 1) else { return };
-        if let Ok(surface) = self.gfx.surface_from_bgra(shot.bmp.w, shot.bmp.h, &shot.bmp.bgra) {
-            log::line("fx", &format!("tangkap hwnd={h} {}x{} (px {}x{})", shot.rect.2, shot.rect.3, shot.bmp.w, shot.bmp.h));
-            self.snap = Some(Snap { hwnd: h, rect: shot.rect, surface });
+        let Some(shot) = snapshot::capture(h, 1) else {
+            return;
+        };
+        if let Ok(surface) = self
+            .gfx
+            .surface_from_bgra(shot.bmp.w, shot.bmp.h, &shot.bmp.bgra)
+        {
+            log::line(
+                "fx",
+                &format!(
+                    "tangkap hwnd={h} {}x{} (px {}x{})",
+                    shot.rect.2, shot.rect.3, shot.bmp.w, shot.bmp.h
+                ),
+            );
+            self.snap = Some(Snap {
+                hwnd: h,
+                rect: shot.rect,
+                surface,
+            });
         }
     }
 
     fn icon_rect(&self, hwnd: isize) -> (i32, i32, i32, i32) {
-        crate::dock::icon_rect_for(hwnd).unwrap_or((self.screen.0 / 2 - 24, self.screen.1 - 70, 48, 48))
+        crate::dock::icon_rect_for(hwnd).unwrap_or((
+            self.screen.0 / 2 - 24,
+            self.screen.1 - 70,
+            48,
+            48,
+        ))
     }
 
     fn on_event(&mut self, event: u32, h: isize) {
@@ -729,7 +1025,9 @@ impl Fx {
             tracker::EV_MOVESIZE_END if h == self.shadow_target => {
                 self.update_shadow(h, true);
             }
-            tracker::EV_MINIMIZE_START | tracker::EV_DESTROY if h == self.shadow_target => self.hide_shadow(),
+            tracker::EV_MINIMIZE_START | tracker::EV_DESTROY if h == self.shadow_target => {
+                self.hide_shadow()
+            }
             _ => {}
         }
     }
@@ -740,21 +1038,45 @@ impl Fx {
         }
         unsafe {
             let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-            let class = w!("AbraShadow");
-            RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(shadow_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
+            let class = w!("NexoraShadow");
+            RegisterClassW(&WNDCLASSW {
+                lpfnWndProc: Some(shadow_proc),
+                hInstance: hi,
+                lpszClassName: class,
+                ..Default::default()
+            });
             let hwnd = CreateWindowExW(
-                WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
+                WS_EX_NOREDIRECTIONBITMAP
+                    | WS_EX_TOOLWINDOW
+                    | WS_EX_NOACTIVATE
+                    | WS_EX_TRANSPARENT
+                    | WS_EX_LAYERED,
                 class,
-                w!("abra-shadow"),
+                w!("nexora-shadow"),
                 WS_POPUP,
-                0, 0, 100, 100,
-                None, None, Some(hi), None,
+                0,
+                0,
+                100,
+                100,
+                None,
+                None,
+                Some(hi),
+                None,
             )?;
-            let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), 255, LWA_ALPHA);
+            let _ = SetLayeredWindowAttributes(
+                hwnd,
+                windows::Win32::Foundation::COLORREF(0),
+                255,
+                LWA_ALPHA,
+            );
             let surface = attach(&self.comp, hwnd, (100.0, 100.0))?;
             let sprite = self.comp.CreateSpriteVisual()?;
             surface.root.Children()?.InsertAtTop(&sprite)?;
-            self.shadow = Some(ShadowWin { hwnd, surface, sprite });
+            self.shadow = Some(ShadowWin {
+                hwnd,
+                surface,
+                sprite,
+            });
         }
         Ok(())
     }
@@ -772,7 +1094,9 @@ impl Fx {
                 return;
             }
         }
-        let Some((x, y, w, ht)) = snapshot::frame_rect(h) else { return };
+        let Some((x, y, w, ht)) = snapshot::frame_rect(h) else {
+            return;
+        };
         if w < 80 || ht < 60 {
             self.hide_shadow();
             return;
@@ -781,24 +1105,44 @@ impl Fx {
             return;
         }
         let scale = unsafe { windows::Win32::UI::HiDpi::GetDpiForSystem() }.max(96) as f32 / 96.0;
-        let (m, dy, radius) = ((SHADOW_MARGIN as f32 * scale) as i32, 10.0 * scale, 8.0 * scale);
+        let (m, dy, radius) = (
+            (SHADOW_MARGIN as f32 * scale) as i32,
+            10.0 * scale,
+            8.0 * scale,
+        );
         let (fw, fh) = (w + 2 * m, ht + 2 * m);
         let key = (fw, fh, radius as i32);
         let go = |this: &mut Fx| -> windows_core::Result<()> {
-            let Some(sh) = &this.shadow else { return Ok(()) };
+            let Some(sh) = &this.shadow else {
+                return Ok(());
+            };
             if full && key != this.shadow_key {
                 let (bw, bh, data) = shadow_bitmap(w, ht, m, dy, radius, 4);
                 let surface = this.gfx.surface_from_bgra(bw, bh, &data)?;
                 let brush = this.comp.CreateSurfaceBrushWithSurface(&surface)?;
                 brush.SetStretch(CompositionStretch::Fill)?;
                 sh.sprite.SetBrush(&brush)?;
-                sh.sprite.SetSize(Vector2 { X: fw as f32, Y: fh as f32 })?;
-                sh.surface.root.SetSize(Vector2 { X: fw as f32, Y: fh as f32 })?;
+                sh.sprite.SetSize(Vector2 {
+                    X: fw as f32,
+                    Y: fh as f32,
+                })?;
+                sh.surface.root.SetSize(Vector2 {
+                    X: fw as f32,
+                    Y: fh as f32,
+                })?;
                 this.shadow_key = key;
             }
             unsafe {
                 let below = GetWindow(HWND(h as *mut _), GW_HWNDNEXT).unwrap_or(HWND_BOTTOM);
-                let _ = SetWindowPos(sh.hwnd, Some(below), x - m, y - m, fw, fh, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                let _ = SetWindowPos(
+                    sh.hwnd,
+                    Some(below),
+                    x - m,
+                    y - m,
+                    fw,
+                    fh,
+                    SWP_NOACTIVATE | SWP_SHOWWINDOW,
+                );
             }
             Ok(())
         };

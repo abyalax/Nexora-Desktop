@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 use windows::core::{HSTRING, PCWSTR};
-use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW};
+use windows::Win32::Storage::FileSystem::{
+    GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW,
+};
 
 static CACHE: Mutex<Option<HashMap<String, String>>> = Mutex::new(None);
 
@@ -18,7 +20,13 @@ fn read(path: &str) -> String {
         }
         let mut ptr: *mut std::ffi::c_void = std::ptr::null_mut();
         let mut len = 0u32;
-        let lang = if VerQueryValueW(buf.as_ptr() as *const _, &HSTRING::from("\\VarFileInfo\\Translation"), &mut ptr, &mut len).as_bool()
+        let lang = if VerQueryValueW(
+            buf.as_ptr() as *const _,
+            &HSTRING::from("\\VarFileInfo\\Translation"),
+            &mut ptr,
+            &mut len,
+        )
+        .as_bool()
             && len >= 4
         {
             let t = std::slice::from_raw_parts(ptr as *const u16, 2);
@@ -29,7 +37,11 @@ fn read(path: &str) -> String {
         let key = HSTRING::from(format!("\\StringFileInfo\\{lang}\\FileDescription"));
         if VerQueryValueW(buf.as_ptr() as *const _, &key, &mut ptr, &mut len).as_bool() && len > 1 {
             let s = std::slice::from_raw_parts(ptr as *const u16, len as usize);
-            return PCWSTR(s.as_ptr()).to_string().unwrap_or_default().trim().to_string();
+            return PCWSTR(s.as_ptr())
+                .to_string()
+                .unwrap_or_default()
+                .trim()
+                .to_string();
         }
         String::new()
     }
@@ -46,6 +58,10 @@ pub fn friendly(path: &str) -> String {
     }
     drop(g);
     let v = read(path);
-    CACHE.lock().unwrap_or_else(|e| e.into_inner()).get_or_insert_with(HashMap::new).insert(path.to_string(), v.clone());
+    CACHE
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .get_or_insert_with(HashMap::new)
+        .insert(path.to_string(), v.clone());
     v
 }

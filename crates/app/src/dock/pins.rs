@@ -14,7 +14,10 @@ pub fn name_for(path: &str) -> String {
 fn default_pins() -> Vec<Pin> {
     let win = std::env::var("WINDIR").unwrap_or_else(|_| "C:\\Windows".into());
     let explorer = format!("{win}\\explorer.exe");
-    vec![Pin { name: name_for(&explorer), path: explorer }]
+    vec![Pin {
+        name: name_for(&explorer),
+        path: explorer,
+    }]
 }
 
 pub fn load(path: &Path) -> Vec<Pin> {
@@ -25,8 +28,14 @@ pub fn load(path: &Path) -> Vec<Pin> {
             .map(str::trim)
             .filter(|l| !l.is_empty() && !l.starts_with('#'))
             .map(|l| match l.split_once('\t') {
-                Some((p, n)) if !n.trim().is_empty() => Pin { path: p.to_string(), name: n.trim().to_string() },
-                _ => Pin { path: l.to_string(), name: name_for(l) },
+                Some((p, n)) if !n.trim().is_empty() => Pin {
+                    path: p.to_string(),
+                    name: n.trim().to_string(),
+                },
+                _ => Pin {
+                    path: l.to_string(),
+                    name: name_for(l),
+                },
             })
             .collect(),
         Err(_) => default_pins(),

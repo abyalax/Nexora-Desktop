@@ -15,18 +15,22 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use windows::core::w;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionObject, CompositionStretch, Compositor, ContainerVisual, InsetClip};
-use windows::Win32::Graphics::Gdi::{CreateRectRgn, SetWindowRgn};
-use windows_core::{Interface, HSTRING};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
+use windows::Win32::Graphics::Gdi::{CreateRectRgn, SetWindowRgn};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetKeyState, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, RegisterHotKey, UnregisterHotKey, MOD_CONTROL, MOD_NOREPEAT, MOD_SHIFT, VK_BACK, VK_CONTROL, VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT,
-    VK_SPACE, VK_TAB, VK_UP,
+    GetKeyState, RegisterHotKey, TrackMouseEvent, UnregisterHotKey, MOD_CONTROL, MOD_NOREPEAT,
+    MOD_SHIFT, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_CONTROL, VK_DOWN, VK_ESCAPE, VK_LEFT,
+    VK_RETURN, VK_RIGHT, VK_SPACE, VK_TAB, VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionObject, CompositionStretch, Compositor, ContainerVisual,
+    InsetClip,
+};
+use windows_core::{Interface, HSTRING};
 use windows_numerics::{Vector2, Vector3};
 
 const WM_APPS: u32 = WM_APP + 80;
@@ -41,9 +45,19 @@ const HOTKEY_ID: i32 = 0xAB01;
 const HOTKEY_APPS: i32 = 0xAB02;
 const COLS: usize = 5;
 const FTYPES: [(&str, &[&str]); 4] = [
-    ("Gambar", &["png", "jpg", "jpeg", "gif", "webp", "heic", "bmp", "svg", "tif", "tiff"]),
+    (
+        "Gambar",
+        &[
+            "png", "jpg", "jpeg", "gif", "webp", "heic", "bmp", "svg", "tif", "tiff",
+        ],
+    ),
     ("Video", &["mp4", "mov", "mkv", "avi", "webm", "wmv", "m4v"]),
-    ("Dokumen", &["pdf", "doc", "docx", "txt", "md", "rtf", "odt", "xls", "xlsx", "csv", "ppt", "pptx"]),
+    (
+        "Dokumen",
+        &[
+            "pdf", "doc", "docx", "txt", "md", "rtf", "odt", "xls", "xlsx", "csv", "ppt", "pptx",
+        ],
+    ),
     ("Musik", &["mp3", "wav", "flac", "m4a", "aac", "ogg", "wma"]),
 ];
 
@@ -85,6 +99,7 @@ struct Row {
 enum HitKind {
     Mode(Mode),
     Filter(Filter),
+    #[allow(dead_code)]
     Cat(Option<Cat>),
     Row(usize),
     Cell(usize),
@@ -102,6 +117,7 @@ enum Run {
     Copy(String),
 }
 
+#[allow(dead_code)]
 struct Spot {
     popup: Popup,
     gfx: Gfx,
@@ -176,7 +192,21 @@ fn geo(dpi: f32, screen: (i32, i32)) -> Geo {
     let gw = cap + 4.0 * (btn + gap);
     let max_h = (sh * 0.6).min(600.0 * d).max(h * 4.0).round();
     let top = (sh * 0.23 - h / 2.0).round();
-    Geo { h, ws, cap, btn, gap, gw, max_h, win: (((sw - gw) / 2.0).round() as i32, top as i32, gw.ceil() as i32, max_h.ceil() as i32) }
+    Geo {
+        h,
+        ws,
+        cap,
+        btn,
+        gap,
+        gw,
+        max_h,
+        win: (
+            ((sw - gw) / 2.0).round() as i32,
+            top as i32,
+            gw.ceil() as i32,
+            max_h.ceil() as i32,
+        ),
+    }
 }
 
 fn union(a: Rect, b: Rect) -> Rect {
@@ -185,12 +215,24 @@ fn union(a: Rect, b: Rect) -> Rect {
     (l, t, r - l, bt - t)
 }
 
-fn spring(comp: &Compositor, obj: &CompositionObject, prop: &str, v: f32, ratio: f32, period_ms: u32) {
+fn spring(
+    comp: &Compositor,
+    obj: &CompositionObject,
+    prop: &str,
+    v: f32,
+    ratio: f32,
+    period_ms: u32,
+) {
     let go = || -> windows_core::Result<()> {
         let a = comp.CreateSpringScalarAnimation()?;
         a.SetDampingRatio(ratio)?;
-        a.SetPeriod(windows::Foundation::TimeSpan { Duration: period_ms as i64 * 10_000 })?;
-        a.SetFinalValue(&windows::Foundation::PropertyValue::CreateSingle(v)?.cast::<windows::Foundation::IReference<f32>>()?)?;
+        a.SetPeriod(windows::Foundation::TimeSpan {
+            Duration: period_ms as i64 * 10_000,
+        })?;
+        a.SetFinalValue(
+            &windows::Foundation::PropertyValue::CreateSingle(v)?
+                .cast::<windows::Foundation::IReference<f32>>()?,
+        )?;
         obj.StartAnimation(&HSTRING::from(prop), &a)
     };
     let _ = go();
@@ -208,7 +250,11 @@ thread_local! {
 }
 
 fn with_spot<R>(f: impl FnOnce(&mut Spot) -> R) -> Option<R> {
-    SPOT.with(|c| c.try_borrow_mut().ok().and_then(|mut b| b.as_mut().map(|b| f(b))))
+    SPOT.with(|c| {
+        c.try_borrow_mut()
+            .ok()
+            .and_then(|mut b| b.as_mut().map(|b| f(b)))
+    })
 }
 
 fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
@@ -269,17 +315,60 @@ fn action_glyph(id: &str) -> (&'static str, [u8; 3]) {
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraSpotCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-spot-ctl"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
-        if RegisterHotKey(Some(hwnd), HOTKEY_ID, MOD_CONTROL | MOD_NOREPEAT, VK_SPACE.0 as u32).is_err() {
-            log::line("spotlight", "Ctrl+Space sudah dipakai program lain; hot key tidak aktif");
+        let class = w!("NexoraSpotCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-spot-ctl"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
+        if RegisterHotKey(
+            Some(hwnd),
+            HOTKEY_ID,
+            MOD_CONTROL | MOD_NOREPEAT,
+            VK_SPACE.0 as u32,
+        )
+        .is_err()
+        {
+            log::line(
+                "spotlight",
+                "Ctrl+Space sudah dipakai program lain; hot key tidak aktif",
+            );
         }
-        if RegisterHotKey(Some(hwnd), HOTKEY_APPS, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, VK_SPACE.0 as u32).is_err() {
-            log::line("spotlight", "Ctrl+Shift+Space dipakai program lain; hot key Apps tidak aktif");
+        if RegisterHotKey(
+            Some(hwnd),
+            HOTKEY_APPS,
+            MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT,
+            VK_SPACE.0 as u32,
+        )
+        .is_err()
+        {
+            log::line(
+                "spotlight",
+                "Ctrl+Shift+Space dipakai program lain; hot key Apps tidak aktif",
+            );
         }
         let h = hwnd.0 as isize;
-        CTL.with(|c| *c.borrow_mut() = Some(Ctl { hwnd, comp: comp.clone() }));
+        CTL.with(|c| {
+            *c.borrow_mut() = Some(Ctl {
+                hwnd,
+                comp: comp.clone(),
+            })
+        });
         prefs::listen(hwnd);
         clipboard::set_enabled(prefs::get().clipboard_history);
         apps::refresh(move || {
@@ -289,6 +378,7 @@ pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn shutdown() {
     CTL.with(|c| {
         if let Some(ctl) = c.borrow().as_ref() {
@@ -331,7 +421,9 @@ pub fn toggle_mode(mode: Mode) {
                 let _ = crate::motion::scalar(&s.comp, &root, "Opacity", 0.0, 1.0, 80);
                 let _ = root.SetOpacity(1.0);
             });
-            let h = CTL.with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize)).unwrap_or(0);
+            let h = CTL
+                .with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize))
+                .unwrap_or(0);
             apps::refresh(move || unsafe {
                 let _ = PostMessageW(Some(HWND(h as *mut _)), WM_APPS, WPARAM(0), LPARAM(0));
             });
@@ -372,11 +464,22 @@ fn finish_closing() {
 fn create(comp: &Compositor, mode: Mode) -> windows_core::Result<Box<Spot>> {
     let screen = sys::screen_size();
     let glass = prefs::glass((10.0, 10.0), 27.0, prefs::Role::Dock);
-    let mut popup = Popup::new_with(comp, w!("AbraSpotlight"), Some(spot_proc), WINDOW_EX_STYLE(0), glass, true)?;
+    let mut popup = Popup::new_with(
+        comp,
+        w!("NexoraSpotlight"),
+        Some(spot_proc),
+        WINDOW_EX_STYLE(0),
+        glass,
+        true,
+    )?;
     let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0;
     let tier = {
         let c = sys::conditions();
-        if !c.transparency || c.battery_saver || c.remote_session { nacre_ui::glass::Tier::Solid } else { nacre_ui::glass::Tier::Full }
+        if !c.transparency || c.battery_saver || c.remote_session {
+            nacre_ui::glass::Tier::Solid
+        } else {
+            nacre_ui::glass::Tier::Full
+        }
     };
     let _ = popup.panel.set_tier(tier);
     let g = geo(dpi, screen);
@@ -384,7 +487,10 @@ fn create(comp: &Compositor, mode: Mode) -> windows_core::Result<Box<Spot>> {
     let idle: Rect = ((g.gw - g.ws) / 2.0, 0.0, g.ws, g.h);
     popup.panel.set_rect(idle.0, idle.1, idle.2, idle.3)?;
     popup.panel.set_radius(g.h / 2.0)?;
-    popup.content.SetSize(Vector2 { X: g.win.2 as f32, Y: g.win.3 as f32 })?;
+    popup.content.SetSize(Vector2 {
+        X: g.win.2 as f32,
+        Y: g.win.3 as f32,
+    })?;
     let clip = comp.CreateInsetClip()?;
     popup.content.SetClip(&clip)?;
     let side = comp.CreateContainerVisual()?;
@@ -484,9 +590,18 @@ impl Spot {
 
     fn set_region(&self, r: Rect) {
         let g = self.geo;
-        let r = if r.3 <= g.h + 0.5 { (0.0, 0.0, g.gw, g.h) } else { r };
+        let r = if r.3 <= g.h + 0.5 {
+            (0.0, 0.0, g.gw, g.h)
+        } else {
+            r
+        };
         unsafe {
-            let rgn = CreateRectRgn(r.0.floor() as i32, r.1.floor() as i32, (r.0 + r.2).ceil() as i32, (r.1 + r.3).ceil() as i32);
+            let rgn = CreateRectRgn(
+                r.0.floor() as i32,
+                r.1.floor() as i32,
+                (r.0 + r.2).ceil() as i32,
+                (r.1 + r.3).ceil() as i32,
+            );
             SetWindowRgn(self.popup.hwnd, Some(rgn), true);
         }
     }
@@ -494,18 +609,42 @@ impl Spot {
     fn place(&mut self, t: Rect, anim: Option<(f32, u32)>) {
         let g = self.geo;
         let old = self.cur;
-        let changed = (old.0 - t.0).abs() > 0.5 || (old.1 - t.1).abs() > 0.5 || (old.2 - t.2).abs() > 0.5 || (old.3 - t.3).abs() > 0.5;
+        let changed = (old.0 - t.0).abs() > 0.5
+            || (old.1 - t.1).abs() > 0.5
+            || (old.2 - t.2).abs() > 0.5
+            || (old.3 - t.3).abs() > 0.5;
         if !changed {
             return;
         }
-        let radius = if t.3 <= g.h + 0.5 { t.3 / 2.0 } else { 26.0 * self.dpi };
+        let radius = if t.3 <= g.h + 0.5 {
+            t.3 / 2.0
+        } else {
+            26.0 * self.dpi
+        };
         let (ww, wh) = (g.win.2 as f32, g.win.3 as f32);
-        let ins = if t.3 <= g.h + 0.5 { (0.0, 0.0, 0.0, 0.0) } else { (t.0, t.1, (ww - t.0 - t.2).max(0.0), (wh - t.1 - t.3).max(0.0)) };
+        let ins = if t.3 <= g.h + 0.5 {
+            (0.0, 0.0, 0.0, 0.0)
+        } else {
+            (
+                t.0,
+                t.1,
+                (ww - t.0 - t.2).max(0.0),
+                (wh - t.1 - t.3).max(0.0),
+            )
+        };
         match anim {
             Some((ratio, period)) => {
-                let _ = self.popup.panel.animate_rect(t.0, t.1, t.2, t.3, radius, ratio, period);
+                let _ = self
+                    .popup
+                    .panel
+                    .animate_rect(t.0, t.1, t.2, t.3, radius, ratio, period);
                 if let Ok(o) = self.clip.cast::<CompositionObject>() {
-                    for (p, v) in [("LeftInset", ins.0), ("TopInset", ins.1), ("RightInset", ins.2), ("BottomInset", ins.3)] {
+                    for (p, v) in [
+                        ("LeftInset", ins.0),
+                        ("TopInset", ins.1),
+                        ("RightInset", ins.2),
+                        ("BottomInset", ins.3),
+                    ] {
                         spring(&self.comp, &o, p, v, ratio, period);
                     }
                 }
@@ -596,10 +735,14 @@ impl Spot {
         }
         self.recents_requested = true;
         let (rec, th) = (self.recents.clone(), self.thumbs.clone());
-        let h = CTL.with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize)).unwrap_or(0);
+        let h = CTL
+            .with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize))
+            .unwrap_or(0);
         let px = (180.0 * self.dpi) as i32;
         std::thread::spawn(move || unsafe {
-            use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
+            use windows::Win32::System::Com::{
+                CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED,
+            };
             let com = CoInitializeEx(None, COINIT_APARTMENTTHREADED).is_ok();
             let list = nacre_platform::recent::list(15);
             *rec.lock().unwrap() = list.clone();
@@ -616,7 +759,11 @@ impl Spot {
         });
     }
 
-    fn thumb_for(&mut self, path: &str, box_px: f32) -> Option<(CompositionDrawingSurface, f32, f32)> {
+    fn thumb_for(
+        &mut self,
+        path: &str,
+        box_px: f32,
+    ) -> Option<(CompositionDrawingSurface, f32, f32)> {
         if !self.thumb_surf.contains_key(path) {
             let b = self.thumbs.lock().unwrap().get(path).cloned()?;
             let s = self.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok()?;
@@ -668,23 +815,41 @@ impl Spot {
                 let f = self.filter;
                 if f.is_none() {
                     if let Some(v) = search::eval(&q) {
-                        self.rows.push(Row { kind: RKind::Calc, title: format!("= {}", search::format_number(v)), sub: prefs::tr("Hasil kalkulator").to_string(), path: String::new() });
+                        self.rows.push(Row {
+                            kind: RKind::Calc,
+                            title: format!("= {}", search::format_number(v)),
+                            sub: prefs::tr("Hasil kalkulator").to_string(),
+                            path: String::new(),
+                        });
                     }
                 }
                 if f.is_none() || f == Some(Filter::Apps) {
                     for i in search::rank(&q, &self.names, if f.is_some() { 8 } else { 5 }) {
-                        self.rows.push(Row { kind: RKind::App, title: self.apps[i].name.clone(), sub: prefs::tr("Aplikasi").to_string(), path: self.apps[i].path.clone() });
+                        self.rows.push(Row {
+                            kind: RKind::App,
+                            title: self.apps[i].name.clone(),
+                            sub: prefs::tr("Aplikasi").to_string(),
+                            path: self.apps[i].path.clone(),
+                        });
                     }
                 }
                 if f.is_none() || f == Some(Filter::Actions) {
                     let titles = |a: &model::ActionDef| action_title(a);
-                    for i in model::rank_actions(&q, &self.quick, &titles).into_iter().take(if f.is_some() { 8 } else { 2 }) {
+                    for i in model::rank_actions(&q, &self.quick, &titles)
+                        .into_iter()
+                        .take(if f.is_some() { 8 } else { 2 })
+                    {
                         self.rows.push(self.action_row(i));
                     }
                 }
                 if f.is_none() || f == Some(Filter::Files) {
                     for h in self.files.iter().take(if f.is_some() { 8 } else { 3 }) {
-                        self.rows.push(Row { kind: RKind::File, title: h.name.clone(), sub: h.path.clone(), path: h.path.clone() });
+                        self.rows.push(Row {
+                            kind: RKind::File,
+                            title: h.name.clone(),
+                            sub: h.path.clone(),
+                            path: h.path.clone(),
+                        });
                     }
                 }
                 if f.is_none() {
@@ -698,23 +863,46 @@ impl Spot {
                 self.rows.truncate(9);
             }
             Mode::Apps if q.is_empty() => {
-                let push = |rows: &mut Vec<Row>, sections: &mut Vec<(String, std::ops::Range<usize>)>, title: String, idxs: Vec<usize>, apps: &[App]| {
+                let push = |rows: &mut Vec<Row>,
+                            sections: &mut Vec<(String, std::ops::Range<usize>)>,
+                            title: String,
+                            idxs: Vec<usize>,
+                            apps: &[App]| {
                     if idxs.is_empty() {
                         return;
                     }
                     let start = rows.len();
                     for i in idxs {
-                        rows.push(Row { kind: RKind::App, title: apps[i].name.clone(), sub: String::new(), path: apps[i].path.clone() });
+                        rows.push(Row {
+                            kind: RKind::App,
+                            title: apps[i].name.clone(),
+                            sub: String::new(),
+                            path: apps[i].path.clone(),
+                        });
                     }
                     sections.push((title, start..rows.len()));
                 };
                 let (mut rows, mut sections) = (Vec::new(), Vec::new());
                 let sugg = self.suggestions();
-                push(&mut rows, &mut sections, prefs::tr("Saran").to_string(), sugg, &self.apps);
+                push(
+                    &mut rows,
+                    &mut sections,
+                    prefs::tr("Saran").to_string(),
+                    sugg,
+                    &self.apps,
+                );
                 for c in appcat::ALL {
-                    let mut v: Vec<usize> = (0..self.apps.len()).filter(|&i| appcat::guess(&self.apps[i].name, &self.apps[i].path) == c).collect();
+                    let mut v: Vec<usize> = (0..self.apps.len())
+                        .filter(|&i| appcat::guess(&self.apps[i].name, &self.apps[i].path) == c)
+                        .collect();
                     v.sort_by_key(|&i| self.apps[i].name.to_lowercase());
-                    push(&mut rows, &mut sections, prefs::tr(c.title()).to_string(), v, &self.apps);
+                    push(
+                        &mut rows,
+                        &mut sections,
+                        prefs::tr(c.title()).to_string(),
+                        v,
+                        &self.apps,
+                    );
                 }
                 self.rows = rows;
                 self.sections = sections;
@@ -725,20 +913,35 @@ impl Spot {
             Mode::Apps => {
                 for i in search::rank(&q, &self.names, 200) {
                     let a = &self.apps[i];
-                    self.rows.push(Row { kind: RKind::App, title: a.name.clone(), sub: String::new(), path: a.path.clone() });
+                    self.rows.push(Row {
+                        kind: RKind::App,
+                        title: a.name.clone(),
+                        sub: String::new(),
+                        path: a.path.clone(),
+                    });
                 }
             }
             Mode::Files if q.is_empty() => {
                 let rec = self.recents.lock().unwrap().clone();
                 for (n, p) in rec.into_iter().filter(|(_, p)| of_type(p, self.ftype)) {
-                    self.rows.push(Row { kind: RKind::File, title: n, sub: p.clone(), path: p });
+                    self.rows.push(Row {
+                        kind: RKind::File,
+                        title: n,
+                        sub: p.clone(),
+                        path: p,
+                    });
                 }
                 self.sections = vec![(prefs::tr("Terbaru").to_string(), 0..self.rows.len())];
                 self.expanded = vec![true];
             }
             Mode::Files => {
                 for h in self.files.iter().filter(|h| of_type(&h.path, self.ftype)) {
-                    self.rows.push(Row { kind: RKind::File, title: h.name.clone(), sub: h.path.clone(), path: h.path.clone() });
+                    self.rows.push(Row {
+                        kind: RKind::File,
+                        title: h.name.clone(),
+                        sub: h.path.clone(),
+                        path: h.path.clone(),
+                    });
                 }
             }
             Mode::Actions => {
@@ -771,8 +974,18 @@ impl Spot {
                 for e in clipboard::history() {
                     if ql.is_empty() || e.text.to_lowercase().contains(&ql) {
                         let first = e.text.lines().next().unwrap_or("").trim().to_string();
-                        let sub = format!("{} \u{00B7} {} {}", prefs::tr("teks"), prefs::tr("Disalin"), clip_time(e.at));
-                        self.rows.push(Row { kind: RKind::Clip, title: first, sub, path: e.text.clone() });
+                        let sub = format!(
+                            "{} \u{00B7} {} {}",
+                            prefs::tr("teks"),
+                            prefs::tr("Disalin"),
+                            clip_time(e.at)
+                        );
+                        self.rows.push(Row {
+                            kind: RKind::Clip,
+                            title: first,
+                            sub,
+                            path: e.text.clone(),
+                        });
                     }
                 }
             }
@@ -787,7 +1000,9 @@ impl Spot {
             return;
         }
         let (gen, shared) = (self.files_gen, self.shared_files.clone());
-        let h = CTL.with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize)).unwrap_or(0);
+        let h = CTL
+            .with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize))
+            .unwrap_or(0);
         std::thread::spawn(move || {
             let hits = filesearch::search(&q);
             {
@@ -814,10 +1029,26 @@ impl Spot {
 
     fn action_row(&self, i: usize) -> Row {
         let a = &ACTIONS[i];
-        Row { kind: RKind::Action(i), title: action_title(a), sub: prefs::tr(a.app).to_string(), path: a.id.to_string() }
+        Row {
+            kind: RKind::Action(i),
+            title: action_title(a),
+            sub: prefs::tr(a.app).to_string(),
+            path: a.id.to_string(),
+        }
     }
 
-    fn text(&mut self, parent: &ContainerVisual, s: &str, x: f32, cy: f32, px: i32, weight: i32, rgb: [u8; 3], op: f32, max_w: f32) -> f32 {
+    fn text(
+        &mut self,
+        parent: &ContainerVisual,
+        s: &str,
+        x: f32,
+        cy: f32,
+        px: i32,
+        weight: i32,
+        rgb: [u8; 3],
+        op: f32,
+        max_w: f32,
+    ) -> f32 {
         if s.is_empty() {
             return 0.0;
         }
@@ -829,8 +1060,15 @@ impl Spot {
                 let style = Style { px, weight };
                 let (tw, th) = measure(s, &style);
                 let tw = (tw + 2).min(max_w as i32).max(2);
-                let Some(bmp) = render(s, &style, tw, th) else { return 0.0 };
-                let Ok(sf) = self.gfx.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb)) else { return 0.0 };
+                let Some(bmp) = render(s, &style, tw, th) else {
+                    return 0.0;
+                };
+                let Ok(sf) = self
+                    .gfx
+                    .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb))
+                else {
+                    return 0.0;
+                };
                 if self.text_cache.len() > 300 {
                     self.text_cache.clear();
                 }
@@ -839,7 +1077,15 @@ impl Spot {
                 v
             }
         };
-        self.sprite(parent, &surf, x, cy - h as f32 / 2.0, w as f32, h as f32, op);
+        self.sprite(
+            parent,
+            &surf,
+            x,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
         w as f32
     }
 
@@ -847,7 +1093,16 @@ impl Spot {
         measure(s, &Style { px, weight }).0 as f32 + 2.0
     }
 
-    fn sprite(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, op: f32) {
+    fn sprite(
+        &self,
+        parent: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        op: f32,
+    ) {
         let go = || -> windows_core::Result<()> {
             let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
             b.SetStretch(CompositionStretch::Uniform)?;
@@ -865,12 +1120,19 @@ impl Spot {
         let go = || -> windows_core::Result<()> {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-            v.SetOffset(Vector3 { X: r.0, Y: r.1, Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: r.0,
+                Y: r.1,
+                Z: 0.0,
+            })?;
             v.SetBrush(&self.comp.CreateColorBrushWithColor(c)?)?;
             if radius > 0.0 {
                 let g = self.comp.CreateRoundedRectangleGeometry()?;
                 g.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-                g.SetCornerRadius(Vector2 { X: radius, Y: radius })?;
+                g.SetCornerRadius(Vector2 {
+                    X: radius,
+                    Y: radius,
+                })?;
                 let clip = self.comp.CreateGeometricClip()?;
                 clip.SetGeometry(&g)?;
                 v.SetClip(&clip)?;
@@ -892,7 +1154,12 @@ impl Spot {
                     b.bgra = nacre_core::iconplate::plate(&b.bgra, b.w);
                 }
                 let p = prefs::get();
-                b.bgra = nacre_core::iconplate::style_icon_v(&b.bgra, p.icon_style, p.icon_tint, prefs::icon_dark());
+                b.bgra = nacre_core::iconplate::style_icon_v(
+                    &b.bgra,
+                    p.icon_style,
+                    p.icon_tint,
+                    prefs::icon_dark(),
+                );
             }
             self.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok()
         });
@@ -903,7 +1170,16 @@ impl Spot {
         s
     }
 
-    fn sym(&mut self, parent: &ContainerVisual, s: Sym, cx: f32, cy: f32, size: f32, rgb: [u8; 3], op: f32) {
+    fn sym(
+        &mut self,
+        parent: &ContainerVisual,
+        s: Sym,
+        cx: f32,
+        cy: f32,
+        size: f32,
+        rgb: [u8; 3],
+        op: f32,
+    ) {
         let n = size.round().max(8.0) as u32;
         let key = format!("sym|{s:?}|{n}|{rgb:?}");
         let hit = self.text_cache.get(&key).cloned();
@@ -911,17 +1187,38 @@ impl Spot {
             Some(v) => v,
             None => {
                 let data = symbols::render(s, n, rgb);
-                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else { return };
-                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else { return };
+                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else {
+                    return;
+                };
+                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else {
+                    return;
+                };
                 let v = (sf, cw as i32, ch as i32);
                 self.text_cache.insert(key, v.clone());
                 v
             }
         };
-        self.sprite(parent, &surf, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, op);
+        self.sprite(
+            parent,
+            &surf,
+            cx - w as f32 / 2.0,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
     }
 
-    fn glyph(&mut self, parent: &ContainerVisual, g: &str, cx: f32, cy: f32, size: f32, rgb: [u8; 3], op: f32) {
+    fn glyph(
+        &mut self,
+        parent: &ContainerVisual,
+        g: &str,
+        cx: f32,
+        cy: f32,
+        size: f32,
+        rgb: [u8; 3],
+        op: f32,
+    ) {
         let px = size.round() as i32;
         let b = (size * 1.6).round() as i32;
         let key = format!("g|{px}|{rgb:?}|{g}");
@@ -929,18 +1226,42 @@ impl Spot {
         let (surf, w, h) = match hit {
             Some(v) => v,
             None => {
-                let Some(bmp) = render_face(g, &Style { px, weight: 400 }, ICON_FACE, b, b) else { return };
-                let Some((cd, cw, ch)) = symbols::crop_ink(&recolor(&bmp, rgb), bmp.w, bmp.h) else { return };
-                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else { return };
+                let Some(bmp) = render_face(g, &Style { px, weight: 400 }, ICON_FACE, b, b) else {
+                    return;
+                };
+                let Some((cd, cw, ch)) = symbols::crop_ink(&recolor(&bmp, rgb), bmp.w, bmp.h)
+                else {
+                    return;
+                };
+                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else {
+                    return;
+                };
                 let v = (sf, cw as i32, ch as i32);
                 self.text_cache.insert(key, v.clone());
                 v
             }
         };
-        self.sprite(parent, &surf, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, op);
+        self.sprite(
+            parent,
+            &surf,
+            cx - w as f32 / 2.0,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
     }
 
-    fn mode_icon(&mut self, parent: &ContainerVisual, m: Mode, cx: f32, cy: f32, size: f32, rgb: [u8; 3], op: f32) {
+    fn mode_icon(
+        &mut self,
+        parent: &ContainerVisual,
+        m: Mode,
+        cx: f32,
+        cy: f32,
+        size: f32,
+        rgb: [u8; 3],
+        op: f32,
+    ) {
         match m {
             Mode::Search => self.sym(parent, Sym::Search, cx, cy, size, rgb, op),
             Mode::Apps => self.sym(parent, Sym::Grid, cx, cy, size * 0.95, rgb, op),
@@ -952,7 +1273,12 @@ impl Spot {
 
     fn glass_circle(&self, parent: &ContainerVisual, r: Rect) -> Option<GlassPanel> {
         let base = GlassParams::dark((r.2, r.3), r.2 / 2.0);
-        let p = GlassPanel::new(&self.comp, parent, prefs::apply(base, &prefs::look(prefs::Role::Dock))).ok()?;
+        let p = GlassPanel::new(
+            &self.comp,
+            parent,
+            prefs::apply(base, &prefs::look(prefs::Role::Dock)),
+        )
+        .ok()?;
         let _ = p.set_rect(r.0, r.1, r.2, r.3);
         let _ = p.set_radius(r.2 / 2.0);
         Some(p)
@@ -983,18 +1309,30 @@ impl Spot {
         let (g, d) = (self.geo, self.dpi);
         let fg = self.look().fg;
         let _ = content.SetOpacity(1.0);
-        let t = if self.buttons { self.hover_rect() } else { self.idle_rect() };
+        let t = if self.buttons {
+            self.hover_rect()
+        } else {
+            self.idle_rect()
+        };
         let was_panel = self.cur.3 > g.h + 0.5;
         let old_x = self.cur.0;
         self.place(t, Some(if was_panel { (0.95, 70) } else { (0.82, 75) }));
         let dx = old_x - t.0;
         if dx.abs() > 0.5 && !was_panel {
-            let _ = content.SetOffset(Vector3 { X: dx, Y: 0.0, Z: 0.0 });
+            let _ = content.SetOffset(Vector3 {
+                X: dx,
+                Y: 0.0,
+                Z: 0.0,
+            });
             if let Ok(o) = content.cast::<CompositionObject>() {
                 spring(&self.comp, &o, "Offset.X", 0.0, 0.82, 75);
             }
         } else if was_panel {
-            let _ = content.SetOffset(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 });
+            let _ = content.SetOffset(Vector3 {
+                X: 0.0,
+                Y: 0.0,
+                Z: 0.0,
+            });
         }
         let cy = g.h / 2.0;
         self.sym(content, Sym::Search, t.0 + 28.0 * d, cy, 21.0 * d, fg, 0.75);
@@ -1008,11 +1346,31 @@ impl Spot {
             let kpx = (12.0 * d).round() as i32;
             let kw = self.text_w(&key, kpx, 500) + 14.0 * d;
             let r: Rect = (t.0 + t.2 - kw - 16.0 * d, cy - 11.0 * d, kw, 22.0 * d);
-            self.rect(content, r, 6.0 * d, Color { A: 30, R: fg[0], G: fg[1], B: fg[2] });
+            self.rect(
+                content,
+                r,
+                6.0 * d,
+                Color {
+                    A: 30,
+                    R: fg[0],
+                    G: fg[1],
+                    B: fg[2],
+                },
+            );
             self.text(content, &key, r.0 + 7.0 * d, cy, kpx, 500, fg, 0.65, kw);
             avail -= kw + 12.0 * d;
         }
-        self.text(content, &label, t.0 + 52.0 * d, cy, (21.0 * d).round() as i32, 400, fg, 0.5, avail);
+        self.text(
+            content,
+            &label,
+            t.0 + 52.0 * d,
+            cy,
+            (21.0 * d).round() as i32,
+            400,
+            fg,
+            0.5,
+            avail,
+        );
 
         let side = self.side.clone();
         if self.buttons {
@@ -1021,25 +1379,67 @@ impl Spot {
             }
             let _ = side.SetOpacity(1.0);
             self.side_fading = false;
-            for (i, m) in [Mode::Apps, Mode::Files, Mode::Actions, Mode::Clipboard].into_iter().enumerate() {
-                let r: Rect = (g.cap + g.gap + i as f32 * (g.btn + g.gap), 0.0, g.btn, g.btn);
-                let Ok(cv) = self.comp.CreateContainerVisual() else { continue };
+            for (i, m) in [Mode::Apps, Mode::Files, Mode::Actions, Mode::Clipboard]
+                .into_iter()
+                .enumerate()
+            {
+                let r: Rect = (
+                    g.cap + g.gap + i as f32 * (g.btn + g.gap),
+                    0.0,
+                    g.btn,
+                    g.btn,
+                );
+                let Ok(cv) = self.comp.CreateContainerVisual() else {
+                    continue;
+                };
                 let _ = side.Children().and_then(|k| k.InsertAtTop(&cv));
                 if let Some(gp) = self.glass_circle(&cv, r) {
                     self.circles.push(gp);
                 }
                 if self.hover_mode == Some(m) {
-                    self.rect(&cv, r, g.btn / 2.0, Color { A: 36, R: fg[0], G: fg[1], B: fg[2] });
+                    self.rect(
+                        &cv,
+                        r,
+                        g.btn / 2.0,
+                        Color {
+                            A: 36,
+                            R: fg[0],
+                            G: fg[1],
+                            B: fg[2],
+                        },
+                    );
                 }
-                self.mode_icon(&cv, m, r.0 + g.btn / 2.0, r.1 + g.btn / 2.0, 21.0 * d, fg, 0.9);
+                self.mode_icon(
+                    &cv,
+                    m,
+                    r.0 + g.btn / 2.0,
+                    r.1 + g.btn / 2.0,
+                    21.0 * d,
+                    fg,
+                    0.9,
+                );
                 if self.buttons_intro {
-                    let center = Vector3 { X: r.0 + g.btn / 2.0, Y: r.1 + g.btn / 2.0, Z: 0.0 };
-                    let _ = crate::motion::pop_in(&self.comp, &cv, center, 0.55, 1.05, 20 + i as u32 * 28, 300);
+                    let center = Vector3 {
+                        X: r.0 + g.btn / 2.0,
+                        Y: r.1 + g.btn / 2.0,
+                        Z: 0.0,
+                    };
+                    let _ = crate::motion::pop_in(
+                        &self.comp,
+                        &cv,
+                        center,
+                        0.55,
+                        1.05,
+                        20 + i as u32 * 28,
+                        300,
+                    );
                 }
                 self.hits.push((r, HitKind::Mode(m)));
             }
             self.buttons_intro = false;
-        } else if !self.side_fading && side.Children().map(|k| k.Count().unwrap_or(0)).unwrap_or(0) > 0 {
+        } else if !self.side_fading
+            && side.Children().map(|k| k.Count().unwrap_or(0)).unwrap_or(0) > 0
+        {
             let _ = crate::motion::scalar(&self.comp, &side, "Opacity", 1.0, 0.0, 130);
             let _ = side.SetOpacity(0.0);
             self.side_fading = true;
@@ -1051,8 +1451,21 @@ impl Spot {
         let fg = self.look().fg;
         let was_compact = self.cur.3 <= g.h + 0.5;
         let t = self.panel_rect();
-        self.place(t, Some(if intro { (0.9, 90) } else if was_compact { (0.92, 80) } else { (1.0, 55) }));
-        let _ = content.SetOffset(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 });
+        self.place(
+            t,
+            Some(if intro {
+                (0.9, 90)
+            } else if was_compact {
+                (0.92, 80)
+            } else {
+                (1.0, 55)
+            }),
+        );
+        let _ = content.SetOffset(Vector3 {
+            X: 0.0,
+            Y: 0.0,
+            Z: 0.0,
+        });
         if intro {
             let go = || -> windows_core::Result<()> {
                 let e = crate::motion::ease(&self.comp)?;
@@ -1060,8 +1473,12 @@ impl Spot {
                 a.InsertKeyFrame(0.0, 0.0)?;
                 a.InsertKeyFrame(0.35, 0.0)?;
                 a.InsertKeyFrameWithEasingFunction(1.0, 1.0, &e)?;
-                a.SetDuration(windows::Foundation::TimeSpan { Duration: 320 * 10_000 })?;
-                content.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Opacity"), &a)
+                a.SetDuration(windows::Foundation::TimeSpan {
+                    Duration: 320 * 10_000,
+                })?;
+                content
+                    .cast::<CompositionObject>()?
+                    .StartAnimation(&HSTRING::from("Opacity"), &a)
             };
             let _ = go();
         }
@@ -1069,8 +1486,14 @@ impl Spot {
         if let Ok(k) = self.side.Children() {
             let _ = k.RemoveAll();
         }
-        let Ok(body) = self.comp.CreateContainerVisual() else { return };
-        let _ = body.SetOffset(Vector3 { X: t.0, Y: 0.0, Z: 0.0 });
+        let Ok(body) = self.comp.CreateContainerVisual() else {
+            return;
+        };
+        let _ = body.SetOffset(Vector3 {
+            X: t.0,
+            Y: 0.0,
+            Z: 0.0,
+        });
         let _ = content.Children().and_then(|k| k.InsertAtTop(&body));
         let hits0 = self.hits.len();
         let (w, ph) = (t.2, t.3);
@@ -1081,13 +1504,43 @@ impl Spot {
         let tx = 52.0 * d;
         let right_pad = 70.0 * d;
         if self.query.is_empty() {
-            self.text(&body, prefs::tr(self.mode.title()), tx, cy, px, 400, fg, 0.5, w - tx - right_pad);
+            self.text(
+                &body,
+                prefs::tr(self.mode.title()),
+                tx,
+                cy,
+                px,
+                400,
+                fg,
+                0.5,
+                w - tx - right_pad,
+            );
         } else {
             let q = self.query.clone();
-            let qw = self.text(&body, &q, tx, cy, px, 400, fg, 1.0, w - tx - right_pad - 90.0 * d);
+            let qw = self.text(
+                &body,
+                &q,
+                tx,
+                cy,
+                px,
+                400,
+                fg,
+                1.0,
+                w - tx - right_pad - 90.0 * d,
+            );
             if self.mode == Mode::Search && !self.rows.is_empty() {
                 let open = format!("\u{2014} {}", prefs::tr("Buka"));
-                self.text(&body, &open, tx + qw + 8.0 * d, cy, (16.0 * d).round() as i32, 400, fg, 0.42, 160.0 * d);
+                self.text(
+                    &body,
+                    &open,
+                    tx + qw + 8.0 * d,
+                    cy,
+                    (16.0 * d).round() as i32,
+                    400,
+                    fg,
+                    0.42,
+                    160.0 * d,
+                );
             }
         }
         let has_more = matches!(self.mode, Mode::Apps | Mode::Files | Mode::Clipboard);
@@ -1095,18 +1548,46 @@ impl Spot {
             if let Some(row) = self.rows.get(self.sel).cloned() {
                 if matches!(row.kind, RKind::App | RKind::File) {
                     if let Some(s) = self.icon_surface(&row.path, (64.0 * d) as i32) {
-                        self.sprite(&body, &s, w - 52.0 * d, cy - 16.0 * d, 32.0 * d, 32.0 * d, 1.0);
+                        self.sprite(
+                            &body,
+                            &s,
+                            w - 52.0 * d,
+                            cy - 16.0 * d,
+                            32.0 * d,
+                            32.0 * d,
+                            1.0,
+                        );
                     }
                 }
             }
         } else if has_more {
             let r: Rect = (w - 46.0 * d, cy - 14.0 * d, 28.0 * d, 28.0 * d);
-            self.rect(&body, r, 14.0 * d, Color { A: if self.more_open { 64 } else { 26 }, R: fg[0], G: fg[1], B: fg[2] });
+            self.rect(
+                &body,
+                r,
+                14.0 * d,
+                Color {
+                    A: if self.more_open { 64 } else { 26 },
+                    R: fg[0],
+                    G: fg[1],
+                    B: fg[2],
+                },
+            );
             self.glyph(&body, "\u{E712}", r.0 + 14.0 * d, cy, 13.0 * d, fg, 0.85);
             self.hits.push((r, HitKind::More));
         }
         if !(self.mode == Mode::Search && self.rows.is_empty()) {
-            self.rect(&body, (16.0 * d, g.h - 1.0, w - 32.0 * d, 1.0), 0.0, Color { A: 30, R: fg[0], G: fg[1], B: fg[2] });
+            self.rect(
+                &body,
+                (16.0 * d, g.h - 1.0, w - 32.0 * d, 1.0),
+                0.0,
+                Color {
+                    A: 30,
+                    R: fg[0],
+                    G: fg[1],
+                    B: fg[2],
+                },
+            );
         }
         let mut top = g.h + 2.0 * d;
 
@@ -1116,26 +1597,61 @@ impl Spot {
             let cy2 = top + chips_h / 2.0;
             let cpx = (13.0 * d).round() as i32;
             let items: Vec<(String, HitKind, bool)> = if self.mode == Mode::Search {
-                [(prefs::tr("Aplikasi"), Filter::Apps), (prefs::tr("Berkas Saya"), Filter::Files), (prefs::tr("Aksi"), Filter::Actions)]
-                    .into_iter()
-                    .map(|(l, f)| (l.to_string(), HitKind::Filter(f), self.filter == Some(f)))
-                    .collect()
+                [
+                    (prefs::tr("Aplikasi"), Filter::Apps),
+                    (prefs::tr("Berkas Saya"), Filter::Files),
+                    (prefs::tr("Aksi"), Filter::Actions),
+                ]
+                .into_iter()
+                .map(|(l, f)| (l.to_string(), HitKind::Filter(f), self.filter == Some(f)))
+                .collect()
             } else {
-                FTYPES.iter().enumerate().map(|(i, (l, _))| (prefs::tr(l).to_string(), HitKind::FType(i), self.ftype == Some(i))).collect()
+                FTYPES
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (l, _))| {
+                        (
+                            prefs::tr(l).to_string(),
+                            HitKind::FType(i),
+                            self.ftype == Some(i),
+                        )
+                    })
+                    .collect()
             };
             for (label, f, active) in items {
                 let cw = self.text_w(&label, cpx, 500) + 24.0 * d;
                 let r: Rect = (x, cy2 - 13.0 * d, cw, 26.0 * d);
-                let col = if active { crate::prefs::accent_c(90) } else { Color { A: 30, R: fg[0], G: fg[1], B: fg[2] } };
+                let col = if active {
+                    crate::prefs::accent_c(90)
+                } else {
+                    Color {
+                        A: 30,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    }
+                };
                 self.rect(&body, r, 13.0 * d, col);
-                self.text(&body, &label, r.0 + 12.0 * d, cy2, cpx, 500, fg, if active { 1.0 } else { 0.78 }, cw);
+                self.text(
+                    &body,
+                    &label,
+                    r.0 + 12.0 * d,
+                    cy2,
+                    cpx,
+                    500,
+                    fg,
+                    if active { 1.0 } else { 0.78 },
+                    cw,
+                );
                 self.hits.push((r, f));
                 x += cw + 8.0 * d;
             }
             top += chips_h;
         }
 
-        let Ok(area) = self.comp.CreateContainerVisual() else { return };
+        let Ok(area) = self.comp.CreateContainerVisual() else {
+            return;
+        };
         let _ = area.SetSize(Vector2 { X: w, Y: ph });
         if let Ok(ac) = self.comp.CreateInsetClip() {
             let _ = ac.SetTopInset(top);
@@ -1153,7 +1669,11 @@ impl Spot {
         if self.more_open && has_more {
             let label = match self.mode {
                 Mode::Clipboard => prefs::tr("Hapus Riwayat"),
-                Mode::Apps => prefs::tr(if self.expanded.iter().all(|e| *e) { "Ringkas Semua" } else { "Tampilkan Semua" }),
+                Mode::Apps => prefs::tr(if self.expanded.iter().all(|e| *e) {
+                    "Ringkas Semua"
+                } else {
+                    "Tampilkan Semua"
+                }),
                 _ => prefs::tr("Buka Folder Terbaru"),
             };
             let mpx = (13.0 * d).round() as i32;
@@ -1163,7 +1683,17 @@ impl Spot {
                 let _ = gp.set_radius(10.0 * d);
                 self.circles.push(gp);
             }
-            self.text(&body, label, r.0 + 14.0 * d, r.1 + r.3 / 2.0, mpx, 500, fg, 0.95, mw);
+            self.text(
+                &body,
+                label,
+                r.0 + 14.0 * d,
+                r.1 + r.3 / 2.0,
+                mpx,
+                500,
+                fg,
+                0.95,
+                mw,
+            );
             self.hits.insert(hits0, (r, HitKind::MoreItem));
         }
 
@@ -1173,16 +1703,42 @@ impl Spot {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn draw_sections(&mut self, area: &ContainerVisual, w: f32, top: f32, ph: f32, fg: [u8; 3], thumbs: bool) {
+    fn draw_sections(
+        &mut self,
+        area: &ContainerVisual,
+        w: f32,
+        top: f32,
+        ph: f32,
+        fg: [u8; 3],
+        thumbs: bool,
+    ) {
         let d = self.dpi;
         let cw = (w - 32.0 * d) / COLS as f32;
-        let (icon, ch) = if thumbs { (80.0 * d, 124.0 * d) } else { (56.0 * d, 98.0 * d) };
+        let (icon, ch) = if thumbs {
+            (80.0 * d, 124.0 * d)
+        } else {
+            (56.0 * d, 98.0 * d)
+        };
         let hh = 34.0 * d;
         self.view = (top, ph);
         self.cell_y.clear();
         if self.rows.is_empty() {
-            let msg = if thumbs { prefs::tr("Belum ada berkas terbaru.") } else { prefs::tr("Tidak ada aplikasi") };
-            self.text(area, msg, 24.0 * d, top + 40.0 * d, (15.0 * d).round() as i32, 400, fg, 0.6, w - 40.0 * d);
+            let msg = if thumbs {
+                prefs::tr("Belum ada berkas terbaru.")
+            } else {
+                prefs::tr("Tidak ada aplikasi")
+            };
+            self.text(
+                area,
+                msg,
+                24.0 * d,
+                top + 40.0 * d,
+                (15.0 * d).round() as i32,
+                400,
+                fg,
+                0.6,
+                w - 40.0 * d,
+            );
             self.content_h = 0.0;
             return;
         }
@@ -1194,13 +1750,37 @@ impl Spot {
             let total = range.len();
             let shown = if expanded { total } else { total.min(COLS) };
             if vis(y, hh) {
-                self.text(area, title, 18.0 * d, y + hh / 2.0, (13.0 * d).round() as i32, 600, fg, 0.62, w * 0.6);
+                self.text(
+                    area,
+                    title,
+                    18.0 * d,
+                    y + hh / 2.0,
+                    (13.0 * d).round() as i32,
+                    600,
+                    fg,
+                    0.62,
+                    w * 0.6,
+                );
                 if total > COLS && !thumbs {
-                    let label = prefs::tr(if expanded { "Lebih Sedikit" } else { "Lihat Semua" });
+                    let label = prefs::tr(if expanded {
+                        "Lebih Sedikit"
+                    } else {
+                        "Lihat Semua"
+                    });
                     let lpx = (12.5 * d).round() as i32;
                     let lw = self.text_w(label, lpx, 500);
                     let r: Rect = (w - lw - 24.0 * d, y + 4.0 * d, lw + 8.0 * d, hh - 8.0 * d);
-                    self.text(area, label, r.0 + 4.0 * d, y + hh / 2.0, lpx, 500, fg, 0.55, lw + 4.0 * d);
+                    self.text(
+                        area,
+                        label,
+                        r.0 + 4.0 * d,
+                        y + hh / 2.0,
+                        lpx,
+                        500,
+                        fg,
+                        0.55,
+                        lw + 4.0 * d,
+                    );
                     self.hits.push((r, HitKind::ShowMore(si)));
                 }
             }
@@ -1217,34 +1797,93 @@ impl Spot {
                 let row = self.rows[idx].clone();
                 let sel_c;
                 let area = if idx == self.sel {
-                    sel_c = self.sel_box(area, &row, Vector3 { X: cx, Y: y0 + ch / 2.0, Z: 0.0 }, cw / 2.0, 12.0 * d);
+                    sel_c = self.sel_box(
+                        area,
+                        &row,
+                        Vector3 {
+                            X: cx,
+                            Y: y0 + ch / 2.0,
+                            Z: 0.0,
+                        },
+                        cw / 2.0,
+                        12.0 * d,
+                    );
                     &sel_c
                 } else {
                     area
                 };
                 if idx == self.sel {
-                    self.rect(area, (cx - cw / 2.0 + 4.0 * d, y0, cw - 8.0 * d, ch - 4.0 * d), 14.0 * d, Color { A: 26, R: fg[0], G: fg[1], B: fg[2] });
+                    self.rect(
+                        area,
+                        (cx - cw / 2.0 + 4.0 * d, y0, cw - 8.0 * d, ch - 4.0 * d),
+                        14.0 * d,
+                        Color {
+                            A: 26,
+                            R: fg[0],
+                            G: fg[1],
+                            B: fg[2],
+                        },
+                    );
                 }
                 let iy = y0 + 6.0 * d;
                 if thumbs {
                     if let Some((s, tw, th)) = self.thumb_for(&row.path, icon) {
                         self.sprite(area, &s, cx - tw / 2.0, iy + (icon - th) / 2.0, tw, th, 1.0);
                     } else if let Some(s) = self.icon_surface(&row.path, (icon * 1.2) as i32) {
-                        self.sprite(area, &s, cx - icon * 0.35, iy + icon * 0.15, icon * 0.7, icon * 0.7, 1.0);
+                        self.sprite(
+                            area,
+                            &s,
+                            cx - icon * 0.35,
+                            iy + icon * 0.15,
+                            icon * 0.7,
+                            icon * 0.7,
+                            1.0,
+                        );
                     }
                 } else if let Some(s) = self.icon_surface(&row.path, (icon * 1.6) as i32) {
                     self.sprite(area, &s, cx - icon / 2.0, iy, icon, icon, 1.0);
                 } else {
-                    self.rect(area, (cx - icon / 2.0, iy, icon, icon), icon * 0.23, Color { A: 60, R: fg[0], G: fg[1], B: fg[2] });
+                    self.rect(
+                        area,
+                        (cx - icon / 2.0, iy, icon, icon),
+                        icon * 0.23,
+                        Color {
+                            A: 60,
+                            R: fg[0],
+                            G: fg[1],
+                            B: fg[2],
+                        },
+                    );
                 }
                 let lpx = (12.0 * d).round() as i32;
                 let lw = self.text_w(&row.title, lpx, 400).min(cw - 10.0 * d);
-                self.text(area, &row.title, cx - lw / 2.0, iy + icon + 13.0 * d, lpx, 400, fg, 0.92, cw - 10.0 * d);
-                self.hits.push(((cx - cw / 2.0, y0, cw, ch), HitKind::Cell(idx)));
+                self.text(
+                    area,
+                    &row.title,
+                    cx - lw / 2.0,
+                    iy + icon + 13.0 * d,
+                    lpx,
+                    400,
+                    fg,
+                    0.92,
+                    cw - 10.0 * d,
+                );
+                self.hits
+                    .push(((cx - cw / 2.0, y0, cw, ch), HitKind::Cell(idx)));
             }
             y += shown.div_ceil(COLS) as f32 * ch + 6.0 * d;
             if si + 1 < secs.len() && vis(y, 1.0) {
-                self.rect(area, (16.0 * d, y, w - 32.0 * d, 1.0), 0.0, Color { A: 26, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    area,
+                    (16.0 * d, y, w - 32.0 * d, 1.0),
+                    0.0,
+                    Color {
+                        A: 26,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
             }
             y += 8.0 * d;
         }
@@ -1263,7 +1902,17 @@ impl Spot {
         let start = self.scroll * COLS;
         let n = self.rows.len();
         if n == 0 {
-            self.text(content, &prefs::tr("Tidak ada aplikasi").to_string(), w / 2.0 - 60.0 * d, top + 60.0 * d, (15.0 * d).round() as i32, 400, fg, 0.6, w);
+            self.text(
+                content,
+                &prefs::tr("Tidak ada aplikasi").to_string(),
+                w / 2.0 - 60.0 * d,
+                top + 60.0 * d,
+                (15.0 * d).round() as i32,
+                400,
+                fg,
+                0.6,
+                w,
+            );
             return;
         }
         for i in 0..per {
@@ -1277,28 +1926,80 @@ impl Spot {
             let row = self.rows[idx].clone();
             let sel_c;
             let content = if idx == self.sel {
-                sel_c = self.sel_box(content, &row, Vector3 { X: cx, Y: cy0 + ch / 2.0, Z: 0.0 }, cw / 2.0, 16.0 * d);
+                sel_c = self.sel_box(
+                    content,
+                    &row,
+                    Vector3 {
+                        X: cx,
+                        Y: cy0 + ch / 2.0,
+                        Z: 0.0,
+                    },
+                    cw / 2.0,
+                    16.0 * d,
+                );
                 &sel_c
             } else {
                 content
             };
             if idx == self.sel {
-                self.rect(content, (cx - cw / 2.0 + 4.0 * d, cy0, cw - 8.0 * d, ch - 4.0 * d), 14.0 * d, Color { A: 26, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    content,
+                    (cx - cw / 2.0 + 4.0 * d, cy0, cw - 8.0 * d, ch - 4.0 * d),
+                    14.0 * d,
+                    Color {
+                        A: 26,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
             }
             if let Some(s) = self.icon_surface(&row.path, (icon * 1.6) as i32) {
                 self.sprite(content, &s, cx - icon / 2.0, cy0 + 8.0 * d, icon, icon, 1.0);
             } else {
-                self.rect(content, (cx - icon / 2.0, cy0 + 8.0 * d, icon, icon), icon * 0.23, Color { A: 60, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    content,
+                    (cx - icon / 2.0, cy0 + 8.0 * d, icon, icon),
+                    icon * 0.23,
+                    Color {
+                        A: 60,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
             }
-            let lw = self.text_w(&row.title, (13.0 * d).round() as i32, 400).min(cw - 10.0 * d);
-            self.text(content, &row.title, cx - lw / 2.0, cy0 + 8.0 * d + icon + 14.0 * d, (13.0 * d).round() as i32, 400, fg, 0.95, cw - 10.0 * d);
-            self.hits.push(((cx - cw / 2.0, cy0, cw, ch), HitKind::Cell(idx)));
+            let lw = self
+                .text_w(&row.title, (13.0 * d).round() as i32, 400)
+                .min(cw - 10.0 * d);
+            self.text(
+                content,
+                &row.title,
+                cx - lw / 2.0,
+                cy0 + 8.0 * d + icon + 14.0 * d,
+                (13.0 * d).round() as i32,
+                400,
+                fg,
+                0.95,
+                cw - 10.0 * d,
+            );
+            self.hits
+                .push(((cx - cw / 2.0, cy0, cw, ch), HitKind::Cell(idx)));
         }
     }
 
-    fn sel_box(&mut self, parent: &ContainerVisual, row: &Row, center: Vector3, half: f32, room: f32) -> ContainerVisual {
+    fn sel_box(
+        &mut self,
+        parent: &ContainerVisual,
+        row: &Row,
+        center: Vector3,
+        half: f32,
+        room: f32,
+    ) -> ContainerVisual {
         let k = motion::fit_pop(motion::HOVER_ROW, half, room);
-        let Ok(c) = self.comp.CreateContainerVisual() else { return parent.clone() };
+        let Ok(c) = self.comp.CreateContainerVisual() else {
+            return parent.clone();
+        };
         let _ = parent.Children().and_then(|k| k.InsertAtTop(&c));
         let key = format!("{}|{}", row.title, row.path);
         if self.popped.as_deref() == Some(key.as_str()) {
@@ -1312,7 +2013,15 @@ impl Spot {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn draw_rows(&mut self, area: &ContainerVisual, w: f32, top: f32, row_h: f32, bottom: f32, fg: [u8; 3]) {
+    fn draw_rows(
+        &mut self,
+        area: &ContainerVisual,
+        w: f32,
+        top: f32,
+        row_h: f32,
+        bottom: f32,
+        fg: [u8; 3],
+    ) {
         let d = self.dpi;
         if self.rows.is_empty() {
             if self.mode != Mode::Search {
@@ -1320,8 +2029,22 @@ impl Spot {
                     Mode::Clipboard => prefs::tr("Belum ada yang disalin dalam 8 jam terakhir."),
                     _ => prefs::tr("Tidak ada hasil"),
                 };
-                let hint = if self.mode == Mode::Files && self.query.trim().chars().count() < 2 { prefs::tr("Ketik untuk mencari berkas.") } else { msg };
-                self.text(area, hint, 26.0 * d, top + row_h / 2.0, (15.0 * d).round() as i32, 400, fg, 0.6, w - 40.0 * d);
+                let hint = if self.mode == Mode::Files && self.query.trim().chars().count() < 2 {
+                    prefs::tr("Ketik untuk mencari berkas.")
+                } else {
+                    msg
+                };
+                self.text(
+                    area,
+                    hint,
+                    26.0 * d,
+                    top + row_h / 2.0,
+                    (15.0 * d).round() as i32,
+                    400,
+                    fg,
+                    0.6,
+                    w - 40.0 * d,
+                );
             }
             return;
         }
@@ -1333,19 +2056,49 @@ impl Spot {
                 break;
             }
             if let Some((_, title)) = headers.iter().find(|(at, _)| *at == i) {
-                self.text(area, title, 20.0 * d, ry + 15.0 * d, (13.0 * d).round() as i32, 600, fg, 0.6, w * 0.6);
+                self.text(
+                    area,
+                    title,
+                    20.0 * d,
+                    ry + 15.0 * d,
+                    (13.0 * d).round() as i32,
+                    600,
+                    fg,
+                    0.6,
+                    w * 0.6,
+                );
                 ry += 30.0 * d;
             }
             let row = self.rows[i].clone();
             let sel_c;
             let area = if i == self.sel {
-                sel_c = self.sel_box(area, &row, Vector3 { X: w / 2.0, Y: ry + row_h / 2.0, Z: 0.0 }, w / 2.0 - 8.0 * d, 8.0 * d);
+                sel_c = self.sel_box(
+                    area,
+                    &row,
+                    Vector3 {
+                        X: w / 2.0,
+                        Y: ry + row_h / 2.0,
+                        Z: 0.0,
+                    },
+                    w / 2.0 - 8.0 * d,
+                    8.0 * d,
+                );
                 &sel_c
             } else {
                 area
             };
             if i == self.sel {
-                self.rect(area, (8.0 * d, ry, w - 16.0 * d, row_h - 2.0 * d), 12.0 * d, Color { A: 28, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    area,
+                    (8.0 * d, ry, w - 16.0 * d, row_h - 2.0 * d),
+                    12.0 * d,
+                    Color {
+                        A: 28,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
             }
             let ic = 32.0 * d;
             let (icx, icy) = (22.0 * d + ic / 2.0, ry + (row_h - 2.0 * d) / 2.0);
@@ -1356,42 +2109,129 @@ impl Spot {
                     }
                 }
                 RKind::Calc => {
-                    self.rect(area, (icx - ic / 2.0, icy - ic / 2.0, ic, ic), 8.0 * d, Color { A: 255, R: 255, G: 149, B: 0 });
+                    self.rect(
+                        area,
+                        (icx - ic / 2.0, icy - ic / 2.0, ic, ic),
+                        8.0 * d,
+                        Color {
+                            A: 255,
+                            R: 255,
+                            G: 149,
+                            B: 0,
+                        },
+                    );
                     self.glyph(area, "\u{E8EF}", icx, icy, 17.0 * d, [255, 255, 255], 1.0);
                 }
                 RKind::Web => {
-                    self.rect(area, (icx - ic / 2.0, icy - ic / 2.0, ic, ic), 8.0 * d, crate::prefs::accent_c(255));
+                    self.rect(
+                        area,
+                        (icx - ic / 2.0, icy - ic / 2.0, ic, ic),
+                        8.0 * d,
+                        crate::prefs::accent_c(255),
+                    );
                     self.glyph(area, "\u{E774}", icx, icy, 17.0 * d, [255, 255, 255], 1.0);
                 }
                 RKind::Action(_) => {
                     let (g, col) = action_glyph(&row.path);
-                    self.rect(area, (icx - ic / 2.0, icy - ic / 2.0, ic, ic), 8.0 * d, Color { A: 255, R: col[0], G: col[1], B: col[2] });
+                    self.rect(
+                        area,
+                        (icx - ic / 2.0, icy - ic / 2.0, ic, ic),
+                        8.0 * d,
+                        Color {
+                            A: 255,
+                            R: col[0],
+                            G: col[1],
+                            B: col[2],
+                        },
+                    );
                     self.glyph(area, g, icx, icy, 17.0 * d, [255, 255, 255], 1.0);
                 }
                 RKind::Clip => {
-                    self.rect(area, (icx - ic * 0.36, icy - ic / 2.0, ic * 0.72, ic), 4.0 * d, Color { A: 240, R: 250, G: 250, B: 252 });
+                    self.rect(
+                        area,
+                        (icx - ic * 0.36, icy - ic / 2.0, ic * 0.72, ic),
+                        4.0 * d,
+                        Color {
+                            A: 240,
+                            R: 250,
+                            G: 250,
+                            B: 252,
+                        },
+                    );
                     self.glyph(area, "\u{E8A5}", icx, icy, 14.0 * d, [120, 120, 128], 1.0);
                 }
             }
             let tx = 22.0 * d + ic + 14.0 * d;
-            let max_w = w - tx - if matches!(row.kind, RKind::Clip) { 64.0 * d } else { 150.0 * d };
-            self.text(area, &row.title, tx, icy - 9.0 * d, (15.0 * d).round() as i32, 400, fg, 1.0, max_w);
+            let max_w = w
+                - tx
+                - if matches!(row.kind, RKind::Clip) {
+                    64.0 * d
+                } else {
+                    150.0 * d
+                };
+            self.text(
+                area,
+                &row.title,
+                tx,
+                icy - 9.0 * d,
+                (15.0 * d).round() as i32,
+                400,
+                fg,
+                1.0,
+                max_w,
+            );
             if !row.sub.is_empty() {
-                self.text(area, &row.sub, tx, icy + 11.0 * d, (12.0 * d).round() as i32, 400, fg, 0.55, max_w);
+                self.text(
+                    area,
+                    &row.sub,
+                    tx,
+                    icy + 11.0 * d,
+                    (12.0 * d).round() as i32,
+                    400,
+                    fg,
+                    0.55,
+                    max_w,
+                );
             }
             if let RKind::Action(ai) = row.kind {
                 let key = model::key_of(&ACTIONS[ai], &self.quick).to_string();
                 let editing = self.editing == Some(ai);
-                let label = if editing { format!("{}|", self.edit_buf) } else if key.is_empty() { prefs::tr("Tambah kunci cepat").to_string() } else { key };
+                let label = if editing {
+                    format!("{}|", self.edit_buf)
+                } else if key.is_empty() {
+                    prefs::tr("Tambah kunci cepat").to_string()
+                } else {
+                    key
+                };
                 let cpx = (12.0 * d).round() as i32;
                 let cw = self.text_w(&label, cpx, 500) + 18.0 * d;
                 let r: Rect = (w - cw - 24.0 * d, icy - 11.0 * d, cw, 22.0 * d);
-                self.rect(area, r, 6.0 * d, Color { A: if editing { 80 } else { 36 }, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    area,
+                    r,
+                    6.0 * d,
+                    Color {
+                        A: if editing { 80 } else { 36 },
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
                 self.text(area, &label, r.0 + 9.0 * d, icy, cpx, 500, fg, 0.75, cw);
             }
             if matches!(row.kind, RKind::Clip) {
                 let r: Rect = (w - 48.0 * d, icy - 13.0 * d, 26.0 * d, 26.0 * d);
-                self.rect(area, r, 13.0 * d, Color { A: 30, R: fg[0], G: fg[1], B: fg[2] });
+                self.rect(
+                    area,
+                    r,
+                    13.0 * d,
+                    Color {
+                        A: 30,
+                        R: fg[0],
+                        G: fg[1],
+                        B: fg[2],
+                    },
+                );
                 self.glyph(area, "\u{E8C8}", r.0 + 13.0 * d, icy, 12.0 * d, fg, 0.8);
                 self.hits.push((r, HitKind::CopyRow(i)));
             }
@@ -1401,7 +2241,9 @@ impl Spot {
     }
 
     fn take_run(&mut self) -> Run {
-        let Some(r) = self.rows.get(self.sel).cloned() else { return Run::Nothing };
+        let Some(r) = self.rows.get(self.sel).cloned() else {
+            return Run::Nothing;
+        };
         match r.kind {
             RKind::App | RKind::Web | RKind::File => Run::Open(r.path),
             RKind::Calc => Run::Nothing,
@@ -1432,7 +2274,9 @@ impl Spot {
                 } else if yv + h > bottom {
                     self.pscroll += yv + h - bottom + 6.0 * self.dpi;
                 }
-                self.pscroll = self.pscroll.clamp(0.0, (self.content_h - (bottom - top)).max(0.0));
+                self.pscroll = self
+                    .pscroll
+                    .clamp(0.0, (self.content_h - (bottom - top)).max(0.0));
             }
         } else if self.mode == Mode::Apps {
             let cur = self.sel as i32;
@@ -1480,13 +2324,21 @@ impl Spot {
 fn clip_time(at: i64) -> String {
     let now_local = time::local_now();
     let now_secs = (now_local.hour * 3600 + now_local.minute * 60 + now_local.second) as i64;
-    let age = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0) - at;
+    let age = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
+        - at;
     let t = (now_secs - age).rem_euclid(86_400);
     let (h, m) = ((t / 3600) as u32, ((t % 3600) / 60) as u32);
     if prefs::get().clock_24h {
         format!("{h:02}.{m:02}")
     } else {
-        format!("{}:{m:02} {}", if h % 12 == 0 { 12 } else { h % 12 }, if h < 12 { "AM" } else { "PM" })
+        format!(
+            "{}:{m:02} {}",
+            if h % 12 == 0 { 12 } else { h % 12 },
+            if h < 12 { "AM" } else { "PM" }
+        )
     }
 }
 
@@ -1499,7 +2351,11 @@ fn run_action(id: &str) {
         "lock" => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
         "desktop" => keys::chord(&[keys::WIN, 0x44]),
         "dark" => prefs::update(|s| {
-            s.theme = if s.theme == nacre_core::settings::Theme::Dark { nacre_core::settings::Theme::Light } else { nacre_core::settings::Theme::Dark }
+            s.theme = if s.theme == nacre_core::settings::Theme::Dark {
+                nacre_core::settings::Theme::Light
+            } else {
+                nacre_core::settings::Theme::Dark
+            }
         }),
         "stage" => prefs::update(|s| s.stage = !s.stage),
         "mission" => crate::mission::toggle(),
@@ -1691,14 +2547,23 @@ unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM
             with_spot(|s| {
                 if matches!(s.mode, Mode::Apps | Mode::Files) && s.query.trim().is_empty() {
                     let max = (s.content_h - (s.view.1 - s.view.0)).max(0.0);
-                    s.pscroll = (s.pscroll + if delta < 0 { 72.0 } else { -72.0 } * s.dpi).clamp(0.0, max);
+                    s.pscroll =
+                        (s.pscroll + if delta < 0 { 72.0 } else { -72.0 } * s.dpi).clamp(0.0, max);
                     s.render();
                     return;
                 }
                 let step = if s.mode == Mode::Apps { 1 } else { 2 };
                 let per = if s.mode == Mode::Apps { COLS } else { 1 };
-                let max_scroll = if s.mode == Mode::Apps { s.rows.len().div_ceil(per).saturating_sub(GRID_ROWS) } else { s.rows.len().saturating_sub(8) };
-                s.scroll = if delta < 0 { (s.scroll + step).min(max_scroll) } else { s.scroll.saturating_sub(step) };
+                let max_scroll = if s.mode == Mode::Apps {
+                    s.rows.len().div_ceil(per).saturating_sub(GRID_ROWS)
+                } else {
+                    s.rows.len().saturating_sub(8)
+                };
+                s.scroll = if delta < 0 {
+                    (s.scroll + step).min(max_scroll)
+                } else {
+                    s.scroll.saturating_sub(step)
+                };
                 s.render();
             });
             LRESULT(0)
@@ -1707,7 +2572,12 @@ unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM
             let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
             with_spot(|s| {
                 if !s.tracking {
-                    let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                    let mut t = TRACKMOUSEEVENT {
+                        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                        dwFlags: TME_LEAVE,
+                        hwndTrack: hwnd,
+                        dwHoverTime: 0,
+                    };
                     if TrackMouseEvent(&mut t).is_ok() {
                         s.tracking = true;
                     }
@@ -1723,17 +2593,25 @@ unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM
                         s.render();
                         return;
                     }
-                    let hm = s.hits.iter().find(|(r, k)| hit(*r, x, y) && matches!(k, HitKind::Mode(_))).and_then(|(_, k)| match k {
-                        HitKind::Mode(m) => Some(*m),
-                        _ => None,
-                    });
+                    let hm = s
+                        .hits
+                        .iter()
+                        .find(|(r, k)| hit(*r, x, y) && matches!(k, HitKind::Mode(_)))
+                        .and_then(|(_, k)| match k {
+                            HitKind::Mode(m) => Some(*m),
+                            _ => None,
+                        });
                     if hm != s.hover_mode {
                         s.hover_mode = hm;
                         s.render();
                     }
                     return;
                 }
-                let h = s.hits.iter().find(|(r, k)| hit(*r, x, y) && matches!(k, HitKind::Row(_) | HitKind::Cell(_))).map(|(_, k)| *k);
+                let h = s
+                    .hits
+                    .iter()
+                    .find(|(r, k)| hit(*r, x, y) && matches!(k, HitKind::Row(_) | HitKind::Cell(_)))
+                    .map(|(_, k)| *k);
                 let idx = match h {
                     Some(HitKind::Row(i)) | Some(HitKind::Cell(i)) => Some(i),
                     _ => None,
@@ -1771,7 +2649,9 @@ unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM
         WM_LBUTTONUP => {
             let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
             let run = with_spot(|s| {
-                let Some(k) = s.hits.iter().find(|(r, _)| hit(*r, x, y)).map(|(_, k)| *k) else { return Run::Nothing };
+                let Some(k) = s.hits.iter().find(|(r, _)| hit(*r, x, y)).map(|(_, k)| *k) else {
+                    return Run::Nothing;
+                };
                 match k {
                     HitKind::Mode(m) => {
                         s.set_mode(m);
@@ -1831,7 +2711,11 @@ unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM
                         s.render();
                         Run::Nothing
                     }
-                    HitKind::CopyRow(i) => s.rows.get(i).map(|r| Run::Copy(r.path.clone())).unwrap_or(Run::Nothing),
+                    HitKind::CopyRow(i) => s
+                        .rows
+                        .get(i)
+                        .map(|r| Run::Copy(r.path.clone()))
+                        .unwrap_or(Run::Nothing),
                 }
             })
             .unwrap_or(Run::Nothing);

@@ -18,7 +18,10 @@ pub struct Shelf {
 
 impl Shelf {
     pub fn new(max: usize) -> Shelf {
-        Shelf { items: Vec::new(), max: max.max(1) }
+        Shelf {
+            items: Vec::new(),
+            max: max.max(1),
+        }
     }
 
     pub fn items(&self) -> &[Item] {
@@ -34,7 +37,9 @@ impl Shelf {
     }
 
     fn position(&self, path: &str) -> Option<usize> {
-        self.items.iter().position(|i| i.path.eq_ignore_ascii_case(path))
+        self.items
+            .iter()
+            .position(|i| i.path.eq_ignore_ascii_case(path))
     }
 
     pub fn add(&mut self, path: &str) -> bool {
@@ -45,7 +50,12 @@ impl Shelf {
         if let Some(i) = self.position(path) {
             self.items.remove(i);
         }
-        self.items.insert(0, Item { path: path.to_string() });
+        self.items.insert(
+            0,
+            Item {
+                path: path.to_string(),
+            },
+        );
         self.items.truncate(self.max);
         true
     }
@@ -65,7 +75,11 @@ impl Shelf {
     }
 
     pub fn serialize(&self) -> String {
-        self.items.iter().map(|i| i.path.as_str()).collect::<Vec<_>>().join("\n")
+        self.items
+            .iter()
+            .map(|i| i.path.as_str())
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 
     pub fn parse(src: &str, max: usize) -> Shelf {
@@ -100,8 +114,20 @@ mod tests {
 
     #[test]
     fn names_and_round_trip() {
-        assert_eq!(Item { path: r"D:\Folder\Sub\".into() }.name(), "Sub");
-        assert_eq!(Item { path: "C:/x/y.zip".into() }.name(), "y.zip");
+        assert_eq!(
+            Item {
+                path: r"D:\Folder\Sub\".into()
+            }
+            .name(),
+            "Sub"
+        );
+        assert_eq!(
+            Item {
+                path: "C:/x/y.zip".into()
+            }
+            .name(),
+            "y.zip"
+        );
         let mut s = Shelf::new(10);
         for p in [r"C:\1", r"C:\2", r"C:\3"] {
             s.add(p);

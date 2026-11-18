@@ -26,13 +26,15 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::time::Instant;
 use views::{Action, Data, Frame, LyrState, LyricsView, MediaView, Region};
 use windows::core::w;
-use windows::UI::Composition::{AnimationDelayBehavior, CompositionDrawingSurface, CompositionObject, Compositor, Visual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::Graphics::Gdi::{CreateRectRgn, SetWindowRgn};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
 use windows::Win32::UI::Input::KeyboardAndMouse::{TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Composition::{
+    AnimationDelayBehavior, CompositionDrawingSurface, CompositionObject, Compositor, Visual,
+};
 use windows_core::{Interface, HSTRING};
 use windows_numerics::{Vector2, Vector3};
 
@@ -100,22 +102,44 @@ pub struct Options {
     pub reserve: bool,
 }
 
-pub(crate) fn spring(comp: &Compositor, obj: &CompositionObject, prop: &str, v: f32, ratio: f32, period_ms: u32) {
+pub(crate) fn spring(
+    comp: &Compositor,
+    obj: &CompositionObject,
+    prop: &str,
+    v: f32,
+    ratio: f32,
+    period_ms: u32,
+) {
     let go = || -> windows_core::Result<()> {
         let a = comp.CreateSpringScalarAnimation()?;
         a.SetDampingRatio(ratio)?;
-        a.SetPeriod(windows::Foundation::TimeSpan { Duration: period_ms as i64 * 10_000 })?;
-        a.SetFinalValue(&windows::Foundation::PropertyValue::CreateSingle(v)?.cast::<windows::Foundation::IReference<f32>>()?)?;
+        a.SetPeriod(windows::Foundation::TimeSpan {
+            Duration: period_ms as i64 * 10_000,
+        })?;
+        a.SetFinalValue(
+            &windows::Foundation::PropertyValue::CreateSingle(v)?
+                .cast::<windows::Foundation::IReference<f32>>()?,
+        )?;
         obj.StartAnimation(&HSTRING::from(prop), &a)
     };
     let _ = go();
 }
 
 fn ts(ms: u32) -> windows::Foundation::TimeSpan {
-    windows::Foundation::TimeSpan { Duration: ms as i64 * 10_000 }
+    windows::Foundation::TimeSpan {
+        Duration: ms as i64 * 10_000,
+    }
 }
 
-fn keyframes(comp: &Compositor, obj: &CompositionObject, prop: &str, from: f32, to: f32, ms: u32, delay: u32) -> windows_core::Result<()> {
+fn keyframes(
+    comp: &Compositor,
+    obj: &CompositionObject,
+    prop: &str,
+    from: f32,
+    to: f32,
+    ms: u32,
+    delay: u32,
+) -> windows_core::Result<()> {
     let e = crate::motion::ease(comp)?;
     let a = comp.CreateScalarKeyFrameAnimation()?;
     a.InsertKeyFrame(0.0, from)?;
@@ -191,7 +215,10 @@ fn island_gap(dpi: f32) -> f32 {
 }
 
 fn win_size(dpi: f32, screen_w: i32) -> (i32, i32) {
-    (((WIN_W * dpi) as i32).min(screen_w), (WIN_H * dpi + island_gap(dpi)).ceil() as i32)
+    (
+        ((WIN_W * dpi) as i32).min(screen_w),
+        (WIN_H * dpi + island_gap(dpi)).ceil() as i32,
+    )
 }
 
 pub struct Notch {
@@ -280,7 +307,7 @@ impl Notch {
     pub fn create(host: &Host, opts: Options) -> windows_core::Result<HWND> {
         unsafe {
             let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-            let class = w!("AbraNotch");
+            let class = w!("NexoraNotch");
             RegisterClassW(&WNDCLASSW {
                 lpfnWndProc: Some(proc),
                 hInstance: hi,
@@ -291,22 +318,37 @@ impl Notch {
             let hwnd = CreateWindowExW(
                 WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
                 class,
-                w!("abra-notch"),
+                w!("nexora-notch"),
                 WS_POPUP,
-                0, 0, 400, 200,
-                None, None, Some(hi), None,
+                0,
+                0,
+                400,
+                200,
+                None,
+                None,
+                Some(hi),
+                None,
             )?;
             let dpi = GetDpiForWindow(hwnd).max(96) as f32 / 96.0 * crate::prefs::ui_scale();
             let screen_w = sys::screen_size().0;
             let win = win_size(dpi, screen_w);
-            let _ = SetWindowPos(hwnd, None, (screen_w - win.0) / 2, 0, win.0, win.1, SWP_NOACTIVATE | SWP_NOZORDER);
+            let _ = SetWindowPos(
+                hwnd,
+                None,
+                (screen_w - win.0) / 2,
+                0,
+                win.0,
+                win.1,
+                SWP_NOACTIVATE | SWP_NOZORDER,
+            );
             let comp = host.compositor.clone();
             let surface = host.attach(hwnd, (win.0 as f32, win.1 as f32))?;
             let tier = auto_tier(opts.glass);
             let gfx = Gfx::shared(&comp)?;
             let body = Body::new(&comp, &gfx, &surface.root, win, dpi, tier)?;
             let pad = (SHADOW_PAD * dpi).round();
-            let shadow = match Shadow::new(&comp, (win.0 + 2 * pad as i32, win.1 + pad as i32), pad) {
+            let shadow = match Shadow::new(&comp, (win.0 + 2 * pad as i32, win.1 + pad as i32), pad)
+            {
                 Ok(s) => Some(s),
                 Err(e) => {
                     log::line("notch", &format!("bayangan gagal: {e}"));
@@ -330,7 +372,12 @@ impl Notch {
                 tracking: false,
                 hover_act: None,
                 regions: Vec::new(),
-                timer: Timer::new(std::env::var("NACRE_TIMER_SECS").ok().and_then(|s| s.parse().ok()).unwrap_or(25 * 60)),
+                timer: Timer::new(
+                    std::env::var("NACRE_TIMER_SECS")
+                        .ok()
+                        .and_then(|s| s.parse().ok())
+                        .unwrap_or(25 * 60),
+                ),
                 t0: Instant::now(),
                 last_sec: -1,
                 battery: sys::battery(),
@@ -341,7 +388,10 @@ impl Notch {
                     if std::env::var_os("NACRE_NO_MEDIA").is_some() {
                         let (commands, _) = std::sync::mpsc::channel();
                         let (_, snapshots) = std::sync::mpsc::channel();
-                        Media { commands, snapshots }
+                        Media {
+                            commands,
+                            snapshots,
+                        }
                     } else if std::env::var_os("NACRE_FAKE_MEDIA").is_some() {
                         nacre_platform::media_fake::spawn(move || post(hw, WM_MEDIA))
                     } else {
@@ -364,7 +414,10 @@ impl Notch {
                 album: String::new(),
                 lyr_worker: {
                     let hw = hwnd.0 as isize;
-                    nacre_platform::lyrics::spawn(crate::paths::config_dir().join("lyrics"), move || post(hw, WM_LYRICS))
+                    nacre_platform::lyrics::spawn(
+                        crate::paths::config_dir().join("lyrics"),
+                        move || post(hw, WM_LYRICS),
+                    )
                 },
                 lyr: None,
                 lyr_state: LyrState::Idle,
@@ -434,7 +487,10 @@ impl Notch {
             if std::env::var_os("NACRE_TEST_SEND").is_some() {
                 timer(hwnd, T_TESTSEND, 2500);
             }
-            log::line("notch", &format!("dibuat tier={tier:?} dpi={dpi} jendela={win:?} layar_w={screen_w}"));
+            log::line(
+                "notch",
+                &format!("dibuat tier={tier:?} dpi={dpi} jendela={win:?} layar_w={screen_w}"),
+            );
             Ok(hwnd)
         }
     }
@@ -458,7 +514,9 @@ impl Notch {
             charging_fresh: self.charging_fresh,
             shelf: self.shelf.len(),
             glance: crate::prefs::get().notch_idle == 0,
-            download: (crate::prefs::get().notch_downloads && (self.dl.is_some() || self.dl_done.is_some())) || self.send_compact().is_some(),
+            download: (crate::prefs::get().notch_downloads
+                && (self.dl.is_some() || self.dl_done.is_some()))
+                || self.send_compact().is_some(),
             wide_music: crate::prefs::get().notch_idle == 2,
         }
     }
@@ -475,16 +533,33 @@ impl Notch {
                 let px = (86.0 * self.dpi).floor();
                 let qr = nacre_core::qr::encode(&server.url).and_then(|m| {
                     let bmp = nacre_core::qr::render(&m, px as u32, 1);
-                    self.paint.gfx.surface_from_bgra(px as u32, px as u32, &bmp).ok()
+                    self.paint
+                        .gfx
+                        .surface_from_bgra(px as u32, px as u32, &bmp)
+                        .ok()
                 });
-                let names = paths.iter().filter_map(|p| std::path::Path::new(p).file_name().map(|n| n.to_string_lossy().to_string())).collect();
-                let total = paths.iter().filter_map(|p| std::fs::metadata(p).ok()).map(|m| m.len()).sum();
+                let names = paths
+                    .iter()
+                    .filter_map(|p| {
+                        std::path::Path::new(p)
+                            .file_name()
+                            .map(|n| n.to_string_lossy().to_string())
+                    })
+                    .collect();
+                let total = paths
+                    .iter()
+                    .filter_map(|p| std::fs::metadata(p).ok())
+                    .map(|m| m.len())
+                    .sum();
                 self.send = Some(SendSess {
                     server,
                     qr,
                     qr_px: px,
                     names,
-                    prog: nacre_platform::sendsrv::Progress { total, ..Default::default() },
+                    prog: nacre_platform::sendsrv::Progress {
+                        total,
+                        ..Default::default()
+                    },
                     last: Instant::now(),
                     done_at: None,
                 });
@@ -536,7 +611,11 @@ impl Notch {
         if s.prog.files_done >= n && !s.prog.active && s.done_at.is_none() && s.prog.sent > 0 {
             s.done_at = Some(Instant::now());
             log::line("kirim", &format!("{n} berkas terkirim"));
-            timer(self.hwnd, T_SENDDONE, nacre_core::notch::download::DONE_LINGER_MS);
+            timer(
+                self.hwnd,
+                T_SENDDONE,
+                nacre_core::notch::download::DONE_LINGER_MS,
+            );
         } else if s.prog.active {
             s.done_at = None;
         }
@@ -547,8 +626,15 @@ impl Notch {
 
     fn send_compact(&self) -> Option<(f32, bool)> {
         let s = self.send.as_ref()?;
-        let done = s.done_at.is_some_and(|t| t.elapsed().as_millis() < nacre_core::notch::download::DONE_LINGER_MS as u128);
-        (s.prog.active || done).then(|| (nacre_core::notch::send::fraction(s.prog.sent, s.prog.total), done && !s.prog.active))
+        let done = s.done_at.is_some_and(|t| {
+            t.elapsed().as_millis() < nacre_core::notch::download::DONE_LINGER_MS as u128
+        });
+        (s.prog.active || done).then(|| {
+            (
+                nacre_core::notch::send::fraction(s.prog.sent, s.prog.total),
+                done && !s.prog.active,
+            )
+        })
     }
 
     fn today() -> views::Date {
@@ -593,9 +679,14 @@ impl Notch {
             return;
         }
         let px = (48.0 * self.dpi).round() as i32;
-        let bmp = nacre_platform::icons::load(&format!("shell:AppsFolder\\{id}"), px).or_else(|| {
-            id.to_ascii_lowercase().ends_with(".exe").then(|| nacre_platform::wins::enumerate::exe_path_of_running(&id)).flatten().and_then(|p| nacre_platform::icons::load(&p, px))
-        });
+        let bmp =
+            nacre_platform::icons::load(&format!("shell:AppsFolder\\{id}"), px).or_else(|| {
+                id.to_ascii_lowercase()
+                    .ends_with(".exe")
+                    .then(|| nacre_platform::wins::enumerate::exe_path_of_running(&id))
+                    .flatten()
+                    .and_then(|p| nacre_platform::icons::load(&p, px))
+            });
         let s = bmp.and_then(|b| self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok());
         self.app_icons.insert(id, s);
     }
@@ -604,7 +695,9 @@ impl Notch {
         let on = crate::prefs::get().notch_downloads;
         if on && self.dl_watch.is_none() {
             let hw = self.hwnd.0 as isize;
-            self.dl_watch = Some(nacre_platform::dlwatch::spawn(move || post(hw, WM_DOWNLOAD)));
+            self.dl_watch = Some(nacre_platform::dlwatch::spawn(move || {
+                post(hw, WM_DOWNLOAD)
+            }));
         } else if !on && self.dl_watch.is_some() {
             self.dl_watch = None;
             self.dl = None;
@@ -622,15 +715,25 @@ impl Notch {
             } else if let Some(f) = s.finished {
                 log::line("unduhan", &format!("selesai ({:?})", f.source));
                 self.dl_done = Some(f);
-                timer(self.hwnd, T_DLDONE, nacre_core::notch::download::DONE_LINGER_MS);
+                timer(
+                    self.hwnd,
+                    T_DLDONE,
+                    nacre_core::notch::download::DONE_LINGER_MS,
+                );
             }
             changed = true;
         }
         if changed {
-            let app = self.dl.as_ref().or(self.dl_done.as_ref()).map(|d| d.app.clone()).unwrap_or_default();
+            let app = self
+                .dl
+                .as_ref()
+                .or(self.dl_done.as_ref())
+                .map(|d| d.app.clone())
+                .unwrap_or_default();
             if !app.is_empty() && !self.dl_icons.contains_key(&app) {
                 let px = (44.0 * self.dpi).round() as i32;
-                let s = nacre_platform::icons::load(&app, px).and_then(|b| self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok());
+                let s = nacre_platform::icons::load(&app, px)
+                    .and_then(|b| self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok());
                 self.dl_icons.insert(app, s);
             }
             self.refresh();
@@ -649,7 +752,13 @@ impl Notch {
             _ => {
                 let (fr, done) = send?;
                 let pct = (fr * 100.0).floor() as u32;
-                return Some(views::DownloadView { icon: None, label: format!("{}", if done { 100 } else { pct.min(99) }), frac: Some(fr), done, up: true });
+                return Some(views::DownloadView {
+                    icon: None,
+                    label: format!("{}", if done { 100 } else { pct.min(99) }),
+                    frac: Some(fr),
+                    done,
+                    up: true,
+                });
             }
         };
         Some(views::DownloadView {
@@ -671,14 +780,23 @@ impl Notch {
         let lang = s.lang;
         match item {
             glance::Item::Greeting => {
-                let name = if s.greet_name.is_empty() { std::env::var("USERNAME").unwrap_or_default() } else { s.greet_name.as_str().to_string() };
+                let name = if s.greet_name.is_empty() {
+                    std::env::var("USERNAME").unwrap_or_default()
+                } else {
+                    s.greet_name.as_str().to_string()
+                };
                 glance::greeting_text(s.greet_text.as_str(), &name, now.hour, lang)
             }
             glance::Item::Clock => glance::clock(now.hour, now.minute, s.clock_24h, lang),
             glance::Item::Date => {
                 let wd = calendar::weekday(now.year, now.month, now.day) as usize;
-                let days = nacre_core::i18n::weekday_labels(lang, false, calendar::weekday_labels(false));
-                let month: String = nacre_core::i18n::month_name(lang, now.month, calendar::month_name(now.month)).chars().take(3).collect();
+                let days =
+                    nacre_core::i18n::weekday_labels(lang, false, calendar::weekday_labels(false));
+                let month: String =
+                    nacre_core::i18n::month_name(lang, now.month, calendar::month_name(now.month))
+                        .chars()
+                        .take(3)
+                        .collect();
                 format!("{}, {} {}", days[wd], now.day, month)
             }
             glance::Item::Battery => self.battery.map_or(String::new(), |(p, _)| format!("{p}%")),
@@ -687,7 +805,10 @@ impl Notch {
 
     fn sync_glance(&self) {
         if self.look == state::look(Mode::Rest, Some(state::Activity::Glance)) {
-            let ms = std::env::var("NACRE_GLANCE_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(glance::ROTATE_MS);
+            let ms = std::env::var("NACRE_GLANCE_MS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(glance::ROTATE_MS);
             timer(self.hwnd, T_GLANCE, ms);
         } else {
             kill(self.hwnd, T_GLANCE);
@@ -705,14 +826,22 @@ impl Notch {
         self.render();
         if let Ok(c) = self.body.content.cast::<CompositionObject>() {
             let comp = &self.paint.comp;
-            let _ = self.body.content.SetScale(Vector3 { X: 1.0, Y: 1.0, Z: 1.0 });
+            let _ = self.body.content.SetScale(Vector3 {
+                X: 1.0,
+                Y: 1.0,
+                Z: 1.0,
+            });
             let _ = keyframes(comp, &c, "Opacity", 0.0, 1.0, 180, 60);
             let _ = keyframes(comp, &c, "Offset.Y", rise, 0.0, 220, 40);
         }
     }
 
     fn dispatch(&mut self, ev: Event) {
-        let open_on = if crate::prefs::get().notch_hover_open { OpenOn::Hover } else { OpenOn::Click };
+        let open_on = if crate::prefs::get().notch_hover_open {
+            OpenOn::Hover
+        } else {
+            OpenOn::Click
+        };
         let next = state::step(self.mode, ev, open_on, self.tracking);
         if next != self.mode {
             log::line("notch", &format!("{:?} --{ev:?}--> {next:?}", self.mode));
@@ -755,14 +884,22 @@ impl Notch {
         }
         let springy = (!first).then(|| Self::springs(old, new));
         if view_changed && !first {
-            let closing = matches!(old.view, View::Open(_) | View::Drop) && !matches!(new.view, View::Open(_) | View::Drop);
-            self.retire_content(if closing { motion::CLOSE_FADE_MS } else { motion::SWAP_FADE_MS });
+            let closing = matches!(old.view, View::Open(_) | View::Drop)
+                && !matches!(new.view, View::Open(_) | View::Drop);
+            self.retire_content(if closing {
+                motion::CLOSE_FADE_MS
+            } else {
+                motion::SWAP_FADE_MS
+            });
         }
         self.apply_size(springy);
         self.render();
         self.sync_glance();
         if view_changed && !first {
-            self.intro(matches!(new.view, View::Open(_) | View::Drop) && !matches!(old.view, View::Open(_) | View::Drop));
+            self.intro(
+                matches!(new.view, View::Open(_) | View::Drop)
+                    && !matches!(old.view, View::Open(_) | View::Drop),
+            );
         }
     }
 
@@ -783,11 +920,18 @@ impl Notch {
         }
         self.size = z;
         let x0 = self.x0();
-        self.body.set_geometry(self.win, x0, z.w, z.h, z.radius, springy);
+        self.body
+            .set_geometry(self.win, x0, z.w, z.h, z.radius, springy);
         let (blur, dy, op) = state::shadow(self.look);
         let over = if gap > 0.0 { 0.0 } else { self.body.top_over };
         if let Some(sh) = self.shadow.as_mut() {
-            sh.follow(&self.paint.gfx, (x0, -over, z.w, z.h + over), z.radius, (blur * self.dpi, dy * self.dpi, op), springy);
+            sh.follow(
+                &self.paint.gfx,
+                (x0, -over, z.w, z.h + over),
+                z.radius,
+                (blur * self.dpi, dy * self.dpi, op),
+                springy,
+            );
         }
         let e = self.body.ear;
         let (l, r) = (px0.min(x0) - e, (px0 + pw).max(x0 + z.w) + e);
@@ -804,7 +948,12 @@ impl Notch {
 
     fn settle_region(&self) {
         let (x0, e) = (self.x0(), self.body.ear);
-        self.set_region(((x0 - e).max(0.0), 0.0, (x0 + self.size.w + e).min(self.win.0 as f32), island_gap(self.dpi) + self.size.h));
+        self.set_region((
+            (x0 - e).max(0.0),
+            0.0,
+            (x0 + self.size.w + e).min(self.win.0 as f32),
+            island_gap(self.dpi) + self.size.h,
+        ));
     }
 
     fn render(&mut self) {
@@ -813,11 +962,16 @@ impl Notch {
             let _ = k.RemoveAll();
         }
         self.regions.clear();
-        let f = Frame { x0: self.x0(), w: self.size.w, h: self.size.h };
+        let f = Frame {
+            x0: self.x0(),
+            w: self.size.w,
+            h: self.size.h,
+        };
         let now_ms = self.now_ms();
         let items = self.glance_items();
         let item = items[self.glance_idx.min(items.len() - 1)];
-        let glance = (self.look.view == View::Compact(state::Activity::Glance)).then(|| (item, self.glance_text(item)));
+        let glance = (self.look.view == View::Compact(state::Activity::Glance))
+            .then(|| (item, self.glance_text(item)));
         self.live_vis = views::Live::default();
         if self.mode == Mode::Open(Tab::Shelf) {
             self.load_shelf_icons();
@@ -835,26 +989,58 @@ impl Notch {
             _ => views::Events::Loading,
         };
         let send_c = self.send_compact();
-        let cal = views::CalView { today: Self::today(), sel: cal_date, events };
+        let cal = views::CalView {
+            today: Self::today(),
+            sel: cal_date,
+            events,
+        };
         let send = match &self.send {
             Some(ss) => {
                 let n = ss.names.len();
-                let title = if n == 1 { ss.names[0].clone() } else { format!("{} {}", crate::prefs::tr("Kirim"), views::count_text(n)) };
+                let title = if n == 1 {
+                    ss.names[0].clone()
+                } else {
+                    format!("{} {}", crate::prefs::tr("Kirim"), views::count_text(n))
+                };
                 let frac = nacre_core::notch::send::fraction(ss.prog.sent, ss.prog.total);
                 let done = ss.done_at.is_some() && !ss.prog.active;
                 let status = if done {
                     format!("{} \u{2713}", crate::prefs::tr("Terkirim"))
                 } else if ss.prog.active || ss.prog.sent > 0 {
-                    format!("{} {}%", crate::prefs::tr("Mengirim"), (frac * 100.0).floor() as u32)
+                    format!(
+                        "{} {}%",
+                        crate::prefs::tr("Mengirim"),
+                        (frac * 100.0).floor() as u32
+                    )
                 } else {
                     crate::prefs::tr("Menunggu HP\u{2026}").to_string()
                 };
-                Some(views::SendView { qr: ss.qr.as_ref(), qr_px: ss.qr_px, title, status, frac, done, error: false })
+                Some(views::SendView {
+                    qr: ss.qr.as_ref(),
+                    qr_px: ss.qr_px,
+                    title,
+                    status,
+                    frac,
+                    done,
+                    error: false,
+                })
             }
-            None if self.send_err => Some(views::SendView { qr: None, qr_px: 0.0, title: String::new(), status: String::new(), frac: 0.0, done: false, error: true }),
+            None if self.send_err => Some(views::SendView {
+                qr: None,
+                qr_px: 0.0,
+                title: String::new(),
+                status: String::new(),
+                frac: 0.0,
+                done: false,
+                error: true,
+            }),
             None => None,
         };
-        let app_icon = if self.art.is_none() { self.app_icons.get(&self.media_app).and_then(|s| s.as_ref()) } else { None };
+        let app_icon = if self.art.is_none() {
+            self.app_icons.get(&self.media_app).and_then(|s| s.as_ref())
+        } else {
+            None
+        };
         let pos_ms = self.position_ms();
         let media = self.has_media.then(|| MediaView {
             title: &self.title,
@@ -867,9 +1053,23 @@ impl Notch {
             tint: self.tint,
             drag: self.seek_drag.map(|(_, _, fr)| fr),
         });
-        let lyrics = LyricsView { lines: self.lyr.as_ref(), state: self.lyr_state, pos_ms, lrclib: self.lyr_lrclib };
-        let shelf = self.shelf.items().iter().map(|i| (i.name(), self.shelf_icons.get(&i.path))).collect();
-        let drop_count = if self.mode == Mode::Drop { self.dnd.borrow().len() } else { 0 };
+        let lyrics = LyricsView {
+            lines: self.lyr.as_ref(),
+            state: self.lyr_state,
+            pos_ms,
+            lrclib: self.lyr_lrclib,
+        };
+        let shelf = self
+            .shelf
+            .items()
+            .iter()
+            .map(|i| (i.name(), self.shelf_icons.get(&i.path)))
+            .collect();
+        let drop_count = if self.mode == Mode::Drop {
+            self.dnd.borrow().len()
+        } else {
+            0
+        };
         let d = Data {
             battery: self.battery,
             timer: &self.timer,
@@ -881,16 +1081,33 @@ impl Notch {
             drop_zone: self.drop_zone,
             drop_count,
             privacy: self.privacy,
-            download: (self.look.view == View::Compact(state::Activity::Download)).then(|| Self::download_view(&self.dl, &self.dl_done, &self.dl_icons, send_c)).flatten(),
+            download: (self.look.view == View::Compact(state::Activity::Download))
+                .then(|| Self::download_view(&self.dl, &self.dl_done, &self.dl_icons, send_c))
+                .flatten(),
             cal,
             send,
             send_zone: crate::prefs::get().notch_send,
         };
-        views::draw(&mut self.paint, &c, self.look, f, &d, &mut self.regions, &mut self.live_vis);
-        if let Some(r) = self.hover_act.and_then(|a| self.regions.iter().find(|r| r.action == a)) {
+        views::draw(
+            &mut self.paint,
+            &c,
+            self.look,
+            f,
+            &d,
+            &mut self.regions,
+            &mut self.live_vis,
+        );
+        if let Some(r) = self
+            .hover_act
+            .and_then(|a| self.regions.iter().find(|r| r.action == a))
+        {
             if let Some(v) = &r.vis {
                 let k = hover_scale(r.action);
-                let _ = v.SetCenterPoint(Vector3 { X: r.x + r.w / 2.0, Y: r.y + r.h / 2.0, Z: 0.0 });
+                let _ = v.SetCenterPoint(Vector3 {
+                    X: r.x + r.w / 2.0,
+                    Y: r.y + r.h / 2.0,
+                    Z: 0.0,
+                });
                 let _ = v.SetScale(Vector3 { X: k, Y: k, Z: 1.0 });
             }
         }
@@ -904,7 +1121,11 @@ impl Notch {
             let old: Vec<Visual> = kids.clone().into_iter().collect();
             let ghost = self.body.ghost.Children()?;
             ghost.RemoveAll()?;
-            self.body.ghost.SetOffset(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 })?;
+            self.body.ghost.SetOffset(Vector3 {
+                X: 0.0,
+                Y: 0.0,
+                Z: 0.0,
+            })?;
             for v in &old {
                 kids.Remove(v)?;
                 ghost.InsertAtTop(v)?;
@@ -922,15 +1143,51 @@ impl Notch {
             let comp = &self.paint.comp;
             if opening {
                 let cx = self.x0() + self.size.w / 2.0;
-                self.body.content.SetCenterPoint(Vector3 { X: cx, Y: 0.0, Z: 0.0 })?;
+                self.body.content.SetCenterPoint(Vector3 {
+                    X: cx,
+                    Y: 0.0,
+                    Z: 0.0,
+                })?;
                 let (d, ms) = (motion::CONTENT_DELAY_MS, motion::CONTENT_FADE_MS);
                 keyframes(comp, &c, "Opacity", 0.0, 1.0, ms, d)?;
-                keyframes(comp, &c, "Scale.X", motion::CONTENT_SCALE_FROM, 1.0, ms + 60, d)?;
-                keyframes(comp, &c, "Scale.Y", motion::CONTENT_SCALE_FROM, 1.0, ms + 60, d)?;
-                keyframes(comp, &c, "Offset.Y", -motion::CONTENT_RISE_DP * self.dpi, 0.0, ms + 60, d)
+                keyframes(
+                    comp,
+                    &c,
+                    "Scale.X",
+                    motion::CONTENT_SCALE_FROM,
+                    1.0,
+                    ms + 60,
+                    d,
+                )?;
+                keyframes(
+                    comp,
+                    &c,
+                    "Scale.Y",
+                    motion::CONTENT_SCALE_FROM,
+                    1.0,
+                    ms + 60,
+                    d,
+                )?;
+                keyframes(
+                    comp,
+                    &c,
+                    "Offset.Y",
+                    -motion::CONTENT_RISE_DP * self.dpi,
+                    0.0,
+                    ms + 60,
+                    d,
+                )
             } else {
-                self.body.content.SetScale(Vector3 { X: 1.0, Y: 1.0, Z: 1.0 })?;
-                self.body.content.SetOffset(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 })?;
+                self.body.content.SetScale(Vector3 {
+                    X: 1.0,
+                    Y: 1.0,
+                    Z: 1.0,
+                })?;
+                self.body.content.SetOffset(Vector3 {
+                    X: 0.0,
+                    Y: 0.0,
+                    Z: 0.0,
+                })?;
                 keyframes(comp, &c, "Opacity", 0.0, 1.0, 150, 50)
             }
         };
@@ -938,7 +1195,11 @@ impl Notch {
     }
 
     fn position_ms(&self) -> i64 {
-        let extra = if self.playing { self.pos_at.elapsed().as_millis() as i64 } else { 0 };
+        let extra = if self.playing {
+            self.pos_at.elapsed().as_millis() as i64
+        } else {
+            0
+        };
         let p = self.pos_ms + extra;
         if self.dur_ms > 0 {
             p.clamp(0, self.dur_ms)
@@ -974,7 +1235,11 @@ impl Notch {
             }
         }
         if changed {
-            let track = if self.has_media { format!("{}\u{1}{}", self.title, self.artist) } else { String::new() };
+            let track = if self.has_media {
+                format!("{}\u{1}{}", self.title, self.artist)
+            } else {
+                String::new()
+            };
             if track != self.lyr_track {
                 self.lyr_track = track;
                 self.request_lyrics();
@@ -1003,7 +1268,10 @@ impl Notch {
         self.lyr_key = nacre_core::notch::lrclib::cache_key(&track);
         self.lyr_state = LyrState::Loading;
         let online = crate::prefs::get().lyrics_online;
-        let _ = self.lyr_worker.requests.send(nacre_platform::lyrics::Request { track, online });
+        let _ = self
+            .lyr_worker
+            .requests
+            .send(nacre_platform::lyrics::Request { track, online });
     }
 
     fn on_lyrics(&mut self) {
@@ -1013,10 +1281,25 @@ impl Notch {
                 continue;
             }
             got = true;
-            let parsed = a.text.map(|t| nacre_core::notch::lyrics::parse(&t)).filter(|l| !l.is_empty());
-            self.lyr_state = if parsed.is_some() { LyrState::Ready } else { LyrState::Missing };
+            let parsed = a
+                .text
+                .map(|t| nacre_core::notch::lyrics::parse(&t))
+                .filter(|l| !l.is_empty());
+            self.lyr_state = if parsed.is_some() {
+                LyrState::Ready
+            } else {
+                LyrState::Missing
+            };
             self.lyr_lrclib = a.source == nacre_platform::lyrics::Source::Lrclib;
-            log::line("lirik", &format!("{:?} sumber={:?} baris={}", self.lyr_state, a.source, parsed.as_ref().map_or(0, |l| l.lines.len())));
+            log::line(
+                "lirik",
+                &format!(
+                    "{:?} sumber={:?} baris={}",
+                    self.lyr_state,
+                    a.source,
+                    parsed.as_ref().map_or(0, |l| l.lines.len())
+                ),
+            );
             self.lyr = parsed;
             self.lyr_idx = None;
         }
@@ -1034,7 +1317,11 @@ impl Notch {
         }
         let pos = self.position_ms();
         if let Some(next) = l.next_change_ms(pos) {
-            timer(self.hwnd, T_LYRIC, ((next - pos).max(10) + 15).min(60_000) as u32);
+            timer(
+                self.hwnd,
+                T_LYRIC,
+                ((next - pos).max(10) + 15).min(60_000) as u32,
+            );
         }
     }
 
@@ -1042,16 +1329,27 @@ impl Notch {
         let pos = self.position_ms();
         let idx = self.lyr.as_ref().and_then(|l| l.index_at(pos));
         if idx != self.lyr_idx {
-            let forward = matches!((self.lyr_idx, idx), (Some(a), Some(b)) if b == a + 1) || (self.lyr_idx.is_none() && idx == Some(0));
+            let forward = matches!((self.lyr_idx, idx), (Some(a), Some(b)) if b == a + 1)
+                || (self.lyr_idx.is_none() && idx == Some(0));
             self.lyr_idx = idx;
             if self.look.view == View::Compact(state::Activity::Lyrics) {
                 self.swap_lyric();
-            } else if self.mode == Mode::Open(Tab::Play) || self.look.view == View::Compact(state::Activity::Player) {
+            } else if self.mode == Mode::Open(Tab::Play)
+                || self.look.view == View::Compact(state::Activity::Player)
+            {
                 self.render();
                 if forward {
                     if let Some(sc) = &self.live_vis.lyric_scroll {
                         if let Ok(o) = sc.cast::<CompositionObject>() {
-                            let _ = keyframes(&self.paint.comp, &o, "Offset.Y", self.live_vis.lyric_shift, 0.0, 420, 0);
+                            let _ = keyframes(
+                                &self.paint.comp,
+                                &o,
+                                "Offset.Y",
+                                self.live_vis.lyric_shift,
+                                0.0,
+                                420,
+                                0,
+                            );
                         }
                     }
                 }
@@ -1067,7 +1365,11 @@ impl Notch {
             let go = || -> windows_core::Result<()> {
                 let ghost = self.body.ghost.Children()?;
                 ghost.RemoveAll()?;
-                self.body.ghost.SetOffset(Vector3 { X: 0.0, Y: 0.0, Z: 0.0 })?;
+                self.body.ghost.SetOffset(Vector3 {
+                    X: 0.0,
+                    Y: 0.0,
+                    Z: 0.0,
+                })?;
                 self.body.content.Children()?.Remove(&old)?;
                 ghost.InsertAtTop(&old)?;
                 let g: CompositionObject = self.body.ghost.cast()?;
@@ -1088,7 +1390,8 @@ impl Notch {
     }
 
     fn sync_visualizer(&mut self) {
-        let want = self.has_media && self.playing && self.shown && !self.overlap.fullscreen && !self.off;
+        let want =
+            self.has_media && self.playing && self.shown && !self.overlap.fullscreen && !self.off;
         if want && self.loopback.is_none() {
             let hw = self.hwnd.0 as isize;
             self.loopback = Some(loopback::start(move || post(hw, WM_BANDS)));
@@ -1101,12 +1404,20 @@ impl Notch {
         let b = loopback::latest();
         for (i, bar) in self.live_vis.bars.iter().enumerate() {
             let v = b.get(i).copied().unwrap_or(0.0).clamp(0.0, 1.0);
-            let _ = bar.SetScale(Vector3 { X: 1.0, Y: 0.25 + 0.75 * v, Z: 1.0 });
+            let _ = bar.SetScale(Vector3 {
+                X: 1.0,
+                Y: 0.25 + 0.75 * v,
+                Z: 1.0,
+            });
         }
     }
 
     fn sync_progress(&self) {
-        if self.mode == Mode::Open(Tab::Play) && self.has_media && self.playing && self.seek_drag.is_none() {
+        if self.mode == Mode::Open(Tab::Play)
+            && self.has_media
+            && self.playing
+            && self.seek_drag.is_none()
+        {
             timer(self.hwnd, T_PROGRESS, 1000);
         } else {
             kill(self.hwnd, T_PROGRESS);
@@ -1117,7 +1428,9 @@ impl Notch {
         if !matches!(self.mode, Mode::Open(_)) {
             return false;
         }
-        if let Some(Action::Seek(sx, sw)) = self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action) {
+        if let Some(Action::Seek(sx, sw)) =
+            self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action)
+        {
             self.seek_drag = Some((sx, sw, ((x - sx) / sw).clamp(0.0, 1.0)));
             self.render();
             return true;
@@ -1133,7 +1446,9 @@ impl Notch {
     }
 
     fn on_up(&mut self) -> bool {
-        let Some((_, _, fr)) = self.seek_drag.take() else { return false };
+        let Some((_, _, fr)) = self.seek_drag.take() else {
+            return false;
+        };
         if self.dur_ms > 0 {
             let ms = (self.dur_ms as f32 * fr) as i64;
             let _ = self.media.commands.send(Command::SeekMs(ms));
@@ -1151,7 +1466,8 @@ impl Notch {
             if self.shelf_icons.contains_key(&it.path) {
                 continue;
             }
-            let bmp = nacre_platform::icons::thumbnail(&it.path, px).or_else(|| nacre_platform::icons::load(&it.path, px));
+            let bmp = nacre_platform::icons::thumbnail(&it.path, px)
+                .or_else(|| nacre_platform::icons::load(&it.path, px));
             if let Some(b) = bmp {
                 if let Ok(s) = self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra) {
                     self.shelf_icons.insert(it.path.clone(), s);
@@ -1161,14 +1477,20 @@ impl Notch {
     }
 
     fn zone_at(&self, x: f32, y: f32) -> Option<usize> {
-        self.regions.iter().find(|r| matches!(r.action, Action::Zone(_)) && r.hit(x, y)).and_then(|r| match r.action {
-            Action::Zone(i) => Some(i),
-            _ => None,
-        })
+        self.regions
+            .iter()
+            .find(|r| matches!(r.action, Action::Zone(_)) && r.hit(x, y))
+            .and_then(|r| match r.action {
+                Action::Zone(i) => Some(i),
+                _ => None,
+            })
     }
 
     fn on_dnd(&mut self, kind: usize, lp: LPARAM) {
-        let (sx, sy) = ((lp.0 as u32 & 0xFFFF) as u16 as i16 as f32, ((lp.0 as u32 >> 16) & 0xFFFF) as u16 as i16 as f32);
+        let (sx, sy) = (
+            (lp.0 as u32 & 0xFFFF) as u16 as i16 as f32,
+            ((lp.0 as u32 >> 16) & 0xFFFF) as u16 as i16 as f32,
+        );
         let (cx, cy) = (sx - ((self.screen_w - self.win.0) / 2) as f32, sy);
         match kind {
             drop::ENTER => {
@@ -1192,7 +1514,10 @@ impl Notch {
                 let zone = self.zone_at(cx, cy).unwrap_or(0);
                 let paths = self.dnd.borrow().clone();
                 self.drop_zone = None;
-                log::line("notch", &format!("ditaruh {} berkas di zona {zone}", paths.len()));
+                log::line(
+                    "notch",
+                    &format!("ditaruh {} berkas di zona {zone}", paths.len()),
+                );
                 if zone == 0 {
                     for p in &paths {
                         self.shelf.add(p);
@@ -1212,7 +1537,13 @@ impl Notch {
 
     fn shelf_menu(&mut self, i: usize, x: f32, y: f32) {
         if self.menu.is_none() {
-            match Menu::new(&self.paint.comp, self.hwnd, self.dpi, sys::screen_size(), Tier::Full) {
+            match Menu::new(
+                &self.paint.comp,
+                self.hwnd,
+                self.dpi,
+                sys::screen_size(),
+                Tier::Full,
+            ) {
                 Ok(m) => self.menu = Some(m),
                 Err(_) => return,
             }
@@ -1229,7 +1560,13 @@ impl Notch {
         self.menu_item = Some(i);
         let wx = (self.screen_w - self.win.0) / 2;
         if let Some(m) = self.menu.as_mut() {
-            let _ = m.show(&self.paint.comp, &self.paint.gfx, items, wx + x as i32, y as i32);
+            let _ = m.show(
+                &self.paint.comp,
+                &self.paint.gfx,
+                items,
+                wx + x as i32,
+                y as i32,
+            );
         }
     }
 
@@ -1237,8 +1574,12 @@ impl Notch {
         if let Some(m) = &self.menu {
             m.hide();
         }
-        let Some(i) = self.menu_item.take() else { return };
-        let Some(path) = self.shelf.items().get(i).map(|it| it.path.clone()) else { return };
+        let Some(i) = self.menu_item.take() else {
+            return;
+        };
+        let Some(path) = self.shelf.items().get(i).map(|it| it.path.clone()) else {
+            return;
+        };
         match id {
             1 => nacre_platform::launch::open(&path),
             2 => nacre_platform::launch::run("explorer.exe", &format!("/select,\"{path}\"")),
@@ -1259,7 +1600,9 @@ impl Notch {
         if self.mode != Mode::Open(Tab::Shelf) {
             return;
         }
-        if let Some(Action::ShelfItem(i)) = self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action) {
+        if let Some(Action::ShelfItem(i)) =
+            self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action)
+        {
             self.shelf_menu(i, x, y);
         }
     }
@@ -1278,7 +1621,12 @@ impl Notch {
 
     fn on_move(&mut self) {
         if !self.tracking {
-            let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: self.hwnd, dwHoverTime: 0 };
+            let mut t = TRACKMOUSEEVENT {
+                cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                dwFlags: TME_LEAVE,
+                hwndTrack: self.hwnd,
+                dwHoverTime: 0,
+            };
             if unsafe { TrackMouseEvent(&mut t) }.is_ok() {
                 self.tracking = true;
             }
@@ -1299,16 +1647,31 @@ impl Notch {
     }
 
     fn on_hover(&mut self, x: f32, y: f32) {
-        let hit = self.regions.iter().find(|r| r.vis.is_some() && r.hit(x, y)).map(|r| r.action);
+        let hit = self
+            .regions
+            .iter()
+            .find(|r| r.vis.is_some() && r.hit(x, y))
+            .map(|r| r.action);
         if hit == self.hover_act {
             return;
         }
         for (a, on) in [(self.hover_act, false), (hit, true)] {
-            let Some(r) = a.and_then(|a| self.regions.iter().find(|r| r.action == a)) else { continue };
+            let Some(r) = a.and_then(|a| self.regions.iter().find(|r| r.action == a)) else {
+                continue;
+            };
             let Some(v) = &r.vis else { continue };
             let to = if on { hover_scale(r.action) } else { 1.0 };
             let Ok(comp) = v.Compositor() else { continue };
-            let _ = crate::motion::hover_pop(&comp, v, Vector3 { X: r.x + r.w / 2.0, Y: r.y + r.h / 2.0, Z: 0.0 }, to);
+            let _ = crate::motion::hover_pop(
+                &comp,
+                v,
+                Vector3 {
+                    X: r.x + r.w / 2.0,
+                    Y: r.y + r.h / 2.0,
+                    Z: 0.0,
+                },
+                to,
+            );
         }
         self.hover_act = hit;
     }
@@ -1331,7 +1694,10 @@ impl Notch {
     }
 
     fn on_media_button(&self, x: f32, y: f32) -> bool {
-        self.look.view == View::Compact(state::Activity::Player) && self.regions.iter().any(|r| r.hit(x, y) && matches!(r.action, Action::PlayPause | Action::Next | Action::Prev))
+        self.look.view == View::Compact(state::Activity::Player)
+            && self.regions.iter().any(|r| {
+                r.hit(x, y) && matches!(r.action, Action::PlayPause | Action::Next | Action::Prev)
+            })
     }
 
     fn cursor_on_media_button(&self) -> bool {
@@ -1351,7 +1717,9 @@ impl Notch {
             self.dispatch(Event::Click);
             return;
         }
-        let Some(a) = self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action) else { return };
+        let Some(a) = self.regions.iter().find(|r| r.hit(x, y)).map(|r| r.action) else {
+            return;
+        };
         let now = self.now_ms();
         match a {
             Action::PlayPause => {
@@ -1467,7 +1835,13 @@ impl Notch {
     fn place_shadow_window(&self) {
         if let Some(sh) = &self.shadow {
             let x = (self.screen_w - self.win.0) / 2 - sh.pad as i32;
-            sh.place_window(self.hwnd, x, 0, self.win.0 + 2 * sh.pad as i32, self.win.1 + sh.pad as i32);
+            sh.place_window(
+                self.hwnd,
+                x,
+                0,
+                self.win.0 + 2 * sh.pad as i32,
+                self.win.1 + sh.pad as i32,
+            );
             sh.set_visible(self.shown && !self.off);
         }
     }
@@ -1537,7 +1911,10 @@ impl Notch {
     fn apply_prefs(&mut self) {
         let s = crate::prefs::get();
         self.off = !s.notch_enabled;
-        let (vis, reserve) = (s.notch.mode(), s.notch.reserves() && s.notch_enabled && !s.menubar);
+        let (vis, reserve) = (
+            s.notch.mode(),
+            s.notch.reserves() && s.notch_enabled && !s.menubar,
+        );
         if vis != self.vis {
             self.vis = vis;
             if vis == Vis::Always {
@@ -1552,7 +1929,10 @@ impl Notch {
             self.set_reserved(reserve);
         }
         self.publish_notch();
-        let _ = self.body.panel.set_params(body::glass_params(self.size.radius));
+        let _ = self
+            .body
+            .panel
+            .set_params(body::glass_params(self.size.radius));
         self.body.paint_ears(self.tier);
         if let Some(sh) = &self.shadow {
             sh.set_visible(self.shown && !self.off);
@@ -1561,7 +1941,13 @@ impl Notch {
         self.sync_download_watch();
         self.first = true;
         self.refresh();
-        log::line("notch", &format!("pengaturan: perilaku={vis:?} cadangan={reserve} mati={}", self.off));
+        log::line(
+            "notch",
+            &format!(
+                "pengaturan: perilaku={vis:?} cadangan={reserve} mati={}",
+                self.off
+            ),
+        );
     }
 
     fn refresh_tier(&mut self) {
@@ -1575,20 +1961,35 @@ impl Notch {
 
     fn on_reconfigure(&mut self) {
         let screen_w = sys::screen_size().0;
-        let dpi = unsafe { GetDpiForWindow(self.hwnd) }.max(96) as f32 / 96.0 * crate::prefs::ui_scale();
+        let dpi =
+            unsafe { GetDpiForWindow(self.hwnd) }.max(96) as f32 / 96.0 * crate::prefs::ui_scale();
         let win = win_size(dpi, screen_w);
         if win == self.win && screen_w == self.screen_w && (dpi - self.dpi).abs() < 0.01 {
             return;
         }
-        log::line("notch", &format!("konfigurasi ulang layar_w={screen_w} dpi={dpi}"));
+        log::line(
+            "notch",
+            &format!("konfigurasi ulang layar_w={screen_w} dpi={dpi}"),
+        );
         let dpi_changed = (dpi - self.dpi).abs() >= 0.01;
         self.screen_w = screen_w;
         self.dpi = dpi;
         self.win = win;
         unsafe {
-            let _ = SetWindowPos(self.hwnd, None, (screen_w - win.0) / 2, 0, win.0, win.1, SWP_NOACTIVATE | SWP_NOZORDER);
+            let _ = SetWindowPos(
+                self.hwnd,
+                None,
+                (screen_w - win.0) / 2,
+                0,
+                win.0,
+                win.1,
+                SWP_NOACTIVATE | SWP_NOZORDER,
+            );
         }
-        let _ = self._surface.root.SetSize(Vector2 { X: win.0 as f32, Y: win.1 as f32 });
+        let _ = self._surface.root.SetSize(Vector2 {
+            X: win.0 as f32,
+            Y: win.1 as f32,
+        });
         self.body.resize(win);
         self.paint.reset(dpi);
         if dpi_changed {
@@ -1632,9 +2033,17 @@ impl Notch {
                 self.refresh();
             }
             T_WINCHG => {
-                let mut ov = overlap::evaluate(tracker::external_foreground(), std::process::id(), self.pill_screen_rect(), sys::screen_size());
+                let mut ov = overlap::evaluate(
+                    tracker::external_foreground(),
+                    std::process::id(),
+                    self.pill_screen_rect(),
+                    sys::screen_size(),
+                );
                 if ov.fullscreen && crate::prefs::get().above_fullscreen {
-                    ov = overlap::Overlap { overlapped: false, fullscreen: false };
+                    ov = overlap::Overlap {
+                        overlapped: false,
+                        fullscreen: false,
+                    };
                 }
                 if ov != self.overlap {
                     self.overlap = ov;
@@ -1662,7 +2071,10 @@ impl Notch {
             T_LYRIC => self.on_lyric_tick(),
             T_PRIVACY => self.poll_privacy(),
             T_SEND => {
-                let idle = self.send.as_ref().is_some_and(|s| !s.prog.active && s.last.elapsed() > SEND_IDLE);
+                let idle = self
+                    .send
+                    .as_ref()
+                    .is_some_and(|s| !s.prog.active && s.last.elapsed() > SEND_IDLE);
                 if idle {
                     log::line("kirim", "sesi menganggur 15 menit");
                     self.stop_send();
@@ -1696,7 +2108,11 @@ impl Notch {
                 if self.look.view == View::Compact(state::Activity::Glance) {
                     self.render();
                 }
-                timer(self.hwnd, T_MINUTE, nacre_platform::time::ms_to_next_minute());
+                timer(
+                    self.hwnd,
+                    T_MINUTE,
+                    nacre_platform::time::ms_to_next_minute(),
+                );
             }
             T_HIDEWIN => {
                 if !self.shown {
@@ -1718,8 +2134,14 @@ fn after_drop(paths: &[String], zone: usize) {
         return;
     }
     if zone == 2 {
-        let Some(dir) = nacre_platform::pick::folder(crate::prefs::tr("Salin ke folder")) else { return };
-        let from: Vec<u16> = paths.iter().flat_map(|p| p.encode_utf16().chain(std::iter::once(0))).chain(std::iter::once(0)).collect();
+        let Some(dir) = nacre_platform::pick::folder(crate::prefs::tr("Salin ke folder")) else {
+            return;
+        };
+        let from: Vec<u16> = paths
+            .iter()
+            .flat_map(|p| p.encode_utf16().chain(std::iter::once(0)))
+            .chain(std::iter::once(0))
+            .collect();
         let to: Vec<u16> = dir.encode_utf16().chain([0, 0]).collect();
         let mut op = windows::Win32::UI::Shell::SHFILEOPSTRUCTW {
             wFunc: windows::Win32::UI::Shell::FO_COPY,
@@ -1729,13 +2151,17 @@ fn after_drop(paths: &[String], zone: usize) {
             ..Default::default()
         };
         let r = unsafe { windows::Win32::UI::Shell::SHFileOperationW(&mut op) };
-        log::line("notch", &format!("salin {} berkas ke folder: hasil={r}", paths.len()));
+        log::line(
+            "notch",
+            &format!("salin {} berkas ke folder: hasil={r}", paths.len()),
+        );
     } else {
         let file: Vec<u16> = paths[0].encode_utf16().chain(std::iter::once(0)).collect();
         let info = windows::Win32::UI::Shell::OPENASINFO {
             pcszFile: windows::core::PCWSTR(file.as_ptr()),
             pcszClass: windows::core::PCWSTR::null(),
-            oaifInFlags: windows::Win32::UI::Shell::OAIF_ALLOW_REGISTRATION | windows::Win32::UI::Shell::OAIF_EXEC,
+            oaifInFlags: windows::Win32::UI::Shell::OAIF_ALLOW_REGISTRATION
+                | windows::Win32::UI::Shell::OAIF_EXEC,
         };
         let _ = unsafe { windows::Win32::UI::Shell::SHOpenWithDialog(None, &info) };
     }
@@ -1869,7 +2295,15 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
             LRESULT(0)
         }
         WM_TOPMOST => {
-            let _ = SetWindowPos(hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                hwnd,
+                Some(HWND_TOPMOST),
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
             with(hwnd, |d| d.place_shadow_window());
             LRESULT(0)
         }

@@ -57,7 +57,16 @@ unsafe fn collect(m: HMENU, depth: u8, out: &mut Vec<Entry>) {
         }
         if info.fType.0 & MFT_SEPARATOR.0 != 0 {
             if out.last().map(|e| !e.separator).unwrap_or(false) {
-                out.push(Entry { id: 0, label: String::new(), accel: String::new(), enabled: false, checked: false, separator: true, depth, header: false });
+                out.push(Entry {
+                    id: 0,
+                    label: String::new(),
+                    accel: String::new(),
+                    enabled: false,
+                    checked: false,
+                    separator: true,
+                    depth,
+                    header: false,
+                });
             }
             continue;
         }
@@ -75,10 +84,28 @@ unsafe fn collect(m: HMENU, depth: u8, out: &mut Vec<Entry>) {
         let enabled = info.fState.0 & (MFS_DISABLED.0 | MFS_GRAYED.0) == 0;
         let checked = info.fState.0 & MFS_CHECKED.0 != 0;
         if !info.hSubMenu.0.is_null() {
-            out.push(Entry { id: 0, label, accel: String::new(), enabled: false, checked: false, separator: false, depth, header: true });
+            out.push(Entry {
+                id: 0,
+                label,
+                accel: String::new(),
+                enabled: false,
+                checked: false,
+                separator: false,
+                depth,
+                header: true,
+            });
             collect(info.hSubMenu, depth + 1, out);
         } else {
-            out.push(Entry { id: info.wID, label, accel, enabled, checked, separator: false, depth, header: false });
+            out.push(Entry {
+                id: info.wID,
+                label,
+                accel,
+                enabled,
+                checked,
+                separator: false,
+                depth,
+                header: false,
+            });
         }
     }
     while out.last().map(|e| e.separator).unwrap_or(false) {
@@ -113,12 +140,21 @@ pub fn read(hwnd: isize) -> Option<Vec<Top>> {
                 tops.push(Top { title, entries });
             }
         }
-        if tops.is_empty() { None } else { Some(tops) }
+        if tops.is_empty() {
+            None
+        } else {
+            Some(tops)
+        }
     }
 }
 
 pub fn invoke(hwnd: isize, id: u32) {
     unsafe {
-        let _ = PostMessageW(Some(HWND(hwnd as *mut _)), WM_COMMAND, WPARAM(id as usize & 0xFFFF), LPARAM(0));
+        let _ = PostMessageW(
+            Some(HWND(hwnd as *mut _)),
+            WM_COMMAND,
+            WPARAM(id as usize & 0xFFFF),
+            LPARAM(0),
+        );
     }
 }

@@ -13,7 +13,9 @@ impl Behavior {
         match s.trim().to_ascii_lowercase().as_str() {
             "fixed" | "tetap" | "permanent" => Some(Behavior::Fixed),
             "overlay" | "menimpa" => Some(Behavior::Overlay),
-            "smart" | "autohide" | "auto-hide" | "auto" | "peek" | "hidden" => Some(Behavior::Smart),
+            "smart" | "autohide" | "auto-hide" | "auto" | "peek" | "hidden" => {
+                Some(Behavior::Smart)
+            }
             _ => None,
         }
     }
@@ -143,7 +145,16 @@ impl BarStyle {
 
 pub const ACCENT_MULTI: u8 = 255;
 
-pub const ACCENTS: [[u8; 3]; 8] = [[10, 132, 255], [175, 82, 222], [255, 55, 95], [255, 69, 58], [255, 149, 10], [255, 204, 0], [48, 209, 88], [142, 142, 147]];
+pub const ACCENTS: [[u8; 3]; 8] = [
+    [10, 132, 255],
+    [175, 82, 222],
+    [255, 55, 95],
+    [255, 69, 58],
+    [255, 149, 10],
+    [255, 204, 0],
+    [48, 209, 88],
+    [142, 142, 147],
+];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IconStyle {
@@ -189,11 +200,20 @@ pub enum HotAction {
 }
 
 impl HotAction {
-    pub const ALL: [HotAction; 7] =
-        [HotAction::None, HotAction::Mission, HotAction::Launchpad, HotAction::Desktop, HotAction::Stage, HotAction::Notifications, HotAction::Lock];
+    pub const ALL: [HotAction; 7] = [
+        HotAction::None,
+        HotAction::Mission,
+        HotAction::Launchpad,
+        HotAction::Desktop,
+        HotAction::Stage,
+        HotAction::Notifications,
+        HotAction::Lock,
+    ];
 
     pub fn parse(s: &str) -> Option<HotAction> {
-        Self::ALL.into_iter().find(|a| a.key() == s.trim().to_ascii_lowercase())
+        Self::ALL
+            .into_iter()
+            .find(|a| a.key() == s.trim().to_ascii_lowercase())
     }
     pub fn key(self) -> &'static str {
         match self {
@@ -219,7 +239,10 @@ pub struct ShortText {
 }
 
 impl ShortText {
-    pub const EMPTY: ShortText = ShortText { len: 0, buf: [0; 96] };
+    pub const EMPTY: ShortText = ShortText {
+        len: 0,
+        buf: [0; 96],
+    };
 
     pub fn new(s: &str) -> ShortText {
         let clean: String = s.chars().filter(|c| !c.is_control()).collect();
@@ -230,7 +253,10 @@ impl ShortText {
         }
         let mut buf = [0u8; 96];
         buf[..end].copy_from_slice(&clean.as_bytes()[..end]);
-        ShortText { len: end as u8, buf }
+        ShortText {
+            len: end as u8,
+            buf,
+        }
     }
 
     pub fn as_str(&self) -> &str {
@@ -402,7 +428,9 @@ impl Settings {
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
-            let Some((k, v)) = line.split_once('=') else { continue };
+            let Some((k, v)) = line.split_once('=') else {
+                continue;
+            };
             let (k, v) = (k.trim(), v.trim());
             match k {
                 "takeover" => {
@@ -412,19 +440,61 @@ impl Settings {
                 }
                 "dock" => s.dock = Behavior::parse(v).unwrap_or(s.dock),
                 "notch" => s.notch = Behavior::parse(v).unwrap_or(s.notch),
-                "blur" => s.blur = v.parse::<i32>().map(|n| n.clamp(0, 100) as u8).unwrap_or(s.blur),
+                "blur" => {
+                    s.blur = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 100) as u8)
+                        .unwrap_or(s.blur)
+                }
                 "style" => {}
-                "transparency" => s.transparency = v.parse::<i32>().map(|n| n.clamp(0, 100) as u8).unwrap_or(s.transparency),
+                "transparency" => {
+                    s.transparency = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 100) as u8)
+                        .unwrap_or(s.transparency)
+                }
                 "theme" => s.theme = Theme::parse(v).unwrap_or(s.theme),
                 "lang" => s.lang = Lang::parse(v).unwrap_or(s.lang),
                 "dock_material" => s.dock_material = Material::parse(v).unwrap_or(s.dock_material),
-                "notch_material" => s.notch_material = Material::parse(v).unwrap_or(s.notch_material),
-                "dock_round" => s.dock_round = v.parse::<i32>().map(|n| n.clamp(0, 100) as u8).unwrap_or(s.dock_round),
-                "notch_round" => s.notch_round = v.parse::<i32>().map(|n| n.clamp(0, 100) as u8).unwrap_or(s.notch_round),
-                "dock_size" => s.dock_size = v.parse::<i32>().map(|n| n.clamp(32, 72) as u8).unwrap_or(s.dock_size),
-                "dock_gap" => s.dock_gap = v.parse::<i32>().map(|n| n.clamp(0, 24) as u8).unwrap_or(s.dock_gap),
-                "dock_zoom" => s.dock_zoom = v.parse::<i32>().map(|n| n.clamp(100, 250) as u8).unwrap_or(s.dock_zoom),
-                "dock_margin" => s.dock_margin = v.parse::<i32>().map(|n| n.clamp(0, 60) as u8).unwrap_or(s.dock_margin),
+                "notch_material" => {
+                    s.notch_material = Material::parse(v).unwrap_or(s.notch_material)
+                }
+                "dock_round" => {
+                    s.dock_round = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 100) as u8)
+                        .unwrap_or(s.dock_round)
+                }
+                "notch_round" => {
+                    s.notch_round = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 100) as u8)
+                        .unwrap_or(s.notch_round)
+                }
+                "dock_size" => {
+                    s.dock_size = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(32, 72) as u8)
+                        .unwrap_or(s.dock_size)
+                }
+                "dock_gap" => {
+                    s.dock_gap = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 24) as u8)
+                        .unwrap_or(s.dock_gap)
+                }
+                "dock_zoom" => {
+                    s.dock_zoom = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(100, 250) as u8)
+                        .unwrap_or(s.dock_zoom)
+                }
+                "dock_margin" => {
+                    s.dock_margin = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 60) as u8)
+                        .unwrap_or(s.dock_margin)
+                }
                 "dock_enabled" => {
                     if let Some(b) = parse_bool(v) {
                         s.dock_enabled = b;
@@ -480,9 +550,30 @@ impl Settings {
                         s.mac_shortcuts = b;
                     }
                 }
-                "accent" => s.accent = v.parse::<i32>().map(|n| if n == ACCENT_MULTI as i32 { ACCENT_MULTI } else { n.clamp(0, 7) as u8 }).unwrap_or(s.accent),
-                "min_effect" => s.min_effect = v.parse::<i32>().map(|n| n.clamp(0, 1) as u8).unwrap_or(s.min_effect),
-                "notch_idle" => s.notch_idle = v.parse::<i32>().map(|n| n.clamp(0, 2) as u8).unwrap_or(s.notch_idle),
+                "accent" => {
+                    s.accent = v
+                        .parse::<i32>()
+                        .map(|n| {
+                            if n == ACCENT_MULTI as i32 {
+                                ACCENT_MULTI
+                            } else {
+                                n.clamp(0, 7) as u8
+                            }
+                        })
+                        .unwrap_or(s.accent)
+                }
+                "min_effect" => {
+                    s.min_effect = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 1) as u8)
+                        .unwrap_or(s.min_effect)
+                }
+                "notch_idle" => {
+                    s.notch_idle = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 2) as u8)
+                        .unwrap_or(s.notch_idle)
+                }
                 "greet_name" => s.greet_name = ShortText::new(v),
                 "greet_text" => s.greet_text = ShortText::new(v),
                 "lyrics_compact" => {
@@ -505,8 +596,18 @@ impl Settings {
                         s.notch_send = b;
                     }
                 }
-                "icon_variant" => s.icon_variant = v.parse::<i32>().map(|n| n.clamp(0, 2) as u8).unwrap_or(s.icon_variant),
-                "icon_tint" => s.icon_tint = v.parse::<i32>().map(|n| n.clamp(0, 4) as u8).unwrap_or(s.icon_tint),
+                "icon_variant" => {
+                    s.icon_variant = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 2) as u8)
+                        .unwrap_or(s.icon_variant)
+                }
+                "icon_tint" => {
+                    s.icon_tint = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 4) as u8)
+                        .unwrap_or(s.icon_tint)
+                }
                 "clipboard_history" => {
                     if let Some(b) = parse_bool(v) {
                         s.clipboard_history = b;
@@ -537,11 +638,36 @@ impl Settings {
                         s.stage_titles = b;
                     }
                 }
-                "stage_size" => s.stage_size = v.parse::<i32>().map(|n| n.clamp(70, 260) as u8).unwrap_or(s.stage_size),
-                "stage_gap" => s.stage_gap = v.parse::<i32>().map(|n| n.clamp(0, 60) as u8).unwrap_or(s.stage_gap),
-                "stage_count" => s.stage_count = v.parse::<i32>().map(|n| n.clamp(2, 10) as u8).unwrap_or(s.stage_count),
-                "stage_speed" => s.stage_speed = v.parse::<i32>().map(|n| n.clamp(50, 200) as u8).unwrap_or(s.stage_speed),
-                "stage_icons" => s.stage_icons = v.parse::<i32>().map(|n| n.clamp(0, 2) as u8).unwrap_or(s.stage_icons),
+                "stage_size" => {
+                    s.stage_size = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(70, 260) as u8)
+                        .unwrap_or(s.stage_size)
+                }
+                "stage_gap" => {
+                    s.stage_gap = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 60) as u8)
+                        .unwrap_or(s.stage_gap)
+                }
+                "stage_count" => {
+                    s.stage_count = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(2, 10) as u8)
+                        .unwrap_or(s.stage_count)
+                }
+                "stage_speed" => {
+                    s.stage_speed = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(50, 200) as u8)
+                        .unwrap_or(s.stage_speed)
+                }
+                "stage_icons" => {
+                    s.stage_icons = v
+                        .parse::<i32>()
+                        .map(|n| n.clamp(0, 2) as u8)
+                        .unwrap_or(s.stage_icons)
+                }
                 "menubar_style" => {
                     if matches!(v.to_ascii_lowercase().as_str(), "glass" | "kaca") {
                         legacy_glass = true;
@@ -589,14 +715,24 @@ impl Settings {
                         s.anim = b;
                     }
                 }
-                "ui_scale" => s.ui_scale = v.trim_end_matches('%').parse::<i32>().map(|n| n.clamp(75, 200) as u8).unwrap_or(s.ui_scale),
+                "ui_scale" => {
+                    s.ui_scale = v
+                        .trim_end_matches('%')
+                        .parse::<i32>()
+                        .map(|n| n.clamp(75, 200) as u8)
+                        .unwrap_or(s.ui_scale)
+                }
                 "notch_island" => {
                     if let Some(b) = parse_bool(v) {
                         s.notch_island = b;
                     }
                 }
-                "widget_style" => s.widget_style = v.parse::<u8>().map(|n| n.min(1)).unwrap_or(s.widget_style),
-                "battery_pct" => s.battery_pct = v.parse::<u8>().map(|n| n.min(2)).unwrap_or(s.battery_pct),
+                "widget_style" => {
+                    s.widget_style = v.parse::<u8>().map(|n| n.min(1)).unwrap_or(s.widget_style)
+                }
+                "battery_pct" => {
+                    s.battery_pct = v.parse::<u8>().map(|n| n.min(2)).unwrap_or(s.battery_pct)
+                }
                 "autostart" => {
                     if let Some(b) = parse_bool(v) {
                         s.autostart = b;
@@ -613,7 +749,7 @@ impl Settings {
 
     pub fn serialize(&self) -> String {
         format!(
-            "# ABRA settings\ntakeover={}\ndock={}\nnotch={}\nblur={}\nstyle={}\ntransparency={}\ntheme={}\nlang={}\ndock_material={}\ndock_round={}\nnotch_material={}\nnotch_round={}\nautostart={}\ndock_size={}\ndock_gap={}\ndock_zoom={}\ndock_margin={}\nanim={}\nrefraction={}\ndock_enabled={}\nnotch_enabled={}\nnotch_hover_open={}\nwin_shadow={}\nmenubar={}\nclock_24h={}\nmenubar_glass={}\nhot_tl={}\nhot_tr={}\nhot_bl={}\nhot_br={}\nstage={}\nswitcher={}\nstage_right={}\nstage_size={}\nstage_gap={}\nstage_count={}\nstage_speed={}\nstage_desktop_click={}\nstage_media={}\nstage_icons={}\nstage_titles={}\nhide_desktop_icons={}\nmenubar_style={}\ndock_plates={}\nabove_fullscreen={}\nclipboard_history={}\nicon_style={}\nicon_tint={}\naccent={}\nmac_shortcuts={}\ndownloads_stack={}\nrecent_apps={}\nicon_pack={}\nmenubar_material={}\nicon_variant={}\nmin_effect={}\nnotch_idle={}\ngreet_name={}\ngreet_text={}\nlyrics_compact={}\nlyrics_online={}\nnotch_downloads={}\nnotch_send={}\nui_scale={}\nnotch_island={}\nwidget_style={}\nbattery_pct={}\n",
+            "# NEXORA settings\ntakeover={}\ndock={}\nnotch={}\nblur={}\nstyle={}\ntransparency={}\ntheme={}\nlang={}\ndock_material={}\ndock_round={}\nnotch_material={}\nnotch_round={}\nautostart={}\ndock_size={}\ndock_gap={}\ndock_zoom={}\ndock_margin={}\nanim={}\nrefraction={}\ndock_enabled={}\nnotch_enabled={}\nnotch_hover_open={}\nwin_shadow={}\nmenubar={}\nclock_24h={}\nmenubar_glass={}\nhot_tl={}\nhot_tr={}\nhot_bl={}\nhot_br={}\nstage={}\nswitcher={}\nstage_right={}\nstage_size={}\nstage_gap={}\nstage_count={}\nstage_speed={}\nstage_desktop_click={}\nstage_media={}\nstage_icons={}\nstage_titles={}\nhide_desktop_icons={}\nmenubar_style={}\ndock_plates={}\nabove_fullscreen={}\nclipboard_history={}\nicon_style={}\nicon_tint={}\naccent={}\nmac_shortcuts={}\ndownloads_stack={}\nrecent_apps={}\nicon_pack={}\nmenubar_material={}\nicon_variant={}\nmin_effect={}\nnotch_idle={}\ngreet_name={}\ngreet_text={}\nlyrics_compact={}\nlyrics_online={}\nnotch_downloads={}\nnotch_send={}\nui_scale={}\nnotch_island={}\nwidget_style={}\nbattery_pct={}\n",
             self.takeover,
             self.dock.key(),
             self.notch.key(),
@@ -726,32 +862,48 @@ pub fn look(s: &Settings, system_dark: bool, material: Material) -> Look {
     };
     let mut blur_sigma = lerp(1.0, 40.0, b) * sigma_k;
     let mut saturation: f32 = sat;
-    let (tr, tg, tb, a_max, a_min) = if dark { (20u8, 20u8, 24u8, 232.0, 40.0) } else { (255, 255, 255, 215.0, 24.0) };
-    let mut a = lerp(a_max, a_min, t);
-    let highlight: f32;
-    let (mut rim, mut solid, fg) = if dark {
-        ([70u8, 255, 255, 255], [235u8, 28, 28, 32], [255u8, 255, 255])
+    let (tr, tg, tb) = if dark {
+        (20u8, 20u8, 24u8)
     } else {
-        ([150, 255, 255, 255], [235, 238, 240, 246], [24, 24, 28])
+        (255, 255, 255)
     };
+    let a: f32;
+    let highlight: f32;
+    let fg = if dark { [255u8, 255, 255] } else { [24, 24, 28] };
     let (mut tr, mut tg, mut tb) = (tr, tg, tb);
+    let rim: [u8; 4];
+    let solid: [u8; 4];
     match material {
         Material::Glass => {
-            a = if dark { lerp(120.0, 22.0, t) } else { lerp(80.0, 18.0, t) };
+            a = if dark {
+                lerp(120.0, 22.0, t)
+            } else {
+                lerp(80.0, 18.0, t)
+            };
             if !dark {
                 (tr, tg, tb) = (226, 231, 240);
             }
             blur_sigma = lerp(1.5, 7.0, b) * sigma_k;
             saturation = saturation.max(1.4);
             rim = [140, 255, 255, 255];
+            solid = if dark { [235u8, 28, 28, 32] } else { [235, 238, 240, 246] };
             highlight = 0.35;
         }
         Material::Blur => {
-            a = if dark { lerp(100.0, 30.0, t) } else { lerp(120.0, 40.0, t) };
+            a = if dark {
+                lerp(100.0, 30.0, t)
+            } else {
+                lerp(120.0, 40.0, t)
+            };
             (tr, tg, tb) = if dark { (26, 28, 30) } else { (240, 242, 246) };
             blur_sigma = lerp(8.0, 36.0, b);
             saturation = 1.1;
-            rim = if dark { [34, 255, 255, 255] } else { [60, 255, 255, 255] };
+            rim = if dark {
+                [34, 255, 255, 255]
+            } else {
+                [60, 255, 255, 255]
+            };
+            solid = if dark { [235u8, 28, 28, 32] } else { [235, 238, 240, 246] };
             highlight = 0.2;
         }
         Material::Black => {
@@ -765,7 +917,17 @@ pub fn look(s: &Settings, system_dark: bool, material: Material) -> Look {
         }
     }
     let liquify = material == Material::Glass && s.refraction;
-    Look { dark, blur_sigma, saturation, tint: [a.round() as u8, tr, tg, tb], rim, solid, highlight, fg, liquify }
+    Look {
+        dark,
+        blur_sigma,
+        saturation,
+        tint: [a.round() as u8, tr, tg, tb],
+        rim,
+        solid,
+        highlight,
+        fg,
+        liquify,
+    }
 }
 
 pub fn bar_look(s: &Settings, system_dark: bool) -> Look {
@@ -804,22 +966,64 @@ mod tests {
 
     #[test]
     fn legacy_glass_bar_becomes_transparent_and_light_glass_is_brighter() {
-        let s = Settings::parse("menubar_glass=true
+        let s = Settings::parse(
+            "menubar_glass=true
 menubar_style=glass
-");
+",
+        );
         assert!(!s.menubar_glass, "latar kaca lama menjadi transparan");
         let mut st = Settings::default();
         st.theme = Theme::Light;
         let light = look(&st, false, Material::Glass);
         st.theme = Theme::Dark;
         let dark = look(&st, false, Material::Glass);
-        assert!(light.tint[0] >= 40 && light.tint[0] <= 60, "kaca terang cukup terang: {}", light.tint[0]);
+        assert!(
+            light.tint[0] >= 40 && light.tint[0] <= 60,
+            "kaca terang cukup terang: {}",
+            light.tint[0]
+        );
         assert!(dark.tint[0] >= 60);
     }
 
     #[test]
     fn roundtrip() {
-        let s = Settings { takeover: false, dock: Behavior::Smart, notch: Behavior::Overlay, blur: 12, style: BlurStyle::Clear, transparency: 90, theme: Theme::Light, lang: Lang::En, dock_material: Material::Black, dock_round: 80, notch_material: Material::Glass, notch_round: 10, autostart: true, dock_size: 60, dock_gap: 10, dock_zoom: 200, dock_margin: 30, anim: false, refraction: false, dock_enabled: false, notch_enabled: false, notch_hover_open: false, win_shadow: false, menubar: true, clock_24h: false, menubar_glass: true, hot: [HotAction::Mission, HotAction::Launchpad, HotAction::Lock, HotAction::Stage], stage: true, switcher: false, ..Default::default() };
+        let s = Settings {
+            takeover: false,
+            dock: Behavior::Smart,
+            notch: Behavior::Overlay,
+            blur: 12,
+            style: BlurStyle::Clear,
+            transparency: 90,
+            theme: Theme::Light,
+            lang: Lang::En,
+            dock_material: Material::Black,
+            dock_round: 80,
+            notch_material: Material::Glass,
+            notch_round: 10,
+            autostart: true,
+            dock_size: 60,
+            dock_gap: 10,
+            dock_zoom: 200,
+            dock_margin: 30,
+            anim: false,
+            refraction: false,
+            dock_enabled: false,
+            notch_enabled: false,
+            notch_hover_open: false,
+            win_shadow: false,
+            menubar: true,
+            clock_24h: false,
+            menubar_glass: true,
+            hot: [
+                HotAction::Mission,
+                HotAction::Launchpad,
+                HotAction::Lock,
+                HotAction::Stage,
+            ],
+            stage: true,
+            switcher: false,
+            ..Default::default()
+        };
         assert_eq!(Settings::parse(&s.serialize()), s);
     }
 
@@ -831,15 +1035,19 @@ menubar_style=glass
 
     #[test]
     fn dock_metrics_clamped() {
-        let s = Settings::parse("dock_size=500
+        let s = Settings::parse(
+            "dock_size=500
 dock_zoom=5
-dock_margin=900");
+dock_margin=900",
+        );
         assert_eq!((s.dock_size, s.dock_zoom, s.dock_margin), (72, 100, 60));
     }
 
     #[test]
     fn junk_is_ignored_and_clamped() {
-        let s = Settings::parse("\u{feff}blur=999\ntransparency=-5\ndock=banana\nwat\ntheme=gelap\n#x=1");
+        let s = Settings::parse(
+            "\u{feff}blur=999\ntransparency=-5\ndock=banana\nwat\ntheme=gelap\n#x=1",
+        );
         assert_eq!(s.blur, 100);
         assert_eq!(s.transparency, 0);
         assert_eq!(s.dock, Behavior::Fixed);
@@ -880,13 +1088,30 @@ dock_margin=900");
         let s = Settings::default();
         let glass = look(&s, true, Material::Glass);
         let blur = look(&s, true, Material::Blur);
-        assert!(blur.blur_sigma > glass.blur_sigma * 1.5, "blur {} vs glass {}", blur.blur_sigma, glass.blur_sigma);
+        assert!(
+            blur.blur_sigma > glass.blur_sigma * 1.5,
+            "blur {} vs glass {}",
+            blur.blur_sigma,
+            glass.blur_sigma
+        );
         assert!(glass.liquify && !blur.liquify, "Crystal = gaya Liquify");
-        assert!(glass.blur_sigma <= 7.0 && glass.rim[0] == 140, "Liquify: blur tipis, kilau atas 55%");
-        let no_refr = Settings { refraction: false, ..Settings::default() };
-        assert!(!look(&no_refr, true, Material::Glass).liquify, "refraksi dimatikan: kaca biasa");
+        assert!(
+            glass.blur_sigma <= 7.0 && glass.rim[0] == 140,
+            "Liquify: blur tipis, kilau atas 55%"
+        );
+        let no_refr = Settings {
+            refraction: false,
+            ..Settings::default()
+        };
+        assert!(
+            !look(&no_refr, true, Material::Glass).liquify,
+            "refraksi dimatikan: kaca biasa"
+        );
         assert!(blur.dark && !look(&s, false, Material::Blur).dark);
-        assert!(blur.tint[0] >= 60 && blur.rim[0] > 0 && blur.rim[0] < 60, "rim Blur sangat tipis");
+        assert!(
+            blur.tint[0] >= 60 && blur.rim[0] > 0 && blur.rim[0] < 60,
+            "rim Blur sangat tipis"
+        );
         assert_eq!(Material::parse("blur"), Some(Material::Blur));
         assert_eq!(Material::Blur.key(), "blur");
         assert_eq!(Material::ALL.len(), 3);
@@ -894,17 +1119,32 @@ dock_margin=900");
 
     #[test]
     fn notch_greeting_settings_round_trip() {
-        let s = Settings::parse("notch_idle=1\ngreet_name=  Rani =)  \ngreet_text=Semangat, \u{1F680}!\n");
+        let s = Settings::parse(
+            "notch_idle=1\ngreet_name=  Rani =)  \ngreet_text=Semangat, \u{1F680}!\n",
+        );
         assert_eq!(s.notch_idle, 1);
         assert_eq!(s.greet_name.as_str(), "Rani =)");
         let again = Settings::parse(&s.serialize());
-        assert_eq!((again.notch_idle, again.greet_name, again.greet_text), (1, s.greet_name, s.greet_text));
+        assert_eq!(
+            (again.notch_idle, again.greet_name, again.greet_text),
+            (1, s.greet_name, s.greet_text)
+        );
         assert_eq!(Settings::default().notch_idle, 0);
-        assert_eq!(Settings::parse(&Settings::parse("notch_idle=2\n").serialize()).notch_idle, 2, "musik & lirik");
+        assert_eq!(
+            Settings::parse(&Settings::parse("notch_idle=2\n").serialize()).notch_idle,
+            2,
+            "musik & lirik"
+        );
         assert_eq!(Settings::parse("notch_idle=9\n").notch_idle, 2);
         let d = Settings::default();
-        assert!(d.lyrics_compact && d.lyrics_online, "lirik online aktif bawaan (keputusan pengguna)");
-        let off = Settings::parse(&Settings::parse("lyrics_online=false\nlyrics_compact=0\nnotch_downloads=0\n").serialize());
+        assert!(
+            d.lyrics_compact && d.lyrics_online,
+            "lirik online aktif bawaan (keputusan pengguna)"
+        );
+        let off = Settings::parse(
+            &Settings::parse("lyrics_online=false\nlyrics_compact=0\nnotch_downloads=0\n")
+                .serialize(),
+        );
         assert!(!off.lyrics_online && !off.lyrics_compact && !off.notch_downloads);
         assert!(d.notch_downloads, "unduhan di notch aktif bawaan");
         assert!(d.notch_send, "zona Kirim aktif bawaan");
@@ -928,9 +1168,11 @@ dock_margin=900");
 
     #[test]
     fn blur_style_option_is_gone_and_always_clear() {
-        let s = Settings::parse("style=vivid
+        let s = Settings::parse(
+            "style=vivid
 menubar_material=true
-");
+",
+        );
         assert_eq!(s.style, BlurStyle::Clear);
         assert!(s.menubar_material);
         assert!(Settings::default().style == BlurStyle::Clear);
@@ -957,10 +1199,16 @@ menubar_material=true
         let s = Settings::parse("ui_scale=125%\nnotch_island=1\nwidget_style=1\n");
         assert_eq!((s.ui_scale, s.notch_island, s.widget_style), (125, true, 1));
         let again = Settings::parse(&s.serialize());
-        assert_eq!((again.ui_scale, again.notch_island, again.widget_style), (125, true, 1));
+        assert_eq!(
+            (again.ui_scale, again.notch_island, again.widget_style),
+            (125, true, 1)
+        );
         assert_eq!(Settings::parse("ui_scale=999").ui_scale, 200);
         assert_eq!(Settings::default().ui_scale, 100);
-        assert_eq!(Settings::parse(&Settings::parse("battery_pct=2").serialize()).battery_pct, 2);
+        assert_eq!(
+            Settings::parse(&Settings::parse("battery_pct=2").serialize()).battery_pct,
+            2
+        );
         assert_eq!(Settings::parse("battery_pct=9").battery_pct, 2);
         assert_eq!(Settings::default().battery_pct, 1);
     }

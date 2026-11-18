@@ -73,10 +73,46 @@ fn set(con: &WMIConnection, path: &str, p: u8) -> bool {
     for off in 0..4 {
         let v = (start + off) % 4;
         let ok = match v {
-            0 => con.exec_instance_method::<Methods, _, ()>(m, path, SetA { timeout: 1, brightness: p }).is_ok(),
-            1 => con.exec_instance_method::<Methods, _, ()>(m, path, SetB { timeout: 1, brightness: p as i32 }).is_ok(),
-            2 => con.exec_instance_method::<Methods, _, ()>(m, path, SetC { timeout: 1, brightness: p }).is_ok(),
-            _ => con.exec_instance_method::<Methods, _, ()>(m, path, SetD { timeout: "1".into(), brightness: p.to_string() }).is_ok(),
+            0 => con
+                .exec_instance_method::<Methods, _, ()>(
+                    m,
+                    path,
+                    SetA {
+                        timeout: 1,
+                        brightness: p,
+                    },
+                )
+                .is_ok(),
+            1 => con
+                .exec_instance_method::<Methods, _, ()>(
+                    m,
+                    path,
+                    SetB {
+                        timeout: 1,
+                        brightness: p as i32,
+                    },
+                )
+                .is_ok(),
+            2 => con
+                .exec_instance_method::<Methods, _, ()>(
+                    m,
+                    path,
+                    SetC {
+                        timeout: 1,
+                        brightness: p,
+                    },
+                )
+                .is_ok(),
+            _ => con
+                .exec_instance_method::<Methods, _, ()>(
+                    m,
+                    path,
+                    SetD {
+                        timeout: "1".into(),
+                        brightness: p.to_string(),
+                    },
+                )
+                .is_ok(),
         };
         if ok {
             if v != start {
@@ -90,7 +126,10 @@ fn set(con: &WMIConnection, path: &str, p: u8) -> bool {
 }
 
 fn read(con: &WMIConnection) -> Option<u8> {
-    con.query::<Current>().ok()?.first().map(|c| c.current_brightness.min(100))
+    con.query::<Current>()
+        .ok()?
+        .first()
+        .map(|c| c.current_brightness.min(100))
 }
 
 pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Brightness {
@@ -100,7 +139,9 @@ pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Brightness {
     let n1 = notify.clone();
     std::thread::spawn(move || {
         let Ok(com) = COMLibrary::new() else { return };
-        let Ok(con) = WMIConnection::with_namespace_path("root\\WMI", com) else { return };
+        let Ok(con) = WMIConnection::with_namespace_path("root\\WMI", com) else {
+            return;
+        };
         if let Some(v) = read(&con) {
             LEVEL.store(v as i32, Ordering::Relaxed);
             n1();
@@ -112,7 +153,11 @@ pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Brightness {
             match cmd {
                 Cmd::Set(p) => {
                     let p = p.min(100);
-                    let path = con.query::<Methods>().ok().and_then(|m| m.into_iter().next()).map(|m| m.path);
+                    let path = con
+                        .query::<Methods>()
+                        .ok()
+                        .and_then(|m| m.into_iter().next())
+                        .map(|m| m.path);
                     if let Some(path) = path {
                         if set(&con, &path, p) {
                             LEVEL.store(p as i32, Ordering::Relaxed);
@@ -135,8 +180,13 @@ pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Brightness {
     let n2 = notify;
     std::thread::spawn(move || {
         let Ok(com) = COMLibrary::new() else { return };
-        let Ok(con) = WMIConnection::with_namespace_path("root\\WMI", com) else { return };
-        let Ok(events) = con.raw_notification::<Event>("SELECT * FROM WmiMonitorBrightnessEvent") else { return };
+        let Ok(con) = WMIConnection::with_namespace_path("root\\WMI", com) else {
+            return;
+        };
+        let Ok(events) = con.raw_notification::<Event>("SELECT * FROM WmiMonitorBrightnessEvent")
+        else {
+            return;
+        };
         for ev in events {
             let Ok(ev) = ev else { break };
             LEVEL.store(ev.brightness.min(100) as i32, Ordering::Relaxed);

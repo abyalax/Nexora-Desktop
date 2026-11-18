@@ -2,8 +2,9 @@ use super::effect_graph::backdrop_blur_brush;
 use std::cell::Cell;
 use windows::UI::Color;
 use windows::UI::Composition::{
-    CompositionBrush, CompositionClip, CompositionColorBrush, CompositionLinearGradientBrush, CompositionRoundedRectangleGeometry, CompositionSpriteShape,
-    ContainerVisual, Compositor, ShapeVisual, SpriteVisual,
+    CompositionBrush, CompositionClip, CompositionColorBrush, CompositionLinearGradientBrush,
+    CompositionRoundedRectangleGeometry, CompositionSpriteShape, Compositor, ContainerVisual,
+    ShapeVisual, SpriteVisual,
 };
 use windows_core::{Interface, Result};
 use windows_numerics::{Vector2, Vector3};
@@ -44,9 +45,24 @@ impl GlassParams {
             radius,
             blur_sigma: 24.0,
             saturation: 1.6,
-            tint: Color { A: 46, R: 255, G: 255, B: 255 },
-            rim: Color { A: 140, R: 255, G: 255, B: 255 },
-            solid: Color { A: 215, R: 226, G: 228, B: 236 },
+            tint: Color {
+                A: 46,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+            rim: Color {
+                A: 140,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+            solid: Color {
+                A: 215,
+                R: 226,
+                G: 228,
+                B: 236,
+            },
             highlight: 1.0,
             liquify: false,
         }
@@ -54,9 +70,24 @@ impl GlassParams {
 
     pub fn dark(size: (f32, f32), radius: f32) -> Self {
         GlassParams {
-            tint: Color { A: 150, R: 20, G: 20, B: 24 },
-            rim: Color { A: 70, R: 255, G: 255, B: 255 },
-            solid: Color { A: 235, R: 28, G: 28, B: 32 },
+            tint: Color {
+                A: 150,
+                R: 20,
+                G: 20,
+                B: 24,
+            },
+            rim: Color {
+                A: 70,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+            solid: Color {
+                A: 235,
+                R: 28,
+                G: 28,
+                B: 32,
+            },
             ..Self::light(size, radius)
         }
     }
@@ -84,7 +115,10 @@ pub struct GlassPanel {
 impl GlassPanel {
     pub fn new(comp: &Compositor, parent: &ContainerVisual, p: GlassParams) -> Result<GlassPanel> {
         let clip_geo = comp.CreateRoundedRectangleGeometry()?;
-        clip_geo.SetCornerRadius(Vector2 { X: p.radius, Y: p.radius })?;
+        clip_geo.SetCornerRadius(Vector2 {
+            X: p.radius,
+            Y: p.radius,
+        })?;
         let clip = comp.CreateGeometricClip()?;
         clip.SetGeometry(&clip_geo)?;
         let clip: CompositionClip = clip.cast()?;
@@ -102,21 +136,46 @@ impl GlassPanel {
         sg.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 })?;
         sg.SetEndPoint(Vector2 { X: 0.0, Y: 1.0 })?;
         let stops = sg.ColorStops()?;
-        stops.Append(&comp.CreateColorGradientStopWithOffsetAndColor(0.0, Color { A: 70, R: 255, G: 255, B: 255 })?)?;
-        stops.Append(&comp.CreateColorGradientStopWithOffsetAndColor(0.34, Color { A: 0, R: 255, G: 255, B: 255 })?)?;
+        stops.Append(&comp.CreateColorGradientStopWithOffsetAndColor(
+            0.0,
+            Color {
+                A: 70,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        )?)?;
+        stops.Append(&comp.CreateColorGradientStopWithOffsetAndColor(
+            0.34,
+            Color {
+                A: 0,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        )?)?;
         spec.SetBrush(&sg)?;
         spec.SetClip(&clip)?;
 
         let rim_geo = comp.CreateRoundedRectangleGeometry()?;
         rim_geo.SetOffset(Vector2 { X: 0.5, Y: 0.5 })?;
-        rim_geo.SetCornerRadius(Vector2 { X: (p.radius - 0.5).max(0.0), Y: (p.radius - 0.5).max(0.0) })?;
+        rim_geo.SetCornerRadius(Vector2 {
+            X: (p.radius - 0.5).max(0.0),
+            Y: (p.radius - 0.5).max(0.0),
+        })?;
         let rim_shape = comp.CreateSpriteShapeWithGeometry(&rim_geo)?;
         let rim_brush = comp.CreateLinearGradientBrush()?;
         rim_shape.SetStrokeBrush(&rim_brush)?;
         rim_shape.SetStrokeThickness(1.5)?;
         let fringe_geo = comp.CreateRoundedRectangleGeometry()?;
-        fringe_geo.SetOffset(Vector2 { X: FRINGE_INSET, Y: FRINGE_INSET })?;
-        fringe_geo.SetCornerRadius(Vector2 { X: (p.radius - FRINGE_INSET).max(0.0), Y: (p.radius - FRINGE_INSET).max(0.0) })?;
+        fringe_geo.SetOffset(Vector2 {
+            X: FRINGE_INSET,
+            Y: FRINGE_INSET,
+        })?;
+        fringe_geo.SetCornerRadius(Vector2 {
+            X: (p.radius - FRINGE_INSET).max(0.0),
+            Y: (p.radius - FRINGE_INSET).max(0.0),
+        })?;
         let fringe_shape = comp.CreateSpriteShapeWithGeometry(&fringe_geo)?;
         let fringe_brush = comp.CreateLinearGradientBrush()?;
         fringe_brush.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 })?;
@@ -190,24 +249,55 @@ impl GlassPanel {
         self.paint_fringe(w)?;
         let stops = self.rim_brush.ColorStops()?;
         stops.Clear()?;
-        let with = |k: f32| Color { A: (p.rim.A as f32 * k).round().clamp(0.0, 255.0) as u8, ..p.rim };
+        let with = |k: f32| Color {
+            A: (p.rim.A as f32 * k).round().clamp(0.0, 255.0) as u8,
+            ..p.rim
+        };
         if p.liquify {
             let h = h.max(4.0);
             let t = ((p.radius * 0.45 + 2.0) / h).clamp(0.02, 0.45);
             let b = (2.5 / h).clamp(0.01, 0.3);
             self.rim_brush.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 })?;
             self.rim_brush.SetEndPoint(Vector2 { X: 0.0, Y: 1.0 })?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(0.0, p.rim)?)?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(t, with(LQ_RING))?)?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor((1.0 - b).max(t), with(LQ_RING))?)?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(1.0, with(LQ_BOTTOM))?)?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(0.0, p.rim)?,
+            )?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(t, with(LQ_RING))?,
+            )?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor((1.0 - b).max(t), with(LQ_RING))?,
+            )?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(1.0, with(LQ_BOTTOM))?,
+            )?;
             self.rim_shape.SetStrokeThickness(1.0)?;
         } else {
             self.rim_brush.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 })?;
             self.rim_brush.SetEndPoint(Vector2 { X: 1.0, Y: 1.0 })?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(0.0, p.rim)?)?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(0.5, with(RIM_MID))?)?;
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(1.0, with(RIM_BOTTOM))?)?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(0.0, p.rim)?,
+            )?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(0.5, with(RIM_MID))?,
+            )?;
+            stops.Append(
+                &self
+                    .comp
+                    .CreateColorGradientStopWithOffsetAndColor(1.0, with(RIM_BOTTOM))?,
+            )?;
             self.rim_shape.SetStrokeThickness(1.5)?;
         }
         Ok(())
@@ -220,9 +310,24 @@ impl GlassPanel {
             return Ok(());
         }
         let f = (FRINGE_PX / w.max(1.0)).clamp(0.02, 0.45);
-        let red = Color { A: FRINGE_A, R: 255, G: 64, B: 96 };
-        let blue = Color { A: FRINGE_A, R: 64, G: 150, B: 255 };
-        for (o, c) in [(0.0, red), (f, Color { A: 0, ..red }), (1.0 - f, Color { A: 0, ..blue }), (1.0, blue)] {
+        let red = Color {
+            A: FRINGE_A,
+            R: 255,
+            G: 64,
+            B: 96,
+        };
+        let blue = Color {
+            A: FRINGE_A,
+            R: 64,
+            G: 150,
+            B: 255,
+        };
+        for (o, c) in [
+            (0.0, red),
+            (f, Color { A: 0, ..red }),
+            (1.0 - f, Color { A: 0, ..blue }),
+            (1.0, blue),
+        ] {
             stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(o, c)?)?;
         }
         Ok(())
@@ -232,21 +337,39 @@ impl GlassPanel {
         let p = self.p.get();
         let effect = match tier {
             Tier::Full => Some(backdrop_blur_brush(&self.comp, p.blur_sigma, p.saturation)),
-            Tier::Light => Some(backdrop_blur_brush(&self.comp, p.blur_sigma * 0.4, p.saturation * 0.8)),
+            Tier::Light => Some(backdrop_blur_brush(
+                &self.comp,
+                p.blur_sigma * 0.4,
+                p.saturation * 0.8,
+            )),
             Tier::Solid => None,
         };
         let (brush, tier): (CompositionBrush, Tier) = match effect {
             Some(Ok(b)) => (b.cast()?, tier),
-            _ => (self.comp.CreateColorBrushWithColor(p.solid)?.cast()?, Tier::Solid),
+            _ => (
+                self.comp.CreateColorBrushWithColor(p.solid)?.cast()?,
+                Tier::Solid,
+            ),
         };
         self.glass.SetBrush(&brush)?;
-        self.tint.SetOpacity(if tier == Tier::Solid { 0.0 } else { 1.0 })?;
-        self.spec.SetOpacity(p.highlight * if tier == Tier::Solid { 0.5 } else { 1.0 })?;
+        self.tint
+            .SetOpacity(if tier == Tier::Solid { 0.0 } else { 1.0 })?;
+        self.spec
+            .SetOpacity(p.highlight * if tier == Tier::Solid { 0.5 } else { 1.0 })?;
         self.tier.set(tier);
         Ok(())
     }
 
-    pub fn animate_rect(&self, x: f32, y: f32, w: f32, h: f32, radius: f32, ratio: f32, period_ms: u32) -> Result<()> {
+    pub fn animate_rect(
+        &self,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        radius: f32,
+        ratio: f32,
+        period_ms: u32,
+    ) -> Result<()> {
         use windows::Foundation::{PropertyValue, TimeSpan};
         use windows::UI::Composition::CompositionObject;
         use windows_core::HSTRING;
@@ -254,8 +377,12 @@ impl GlassPanel {
         let go = |obj: &CompositionObject, prop: &str, v: f32| -> Result<()> {
             let a = comp.CreateSpringScalarAnimation()?;
             a.SetDampingRatio(ratio)?;
-            a.SetPeriod(TimeSpan { Duration: period_ms as i64 * 10_000 })?;
-            a.SetFinalValue(&PropertyValue::CreateSingle(v)?.cast::<windows::Foundation::IReference<f32>>()?)?;
+            a.SetPeriod(TimeSpan {
+                Duration: period_ms as i64 * 10_000,
+            })?;
+            a.SetFinalValue(
+                &PropertyValue::CreateSingle(v)?.cast::<windows::Foundation::IReference<f32>>()?,
+            )?;
             obj.StartAnimation(&HSTRING::from(prop), &a)
         };
         for v in [&self.glass, &self.tint, &self.spec] {
@@ -327,8 +454,14 @@ impl GlassPanel {
 
     pub fn set_radius(&self, r: f32) -> Result<()> {
         self.clip_geo.SetCornerRadius(Vector2 { X: r, Y: r })?;
-        self.rim_geo.SetCornerRadius(Vector2 { X: (r - 0.5).max(0.0), Y: (r - 0.5).max(0.0) })?;
-        self.fringe_geo.SetCornerRadius(Vector2 { X: (r - FRINGE_INSET).max(0.0), Y: (r - FRINGE_INSET).max(0.0) })?;
+        self.rim_geo.SetCornerRadius(Vector2 {
+            X: (r - 0.5).max(0.0),
+            Y: (r - 0.5).max(0.0),
+        })?;
+        self.fringe_geo.SetCornerRadius(Vector2 {
+            X: (r - FRINGE_INSET).max(0.0),
+            Y: (r - FRINGE_INSET).max(0.0),
+        })?;
         let mut p = self.p.get();
         if (p.radius - r).abs() > 0.5 {
             p.radius = r;
@@ -349,8 +482,14 @@ impl GlassPanel {
         self.rim.SetSize(size)?;
         self.rim.SetOffset(at)?;
         self.clip_geo.SetSize(size)?;
-        self.rim_geo.SetSize(Vector2 { X: (w - 1.0).max(0.0), Y: (h - 1.0).max(0.0) })?;
-        self.fringe_geo.SetSize(Vector2 { X: (w - 2.0 * FRINGE_INSET).max(0.0), Y: (h - 2.0 * FRINGE_INSET).max(0.0) })?;
+        self.rim_geo.SetSize(Vector2 {
+            X: (w - 1.0).max(0.0),
+            Y: (h - 1.0).max(0.0),
+        })?;
+        self.fringe_geo.SetSize(Vector2 {
+            X: (w - 2.0 * FRINGE_INSET).max(0.0),
+            Y: (h - 2.0 * FRINGE_INSET).max(0.0),
+        })?;
         let (ow, oh) = self.rim_wh.get();
         if self.p.get().liquify && ((h - oh).abs() > 0.5 || (w - ow).abs() > 0.5) {
             self.paint_rim(w, h)?;

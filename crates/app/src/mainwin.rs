@@ -20,15 +20,29 @@ pub fn create() -> windows::core::Result<HWND> {
     unsafe {
         let hi = GetModuleHandleW(None)?.into();
         let class = w!("NacreMain");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        TASKBAR_CREATED.store(RegisterWindowMessageW(w!("TaskbarCreated")), Ordering::Relaxed);
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        TASKBAR_CREATED.store(
+            RegisterWindowMessageW(w!("TaskbarCreated")),
+            Ordering::Relaxed,
+        );
         CreateWindowExW(
             WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
             class,
-            w!("ABRA"),
+            w!("NEXORA"),
             WS_POPUP,
-            0, 0, 0, 0,
-            None, None, Some(hi), None,
+            0,
+            0,
+            0,
+            0,
+            None,
+            None,
+            Some(hi),
+            None,
         )
     }
 }
@@ -60,7 +74,7 @@ fn tray_data(hwnd: HWND) -> NOTIFYICONDATAW {
         hIcon: tray_icon(),
         ..Default::default()
     };
-    for (i, c) in "ABRA".encode_utf16().enumerate() {
+    for (i, c) in "NEXORA".encode_utf16().enumerate() {
         nid.szTip[i] = c;
     }
     nid
@@ -80,12 +94,15 @@ fn remove_tray(hwnd: HWND) {
     }
 }
 
-pub static TAKEOVER_ALLOWED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub static TAKEOVER_ALLOWED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
 
 pub fn apply_autostart() {
     use nacre_platform::startup;
     let want = crate::prefs::get().autostart;
-    let Ok(exe) = std::env::current_exe() else { return };
+    let Ok(exe) = std::env::current_exe() else {
+        return;
+    };
     let cur = startup::current();
     let ok = match (want, &cur) {
         (true, Some(c)) if *c == startup::command_for(&exe) => return,
@@ -109,14 +126,31 @@ pub fn set_taskbar_hidden(on: bool) {
 fn show_menu(hwnd: HWND) {
     unsafe {
         let Ok(menu) = CreatePopupMenu() else { return };
-        let check = if taskbar::is_hidden() { MF_CHECKED } else { MF_UNCHECKED };
-        let _ = AppendMenuW(menu, MF_STRING | check, ID_TOGGLE_TASKBAR, w!("Sembunyikan taskbar (uji)"));
+        let check = if taskbar::is_hidden() {
+            MF_CHECKED
+        } else {
+            MF_UNCHECKED
+        };
+        let _ = AppendMenuW(
+            menu,
+            MF_STRING | check,
+            ID_TOGGLE_TASKBAR,
+            w!("Sembunyikan taskbar (uji)"),
+        );
         let _ = AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null());
-        let _ = AppendMenuW(menu, MF_STRING, ID_QUIT, w!("Keluar dari ABRA"));
+        let _ = AppendMenuW(menu, MF_STRING, ID_QUIT, w!("Keluar dari NEXORA"));
         let mut pt = POINT::default();
         let _ = GetCursorPos(&mut pt);
         let _ = SetForegroundWindow(hwnd);
-        let _ = TrackPopupMenu(menu, TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, Some(0), hwnd, None);
+        let _ = TrackPopupMenu(
+            menu,
+            TPM_RIGHTBUTTON | TPM_BOTTOMALIGN,
+            pt.x,
+            pt.y,
+            Some(0),
+            hwnd,
+            None,
+        );
         let _ = PostMessageW(Some(hwnd), WM_NULL, WPARAM(0), LPARAM(0));
         let _ = DestroyMenu(menu);
     }
@@ -138,7 +172,10 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 let p = crate::prefs::get();
                 let want = p.takeover && p.dock_enabled;
                 if want != taskbar::is_hidden() {
-                    nacre_platform::log::line("taskbar", &format!("pengaturan mode penuh → {want}"));
+                    nacre_platform::log::line(
+                        "taskbar",
+                        &format!("pengaturan mode penuh → {want}"),
+                    );
                     set_taskbar_hidden(want);
                 }
             }

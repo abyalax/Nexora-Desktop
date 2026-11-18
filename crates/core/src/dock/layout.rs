@@ -15,7 +15,13 @@ pub struct Metrics {
 
 impl Metrics {
     pub fn custom(icon: f32, gap: f32, zoom: f32, scale: f32) -> Self {
-        Metrics { icon: icon * scale, gap: gap * scale, max_scale: zoom.max(1.0), reach: 2.6 * icon * scale, separator: 10.0 * scale }
+        Metrics {
+            icon: icon * scale,
+            gap: gap * scale,
+            max_scale: zoom.max(1.0),
+            reach: 2.6 * icon * scale,
+            separator: 10.0 * scale,
+        }
     }
 
     pub fn new(icon: f32, scale: f32) -> Self {
@@ -73,7 +79,9 @@ pub fn layout(slots: &[Slot], cursor_x: Option<f32>, area_w: f32, m: &Metrics) -
             Slot::Separator => m.separator,
         };
         let scale = match (s, cursor_x) {
-            (Slot::Item, Some(c)) => 1.0 + (m.max_scale - 1.0) * falloff((c - (x + w / 2.0)).abs(), m.reach),
+            (Slot::Item, Some(c)) => {
+                1.0 + (m.max_scale - 1.0) * falloff((c - (x + w / 2.0)).abs(), m.reach)
+            }
             _ => 1.0,
         };
         scales.push(scale);
@@ -92,7 +100,11 @@ pub fn layout(slots: &[Slot], cursor_x: Option<f32>, area_w: f32, m: &Metrics) -
     let mut x = (area_w - total) / 2.0;
     let mut cells = Vec::with_capacity(slots.len());
     for (w, sc) in widths.iter().zip(&scales) {
-        cells.push(Placed { x, w: *w, scale: *sc });
+        cells.push(Placed {
+            x,
+            w: *w,
+            scale: *sc,
+        });
         x += w + m.gap;
     }
     Layout { cells, total }

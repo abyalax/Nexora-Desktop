@@ -6,18 +6,20 @@ use nacre_platform::icons::Bitmap;
 use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
 use nacre_platform::wins::{enumerate, focus, tracker};
 use nacre_platform::{keys, launch, log, radio, shell, sys, time};
-use nacre_ui::glass::Tier;
 use nacre_ui::gfx::Gfx;
+use nacre_ui::glass::Tier;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
 use windows::Win32::UI::Input::KeyboardAndMouse::{TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual,
+};
 use windows_numerics::{Vector2, Vector3};
 
 const WM_MOUSELEAVE: u32 = 0x02A3;
@@ -93,7 +95,11 @@ thread_local! {
 }
 
 fn with_bar<R>(f: impl FnOnce(&mut Bar) -> R) -> Option<R> {
-    BAR.with(|c| c.try_borrow_mut().ok().and_then(|mut b| b.as_mut().map(|b| f(b))))
+    BAR.with(|c| {
+        c.try_borrow_mut()
+            .ok()
+            .and_then(|mut b| b.as_mut().map(|b| f(b)))
+    })
 }
 
 pub fn refresh_radios() {
@@ -141,7 +147,12 @@ unsafe extern "system" fn ll_mouse(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT
                 if !h.0.is_null() {
                     let root = GetAncestor(h, GA_ROOT);
                     if !root.0.is_null() {
-                        let _ = PostMessageW(Some(HWND(ctl as *mut _)), WM_CLICKWIN, WPARAM(root.0 as usize), LPARAM(0));
+                        let _ = PostMessageW(
+                            Some(HWND(ctl as *mut _)),
+                            WM_CLICKWIN,
+                            WPARAM(root.0 as usize),
+                            LPARAM(0),
+                        );
                     }
                 }
             }
@@ -183,10 +194,33 @@ fn is_fullscreen(hwnd: isize) -> bool {
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraBarCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-bar-ctl"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
-        CTL.with(|c| *c.borrow_mut() = Some(Ctl { hwnd, comp: comp.clone() }));
+        let class = w!("NexoraBarCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-bar-ctl"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
+        CTL.with(|c| {
+            *c.borrow_mut() = Some(Ctl {
+                hwnd,
+                comp: comp.clone(),
+            })
+        });
         prefs::listen(hwnd);
         tracker::install(noop_fg);
         tracker::install_fx(loc_hook);
@@ -242,7 +276,8 @@ fn apply_prefs() {
         services::post_island(crate::prefs::WM_PREFS);
     } else if want {
         let rescale = with_bar(|b| {
-            let want_dpi = unsafe { GetDpiForWindow(b.popup.hwnd) }.max(96) as f32 / 96.0 * prefs::ui_scale();
+            let want_dpi =
+                unsafe { GetDpiForWindow(b.popup.hwnd) }.max(96) as f32 / 96.0 * prefs::ui_scale();
             (want_dpi - b.dpi).abs() > 0.01
         })
         .unwrap_or(false);
@@ -268,14 +303,27 @@ fn apply_prefs() {
 
 fn create(comp: &Compositor) -> windows_core::Result<Box<Bar>> {
     let screen = sys::screen_size();
-    let glass = prefs::apply(nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0), &prefs::bar_look());
-    let mut popup = Popup::new(comp, w!("AbraMenuBar"), Some(bar_proc), WINDOW_EX_STYLE(0), glass)?;
+    let glass = prefs::apply(
+        nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0),
+        &prefs::bar_look(),
+    );
+    let mut popup = Popup::new(
+        comp,
+        w!("NexoraMenuBar"),
+        Some(bar_proc),
+        WINDOW_EX_STYLE(0),
+        glass,
+    )?;
     let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0 * prefs::ui_scale();
     let notch_h = services::notch().map(|(_, _, h)| h as f32 / dpi);
     let h = (notch_h.unwrap_or(26.0) * dpi).round() as i32;
     let tier = {
         let c = sys::conditions();
-        if !c.transparency || c.battery_saver || c.remote_session { Tier::Solid } else { Tier::Full }
+        if !c.transparency || c.battery_saver || c.remote_session {
+            Tier::Solid
+        } else {
+            Tier::Full
+        }
     };
     let _ = popup.panel.set_tier(tier);
     popup.set_rect(0, 0, screen.0, h)?;
@@ -296,7 +344,12 @@ fn create(comp: &Compositor) -> windows_core::Result<Box<Bar>> {
     popup.show();
     shell::appbar::reserve_top(popup.hwnd, screen.0, h);
     unsafe {
-        SetTimer(Some(popup.hwnd), T_CLOCK, time::ms_to_next_minute().max(200), None);
+        SetTimer(
+            Some(popup.hwnd),
+            T_CLOCK,
+            time::ms_to_next_minute().max(200),
+            None,
+        );
         SetTimer(Some(popup.hwnd), T_STATUS, 60_000, None);
         SetTimer(Some(popup.hwnd), T_SIG, 4_000, None);
     }
@@ -316,12 +369,22 @@ fn create(comp: &Compositor) -> windows_core::Result<Box<Bar>> {
                 _ => 0,
             };
             unsafe {
-                let _ = PostMessageW(Some(HWND(hw as *mut _)), WM_TEST_NET, WPARAM(code), LPARAM(0));
+                let _ = PostMessageW(
+                    Some(HWND(hw as *mut _)),
+                    WM_TEST_NET,
+                    WPARAM(code),
+                    LPARAM(0),
+                );
             }
             if code == 2 || code == 4 || code == 6 || code == 8 {
                 std::thread::sleep(std::time::Duration::from_millis(2500));
                 unsafe {
-                    let _ = PostMessageW(Some(HWND(hw as *mut _)), WM_TEST_NET, WPARAM(code + 1), LPARAM(0));
+                    let _ = PostMessageW(
+                        Some(HWND(hw as *mut _)),
+                        WM_TEST_NET,
+                        WPARAM(code + 1),
+                        LPARAM(0),
+                    );
                 }
             }
         });
@@ -377,7 +440,15 @@ unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM)
             let cls = String::from_utf16_lossy(&cls[..n.max(0) as usize]);
             let mut pid = 0u32;
             GetWindowThreadProcessId(HWND(root as *mut _), Some(&mut pid));
-            let shell = matches!(cls.as_str(), "Progman" | "WorkerW" | "Shell_TrayWnd" | "Shell_SecondaryTrayWnd" | "NotifyIconOverflowWindow" | "TopLevelWindowForOverflowXamlIsland");
+            let shell = matches!(
+                cls.as_str(),
+                "Progman"
+                    | "WorkerW"
+                    | "Shell_TrayWnd"
+                    | "Shell_SecondaryTrayWnd"
+                    | "NotifyIconOverflowWindow"
+                    | "TopLevelWindowForOverflowXamlIsland"
+            );
             if pid != std::process::id() && !shell {
                 with_bar(|b| {
                     if b.refresh_app_for(root) {
@@ -427,23 +498,42 @@ impl Bar {
         use nacre_core::settings::BarStyle;
         let p = prefs::get();
         let d = self.dpi;
-        let flat = if p.menubar_glass && !p.menubar_material { Some(match p.menubar_style { BarStyle::Light => (248, 248, 250), BarStyle::Dark => (0, 0, 0) }) } else { None };
+        let flat = if p.menubar_glass && !p.menubar_material {
+            Some(match p.menubar_style {
+                BarStyle::Light => (248, 248, 250),
+                BarStyle::Dark => (0, 0, 0),
+            })
+        } else {
+            None
+        };
         if p.menubar_material {
             let look = prefs::look(prefs::Role::Themed);
-            let base = nacre_ui::glass::GlassParams::dark((self.screen.0 as f32, self.h as f32), 0.0);
+            let base =
+                nacre_ui::glass::GlassParams::dark((self.screen.0 as f32, self.h as f32), 0.0);
             let mut gp = prefs::apply(base, &look);
             gp.rim.A = 0;
             gp.highlight = 0.0;
             let _ = self.popup.panel.set_fringe(false);
             let _ = self.popup.panel.set_params(gp);
-            let _ = self.popup.panel.set_rect(0.0, 0.0, self.screen.0 as f32, self.h as f32);
+            let _ = self
+                .popup
+                .panel
+                .set_rect(0.0, 0.0, self.screen.0 as f32, self.h as f32);
         } else {
             let _ = self.popup.panel.set_rect(0.0, 0.0, 0.0, 0.0);
         }
-        let _ = self.bg.SetSize(Vector2 { X: self.screen.0 as f32, Y: self.h as f32 });
+        let _ = self.bg.SetSize(Vector2 {
+            X: self.screen.0 as f32,
+            Y: self.h as f32,
+        });
         match flat {
             Some((r, g, b)) => {
-                if let Ok(br) = self.comp.CreateColorBrushWithColor(Color { A: 255, R: r, G: g, B: b }) {
+                if let Ok(br) = self.comp.CreateColorBrushWithColor(Color {
+                    A: 255,
+                    R: r,
+                    G: g,
+                    B: b,
+                }) {
                     let _ = self.bg.SetBrush(&br);
                 }
                 let _ = self.bg.SetOpacity(1.0);
@@ -459,15 +549,44 @@ impl Bar {
             }
         }
         let line = d.round().max(1.0);
-        let _ = self.hair.SetSize(Vector2 { X: self.screen.0 as f32, Y: line });
-        let _ = self.hair.SetOffset(Vector3 { X: 0.0, Y: self.h as f32 - line, Z: 0.0 });
+        let _ = self.hair.SetSize(Vector2 {
+            X: self.screen.0 as f32,
+            Y: line,
+        });
+        let _ = self.hair.SetOffset(Vector3 {
+            X: 0.0,
+            Y: self.h as f32 - line,
+            Z: 0.0,
+        });
         let hc = match (p.menubar_glass && !p.menubar_material, p.menubar_style) {
-            _ if p.menubar_material => {
-                Some(if prefs::look(prefs::Role::Themed).dark { Color { A: 18, R: 255, G: 255, B: 255 } } else { Color { A: 22, R: 0, G: 0, B: 0 } })
-            }
+            _ if p.menubar_material => Some(if prefs::look(prefs::Role::Themed).dark {
+                Color {
+                    A: 18,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                }
+            } else {
+                Color {
+                    A: 22,
+                    R: 0,
+                    G: 0,
+                    B: 0,
+                }
+            }),
             (false, _) => None,
-            (true, BarStyle::Light) => Some(Color { A: 34, R: 0, G: 0, B: 0 }),
-            (true, BarStyle::Dark) => Some(Color { A: 40, R: 255, G: 255, B: 255 }),
+            (true, BarStyle::Light) => Some(Color {
+                A: 34,
+                R: 0,
+                G: 0,
+                B: 0,
+            }),
+            (true, BarStyle::Dark) => Some(Color {
+                A: 40,
+                R: 255,
+                G: 255,
+                B: 255,
+            }),
         };
         match hc.and_then(|c| self.comp.CreateColorBrushWithColor(c).ok()) {
             Some(br) => {
@@ -480,13 +599,23 @@ impl Bar {
         }
     }
 
-    fn top_shade(&self) -> windows_core::Result<windows::UI::Composition::CompositionLinearGradientBrush> {
+    fn top_shade(
+        &self,
+    ) -> windows_core::Result<windows::UI::Composition::CompositionLinearGradientBrush> {
         let g = self.comp.CreateLinearGradientBrush()?;
         g.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 })?;
         g.SetEndPoint(Vector2 { X: 0.0, Y: 1.0 })?;
         let stops = g.ColorStops()?;
         for (o, a) in [(0.0, 40u8), (0.45, 18), (1.0, 0)] {
-            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(o, Color { A: a, R: 0, G: 0, B: 0 })?)?;
+            stops.Append(&self.comp.CreateColorGradientStopWithOffsetAndColor(
+                o,
+                Color {
+                    A: a,
+                    R: 0,
+                    G: 0,
+                    B: 0,
+                },
+            )?)?;
         }
         Ok(g)
     }
@@ -495,7 +624,8 @@ impl Bar {
         use nacre_core::settings::BarStyle;
         let before = self.dark_text;
         let p = prefs::get();
-        self.dark_text = p.menubar_glass && !p.menubar_material && p.menubar_style == BarStyle::Light;
+        self.dark_text =
+            p.menubar_glass && !p.menubar_material && p.menubar_style == BarStyle::Light;
         before != self.dark_text
     }
 
@@ -541,7 +671,9 @@ impl Bar {
         let mut changed = false;
         self.check_fullscreen();
         let native = nacre_platform::menus::read(fg).unwrap_or_default();
-        let titles = |v: &Vec<nacre_platform::menus::Top>| v.iter().map(|t| t.title.clone()).collect::<Vec<_>>();
+        let titles = |v: &Vec<nacre_platform::menus::Top>| {
+            v.iter().map(|t| t.title.clone()).collect::<Vec<_>>()
+        };
         if titles(&native) != titles(&self.native) {
             changed = true;
         }
@@ -577,41 +709,92 @@ impl Bar {
         let pad = 11.0 * d;
         let t = |s: &str, wgt: i32| self.text_w(s, wgt) + 2.0 * pad;
         let mut left = vec![
-            LItem { id: LOGO, width: self.h as f32 * 1.05 },
-            LItem { id: APP, width: t(&self.app_label(), APP_W) },
+            LItem {
+                id: LOGO,
+                width: self.h as f32 * 1.05,
+            },
+            LItem {
+                id: APP,
+                width: t(&self.app_label(), APP_W),
+            },
         ];
         if self.native.is_empty() {
-            left.push(LItem { id: M_FILE, width: t(&mt("Berkas"), BAR_W) });
-            left.push(LItem { id: M_EDIT, width: t(&mt("Edit"), BAR_W) });
-            left.push(LItem { id: M_VIEW, width: t(&mt("Menu:Tampilan"), BAR_W) });
-            left.push(LItem { id: M_WIN, width: t(&mt("Menu:Jendela"), BAR_W) });
-            left.push(LItem { id: M_HELP, width: t(&mt("Bantuan"), BAR_W) });
+            left.push(LItem {
+                id: M_FILE,
+                width: t(&mt("Berkas"), BAR_W),
+            });
+            left.push(LItem {
+                id: M_EDIT,
+                width: t(&mt("Edit"), BAR_W),
+            });
+            left.push(LItem {
+                id: M_VIEW,
+                width: t(&mt("Menu:Tampilan"), BAR_W),
+            });
+            left.push(LItem {
+                id: M_WIN,
+                width: t(&mt("Menu:Jendela"), BAR_W),
+            });
+            left.push(LItem {
+                id: M_HELP,
+                width: t(&mt("Bantuan"), BAR_W),
+            });
         } else {
             for (i, top) in self.native.iter().enumerate().take(20) {
-                left.push(LItem { id: NATIVE0 + i as u32, width: t(&top.title, BAR_W) });
+                left.push(LItem {
+                    id: NATIVE0 + i as u32,
+                    width: t(&top.title, BAR_W),
+                });
             }
         }
         let icon_w = 30.0 * d;
         let mut right = vec![
-            LItem { id: CLOCK, width: t(&self.clock_text(), BAR_W) },
-            LItem { id: CTRL, width: icon_w },
-            LItem { id: SEARCH, width: icon_w },
+            LItem {
+                id: CLOCK,
+                width: t(&self.clock_text(), BAR_W),
+            },
+            LItem {
+                id: CTRL,
+                width: icon_w,
+            },
+            LItem {
+                id: SEARCH,
+                width: icon_w,
+            },
         ];
         if prefs::get().stage {
-            right.push(LItem { id: STAGEI, width: icon_w });
+            right.push(LItem {
+                id: STAGEI,
+                width: icon_w,
+            });
         }
         if self.wifi.is_some() {
-            right.push(LItem { id: WIFI, width: icon_w });
+            right.push(LItem {
+                id: WIFI,
+                width: icon_w,
+            });
         }
         if let Some((pct, _)) = sys::battery() {
-            let extra = if prefs::get().battery_pct == 2 { self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d } else { 0.0 };
-            right.push(LItem { id: BATT, width: 40.0 * d + extra });
+            let extra = if prefs::get().battery_pct == 2 {
+                self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d
+            } else {
+                0.0
+            };
+            right.push(LItem {
+                id: BATT,
+                width: 40.0 * d + extra,
+            });
         }
-        let gap = services::notch().map(|(l, r, _)| Gap { left: l as f32, right: r as f32 });
+        let gap = services::notch().map(|(l, r, _)| Gap {
+            left: l as f32,
+            right: r as f32,
+        });
         let (l, r) = lay::layout(self.screen.0 as f32, 6.0 * d, &left, &right, gap);
         self.left = l;
         self.right = r;
-        let want_h = services::notch().map(|(_, _, h)| h).unwrap_or((26.0 * d).round() as i32);
+        let want_h = services::notch()
+            .map(|(_, _, h)| h)
+            .unwrap_or((26.0 * d).round() as i32);
         if want_h != self.h {
             self.h = want_h;
             let _ = self.popup.set_rect(0, 0, self.screen.0, self.h);
@@ -623,7 +806,7 @@ impl Bar {
 
     fn app_label(&self) -> String {
         if self.app.is_empty() {
-            "ABRA".to_string()
+            "NEXORA".to_string()
         } else {
             self.app.clone()
         }
@@ -633,9 +816,17 @@ impl Bar {
         let n = time::local_now();
         let lang = prefs::get().lang;
         let wd = nacre_core::island::calendar::weekday(n.year, n.month, n.day) as usize;
-        let days = nacre_core::i18n::weekday_labels(lang, false, nacre_core::island::calendar::weekday_labels(false));
-        let months_en = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        let months_id = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        let days = nacre_core::i18n::weekday_labels(
+            lang,
+            false,
+            nacre_core::island::calendar::weekday_labels(false),
+        );
+        let months_en = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        ];
+        let months_id = [
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+        ];
         let mon = match lang {
             nacre_core::i18n::Lang::En => months_en[(n.month - 1) as usize % 12],
             nacre_core::i18n::Lang::Id => months_id[(n.month - 1) as usize % 12],
@@ -643,7 +834,10 @@ impl Bar {
         let time = if prefs::get().clock_24h {
             format!("{:02}.{:02}", n.hour, n.minute)
         } else {
-            let (h12, ap) = (if n.hour % 12 == 0 { 12 } else { n.hour % 12 }, if n.hour < 12 { "AM" } else { "PM" });
+            let (h12, ap) = (
+                if n.hour % 12 == 0 { 12 } else { n.hour % 12 },
+                if n.hour < 12 { "AM" } else { "PM" },
+            );
             format!("{h12}:{:02} {ap}", n.minute)
         };
         match lang {
@@ -652,15 +846,32 @@ impl Bar {
         }
     }
 
-    fn sprite(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, op: f32) {
+    fn sprite(
+        &self,
+        parent: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        op: f32,
+    ) {
         let go = || -> windows_core::Result<()> {
             let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
             b.SetStretch(CompositionStretch::None)?;
             let v = self.comp.CreateSpriteVisual()?;
             v.SetBrush(&b)?;
             v.SetSize(Vector2 { X: w, Y: h })?;
-            let (dy, om) = if self.shadow { (1.0 * self.dpi, 0.38) } else { (0.0, 1.0) };
-            v.SetOffset(Vector3 { X: x, Y: y + dy, Z: 0.0 })?;
+            let (dy, om) = if self.shadow {
+                (1.0 * self.dpi, 0.38)
+            } else {
+                (0.0, 1.0)
+            };
+            v.SetOffset(Vector3 {
+                X: x,
+                Y: y + dy,
+                Z: 0.0,
+            })?;
             v.SetOpacity(op * om)?;
             parent.Children()?.InsertAtTop(&v)
         };
@@ -678,9 +889,13 @@ impl Bar {
                 let style = Style { px, weight };
                 let (tw, th) = measure(text, &style);
                 let tw = tw + 2;
-                let Some(bmp) = render(text, &style, tw, th) else { return };
+                let Some(bmp) = render(text, &style, tw, th) else {
+                    return;
+                };
                 let data = recolor(&bmp, rgb);
-                let Ok(s) = self.gfx.surface_from_bgra(bmp.w, bmp.h, &data) else { return };
+                let Ok(s) = self.gfx.surface_from_bgra(bmp.w, bmp.h, &data) else {
+                    return;
+                };
                 if self.cache.len() > 120 {
                     self.cache.clear();
                 }
@@ -691,7 +906,15 @@ impl Bar {
         };
         let y = (self.h as f32 - th as f32) / 2.0;
         let layer = self.layer.clone();
-        self.sprite(&layer, &surf, x + (w - tw as f32) / 2.0, y, tw as f32, th as f32, op);
+        self.sprite(
+            &layer,
+            &surf,
+            x + (w - tw as f32) / 2.0,
+            y,
+            tw as f32,
+            th as f32,
+            op,
+        );
     }
 
     fn draw_glyph(&mut self, glyph: &str, cx: f32, size: f32, op: f32) {
@@ -704,14 +927,24 @@ impl Bar {
                 Some(v) => v,
                 None => {
                     let data = nacre_core::symbols::render(sym, n, rgb);
-                    let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else { return };
+                    let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else {
+                        return;
+                    };
                     let v = (s, n as i32, n as i32);
                     self.cache.insert(key, v.clone());
                     v
                 }
             };
             let layer = self.layer.clone();
-            self.sprite(&layer, &surf, (cx - w as f32 / 2.0).round(), ((self.h as f32 - h as f32) / 2.0).round(), w as f32, h as f32, op);
+            self.sprite(
+                &layer,
+                &surf,
+                (cx - w as f32 / 2.0).round(),
+                ((self.h as f32 - h as f32) / 2.0).round(),
+                w as f32,
+                h as f32,
+                op,
+            );
             return;
         }
         let key = format!("g|{px}|{rgb:?}|{glyph}");
@@ -720,7 +953,10 @@ impl Bar {
             Some(v) => v,
             None => {
                 let b = (size * 1.6 * self.dpi).round() as i32;
-                let Some(bmp) = render_face(glyph, &Style { px, weight: 400 }, ICON_FACE, b, b) else { return };
+                let Some(bmp) = render_face(glyph, &Style { px, weight: 400 }, ICON_FACE, b, b)
+                else {
+                    return;
+                };
                 let (w, h) = (bmp.w as usize, bmp.h as usize);
                 let (mut x0, mut y0, mut x1, mut y1) = (w, h, 0usize, 0usize);
                 for y in 0..h {
@@ -746,22 +982,39 @@ impl Bar {
                         data[d..d + 4].copy_from_slice(&rec[s..s + 4]);
                     }
                 }
-                let Ok(s) = self.gfx.surface_from_bgra(gw as u32, gh as u32, &data) else { return };
+                let Ok(s) = self.gfx.surface_from_bgra(gw as u32, gh as u32, &data) else {
+                    return;
+                };
                 let v = (s, gw as i32, gh as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
         let layer = self.layer.clone();
-        self.sprite(&layer, &surf, cx - w as f32 / 2.0, (self.h as f32 - h as f32) / 2.0, w as f32, h as f32, op);
+        self.sprite(
+            &layer,
+            &surf,
+            cx - w as f32 / 2.0,
+            (self.h as f32 - h as f32) / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
     }
 
     fn draw_logo(&mut self, x: f32, w: f32) {
         let size = (self.h as f32 * 0.54).round() as u32;
         let rgb = self.fg();
         let custom = crate::menulogo::path().is_some();
-        let size = if custom { (self.h as f32 * 0.5).round() as u32 } else { size };
-        let key = format!("logo|{size}|{rgb:?}|{}|{custom}", crate::menulogo::generation());
+        let size = if custom {
+            (self.h as f32 * 0.5).round() as u32
+        } else {
+            size
+        };
+        let key = format!(
+            "logo|{size}|{rgb:?}|{}|{custom}",
+            crate::menulogo::generation()
+        );
         let hit = self.cache.get(&key).cloned();
         let (surf, lw, lh) = match hit {
             Some(v) => v,
@@ -770,21 +1023,48 @@ impl Bar {
                     Some(b) => (b.w, b.h, b.bgra),
                     None => (size, size, nacre_core::logo::render_badge(size, rgb)),
                 };
-                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else { return };
+                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else {
+                    return;
+                };
                 let v = (s, bw as i32, bh as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
         let layer = self.layer.clone();
-        self.sprite(&layer, &surf, x + (w - lw as f32) / 2.0, (self.h as f32 - lh as f32) / 2.0, lw as f32, lh as f32, 1.0);
+        self.sprite(
+            &layer,
+            &surf,
+            x + (w - lw as f32) / 2.0,
+            (self.h as f32 - lh as f32) / 2.0,
+            lw as f32,
+            lh as f32,
+            1.0,
+        );
     }
 
     fn small_w(&self, text: &str, size: f32, weight: i32) -> f32 {
-        measure(text, &Style { px: (size * self.dpi).round() as i32, weight }).0 as f32 + 2.0
+        measure(
+            text,
+            &Style {
+                px: (size * self.dpi).round() as i32,
+                weight,
+            },
+        )
+        .0 as f32
+            + 2.0
     }
 
-    fn small_text(&mut self, text: &str, size: f32, weight: i32, rgb: [u8; 3], cx: f32, cy: f32, op: f32) {
+    fn small_text(
+        &mut self,
+        text: &str,
+        size: f32,
+        weight: i32,
+        rgb: [u8; 3],
+        cx: f32,
+        cy: f32,
+        op: f32,
+    ) {
         let px = (size * self.dpi).round() as i32;
         let key = format!("st|{px}|{weight}|{rgb:?}|{text}");
         let (surf, tw, th) = match self.cache.get(&key).cloned() {
@@ -792,28 +1072,49 @@ impl Bar {
             None => {
                 let style = Style { px, weight };
                 let (tw, th) = measure(text, &style);
-                let Some(bmp) = render(text, &style, tw + 2, th) else { return };
-                let Ok(s) = self.gfx.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb)) else { return };
+                let Some(bmp) = render(text, &style, tw + 2, th) else {
+                    return;
+                };
+                let Ok(s) = self
+                    .gfx
+                    .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb))
+                else {
+                    return;
+                };
                 let v = (s, bmp.w as i32, bmp.h as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
         let layer = self.layer.clone();
-        self.sprite(&layer, &surf, (cx - tw as f32 / 2.0).round(), (cy - th as f32 / 2.0).round(), tw as f32, th as f32, op);
+        self.sprite(
+            &layer,
+            &surf,
+            (cx - tw as f32 / 2.0).round(),
+            (cy - th as f32 / 2.0).round(),
+            tw as f32,
+            th as f32,
+            op,
+        );
     }
 
     fn draw_wifi(&mut self, cx: f32) {
         let d = self.dpi;
         let rgb = self.fg();
         let n = (17.0 * d).round() as u32;
-        let level = if self.wifi == Some(false) { 0 } else { nacre_core::logo::wifi_level(self.wifi_bars) };
+        let level = if self.wifi == Some(false) {
+            0
+        } else {
+            nacre_core::logo::wifi_level(self.wifi_bars)
+        };
         let key = format!("wifi|{n}|{level}|{rgb:?}");
         let (surf, sw, sh) = match self.cache.get(&key).cloned() {
             Some(v) => v,
             None => {
                 let data = nacre_core::logo::render_wifi(n, level, rgb, 0.32);
-                let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else { return };
+                let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else {
+                    return;
+                };
                 let v = (s, n as i32, n as i32);
                 self.cache.insert(key, v.clone());
                 v
@@ -821,37 +1122,67 @@ impl Bar {
         };
         let layer = self.layer.clone();
         let y = ((self.h as f32 - sh as f32) / 2.0 + 1.0 * d).round();
-        self.sprite(&layer, &surf, (cx - sw as f32 / 2.0).round(), y, sw as f32, sh as f32, 1.0);
+        self.sprite(
+            &layer,
+            &surf,
+            (cx - sw as f32 / 2.0).round(),
+            y,
+            sw as f32,
+            sh as f32,
+            1.0,
+        );
     }
 
     fn draw_battery(&mut self, x: f32, w: f32) {
-        let Some((pct, charging)) = sys::battery() else { return };
+        let Some((pct, charging)) = sys::battery() else {
+            return;
+        };
         let d = self.dpi;
         let rgb = self.fg();
         let mode = prefs::get().battery_pct;
         let inside = mode == 1;
-        let (bw, bh) = if inside { ((29.0 * d).round() as u32, (14.0 * d).round() as u32) } else { ((25.0 * d).round() as u32, (12.0 * d).round() as u32) };
-        let fill = if charging { [52, 199, 89] } else if pct <= 10 { [255, 69, 58] } else { rgb };
+        let (bw, bh) = if inside {
+            ((29.0 * d).round() as u32, (14.0 * d).round() as u32)
+        } else {
+            ((25.0 * d).round() as u32, (12.0 * d).round() as u32)
+        };
+        let fill = if charging {
+            [52, 199, 89]
+        } else if pct <= 10 {
+            [255, 69, 58]
+        } else {
+            rgb
+        };
         let key = format!("batt3|{bw}|{bh}|{pct}|{rgb:?}|{fill:?}|{inside}");
         let (surf, sw, sh) = match self.cache.get(&key).cloned() {
             Some(v) => v,
             None => {
-                let mut data = nacre_core::logo::render_battery_pill(bw, bh, pct, rgb, fill, inside);
+                let mut data =
+                    nacre_core::logo::render_battery_pill(bw, bh, pct, rgb, fill, inside);
                 if inside {
-                    let style = Style { px: (9.5 * d).round() as i32, weight: BAR_W };
+                    let style = Style {
+                        px: (9.5 * d).round() as i32,
+                        weight: BAR_W,
+                    };
                     let label = pct.to_string();
                     let (tw, th) = measure(&label, &style);
                     if let Some(tb) = render(&label, &style, tw + 4, th + 2) {
                         knock_out(&mut data, bw, bh, &tb);
                     }
                 }
-                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else { return };
+                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else {
+                    return;
+                };
                 let v = (s, bw as i32, bh as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
-        let text_w = if mode == 2 { self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d } else { 0.0 };
+        let text_w = if mode == 2 {
+            self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d
+        } else {
+            0.0
+        };
         let bx = (x + text_w + (w - text_w - sw as f32) / 2.0).round();
         let by = ((self.h as f32 - sh as f32) / 2.0).round();
         let layer = self.layer.clone();
@@ -859,12 +1190,21 @@ impl Bar {
         let cy = self.h as f32 / 2.0;
         match mode {
             2 => {
-                self.small_text(&format!("{pct}%"), 12.0, BAR_W, rgb, x + text_w / 2.0, cy, 0.95);
+                self.small_text(
+                    &format!("{pct}%"),
+                    12.0,
+                    BAR_W,
+                    rgb,
+                    x + text_w / 2.0,
+                    cy,
+                    0.95,
+                );
             }
             _ => {}
         }
     }
 
+    #[allow(dead_code)]
     fn rect(&self, parent: &ContainerVisual, x: f32, y: f32, w: f32, h: f32, r: f32, c: Color) {
         let go = || -> windows_core::Result<()> {
             let v = self.comp.CreateSpriteVisual()?;
@@ -898,7 +1238,11 @@ impl Bar {
                 M_WIN => self.draw_text(&mt("Menu:Jendela"), BAR_W, p.x, p.w, 1.0),
                 M_HELP => self.draw_text(&mt("Bantuan"), BAR_W, p.x, p.w, 1.0),
                 n if n >= NATIVE0 && n < NATIVE0 + 20 => {
-                    let title = self.native.get((n - NATIVE0) as usize).map(|t| t.title.clone()).unwrap_or_default();
+                    let title = self
+                        .native
+                        .get((n - NATIVE0) as usize)
+                        .map(|t| t.title.clone())
+                        .unwrap_or_default();
                     self.draw_text(&title, BAR_W, p.x, p.w, 1.0)
                 }
                 _ => {}
@@ -937,36 +1281,81 @@ impl Bar {
     }
 
     fn rect_of(&self, id: u32) -> Option<(f32, f32)> {
-        self.left.iter().chain(self.right.iter()).find(|p| p.id == id).map(|p| (p.x, p.w))
+        self.left
+            .iter()
+            .chain(self.right.iter())
+            .find(|p| p.id == id)
+            .map(|p| (p.x, p.w))
     }
 
     fn update_capsule(&self) {
         use windows::Foundation::TimeSpan;
-        use windows::UI::Composition::{CompositionObject, CompositionEasingFunction};
+        use windows::UI::Composition::{CompositionEasingFunction, CompositionObject};
         use windows_core::{Interface, HSTRING};
-        let cc = if crate::controlcenter::is_open() { Some(CTRL) } else { None };
-        let active = self.open.or(cc).or(self.hover).filter(|id| *id != CLOCK || self.open.is_none());
+        let cc = if crate::controlcenter::is_open() {
+            Some(CTRL)
+        } else {
+            None
+        };
+        let active = self
+            .open
+            .or(cc)
+            .or(self.hover)
+            .filter(|id| *id != CLOCK || self.open.is_none());
         let d = self.dpi;
-        let ms = |v: u32| TimeSpan { Duration: v as i64 * 10_000 };
+        let ms = |v: u32| TimeSpan {
+            Duration: v as i64 * 10_000,
+        };
         match active.and_then(|id| self.rect_of(id)) {
             Some((x, w)) => {
                 let (ch, cy) = (self.h as f32 - 4.0 * d, 2.0 * d);
                 let nw = w - 4.0 * d;
-                let to = Vector3 { X: x + 2.0 * d, Y: cy, Z: 0.0 };
+                let to = Vector3 {
+                    X: x + 2.0 * d,
+                    Y: cy,
+                    Z: 0.0,
+                };
                 let visible = self.capsule.Opacity().unwrap_or(0.0) > 0.5;
-                let (old_off, old_w) = (self.capsule.Offset().unwrap_or(to), self.capsule.Size().map(|s| s.X).unwrap_or(nw));
+                let (old_off, old_w) = (
+                    self.capsule.Offset().unwrap_or(to),
+                    self.capsule.Size().map(|s| s.X).unwrap_or(nw),
+                );
                 let moved = visible && ((old_off.X - to.X).abs() > 0.5 || (old_w - nw).abs() > 0.5);
                 let _ = self.capsule.SetSize(Vector2 { X: nw, Y: ch });
-                let _ = self.capsule.SetCenterPoint(Vector3 { X: nw / 2.0, Y: ch / 2.0, Z: 0.0 });
+                let _ = self.capsule.SetCenterPoint(Vector3 {
+                    X: nw / 2.0,
+                    Y: ch / 2.0,
+                    Z: 0.0,
+                });
                 let _ = self.capsule.SetOffset(to);
                 let rgb = self.fg();
-                let (a_top, a_bot) = if self.open.is_some() { (76u8, 46u8) } else { (52u8, 26u8) };
+                let (a_top, a_bot) = if self.open.is_some() {
+                    (76u8, 46u8)
+                } else {
+                    (52u8, 26u8)
+                };
                 if let Ok(gb) = self.comp.CreateLinearGradientBrush() {
                     let _ = gb.SetStartPoint(Vector2 { X: 0.0, Y: 0.0 });
                     let _ = gb.SetEndPoint(Vector2 { X: 0.0, Y: 1.0 });
                     if let (Ok(s0), Ok(s1), Ok(stops)) = (
-                        self.comp.CreateColorGradientStopWithOffsetAndColor(0.0, Color { A: a_top, R: rgb[0], G: rgb[1], B: rgb[2] }),
-                        self.comp.CreateColorGradientStopWithOffsetAndColor(1.0, Color { A: a_bot, R: rgb[0], G: rgb[1], B: rgb[2] }),
+                        self.comp.CreateColorGradientStopWithOffsetAndColor(
+                            0.0,
+                            Color {
+                                A: a_top,
+                                R: rgb[0],
+                                G: rgb[1],
+                                B: rgb[2],
+                            },
+                        ),
+                        self.comp.CreateColorGradientStopWithOffsetAndColor(
+                            1.0,
+                            Color {
+                                A: a_bot,
+                                R: rgb[0],
+                                G: rgb[1],
+                                B: rgb[2],
+                            },
+                        ),
                         gb.ColorStops(),
                     ) {
                         let _ = stops.Append(&s0);
@@ -976,14 +1365,22 @@ impl Bar {
                 }
                 if let Ok(g) = self.comp.CreateRoundedRectangleGeometry() {
                     let _ = g.SetSize(Vector2 { X: nw, Y: ch });
-                    let _ = g.SetCornerRadius(Vector2 { X: ch / 2.0, Y: ch / 2.0 });
+                    let _ = g.SetCornerRadius(Vector2 {
+                        X: ch / 2.0,
+                        Y: ch / 2.0,
+                    });
                     if let Ok(clip) = self.comp.CreateGeometricClip() {
                         let _ = clip.SetGeometry(&g);
                         let _ = self.capsule.SetClip(&clip);
                     }
                 }
                 let ease = || -> windows_core::Result<CompositionEasingFunction> {
-                    self.comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.2, Y: 0.0 }, Vector2 { X: 0.0, Y: 1.0 })?.cast()
+                    self.comp
+                        .CreateCubicBezierEasingFunction(
+                            Vector2 { X: 0.2, Y: 0.0 },
+                            Vector2 { X: 0.0, Y: 1.0 },
+                        )?
+                        .cast()
                 };
                 if !visible {
                     let go = || -> windows_core::Result<()> {
@@ -992,25 +1389,86 @@ impl Bar {
                         o.InsertKeyFrame(0.0, 0.0)?;
                         o.InsertKeyFrameWithEasingFunction(1.0, 1.0, &e)?;
                         o.SetDuration(ms(150))?;
-                        self.capsule.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Opacity"), &o)?;
+                        self.capsule
+                            .cast::<CompositionObject>()?
+                            .StartAnimation(&HSTRING::from("Opacity"), &o)?;
                         let sc = self.comp.CreateVector3KeyFrameAnimation()?;
-                        sc.InsertKeyFrame(0.0, Vector3 { X: 0.90, Y: 0.86, Z: 1.0 })?;
-                        sc.InsertKeyFrameWithEasingFunction(1.0, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 }, &e)?;
+                        sc.InsertKeyFrame(
+                            0.0,
+                            Vector3 {
+                                X: 0.90,
+                                Y: 0.86,
+                                Z: 1.0,
+                            },
+                        )?;
+                        sc.InsertKeyFrameWithEasingFunction(
+                            1.0,
+                            Vector3 {
+                                X: 1.0,
+                                Y: 1.0,
+                                Z: 1.0,
+                            },
+                            &e,
+                        )?;
                         sc.SetDuration(ms(190))?;
-                        self.capsule.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Scale"), &sc)
+                        self.capsule
+                            .cast::<CompositionObject>()?
+                            .StartAnimation(&HSTRING::from("Scale"), &sc)
                     };
                     let _ = go();
                 } else if moved {
                     let from_x = old_off.X + old_w / 2.0 - nw / 2.0;
-                    let _ = crate::motion::vec3(&self.comp, &self.capsule, "Offset", Vector3 { X: from_x, Y: cy, Z: 0.0 }, to, crate::motion::SWITCHER_MOVE_MS + 50);
-                    let _ = crate::motion::vec3(&self.comp, &self.capsule, "Scale", Vector3 { X: (old_w / nw).clamp(0.5, 2.0), Y: 1.0, Z: 1.0 }, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 }, crate::motion::SWITCHER_MOVE_MS + 50);
+                    let _ = crate::motion::vec3(
+                        &self.comp,
+                        &self.capsule,
+                        "Offset",
+                        Vector3 {
+                            X: from_x,
+                            Y: cy,
+                            Z: 0.0,
+                        },
+                        to,
+                        crate::motion::SWITCHER_MOVE_MS + 50,
+                    );
+                    let _ = crate::motion::vec3(
+                        &self.comp,
+                        &self.capsule,
+                        "Scale",
+                        Vector3 {
+                            X: (old_w / nw).clamp(0.5, 2.0),
+                            Y: 1.0,
+                            Z: 1.0,
+                        },
+                        Vector3 {
+                            X: 1.0,
+                            Y: 1.0,
+                            Z: 1.0,
+                        },
+                        crate::motion::SWITCHER_MOVE_MS + 50,
+                    );
                 }
                 let _ = self.capsule.SetOpacity(1.0);
             }
             None => {
                 if self.capsule.Opacity().unwrap_or(0.0) > 0.01 {
-                    let _ = crate::motion::scalar(&self.comp, &self.capsule, "Opacity", 1.0, 0.0, 150);
-                    let _ = crate::motion::vec3(&self.comp, &self.capsule, "Scale", Vector3 { X: 1.0, Y: 1.0, Z: 1.0 }, Vector3 { X: 0.94, Y: 0.9, Z: 1.0 }, 150);
+                    let _ =
+                        crate::motion::scalar(&self.comp, &self.capsule, "Opacity", 1.0, 0.0, 150);
+                    let _ = crate::motion::vec3(
+                        &self.comp,
+                        &self.capsule,
+                        "Scale",
+                        Vector3 {
+                            X: 1.0,
+                            Y: 1.0,
+                            Z: 1.0,
+                        },
+                        Vector3 {
+                            X: 0.94,
+                            Y: 0.9,
+                            Z: 1.0,
+                        },
+                        150,
+                    );
                     let _ = self.capsule.SetOpacity(0.0);
                 }
             }
@@ -1025,14 +1483,55 @@ impl Bar {
             return;
         }
         let go = || -> windows_core::Result<()> {
-            let e: CompositionEasingFunction = self.comp.CreateCubicBezierEasingFunction(Vector2 { X: 0.2, Y: 0.0 }, Vector2 { X: 0.0, Y: 1.0 })?.cast()?;
+            let e: CompositionEasingFunction = self
+                .comp
+                .CreateCubicBezierEasingFunction(
+                    Vector2 { X: 0.2, Y: 0.0 },
+                    Vector2 { X: 0.0, Y: 1.0 },
+                )?
+                .cast()?;
             let sc = self.comp.CreateVector3KeyFrameAnimation()?;
-            sc.InsertKeyFrame(0.0, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 })?;
-            sc.InsertKeyFrameWithEasingFunction(0.25, Vector3 { X: 0.93, Y: 0.88, Z: 1.0 }, &e)?;
-            sc.InsertKeyFrameWithEasingFunction(0.65, Vector3 { X: 1.035, Y: 1.04, Z: 1.0 }, &e)?;
-            sc.InsertKeyFrameWithEasingFunction(1.0, Vector3 { X: 1.0, Y: 1.0, Z: 1.0 }, &e)?;
-            sc.SetDuration(TimeSpan { Duration: 300 * 10_000 })?;
-            self.capsule.cast::<CompositionObject>()?.StartAnimation(&HSTRING::from("Scale"), &sc)
+            sc.InsertKeyFrame(
+                0.0,
+                Vector3 {
+                    X: 1.0,
+                    Y: 1.0,
+                    Z: 1.0,
+                },
+            )?;
+            sc.InsertKeyFrameWithEasingFunction(
+                0.25,
+                Vector3 {
+                    X: 0.93,
+                    Y: 0.88,
+                    Z: 1.0,
+                },
+                &e,
+            )?;
+            sc.InsertKeyFrameWithEasingFunction(
+                0.65,
+                Vector3 {
+                    X: 1.035,
+                    Y: 1.04,
+                    Z: 1.0,
+                },
+                &e,
+            )?;
+            sc.InsertKeyFrameWithEasingFunction(
+                1.0,
+                Vector3 {
+                    X: 1.0,
+                    Y: 1.0,
+                    Z: 1.0,
+                },
+                &e,
+            )?;
+            sc.SetDuration(TimeSpan {
+                Duration: 300 * 10_000,
+            })?;
+            self.capsule
+                .cast::<CompositionObject>()?
+                .StartAnimation(&HSTRING::from("Scale"), &sc)
         };
         let _ = go();
     }
@@ -1042,13 +1541,16 @@ impl Bar {
     }
 
     fn has_menu(id: u32) -> bool {
-        matches!(id, LOGO | APP | M_FILE | M_EDIT | M_VIEW | M_WIN | M_HELP) || (NATIVE0..NATIVE0 + 20).contains(&id)
+        matches!(id, LOGO | APP | M_FILE | M_EDIT | M_VIEW | M_WIN | M_HELP)
+            || (NATIVE0..NATIVE0 + 20).contains(&id)
     }
 
     fn open_menu(&mut self, id: u32) {
         let items = self.menu_items(id);
         log::line("menubar", &format!("buka menu {id}: {} item", items.len()));
-        let Some((x, _)) = self.rect_of(id) else { return };
+        let Some((x, _)) = self.rect_of(id) else {
+            return;
+        };
         let (comp, gfx) = (self.comp.clone(), &self.gfx);
         let top = self.h;
         let r = self.menu.show_below(&comp, gfx, items, x as i32, top);
@@ -1072,14 +1574,23 @@ impl Bar {
         if (NATIVE0..NATIVE0 + 20).contains(&id) {
             return items;
         }
-        items.into_iter().map(|it| { let s = nacre_core::symbols::for_command(it.id); it.with_sym(s) }).collect()
+        items
+            .into_iter()
+            .map(|it| {
+                let s = nacre_core::symbols::for_command(it.id);
+                it.with_sym(s)
+            })
+            .collect()
     }
 
     fn menu_items_raw(&self, id: u32) -> Vec<Item> {
         let a = |id: usize, label: &str| Item::action(id, label, true);
         if (NATIVE0..NATIVE0 + 20).contains(&id) {
-            let tops = nacre_platform::menus::read(self.native_hwnd).unwrap_or_else(|| self.native.clone());
-            let Some(top) = tops.get((id - NATIVE0) as usize) else { return vec![] };
+            let tops = nacre_platform::menus::read(self.native_hwnd)
+                .unwrap_or_else(|| self.native.clone());
+            let Some(top) = tops.get((id - NATIVE0) as usize) else {
+                return vec![];
+            };
             return top
                 .entries
                 .iter()
@@ -1088,9 +1599,26 @@ impl Bar {
                         return Item::separator();
                     }
                     let pad = "    ".repeat(e.depth as usize);
-                    let label = format!("{}{}{}", if e.checked { "\u{2713} " } else { "" }, pad, e.label);
-                    let it = Item::action(if e.header { 0 } else { NATIVE_CMD + e.id as usize }, &label, e.enabled && !e.header);
-                    if e.accel.is_empty() { it } else { it.with_accel(&e.accel) }
+                    let label = format!(
+                        "{}{}{}",
+                        if e.checked { "\u{2713} " } else { "" },
+                        pad,
+                        e.label
+                    );
+                    let it = Item::action(
+                        if e.header {
+                            0
+                        } else {
+                            NATIVE_CMD + e.id as usize
+                        },
+                        &label,
+                        e.enabled && !e.header,
+                    );
+                    if e.accel.is_empty() {
+                        it
+                    } else {
+                        it.with_accel(&e.accel)
+                    }
                 })
                 .collect();
         }
@@ -1102,7 +1630,20 @@ impl Bar {
                     None => "-".to_string(),
                 };
                 let vol = nacre_platform::audio::latest();
-                let vtxt = if vol.available { format!("{} {}%{}", prefs::tr("Volume"), (vol.level * 100.0).round() as i32, if vol.muted { format!(" {}", prefs::tr("(senyap)")) } else { String::new() }) } else { prefs::tr("Volume").to_string() };
+                let vtxt = if vol.available {
+                    format!(
+                        "{} {}%{}",
+                        prefs::tr("Volume"),
+                        (vol.level * 100.0).round() as i32,
+                        if vol.muted {
+                            format!(" {}", prefs::tr("(senyap)"))
+                        } else {
+                            String::new()
+                        }
+                    )
+                } else {
+                    prefs::tr("Volume").to_string()
+                };
                 let btxt = match nacre_platform::brightness::latest() {
                     Some(v) => format!("{} {}%", prefs::tr("Kecerahan"), v),
                     None => prefs::tr("Kecerahan").to_string(),
@@ -1117,14 +1658,29 @@ impl Bar {
                     Item::action(804, &prefs::tr("Bisukan / Bunyikan"), vol.available),
                     Item::separator(),
                     Item::action(0, &btxt, false),
-                    Item::action(805, &prefs::tr("Lebih Terang"), nacre_platform::brightness::latest().is_some()),
-                    Item::action(806, &prefs::tr("Lebih Redup"), nacre_platform::brightness::latest().is_some()),
+                    Item::action(
+                        805,
+                        &prefs::tr("Lebih Terang"),
+                        nacre_platform::brightness::latest().is_some(),
+                    ),
+                    Item::action(
+                        806,
+                        &prefs::tr("Lebih Redup"),
+                        nacre_platform::brightness::latest().is_some(),
+                    ),
                     Item::separator(),
-                    a(807, &format!("{}{}", if prefs::get().stage { "\u{2713} " } else { "" }, prefs::tr("Scene"))),
+                    a(
+                        807,
+                        &format!(
+                            "{}{}",
+                            if prefs::get().stage { "\u{2713} " } else { "" },
+                            prefs::tr("Scene")
+                        ),
+                    ),
                     a(808, &prefs::tr("Overview")).with_accel("Ctrl+↑"),
                     a(809, &prefs::tr("Apps")).with_accel("Ctrl+Shift+Space"),
                     Item::separator(),
-                    a(810, &prefs::tr("Pengaturan ABRA…")),
+                    a(810, &prefs::tr("Pengaturan NEXORA…")),
                     a(811, &prefs::tr("Pengaturan Sistem…")),
                 ]
             }
@@ -1134,7 +1690,7 @@ impl Bar {
                 a(101, &prefs::tr("Pengaturan Sistem…")),
                 a(102, &prefs::tr("Toko Microsoft…")),
                 Item::separator(),
-                a(103, &prefs::tr("Pengaturan ABRA…")),
+                a(103, &prefs::tr("Pengaturan NEXORA…")),
                 a(105, &prefs::tr("Apps")).with_accel("Ctrl+Shift+Space"),
                 a(106, &prefs::tr("Overview")).with_accel("Ctrl+↑"),
                 a(104, &prefs::tr("Paksa Keluar…")),
@@ -1151,11 +1707,13 @@ impl Bar {
                 vec![
                     a(200, &format!("{} {}", prefs::tr("Tentang"), name)),
                     Item::separator(),
-                    a(201, &format!("{} {}", prefs::tr("Sembunyikan"), name)).with_accel("Ctrl+Alt+H"),
+                    a(201, &format!("{} {}", prefs::tr("Sembunyikan"), name))
+                        .with_accel("Ctrl+Alt+H"),
                     a(202, &prefs::tr("Sembunyikan Lainnya")),
                     a(203, &prefs::tr("Tampilkan Semua")),
                     Item::separator(),
-                    a(204, &format!("{} {}", prefs::tr("Keluar dari"), name)).with_accel("Ctrl+Alt+Q"),
+                    a(204, &format!("{} {}", prefs::tr("Keluar dari"), name))
+                        .with_accel("Ctrl+Alt+Q"),
                 ]
             }
             M_FILE => vec![
@@ -1212,7 +1770,12 @@ impl Bar {
             SEARCH => crate::spotlight::toggle(),
             WIFI => {
                 if let Some((x, _)) = self.rect_of(WIFI) {
-                    crate::netmenu::show(&self.comp, crate::netmenu::Which::Wifi, crate::netmenu::Anchor::Below(x as i32, self.h), self.dpi);
+                    crate::netmenu::show(
+                        &self.comp,
+                        crate::netmenu::Which::Wifi,
+                        crate::netmenu::Anchor::Below(x as i32, self.h),
+                        self.dpi,
+                    );
                 }
             }
             BATT => launch::open("ms-settings:batterysaver"),
@@ -1235,15 +1798,25 @@ impl Bar {
             104 => launch::run("taskmgr.exe", ""),
             105 => crate::launchpad::toggle(),
             106 => crate::mission::toggle(),
-            110 => confirm_power("Tidur sekarang?", "rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0"),
+            110 => confirm_power(
+                "Tidur sekarang?",
+                "rundll32.exe",
+                "powrprof.dll,SetSuspendState 0,1,0",
+            ),
             111 => confirm_power("Mulai ulang komputer sekarang?", "shutdown.exe", "/r /t 0"),
             112 => confirm_power("Matikan komputer sekarang?", "shutdown.exe", "/s /t 0"),
             113 => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
             114 => confirm_power("Keluar dari akun sekarang?", "shutdown.exe", "/l"),
             800 | 801 => {
                 if let Some(rd) = &self.radios {
-                    let (k, cur) = if cmd == 800 { (nacre_platform::radio::Kind::Wifi, self.wifi) } else { (nacre_platform::radio::Kind::Bluetooth, self.bt) };
-                    let _ = rd.commands.send(nacre_platform::radio::Cmd::Set(k, !cur.unwrap_or(false)));
+                    let (k, cur) = if cmd == 800 {
+                        (nacre_platform::radio::Kind::Wifi, self.wifi)
+                    } else {
+                        (nacre_platform::radio::Kind::Bluetooth, self.bt)
+                    };
+                    let _ = rd
+                        .commands
+                        .send(nacre_platform::radio::Cmd::Set(k, !cur.unwrap_or(false)));
                 }
             }
             802 | 803 => {
@@ -1253,7 +1826,9 @@ impl Bar {
             804 => services::toggle_mute(),
             805 | 806 => {
                 if let Some(v) = nacre_platform::brightness::latest() {
-                    services::set_brightness((v as f32 / 100.0 + if cmd == 805 { 0.1 } else { -0.1 }).clamp(0.0, 1.0));
+                    services::set_brightness(
+                        (v as f32 / 100.0 + if cmd == 805 { 0.1 } else { -0.1 }).clamp(0.0, 1.0),
+                    );
                 }
             }
             807 => prefs::update(|st| st.stage = !st.stage),
@@ -1292,7 +1867,13 @@ impl Bar {
     fn hide_app(&mut self, others: bool) {
         let fg = focus::foreground();
         let wins = enumerate::list(std::process::id());
-        let Some(cur) = wins.iter().find(|w| w.hwnd == fg).map(|w| w.path.to_lowercase()) else { return };
+        let Some(cur) = wins
+            .iter()
+            .find(|w| w.hwnd == fg)
+            .map(|w| w.path.to_lowercase())
+        else {
+            return;
+        };
         for w in &wins {
             let same = w.path.to_lowercase() == cur;
             if same != others && !focus::is_minimized(w.hwnd) {
@@ -1319,7 +1900,12 @@ fn confirm_power(question: &'static str, file: &'static str, params: &'static st
     let text = prefs::tr(question).to_string();
     std::thread::spawn(move || unsafe {
         use windows::core::HSTRING;
-        let r = MessageBoxW(None, &HSTRING::from(text), w!("ABRA"), MB_YESNO | MB_ICONQUESTION | MB_TOPMOST | MB_SETFOREGROUND);
+        let r = MessageBoxW(
+            None,
+            &HSTRING::from(text),
+            w!("NEXORA"),
+            MB_YESNO | MB_ICONQUESTION | MB_TOPMOST | MB_SETFOREGROUND,
+        );
         if r == IDYES {
             launch::run(file, params);
         }
@@ -1337,7 +1923,12 @@ unsafe extern "system" fn bar_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM)
             let (x, _) = xy(lp);
             with_bar(|b| {
                 if !b.tracking {
-                    let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                    let mut t = TRACKMOUSEEVENT {
+                        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                        dwFlags: TME_LEAVE,
+                        hwndTrack: hwnd,
+                        dwHoverTime: 0,
+                    };
                     if TrackMouseEvent(&mut t).is_ok() {
                         b.tracking = true;
                     }
@@ -1401,10 +1992,19 @@ unsafe extern "system" fn bar_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM)
             } else if wp.0 == 7 {
                 crate::netmenu::test_click_audio();
             } else {
-                let which = if wp.0 == 1 || wp.0 == 6 { crate::netmenu::Which::Bluetooth } else { crate::netmenu::Which::Wifi };
+                let which = if wp.0 == 1 || wp.0 == 6 {
+                    crate::netmenu::Which::Bluetooth
+                } else {
+                    crate::netmenu::Which::Wifi
+                };
                 with_bar(|b| {
                     if let Some((x, _)) = b.rect_of(WIFI) {
-                        crate::netmenu::show(&b.comp, which, crate::netmenu::Anchor::Below(x as i32, b.h), b.dpi);
+                        crate::netmenu::show(
+                            &b.comp,
+                            which,
+                            crate::netmenu::Anchor::Below(x as i32, b.h),
+                            b.dpi,
+                        );
                     }
                 });
             }
@@ -1436,7 +2036,12 @@ unsafe extern "system" fn bar_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM)
         WM_TIMER => {
             let id = wp.0;
             if id == T_CLOCK {
-                let _ = SetTimer(Some(hwnd), T_CLOCK, time::ms_to_next_minute().max(200), None);
+                let _ = SetTimer(
+                    Some(hwnd),
+                    T_CLOCK,
+                    time::ms_to_next_minute().max(200),
+                    None,
+                );
             }
             with_bar(|b| {
                 b.relayout();

@@ -53,40 +53,112 @@ mod tests {
 
     #[test]
     fn always_never_hides_except_fullscreen() {
-        assert!(!should_hide(Mode::Always, &Inputs { overlapped: true, ..i() }));
-        assert!(should_hide(Mode::Always, &Inputs { fullscreen: true, ..i() }));
+        assert!(!should_hide(
+            Mode::Always,
+            &Inputs {
+                overlapped: true,
+                ..i()
+            }
+        ));
+        assert!(should_hide(
+            Mode::Always,
+            &Inputs {
+                fullscreen: true,
+                ..i()
+            }
+        ));
     }
 
     #[test]
     fn autohide_hides_only_when_overlapped_and_idle() {
         assert!(!should_hide(Mode::AutoHide, &i()));
-        assert!(should_hide(Mode::AutoHide, &Inputs { overlapped: true, ..i() }));
-        assert!(!should_hide(Mode::AutoHide, &Inputs { overlapped: true, interacting: true, ..i() }));
-        assert!(!should_hide(Mode::AutoHide, &Inputs { overlapped: true, edge_armed: true, ..i() }));
+        assert!(should_hide(
+            Mode::AutoHide,
+            &Inputs {
+                overlapped: true,
+                ..i()
+            }
+        ));
+        assert!(!should_hide(
+            Mode::AutoHide,
+            &Inputs {
+                overlapped: true,
+                interacting: true,
+                ..i()
+            }
+        ));
+        assert!(!should_hide(
+            Mode::AutoHide,
+            &Inputs {
+                overlapped: true,
+                edge_armed: true,
+                ..i()
+            }
+        ));
     }
 
     #[test]
     fn ondemand_hides_unless_used_or_edge_touched() {
         assert!(should_hide(Mode::OnDemand, &i()));
-        assert!(!should_hide(Mode::OnDemand, &Inputs { interacting: true, ..i() }));
-        assert!(!should_hide(Mode::OnDemand, &Inputs { edge_armed: true, ..i() }));
+        assert!(!should_hide(
+            Mode::OnDemand,
+            &Inputs {
+                interacting: true,
+                ..i()
+            }
+        ));
+        assert!(!should_hide(
+            Mode::OnDemand,
+            &Inputs {
+                edge_armed: true,
+                ..i()
+            }
+        ));
     }
 
     #[test]
     fn startup_animation_blocks_hiding() {
-        assert!(!should_hide(Mode::OnDemand, &Inputs { starting: true, ..i() }));
+        assert!(!should_hide(
+            Mode::OnDemand,
+            &Inputs {
+                starting: true,
+                ..i()
+            }
+        ));
     }
 
     #[test]
     fn fullscreen_hides_even_when_edge_is_armed() {
-        assert!(should_hide(Mode::AutoHide, &Inputs { fullscreen: true, edge_armed: true, ..i() }));
-        assert!(!should_hide(Mode::AutoHide, &Inputs { fullscreen: true, interacting: true, ..i() }));
+        assert!(should_hide(
+            Mode::AutoHide,
+            &Inputs {
+                fullscreen: true,
+                edge_armed: true,
+                ..i()
+            }
+        ));
+        assert!(!should_hide(
+            Mode::AutoHide,
+            &Inputs {
+                fullscreen: true,
+                interacting: true,
+                ..i()
+            }
+        ));
     }
 
     #[test]
     fn minimize_reveal_shows_surface_in_every_mode() {
         for mode in [Mode::Always, Mode::AutoHide, Mode::OnDemand] {
-            assert!(!should_hide(mode, &Inputs { revealing: true, overlapped: true, fullscreen: true, ..i() }));
+            assert!(!should_hide(
+                mode,
+                &Inputs {
+                    revealing: true,
+                    overlapped: true,
+                    fullscreen: true,
+                    ..i()
+                }
+            ));
         }
     }
 

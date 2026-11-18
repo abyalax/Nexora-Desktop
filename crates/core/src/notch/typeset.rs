@@ -5,7 +5,11 @@ pub fn wrap(text: &str, max: f32, max_lines: usize, measure: impl Fn(&str) -> f3
     let mut i = 0;
     while i < words.len() {
         let w = words[i];
-        let cand = if cur.is_empty() { w.to_string() } else { format!("{cur} {w}") };
+        let cand = if cur.is_empty() {
+            w.to_string()
+        } else {
+            format!("{cur} {w}")
+        };
         if cur.is_empty() || measure(&cand) <= max {
             cur = cand;
             i += 1;
@@ -33,27 +37,28 @@ pub fn box_blur(bgra: &mut [u8], w: usize, h: usize, r: usize) {
         return;
     }
     let mut tmp = vec![0u8; bgra.len()];
-    let pass = |src: &[u8], dst: &mut [u8], len: usize, lines: usize, step: usize, stride: usize| {
-        for l in 0..lines {
-            for c in 0..4 {
-                let at = |k: usize| src[(l * stride + k * step) * 4 + c] as u32;
-                let mut acc: u32 = 0;
-                let win = (2 * r + 1) as u32;
-                for k in 0..=r.min(len - 1) {
-                    acc += at(k);
-                }
-                for k in 0..len {
-                    dst[(l * stride + k * step) * 4 + c] = (acc / win) as u8;
-                    if k + r + 1 < len {
-                        acc += at(k + r + 1);
+    let pass =
+        |src: &[u8], dst: &mut [u8], len: usize, lines: usize, step: usize, stride: usize| {
+            for l in 0..lines {
+                for c in 0..4 {
+                    let at = |k: usize| src[(l * stride + k * step) * 4 + c] as u32;
+                    let mut acc: u32 = 0;
+                    let win = (2 * r + 1) as u32;
+                    for k in 0..=r.min(len - 1) {
+                        acc += at(k);
                     }
-                    if k >= r {
-                        acc -= at(k - r);
+                    for k in 0..len {
+                        dst[(l * stride + k * step) * 4 + c] = (acc / win) as u8;
+                        if k + r + 1 < len {
+                            acc += at(k + r + 1);
+                        }
+                        if k >= r {
+                            acc -= at(k - r);
+                        }
                     }
                 }
             }
-        }
-    };
+        };
     pass(bgra, &mut tmp, w, h, 1, w);
     pass(&tmp, bgra, h, w, w, 1);
 }
@@ -68,10 +73,19 @@ mod tests {
 
     #[test]
     fn wraps_by_measured_width_and_marks_overflow() {
-        assert_eq!(wrap("Treat her better, boy", 12.0, 2, m), vec!["Treat her", "better, boy"]);
+        assert_eq!(
+            wrap("Treat her better, boy", 12.0, 2, m),
+            vec!["Treat her", "better, boy"]
+        );
         assert_eq!(wrap("short", 12.0, 2, m), vec!["short"]);
-        assert_eq!(wrap("one two three four five six", 9.0, 2, m), vec!["one two", "three\u{2026}"]);
-        assert_eq!(wrap("Supercalifragilistic word", 6.0, 2, m), vec!["Supercalifragilistic", "word"]);
+        assert_eq!(
+            wrap("one two three four five six", 9.0, 2, m),
+            vec!["one two", "three\u{2026}"]
+        );
+        assert_eq!(
+            wrap("Supercalifragilistic word", 6.0, 2, m),
+            vec!["Supercalifragilistic", "word"]
+        );
         assert!(wrap("   ", 10.0, 2, m).is_empty());
     }
 
@@ -87,6 +101,9 @@ mod tests {
         assert!(a(3, 4) > 0 && a(5, 5) > 0, "menyebar ke tetangga");
         assert_eq!(a(0, 0), 0);
         let total: u32 = (0..w * h).map(|i| b[i * 4 + 3] as u32).sum();
-        assert!((200..=260).contains(&total), "energi kira-kira tetap: {total}");
+        assert!(
+            (200..=260).contains(&total),
+            "energi kira-kira tetap: {total}"
+        );
     }
 }

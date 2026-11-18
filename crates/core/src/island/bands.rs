@@ -70,7 +70,8 @@ impl Analyzer {
 
     pub fn push(&mut self, mono: &[f32], mut emit: impl FnMut([f32; BANDS])) {
         for &s in mono {
-            let w = 0.5 * (1.0 - (2.0 * std::f32::consts::PI * self.fill as f32 / FFT as f32).cos());
+            let w =
+                0.5 * (1.0 - (2.0 * std::f32::consts::PI * self.fill as f32 / FFT as f32).cos());
             self.buf[self.fill] = s * w;
             self.fill += 1;
             if self.fill == FFT {
@@ -113,7 +114,9 @@ mod tests {
     use super::*;
 
     fn sine(freq: f32, rate: f32, n: usize) -> Vec<f32> {
-        (0..n).map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / rate).sin() * 0.8).collect()
+        (0..n)
+            .map(|i| (2.0 * std::f32::consts::PI * freq * i as f32 / rate).sin() * 0.8)
+            .collect()
     }
 
     fn run(samples: &[f32]) -> [f32; BANDS] {
@@ -133,7 +136,12 @@ mod tests {
     fn fft_places_a_pure_tone_in_the_right_bin() {
         let tone = sine(937.5, 48_000.0, FFT * 30);
         let out = run(&tone);
-        let top = out.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0;
+        let top = out
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .unwrap()
+            .0;
         assert_eq!(top, 2, "{out:?}");
         assert!(out[2] > 0.9, "{out:?}");
     }
@@ -142,14 +150,25 @@ mod tests {
     fn low_tone_lands_in_the_low_band_and_not_in_the_highest() {
         let out = run(&sine(280.0, 48_000.0, FFT * 30));
         assert!(out[1] > out[4], "{out:?}");
-        assert_eq!(out.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0, 1);
+        assert_eq!(
+            out.iter()
+                .enumerate()
+                .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                .unwrap()
+                .0,
+            1
+        );
     }
 
     #[test]
     fn output_is_always_within_bounds() {
-        let noisy: Vec<f32> = (0..FFT * 10).map(|i| (((i * 7919) % 2000) as f32 / 1000.0) - 1.0).collect();
+        let noisy: Vec<f32> = (0..FFT * 10)
+            .map(|i| (((i * 7919) % 2000) as f32 / 1000.0) - 1.0)
+            .collect();
         let mut a = Analyzer::new();
-        a.push(&noisy, |b| assert!(b.iter().all(|v| (FLOOR..=1.0).contains(v)), "{b:?}"));
+        a.push(&noisy, |b| {
+            assert!(b.iter().all(|v| (FLOOR..=1.0).contains(v)), "{b:?}")
+        });
     }
 
     #[test]

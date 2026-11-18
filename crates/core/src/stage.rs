@@ -17,7 +17,11 @@ pub struct Change {
 
 impl Stage {
     fn cap(&self) -> usize {
-        if self.max == 0 { MAX_STRIP } else { self.max }
+        if self.max == 0 {
+            MAX_STRIP
+        } else {
+            self.max
+        }
     }
 
     fn push_front_group(&mut self, g: Group) -> Vec<String> {
@@ -39,13 +43,16 @@ impl Stage {
     }
 
     pub fn contains(&self, app: &str) -> bool {
-        self.current.iter().any(|a| a == app) || self.strip.iter().any(|g| g.iter().any(|a| a == app))
+        self.current.iter().any(|a| a == app)
+            || self.strip.iter().any(|g| g.iter().any(|a| a == app))
     }
 
     pub fn focus(&mut self, app: &str, running: &[String]) -> Change {
         let mut ch = Change::default();
         if !self.current.iter().any(|a| a == app) {
-            let incoming = self.take_from_strip(app).unwrap_or_else(|| vec![app.to_string()]);
+            let incoming = self
+                .take_from_strip(app)
+                .unwrap_or_else(|| vec![app.to_string()]);
             let prev = std::mem::replace(&mut self.current, incoming.clone());
             ch.park.extend(prev.iter().cloned());
             ch.show.extend(incoming);
@@ -71,7 +78,9 @@ impl Stage {
         if self.current.iter().any(|a| a == app) {
             return ch;
         }
-        let grp = self.take_from_strip(app).unwrap_or_else(|| vec![app.to_string()]);
+        let grp = self
+            .take_from_strip(app)
+            .unwrap_or_else(|| vec![app.to_string()]);
         for a in grp {
             if !self.current.contains(&a) {
                 ch.show.push(a.clone());
@@ -97,7 +106,10 @@ impl Stage {
 
     pub fn desktop(&mut self) -> Change {
         let g = std::mem::take(&mut self.current);
-        let mut ch = Change { park: g.clone(), show: vec![] };
+        let mut ch = Change {
+            park: g.clone(),
+            show: vec![],
+        };
         let dropped = self.push_front_group(g);
         ch.park.retain(|p| !dropped.contains(p));
         ch.show.extend(dropped);
@@ -212,7 +224,10 @@ mod tests {
 
     #[test]
     fn custom_cap_drops_oldest_group_back_to_screen() {
-        let mut st = Stage { max: 2, ..Default::default() };
+        let mut st = Stage {
+            max: 2,
+            ..Default::default()
+        };
         let running: Vec<String> = ["a", "b", "c", "d"].iter().map(|s| s.to_string()).collect();
         st.focus("a", &running);
         st.focus("b", &running);

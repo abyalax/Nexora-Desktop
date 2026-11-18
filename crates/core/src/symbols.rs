@@ -108,7 +108,11 @@ fn len(a: P, b: P) -> f32 {
 fn seg(p: P, a: P, b: P) -> f32 {
     let (dx, dy) = (b.0 - a.0, b.1 - a.1);
     let l2 = dx * dx + dy * dy;
-    let t = if l2 == 0.0 { 0.0 } else { (((p.0 - a.0) * dx + (p.1 - a.1) * dy) / l2).clamp(0.0, 1.0) };
+    let t = if l2 == 0.0 {
+        0.0
+    } else {
+        (((p.0 - a.0) * dx + (p.1 - a.1) * dy) / l2).clamp(0.0, 1.0)
+    };
     len(p, (a.0 + t * dx, a.1 + t * dy))
 }
 
@@ -119,7 +123,8 @@ fn poly(p: P, pts: &[P]) -> f32 {
     for i in 0..pts.len() {
         d = d.min(seg(p, pts[i], pts[j]));
         let (pi, pj) = (pts[i], pts[j]);
-        if (pi.1 > p.1) != (pj.1 > p.1) && p.0 < (pj.0 - pi.0) * (p.1 - pi.1) / (pj.1 - pi.1) + pi.0 {
+        if (pi.1 > p.1) != (pj.1 > p.1) && p.0 < (pj.0 - pi.0) * (p.1 - pi.1) / (pj.1 - pi.1) + pi.0
+        {
             inside = !inside;
         }
         j = i;
@@ -132,7 +137,15 @@ fn poly(p: P, pts: &[P]) -> f32 {
 }
 
 fn tri_left(p: P, tip: f32, base: f32) -> bool {
-    poly(p, &[(tip + 0.07, 0.5), (base - 0.045, 0.29), (base - 0.045, 0.71)]) - 0.045 <= 0.0
+    poly(
+        p,
+        &[
+            (tip + 0.07, 0.5),
+            (base - 0.045, 0.29),
+            (base - 0.045, 0.71),
+        ],
+    ) - 0.045
+        <= 0.0
 }
 
 fn circle(p: P, c: P, r: f32) -> f32 {
@@ -176,41 +189,73 @@ fn shape(sym: Sym, p: P) -> bool {
                 Sym::Wifi2 => 2,
                 _ => 3,
             };
-            circle(p, apex, 0.075) <= 0.0 || [0.27f32, 0.46, 0.65][..n].iter().any(|r| arc(p, apex, *r, w, half) <= 0.0)
+            circle(p, apex, 0.075) <= 0.0
+                || [0.27f32, 0.46, 0.65][..n]
+                    .iter()
+                    .any(|r| arc(p, apex, *r, w, half) <= 0.0)
         }
-        Sym::ChevronRight => line(p, (0.38, 0.22), (0.64, 0.5), 0.1) <= 0.0 || line(p, (0.64, 0.5), (0.38, 0.78), 0.1) <= 0.0,
-        Sym::ChevronDown => line(p, (0.22, 0.38), (0.5, 0.64), 0.1) <= 0.0 || line(p, (0.5, 0.64), (0.78, 0.38), 0.1) <= 0.0,
+        Sym::ChevronRight => {
+            line(p, (0.38, 0.22), (0.64, 0.5), 0.1) <= 0.0
+                || line(p, (0.64, 0.5), (0.38, 0.78), 0.1) <= 0.0
+        }
+        Sym::ChevronDown => {
+            line(p, (0.22, 0.38), (0.5, 0.64), 0.1) <= 0.0
+                || line(p, (0.5, 0.64), (0.78, 0.38), 0.1) <= 0.0
+        }
         Sym::Headphones => {
             let band = arc(p, (0.5, 0.56), 0.34, 0.085, 1.5708) <= 0.0 && p.1 <= 0.58;
-            let cups = rrect(p, (0.21, 0.70), (0.09, 0.17), 0.07) <= 0.0 || rrect(p, (0.79, 0.70), (0.09, 0.17), 0.07) <= 0.0;
+            let cups = rrect(p, (0.21, 0.70), (0.09, 0.17), 0.07) <= 0.0
+                || rrect(p, (0.79, 0.70), (0.09, 0.17), 0.07) <= 0.0;
             band || cups
         }
         Sym::Keyboard => {
             let body = rrect(p, (0.5, 0.5), (0.44, 0.27), 0.08).abs() - 0.035 <= 0.0;
-            let keys = [0.32f32, 0.5, 0.68].iter().any(|x| circle(p, (*x, 0.41), 0.045) <= 0.0) || line(p, (0.33, 0.61), (0.67, 0.61), 0.075) <= 0.0;
+            let keys = [0.32f32, 0.5, 0.68]
+                .iter()
+                .any(|x| circle(p, (*x, 0.41), 0.045) <= 0.0)
+                || line(p, (0.33, 0.61), (0.67, 0.61), 0.075) <= 0.0;
             body || keys
         }
-        Sym::ArrowDown => line(p, (0.5, 0.14), (0.5, 0.80), 0.15) <= 0.0 || line(p, (0.22, 0.54), (0.5, 0.82), 0.15) <= 0.0 || line(p, (0.78, 0.54), (0.5, 0.82), 0.15) <= 0.0,
-        Sym::ArrowUp => line(p, (0.5, 0.86), (0.5, 0.20), 0.15) <= 0.0 || line(p, (0.22, 0.46), (0.5, 0.18), 0.15) <= 0.0 || line(p, (0.78, 0.46), (0.5, 0.18), 0.15) <= 0.0,
-        Sym::Check => line(p, (0.18, 0.54), (0.41, 0.76), 0.15) <= 0.0 || line(p, (0.41, 0.76), (0.82, 0.28), 0.15) <= 0.0,
+        Sym::ArrowDown => {
+            line(p, (0.5, 0.14), (0.5, 0.80), 0.15) <= 0.0
+                || line(p, (0.22, 0.54), (0.5, 0.82), 0.15) <= 0.0
+                || line(p, (0.78, 0.54), (0.5, 0.82), 0.15) <= 0.0
+        }
+        Sym::ArrowUp => {
+            line(p, (0.5, 0.86), (0.5, 0.20), 0.15) <= 0.0
+                || line(p, (0.22, 0.46), (0.5, 0.18), 0.15) <= 0.0
+                || line(p, (0.78, 0.46), (0.5, 0.18), 0.15) <= 0.0
+        }
+        Sym::Check => {
+            line(p, (0.18, 0.54), (0.41, 0.76), 0.15) <= 0.0
+                || line(p, (0.41, 0.76), (0.82, 0.28), 0.15) <= 0.0
+        }
         Sym::Mouse => {
             let body = rrect(p, (0.5, 0.5), (0.25, 0.40), 0.25).abs() - 0.04 <= 0.0;
             body || line(p, (0.5, 0.22), (0.5, 0.36), 0.075) <= 0.0
         }
         Sym::Control => {
-            let top = rrect(p, (0.5, 0.29), (0.43, 0.17), 0.17) <= 0.0 && circle(p, (0.70, 0.29), 0.105) > 0.0;
+            let top = rrect(p, (0.5, 0.29), (0.43, 0.17), 0.17) <= 0.0
+                && circle(p, (0.70, 0.29), 0.105) > 0.0;
             let bot_outline = rrect(p, (0.5, 0.71), (0.43, 0.17), 0.17).abs() - 0.035 <= 0.0;
             let bot_knob = circle(p, (0.30, 0.71), 0.105) <= 0.0;
             top || bot_outline || bot_knob
         }
         Sym::Info => {
-            ring(p, (0.5, 0.5), 0.41, 0.075) <= 0.0 || circle(p, (0.5, 0.29), 0.058) <= 0.0 || line(p, (0.5, 0.45), (0.5, 0.72), 0.09) <= 0.0
+            ring(p, (0.5, 0.5), 0.41, 0.075) <= 0.0
+                || circle(p, (0.5, 0.29), 0.058) <= 0.0
+                || line(p, (0.5, 0.45), (0.5, 0.72), 0.09) <= 0.0
         }
         Sym::Gear => {
             let c = (0.5, 0.5);
             let teeth = (0..8).any(|i| {
                 let a = i as f32 * std::f32::consts::FRAC_PI_4;
-                line(p, (c.0 + 0.30 * a.cos(), c.1 + 0.30 * a.sin()), (c.0 + 0.40 * a.cos(), c.1 + 0.40 * a.sin()), 0.14) <= 0.0
+                line(
+                    p,
+                    (c.0 + 0.30 * a.cos(), c.1 + 0.30 * a.sin()),
+                    (c.0 + 0.40 * a.cos(), c.1 + 0.40 * a.sin()),
+                    0.14,
+                ) <= 0.0
             });
             ring(p, c, 0.27, 0.12) <= 0.0 || teeth || (circle(p, c, 0.12) <= 0.0 && false)
         }
@@ -219,28 +264,41 @@ fn shape(sym: Sym, p: P) -> bool {
             let handle = arc(p, (0.5, 0.40), 0.17, 0.075, 1.5) <= 0.0 && p.1 < 0.42;
             body || handle
         }
-        Sym::Grid => [(0.28, 0.28), (0.72, 0.28), (0.28, 0.72), (0.72, 0.72)].iter().any(|c| rrect(p, *c, (0.17, 0.17), 0.06) <= 0.0),
+        Sym::Grid => [(0.28, 0.28), (0.72, 0.28), (0.28, 0.72), (0.72, 0.72)]
+            .iter()
+            .any(|c| rrect(p, *c, (0.17, 0.17), 0.06) <= 0.0),
         Sym::Windows => {
-            let back = rrect(p, (0.40, 0.38), (0.30, 0.22), 0.06).abs() - 0.035 <= 0.0 && !(rrect(p, (0.60, 0.62), (0.32, 0.24), 0.06) <= 0.0);
+            let back = rrect(p, (0.40, 0.38), (0.30, 0.22), 0.06).abs() - 0.035 <= 0.0
+                && !(rrect(p, (0.60, 0.62), (0.32, 0.24), 0.06) <= 0.0);
             let front = rrect(p, (0.60, 0.62), (0.30, 0.22), 0.06).abs() - 0.035 <= 0.0;
             back || front
         }
-        Sym::XCircle => ring(p, (0.5, 0.5), 0.41, 0.075) <= 0.0 || line(p, (0.34, 0.34), (0.66, 0.66), 0.085) <= 0.0 || line(p, (0.66, 0.34), (0.34, 0.66), 0.085) <= 0.0,
+        Sym::XCircle => {
+            ring(p, (0.5, 0.5), 0.41, 0.075) <= 0.0
+                || line(p, (0.34, 0.34), (0.66, 0.66), 0.085) <= 0.0
+                || line(p, (0.66, 0.34), (0.34, 0.66), 0.085) <= 0.0
+        }
         Sym::Moon => circle(p, (0.46, 0.5), 0.38) <= 0.0 && circle(p, (0.68, 0.36), 0.31) > 0.0,
         Sym::Restart => {
             let c = (0.5, 0.5);
             let ang = (p.0 - c.0).atan2(-(p.1 - c.1));
             let gap = ang > 0.15 && ang < 1.25;
             let tip = (c.0 + 0.33 * 0.15f32.sin(), c.1 - 0.33 * 0.15f32.cos());
-            ring(p, c, 0.33, 0.09) <= 0.0 && !gap || line(p, tip, (tip.0 + 0.17, tip.1 - 0.02), 0.09) <= 0.0 || line(p, tip, (tip.0 + 0.02, tip.1 + 0.17), 0.09) <= 0.0
+            ring(p, c, 0.33, 0.09) <= 0.0 && !gap
+                || line(p, tip, (tip.0 + 0.17, tip.1 - 0.02), 0.09) <= 0.0
+                || line(p, tip, (tip.0 + 0.02, tip.1 + 0.17), 0.09) <= 0.0
         }
         Sym::Power => {
             let c = (0.5, 0.54);
             let ang = (p.0 - c.0).atan2(-(p.1 - c.1));
-            (ring(p, c, 0.33, 0.09) <= 0.0 && ang.abs() > 0.5) || line(p, (0.5, 0.12), (0.5, 0.46), 0.09) <= 0.0
+            (ring(p, c, 0.33, 0.09) <= 0.0 && ang.abs() > 0.5)
+                || line(p, (0.5, 0.12), (0.5, 0.46), 0.09) <= 0.0
         }
         Sym::Lock => {
-            rrect(p, (0.5, 0.64), (0.32, 0.25), 0.07) <= 0.0 || (arc(p, (0.5, 0.40), 0.19, 0.085, 1.5708) <= 0.0 && p.1 < 0.42) || line(p, (0.31, 0.40), (0.31, 0.46), 0.085) <= 0.0 || line(p, (0.69, 0.40), (0.69, 0.46), 0.085) <= 0.0
+            rrect(p, (0.5, 0.64), (0.32, 0.25), 0.07) <= 0.0
+                || (arc(p, (0.5, 0.40), 0.19, 0.085, 1.5708) <= 0.0 && p.1 < 0.42)
+                || line(p, (0.31, 0.40), (0.31, 0.46), 0.085) <= 0.0
+                || line(p, (0.69, 0.40), (0.69, 0.46), 0.085) <= 0.0
         }
         Sym::EyeSlash => {
             let n = (((p.0 - 0.5) / 0.44).powi(2) + ((p.1 - 0.5) / 0.28).powi(2)).sqrt();
@@ -249,12 +307,16 @@ fn shape(sym: Sym, p: P) -> bool {
         }
         Sym::Speaker | Sym::SpeakerWave | Sym::SpeakerLow | Sym::SpeakerMid | Sym::SpeakerMute => {
             let body = (p.0 > 0.10 && p.0 < 0.30 && (p.1 - 0.5).abs() < 0.13)
-                || (p.0 >= 0.30 && p.0 < 0.52 && (p.1 - 0.5).abs() < 0.13 + (p.0 - 0.30) / 0.22 * 0.20);
+                || (p.0 >= 0.30
+                    && p.0 < 0.52
+                    && (p.1 - 0.5).abs() < 0.13 + (p.0 - 0.30) / 0.22 * 0.20);
             if sym == Sym::Speaker {
                 return body;
             }
             if sym == Sym::SpeakerMute {
-                return body || line(p, (0.64, 0.38), (0.88, 0.62), 0.085) <= 0.0 || line(p, (0.88, 0.38), (0.64, 0.62), 0.085) <= 0.0;
+                return body
+                    || line(p, (0.64, 0.38), (0.88, 0.62), 0.085) <= 0.0
+                    || line(p, (0.88, 0.38), (0.64, 0.62), 0.085) <= 0.0;
             }
             let waves: &[f32] = match sym {
                 Sym::SpeakerLow => &[0.24],
@@ -267,18 +329,25 @@ fn shape(sym: Sym, p: P) -> bool {
             body || (ang.abs() < 0.78 && waves.iter().any(|r| (d - r).abs() < 0.04) && p.0 > 0.52)
         }
         Sym::Play => poly(p, &[(0.34, 0.26), (0.34, 0.74), (0.74, 0.5)]) - 0.075 <= 0.0,
-        Sym::Pause => rrect(p, (0.35, 0.5), (0.085, 0.30), 0.05) <= 0.0 || rrect(p, (0.65, 0.5), (0.085, 0.30), 0.05) <= 0.0,
+        Sym::Pause => {
+            rrect(p, (0.35, 0.5), (0.085, 0.30), 0.05) <= 0.0
+                || rrect(p, (0.65, 0.5), (0.085, 0.30), 0.05) <= 0.0
+        }
         Sym::Backward => tri_left(p, 0.06, 0.48) || tri_left(p, 0.52, 0.94),
         Sym::Forward => {
             let q = (1.0 - p.0, p.1);
             tri_left(q, 0.06, 0.48) || tri_left(q, 0.52, 0.94)
         }
-        Sym::Plus => line(p, (0.2, 0.5), (0.8, 0.5), 0.10) <= 0.0 || line(p, (0.5, 0.2), (0.5, 0.8), 0.10) <= 0.0,
+        Sym::Plus => {
+            line(p, (0.2, 0.5), (0.8, 0.5), 0.10) <= 0.0
+                || line(p, (0.5, 0.2), (0.5, 0.8), 0.10) <= 0.0
+        }
         Sym::Minus => line(p, (0.2, 0.5), (0.8, 0.5), 0.10) <= 0.0,
         Sym::Calendar => {
             let frame = rrect(p, (0.5, 0.57), (0.40, 0.33), 0.11).abs() - 0.035 <= 0.0;
             let header = p.1 > 0.30 && p.1 < 0.40 && p.0 > 0.12 && p.0 < 0.88;
-            let rings = line(p, (0.32, 0.12), (0.32, 0.26), 0.085) <= 0.0 || line(p, (0.68, 0.12), (0.68, 0.26), 0.085) <= 0.0;
+            let rings = line(p, (0.32, 0.12), (0.32, 0.26), 0.085) <= 0.0
+                || line(p, (0.68, 0.12), (0.68, 0.26), 0.085) <= 0.0;
             frame || header || rings
         }
         Sym::Tray => {
@@ -302,7 +371,9 @@ fn shape(sym: Sym, p: P) -> bool {
         }
         Sym::Clock => {
             let c = (0.5, 0.5);
-            ring(p, c, 0.38, 0.09) <= 0.0 || line(p, c, (0.5, 0.27), 0.085) <= 0.0 || line(p, c, (0.66, 0.6), 0.085) <= 0.0
+            ring(p, c, 0.38, 0.09) <= 0.0
+                || line(p, c, (0.5, 0.27), 0.085) <= 0.0
+                || line(p, c, (0.66, 0.6), 0.085) <= 0.0
         }
         Sym::Stopwatch => {
             let c = (0.5, 0.57);
@@ -315,22 +386,39 @@ fn shape(sym: Sym, p: P) -> bool {
         Sym::Note => {
             let head = circle(p, (0.33, 0.74), 0.15) <= 0.0;
             let stem = line(p, (0.46, 0.72), (0.46, 0.18), 0.085) <= 0.0;
-            let flag = line(p, (0.46, 0.18), (0.80, 0.34), 0.09) <= 0.0 || line(p, (0.80, 0.34), (0.80, 0.46), 0.09) <= 0.0;
+            let flag = line(p, (0.46, 0.18), (0.80, 0.34), 0.09) <= 0.0
+                || line(p, (0.80, 0.34), (0.80, 0.46), 0.09) <= 0.0;
             head || stem || flag
         }
         Sym::Bluetooth => {
             let w = 0.085;
-            let pts: [P; 6] = [(0.22, 0.34), (0.74, 0.68), (0.48, 0.88), (0.48, 0.12), (0.74, 0.32), (0.22, 0.66)];
+            let pts: [P; 6] = [
+                (0.22, 0.34),
+                (0.74, 0.68),
+                (0.48, 0.88),
+                (0.48, 0.12),
+                (0.74, 0.32),
+                (0.22, 0.66),
+            ];
             (0..5).any(|i| line(p, pts[i], pts[i + 1], w) <= 0.0)
         }
         Sym::Sun | Sym::SunSmall => {
             let small = sym == Sym::SunSmall;
-            let (r, r0, r1, w) = if small { (0.15, 0.28, 0.38, 0.07) } else { (0.20, 0.32, 0.46, 0.075) };
+            let (r, r0, r1, w) = if small {
+                (0.15, 0.28, 0.38, 0.07)
+            } else {
+                (0.20, 0.32, 0.46, 0.075)
+            };
             let c = (0.5, 0.5);
             circle(p, c, r) <= 0.0
                 || (0..8).any(|i| {
                     let a = i as f32 * std::f32::consts::FRAC_PI_4;
-                    line(p, (c.0 + r0 * a.cos(), c.1 + r0 * a.sin()), (c.0 + r1 * a.cos(), c.1 + r1 * a.sin()), w) <= 0.0
+                    line(
+                        p,
+                        (c.0 + r0 * a.cos(), c.1 + r0 * a.sin()),
+                        (c.0 + r1 * a.cos(), c.1 + r1 * a.sin()),
+                        w,
+                    ) <= 0.0
                 })
         }
         Sym::Stage => {
@@ -384,10 +472,55 @@ mod tests {
     fn menu_symbols_draw_and_command_map() {
         assert_eq!(for_command(111), Some(Sym::Restart));
         assert_eq!(for_command(999), None);
-        for s in [Sym::Info, Sym::Gear, Sym::Bag, Sym::Grid, Sym::Windows, Sym::XCircle, Sym::Moon, Sym::Restart, Sym::Power, Sym::Lock, Sym::EyeSlash, Sym::Speaker, Sym::SpeakerWave, Sym::SpeakerLow, Sym::SpeakerMid, Sym::SpeakerMute, Sym::Sun, Sym::SunSmall, Sym::Bluetooth, Sym::Play, Sym::Pause, Sym::Backward, Sym::Forward, Sym::Plus, Sym::Minus, Sym::Calendar, Sym::Note, Sym::Stopwatch, Sym::Clock, Sym::Tray, Sym::Folder, Sym::Wifi1, Sym::Wifi2, Sym::ChevronRight, Sym::ChevronDown, Sym::Headphones, Sym::Keyboard, Sym::Mouse, Sym::ArrowDown, Sym::Check, Sym::ArrowUp] {
+        for s in [
+            Sym::Info,
+            Sym::Gear,
+            Sym::Bag,
+            Sym::Grid,
+            Sym::Windows,
+            Sym::XCircle,
+            Sym::Moon,
+            Sym::Restart,
+            Sym::Power,
+            Sym::Lock,
+            Sym::EyeSlash,
+            Sym::Speaker,
+            Sym::SpeakerWave,
+            Sym::SpeakerLow,
+            Sym::SpeakerMid,
+            Sym::SpeakerMute,
+            Sym::Sun,
+            Sym::SunSmall,
+            Sym::Bluetooth,
+            Sym::Play,
+            Sym::Pause,
+            Sym::Backward,
+            Sym::Forward,
+            Sym::Plus,
+            Sym::Minus,
+            Sym::Calendar,
+            Sym::Note,
+            Sym::Stopwatch,
+            Sym::Clock,
+            Sym::Tray,
+            Sym::Folder,
+            Sym::Wifi1,
+            Sym::Wifi2,
+            Sym::ChevronRight,
+            Sym::ChevronDown,
+            Sym::Headphones,
+            Sym::Keyboard,
+            Sym::Mouse,
+            Sym::ArrowDown,
+            Sym::Check,
+            Sym::ArrowUp,
+        ] {
             let b = render(s, 40, [255, 255, 255]);
             let filled = b.chunks_exact(4).filter(|p| p[3] > 128).count();
-            assert!(filled > 40 && filled < 40 * 40 * 3 / 4, "{s:?} terisi {filled}");
+            assert!(
+                filled > 40 && filled < 40 * 40 * 3 / 4,
+                "{s:?} terisi {filled}"
+            );
         }
     }
 
@@ -443,8 +576,15 @@ mod tests {
         let n = 64;
         let b = render(Sym::Wifi, n, [255, 255, 255]);
         assert!(alpha(&b, n, 32, 50) > 200, "titik bawah");
-        assert!(alpha(&b, n, 32, 50 - 17) > 200, "busur pertama di atas titik");
-        assert_eq!(alpha(&b, n, 32, 5), 0, "tidak ada isian di atas busur terluar (tepi)");
+        assert!(
+            alpha(&b, n, 32, 50 - 17) > 200,
+            "busur pertama di atas titik"
+        );
+        assert_eq!(
+            alpha(&b, n, 32, 5),
+            0,
+            "tidak ada isian di atas busur terluar (tepi)"
+        );
     }
 
     #[test]

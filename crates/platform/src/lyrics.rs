@@ -33,7 +33,17 @@ pub struct Lyrics {
 }
 
 fn file_safe(s: &str) -> String {
-    s.chars().map(|c| if r#"\/:*?"<>|"#.contains(c) || c.is_control() { '_' } else { c }).collect::<String>().trim().to_string()
+    s.chars()
+        .map(|c| {
+            if r#"\/:*?"<>|"#.contains(c) || c.is_control() {
+                '_'
+            } else {
+                c
+            }
+        })
+        .collect::<String>()
+        .trim()
+        .to_string()
 }
 
 fn local_file(dir: &Path, t: &Track) -> Option<String> {
@@ -42,9 +52,17 @@ fn local_file(dir: &Path, t: &Track) -> Option<String> {
         want.push(format!("{} - {}.lrc", file_safe(&t.artist), file_safe(&t.title)).to_lowercase());
     }
     want.push(format!("{}.lrc", file_safe(&t.title)).to_lowercase());
-    let names: Vec<PathBuf> = std::fs::read_dir(dir).ok()?.flatten().map(|e| e.path()).collect();
+    let names: Vec<PathBuf> = std::fs::read_dir(dir)
+        .ok()?
+        .flatten()
+        .map(|e| e.path())
+        .collect();
     for w in &want {
-        if let Some(p) = names.iter().find(|p| p.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.to_lowercase() == *w)) {
+        if let Some(p) = names.iter().find(|p| {
+            p.file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.to_lowercase() == *w)
+        }) {
             if let Ok(s) = std::fs::read_to_string(p) {
                 return Some(s);
             }
@@ -73,17 +91,27 @@ fn http_get(url: &str) -> Option<(i32, String)> {
     let client = HttpClient::new().ok()?;
     if let Ok(h) = client.DefaultRequestHeaders() {
         if let Ok(ua) = h.UserAgent() {
-            let _ = ua.TryParseAdd(&HSTRING::from(concat!("ABRA/", env!("CARGO_PKG_VERSION"))));
+            let _ = ua.TryParseAdd(&HSTRING::from(concat!("NEXORA/", env!("CARGO_PKG_VERSION"))));
         }
     }
-    let op = client.GetAsync(&Uri::CreateUri(&HSTRING::from(url)).ok()?).ok()?;
-    if !finish(|| op.Status().ok().map(|s| s.0), || drop(op.Cancel()), TIMEOUT) {
+    let op = client
+        .GetAsync(&Uri::CreateUri(&HSTRING::from(url)).ok()?)
+        .ok()?;
+    if !finish(
+        || op.Status().ok().map(|s| s.0),
+        || drop(op.Cancel()),
+        TIMEOUT,
+    ) {
         return None;
     }
     let resp = op.GetResults().ok()?;
     let status = resp.StatusCode().ok()?.0;
     let read = resp.Content().ok()?.ReadAsStringAsync().ok()?;
-    if !finish(|| read.Status().ok().map(|s| s.0), || drop(read.Cancel()), TIMEOUT) {
+    if !finish(
+        || read.Status().ok().map(|s| s.0),
+        || drop(read.Cancel()),
+        TIMEOUT,
+    ) {
         return None;
     }
     Some((status, read.GetResults().ok()?.to_string()))
@@ -101,7 +129,9 @@ fn ask_lrclib(t: &Track) -> Result<Option<lrclib::Found>, ()> {
             Some(_) | None => return Err(()),
         }
     }
-    let Some(url) = lrclib::search_url(t) else { return Ok(None) };
+    let Some(url) = lrclib::search_url(t) else {
+        return Ok(None);
+    };
     match http_get(&url) {
         Some((200, body)) => Ok(lrclib::pick_search(&body, t.duration_s)),
         Some((404, _)) => Ok(None),
@@ -113,12 +143,20 @@ fn lookup(dir: &Path, req: &Request) -> Answer {
     let t = &req.track;
     let key = lrclib::cache_key(t);
     if let Some(s) = local_file(dir, t) {
-        return Answer { key, text: Some(s), source: Source::Local };
+        return Answer {
+            key,
+            text: Some(s),
+            source: Source::Local,
+        };
     }
     let cache = dir.join("cache");
     let hit = cache.join(format!("{key}.lrc"));
     if let Ok(s) = std::fs::read_to_string(&hit) {
-        return Answer { key, text: Some(s), source: Source::Lrclib };
+        return Answer {
+            key,
+            text: Some(s),
+            source: Source::Lrclib,
+        };
     }
     let none = cache.join(format!("{key}.none"));
     let fresh_none = std::fs::metadata(&none)
@@ -127,7 +165,11 @@ fn lookup(dir: &Path, req: &Request) -> Answer {
         .and_then(|t| SystemTime::now().duration_since(t).ok())
         .is_some_and(|age| age < NONE_TTL);
     if fresh_none || !req.online {
-        return Answer { key, text: None, source: Source::None };
+        return Answer {
+            key,
+            text: None,
+            source: Source::None,
+        };
     }
     match ask_lrclib(t) {
         Ok(Some(f)) => {
@@ -135,17 +177,29 @@ fn lookup(dir: &Path, req: &Request) -> Answer {
             let _ = std::fs::create_dir_all(&cache);
             let _ = std::fs::write(&hit, &text);
             crate::log::line("lirik", &format!("LRCLIB: ditemukan ({} byte)", text.len()));
-            Answer { key, text: Some(text), source: Source::Lrclib }
+            Answer {
+                key,
+                text: Some(text),
+                source: Source::Lrclib,
+            }
         }
         Ok(None) => {
             let _ = std::fs::create_dir_all(&cache);
             let _ = std::fs::write(&none, b"");
             crate::log::line("lirik", "LRCLIB: tidak ada");
-            Answer { key, text: None, source: Source::None }
+            Answer {
+                key,
+                text: None,
+                source: Source::None,
+            }
         }
         Err(()) => {
             crate::log::line("lirik", "LRCLIB: gagal (jaringan/batas waktu)");
-            Answer { key, text: None, source: Source::None }
+            Answer {
+                key,
+                text: None,
+                source: Source::None,
+            }
         }
     }
 }
@@ -155,7 +209,13 @@ pub fn spawn(dir: PathBuf, notify: impl Fn() + Send + 'static) -> Lyrics {
     let (ans_tx, ans_rx) = channel::<Answer>();
     let _ = std::fs::create_dir_all(&dir);
     std::thread::spawn(move || {
-        let com = unsafe { windows::Win32::System::Com::CoInitializeEx(None, windows::Win32::System::Com::COINIT_MULTITHREADED).is_ok() };
+        let com = unsafe {
+            windows::Win32::System::Com::CoInitializeEx(
+                None,
+                windows::Win32::System::Com::COINIT_MULTITHREADED,
+            )
+            .is_ok()
+        };
         while let Ok(mut req) = req_rx.recv() {
             while let Ok(newer) = req_rx.try_recv() {
                 req = newer;
@@ -170,7 +230,10 @@ pub fn spawn(dir: PathBuf, notify: impl Fn() + Send + 'static) -> Lyrics {
             unsafe { windows::Win32::System::Com::CoUninitialize() };
         }
     });
-    Lyrics { requests: req_tx, answers: ans_rx }
+    Lyrics {
+        requests: req_tx,
+        answers: ans_rx,
+    }
 }
 
 #[cfg(test)]
@@ -179,18 +242,45 @@ mod tests {
 
     #[test]
     fn local_lrc_is_found_case_insensitively_and_names_are_file_safe() {
-        let dir = std::env::temp_dir().join(format!("abra-lyrics-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("nexora-lyrics-test-{}", std::process::id()));
         let _ = std::fs::create_dir_all(&dir);
         std::fs::write(dir.join("coldplay - clocks.LRC"), "[00:01.00]Lights go out").unwrap();
-        let t = Track { title: "Clocks".into(), artist: "Coldplay".into(), album: String::new(), duration_s: None };
-        assert_eq!(local_file(&dir, &t).as_deref(), Some("[00:01.00]Lights go out"));
-        let other = Track { title: "AC/DC: T.N.T?".into(), ..t.clone() };
+        let t = Track {
+            title: "Clocks".into(),
+            artist: "Coldplay".into(),
+            album: String::new(),
+            duration_s: None,
+        };
+        assert_eq!(
+            local_file(&dir, &t).as_deref(),
+            Some("[00:01.00]Lights go out")
+        );
+        let other = Track {
+            title: "AC/DC: T.N.T?".into(),
+            ..t.clone()
+        };
         assert_eq!(local_file(&dir, &other), None);
         assert_eq!(file_safe("AC/DC: T.N.T?"), "AC_DC_ T.N.T_");
-        let a = lookup(&dir, &Request { track: t, online: false });
+        let a = lookup(
+            &dir,
+            &Request {
+                track: t,
+                online: false,
+            },
+        );
         assert_eq!(a.source, Source::Local);
-        let none = lookup(&dir, &Request { track: other, online: false });
-        assert_eq!((none.text, none.source), (None, Source::None), "luring: tidak menyentuh jaringan");
+        let none = lookup(
+            &dir,
+            &Request {
+                track: other,
+                online: false,
+            },
+        );
+        assert_eq!(
+            (none.text, none.source),
+            (None, Source::None),
+            "luring: tidak menyentuh jaringan"
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

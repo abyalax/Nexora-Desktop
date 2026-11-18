@@ -6,6 +6,8 @@ mod tooltip;
 mod view;
 
 use crate::paths;
+use crate::strip::Strip;
+use menu::{Menu, MENU_CLOSE, MENU_PICK};
 use nacre_core::dock::items::{key_of, merge, package_family, Item, Pin};
 use nacre_core::dock::layout::{hit, layout, Layout, Metrics, Slot};
 use nacre_core::dock::reorder;
@@ -18,26 +20,26 @@ use nacre_platform::{launch, log, sys};
 use nacre_ui::gfx::Gfx;
 use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
 use nacre_ui::host::{Host, Surface};
-use menu::{Menu, MENU_CLOSE, MENU_PICK};
 use preview::{Preview, PREVIEW_CLICK, PREVIEW_ENTER, PREVIEW_LEAVE};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::time::{Duration, Instant};
-use crate::strip::Strip;
 use tooltip::Tooltip;
 use view::{spring, Kind, View};
 use windows::core::w;
-use windows::UI::Composition::{
-    CompositionDrawingSurface, CompositionObject, CompositionPropertySet, Compositor, ContainerVisual,
-    ExpressionAnimation, SpringScalarNaturalMotionAnimation,
-};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::{CreateRectRgn, SetWindowRgn};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
-use windows::Win32::UI::Input::KeyboardAndMouse::{ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionObject, CompositionPropertySet, Compositor,
+    ContainerVisual, ExpressionAnimation, SpringScalarNaturalMotionAnimation,
+};
 use windows_core::{Interface, HSTRING};
 use windows_numerics::Vector3;
 
@@ -87,7 +89,9 @@ const RECENTS_SHOW: usize = 3;
 const DOWNLOADS_KEY: &str = "\u{0}downloads";
 
 fn downloads_key() -> String {
-    nacre_platform::downloads::folder().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()
+    nacre_platform::downloads::folder()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default()
 }
 
 pub struct Options {
@@ -108,8 +112,8 @@ enum Entry {
 
 const TRASH_PATH: &str = "shell:RecycleBinFolder";
 
-const START_KEY: &str = "abra:start";
-const LAUNCHPAD_KEY: &str = "abra:launchpad";
+const START_KEY: &str = "nexora:start";
+const LAUNCHPAD_KEY: &str = "nexora:launchpad";
 
 struct MenuInfo {
     item: Option<Item>,
@@ -231,7 +235,12 @@ pub fn request_appbar_resync() {
     let h = DOCK_HWND.load(Ordering::Relaxed);
     if h != 0 {
         unsafe {
-            let _ = PostMessageW(Some(HWND(h as *mut _)), WM_APPBAR_SYNC, WPARAM(0), LPARAM(0));
+            let _ = PostMessageW(
+                Some(HWND(h as *mut _)),
+                WM_APPBAR_SYNC,
+                WPARAM(0),
+                LPARAM(0),
+            );
         }
     }
 }
@@ -283,7 +292,12 @@ pub fn cli_commands(hwnd: HWND, add: Option<String>, icon: Option<(String, Strin
 
 fn metrics_from_prefs(dpi: f32) -> Metrics {
     let s = crate::prefs::get();
-    Metrics::custom(s.dock_size as f32, s.dock_gap as f32, s.dock_zoom as f32 / 100.0, dpi)
+    Metrics::custom(
+        s.dock_size as f32,
+        s.dock_gap as f32,
+        s.dock_zoom as f32 / 100.0,
+        dpi,
+    )
 }
 
 impl Dock {
@@ -303,8 +317,14 @@ impl Dock {
                 class,
                 w!("nacre-dock"),
                 WS_POPUP,
-                0, 0, 400, 120,
-                None, None, Some(hi), None,
+                0,
+                0,
+                400,
+                120,
+                None,
+                None,
+                Some(hi),
+                None,
             )?;
             let dpi = GetDpiForWindow(hwnd).max(96) as f32 / 96.0 * crate::prefs::ui_scale();
             let screen = sys::screen_size();
@@ -313,7 +333,15 @@ impl Dock {
             let surface = host.attach(hwnd, (400.0, 120.0))?;
             let stage = host.compositor.CreateContainerVisual()?;
             surface.root.Children()?.InsertAtTop(&stage)?;
-            let mut panel = GlassPanel::new(&host.compositor, &stage, crate::prefs::glass((10.0, 10.0), 22.0 * dpi * crate::prefs::round(crate::prefs::Role::Dock), crate::prefs::Role::Dock))?;
+            let panel = GlassPanel::new(
+                &host.compositor,
+                &stage,
+                crate::prefs::glass(
+                    (10.0, 10.0),
+                    22.0 * dpi * crate::prefs::round(crate::prefs::Role::Dock),
+                    crate::prefs::Role::Dock,
+                ),
+            )?;
             let tier = opts.glass.unwrap_or_else(|| auto_tier(&sys::conditions()));
             panel.set_tier(tier)?;
             let content = host.compositor.CreateContainerVisual()?;
@@ -327,13 +355,19 @@ impl Dock {
             });
 
             custom_icons::install();
-            nacre_platform::iconpack::configure(&paths::config_dir().join("iconpack"), crate::prefs::get().icon_pack);
+            nacre_platform::iconpack::configure(
+                &paths::config_dir().join("iconpack"),
+                crate::prefs::get().icon_pack,
+            );
             let pins_path = paths::config_dir().join("pins.txt");
             let pins = pins::load(&pins_path);
             let recents_path = paths::config_dir().join("recents.txt");
             let recents: Vec<Pin> = pins::load(&recents_path)
                 .into_iter()
-                .filter(|r| r.path.to_ascii_lowercase().starts_with("shell:") || std::path::Path::new(&r.path).exists())
+                .filter(|r| {
+                    r.path.to_ascii_lowercase().starts_with("shell:")
+                        || std::path::Path::new(&r.path).exists()
+                })
                 .take(RECENTS_KEEP)
                 .collect();
             let mode = opts.mode;
@@ -378,12 +412,23 @@ impl Dock {
                 stack_files: Vec::new(),
                 items: vec![],
                 signature: vec![],
-                icon_key: { let p = crate::prefs::get(); (p.icon_style, p.icon_tint, p.icon_pack, crate::prefs::icon_dark()) },
+                icon_key: {
+                    let p = crate::prefs::get();
+                    (
+                        p.icon_style,
+                        p.icon_tint,
+                        p.icon_pack,
+                        crate::prefs::icon_dark(),
+                    )
+                },
                 seen: vec![],
                 entries: vec![],
                 slots: vec![],
                 views: vec![],
-                layout: Layout { cells: vec![], total: 0.0 },
+                layout: Layout {
+                    cells: vec![],
+                    total: 0.0,
+                },
                 surfaces: HashMap::new(),
                 requested: HashSet::new(),
                 trash_full: nacre_platform::recycle::is_full(),
@@ -407,7 +452,11 @@ impl Dock {
                 menu_open: false,
                 preview_hover: false,
                 tier,
-                strip: if mode == Mode::Always { None } else { Strip::new(hwnd, STRIP_ENTER, STRIP_LEAVE).ok() },
+                strip: if mode == Mode::Always {
+                    None
+                } else {
+                    Strip::new(hwnd, STRIP_ENTER, STRIP_LEAVE).ok()
+                },
                 tooltip: None,
                 preview: None,
                 menu: None,
@@ -415,7 +464,11 @@ impl Dock {
             });
             dock.compute_geometry();
             dock.refresh_windows();
-            let _ = dock.stage.SetOffset(Vector3 { X: 0.0, Y: dock.win.1 as f32 + 8.0, Z: 0.0 });
+            let _ = dock.stage.SetOffset(Vector3 {
+                X: 0.0,
+                Y: dock.win.1 as f32 + 8.0,
+                Z: 0.0,
+            });
             let appbar = dock.opts.appbar;
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, Box::into_raw(dock) as isize);
             DOCK_HWND.store(hwnd.0 as isize, Ordering::Relaxed);
@@ -455,7 +508,9 @@ impl Dock {
     fn max_content_width(&self) -> f32 {
         let area = 4000.0;
         let base = layout(&self.slots, None, area, &self.m);
-        let (Some(first), Some(last)) = (base.cells.first(), base.cells.last()) else { return 0.0 };
+        let (Some(first), Some(last)) = (base.cells.first(), base.cells.last()) else {
+            return 0.0;
+        };
         let (from, to) = (first.x, last.x + last.w);
         let mut best = base.total;
         let mut x = from;
@@ -472,23 +527,50 @@ impl Dock {
         self.win.0 = w;
         self.win_pos = ((self.screen.0 - w) / 2, self.screen.1 - self.win.1);
         unsafe {
-            let _ = SetWindowPos(self.hwnd, None, self.win_pos.0, self.win_pos.1, w, self.win.1, SWP_NOACTIVATE | SWP_NOZORDER);
+            let _ = SetWindowPos(
+                self.hwnd,
+                None,
+                self.win_pos.0,
+                self.win_pos.1,
+                w,
+                self.win.1,
+                SWP_NOACTIVATE | SWP_NOZORDER,
+            );
         }
-        let _ = self._surface.root.SetSize(windows_numerics::Vector2 { X: w as f32, Y: self.win.1 as f32 });
+        let _ = self._surface.root.SetSize(windows_numerics::Vector2 {
+            X: w as f32,
+            Y: self.win.1 as f32,
+        });
         self.place_strip();
         log::line(
             "dock",
-            &format!("jendela=({},{})-({},{}) layar={}x{} dpi={}", self.win_pos.0, self.win_pos.1, self.win_pos.0 + w, self.win_pos.1 + self.win.1, self.screen.0, self.screen.1, self.dpi),
+            &format!(
+                "jendela=({},{})-({},{}) layar={}x{} dpi={}",
+                self.win_pos.0,
+                self.win_pos.1,
+                self.win_pos.0 + w,
+                self.win_pos.1 + self.win.1,
+                self.screen.0,
+                self.screen.1,
+                self.dpi
+            ),
         );
     }
 
     fn on_reconfigure(&mut self) {
         let screen = sys::screen_size();
-        let dpi = unsafe { GetDpiForWindow(self.hwnd) }.max(96) as f32 / 96.0 * crate::prefs::ui_scale();
+        let dpi =
+            unsafe { GetDpiForWindow(self.hwnd) }.max(96) as f32 / 96.0 * crate::prefs::ui_scale();
         if screen == self.screen && (dpi - self.dpi).abs() < 0.01 {
             return;
         }
-        log::line("dock", &format!("reconfigurasi {}x{}@{} → {}x{}@{}", self.screen.0, self.screen.1, self.dpi, screen.0, screen.1, dpi));
+        log::line(
+            "dock",
+            &format!(
+                "reconfigurasi {}x{}@{} → {}x{}@{}",
+                self.screen.0, self.screen.1, self.dpi, screen.0, screen.1, dpi
+            ),
+        );
         self.hide_popups();
         self.tooltip = None;
         self.preview = None;
@@ -497,7 +579,9 @@ impl Dock {
         self.m = metrics_from_prefs(dpi);
         self.pad_side = 10.0 * dpi;
         self.compute_geometry();
-        let _ = self.panel.set_radius(22.0 * dpi * crate::prefs::round(crate::prefs::Role::Dock));
+        let _ = self
+            .panel
+            .set_radius(22.0 * dpi * crate::prefs::round(crate::prefs::Role::Dock));
         self.last_card = (0.0, 0.0, 0.0, 0.0);
         self.signature.clear();
         self.refresh_windows();
@@ -535,7 +619,13 @@ impl Dock {
         if self.opts.appbar {
             self.reserve_strip();
         }
-        log::line("dock", &format!("metrik: ikon={} jarak={} zoom={} margin={}", s.dock_size, s.dock_gap, s.dock_zoom, s.dock_margin));
+        log::line(
+            "dock",
+            &format!(
+                "metrik: ikon={} jarak={} zoom={} margin={}",
+                s.dock_size, s.dock_gap, s.dock_zoom, s.dock_margin
+            ),
+        );
     }
 
     fn reserve_strip(&mut self) {
@@ -544,7 +634,12 @@ impl Dock {
         }
         let d = self.dpi;
         let strip = (self.margin + self.card_h + 4.0 * d).ceil() as i32;
-        let r = nacre_platform::shell::appbar::reserve_bottom(self.hwnd, self.screen.0, self.screen.1, strip);
+        let r = nacre_platform::shell::appbar::reserve_bottom(
+            self.hwnd,
+            self.screen.0,
+            self.screen.1,
+            strip,
+        );
         log::line("appbar", &format!("strip={strip} hasil={r:?}"));
     }
 
@@ -556,7 +651,12 @@ impl Dock {
             let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
             let cw = rest.total + 2.0 * self.pad_side;
             let cx = (self.win.0 as f32 - cw) / 2.0;
-            (cx as i32, self.card_y as i32, (cx + cw).ceil() as i32, (self.card_y + self.card_h).ceil() as i32)
+            (
+                cx as i32,
+                self.card_y as i32,
+                (cx + cw).ceil() as i32,
+                (self.card_y + self.card_h).ceil() as i32,
+            )
         };
         unsafe {
             let rgn = CreateRectRgn(l, t, r, b);
@@ -565,7 +665,11 @@ impl Dock {
     }
 
     fn interacting(&self) -> bool {
-        self.tracking || self.preview_hover || self.menu_open || self.dragging.is_some() || self.grace
+        self.tracking
+            || self.preview_hover
+            || self.menu_open
+            || self.dragging.is_some()
+            || self.grace
     }
 
     fn card_screen_rect(&self) -> (i32, i32, i32, i32) {
@@ -574,7 +678,12 @@ impl Dock {
         let cx = (self.win.0 as f32 - cw) / 2.0;
         let l = self.win_pos.0 + cx as i32;
         let t = self.win_pos.1 + self.card_y as i32;
-        (l, t, l + cw.ceil() as i32, t + (self.card_h + self.margin) as i32)
+        (
+            l,
+            t,
+            l + cw.ceil() as i32,
+            t + (self.card_h + self.margin) as i32,
+        )
     }
 
     fn place_strip(&self) {
@@ -598,7 +707,9 @@ impl Dock {
     fn animate_stage(&self, y: f32) {
         if let Ok(v) = f32_ref(y) {
             if self.stage_anim.SetFinalValue(&v).is_ok() {
-                let _ = self.stage.StartAnimation(&HSTRING::from("Offset.Y"), &self.stage_anim);
+                let _ = self
+                    .stage
+                    .StartAnimation(&HSTRING::from("Offset.Y"), &self.stage_anim);
             }
         }
     }
@@ -644,15 +755,26 @@ impl Dock {
         self.heal_pins(&mut items);
         self.track_recents(&items);
         self.append_recents(&mut items);
-        let sig: Vec<_> = items.iter().map(|i| (i.key.clone(), i.pinned, i.hwnds.len(), i.path.clone())).collect();
+        let sig: Vec<_> = items
+            .iter()
+            .map(|i| (i.key.clone(), i.pinned, i.hwnds.len(), i.path.clone()))
+            .collect();
         self.items = items;
         if sig != self.signature {
             self.signature = sig;
             self.rebuild();
         }
-        self.overlap = overlap::evaluate(tracker::external_foreground(), std::process::id(), self.card_screen_rect(), self.screen);
+        self.overlap = overlap::evaluate(
+            tracker::external_foreground(),
+            std::process::id(),
+            self.card_screen_rect(),
+            self.screen,
+        );
         if self.overlap.fullscreen && crate::prefs::get().above_fullscreen {
-            self.overlap = overlap::Overlap { overlapped: false, fullscreen: false };
+            self.overlap = overlap::Overlap {
+                overlapped: false,
+                fullscreen: false,
+            };
         }
         self.update_visibility();
     }
@@ -662,7 +784,16 @@ impl Dock {
             "dock",
             &format!(
                 "item: {}",
-                self.items.iter().map(|i| format!("{}[{}]{}", i.name, i.hwnds.len(), if i.pinned { "*" } else { "" })).collect::<Vec<_>>().join(", ")
+                self.items
+                    .iter()
+                    .map(|i| format!(
+                        "{}[{}]{}",
+                        i.name,
+                        i.hwnds.len(),
+                        if i.pinned { "*" } else { "" }
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(", ")
             ),
         );
         self.entries.clear();
@@ -682,7 +813,11 @@ impl Dock {
         }
         self.entries.push(Entry::Trash);
         for e in &self.entries {
-            self.slots.push(if matches!(e, Entry::Sep) { Slot::Separator } else { Slot::Item });
+            self.slots.push(if matches!(e, Entry::Sep) {
+                Slot::Separator
+            } else {
+                Slot::Item
+            });
         }
 
         if let Ok(kids) = self.content.Children() {
@@ -693,7 +828,12 @@ impl Dock {
         if !icons::is_themed(LAUNCHPAD_KEY) && !self.surfaces.contains_key(LAUNCHPAD_KEY) {
             let px = ((self.m.icon * self.m.max_scale * 1.15) as i32).clamp(64, 256) as u32;
             let p = crate::prefs::get();
-            let data = nacre_core::iconplate::style_icon_v(&nacre_core::iconplate::launchpad_icon(px), p.icon_style, p.icon_tint, crate::prefs::icon_dark());
+            let data = nacre_core::iconplate::style_icon_v(
+                &nacre_core::iconplate::launchpad_icon(px),
+                p.icon_style,
+                p.icon_tint,
+                crate::prefs::icon_dark(),
+            );
             if let Ok(s) = self.gfx.surface_from_bgra(px, px, &data) {
                 self.surfaces.insert(LAUNCHPAD_KEY.to_string(), s);
             }
@@ -703,15 +843,50 @@ impl Dock {
         }
         for e in self.entries.clone() {
             let v = match e {
-                Entry::Start if custom_icons::has(START_KEY) => View::app(&self.comp, &self.content, START_KEY.to_string(), icon, false, self.dpi),
+                Entry::Start if custom_icons::has(START_KEY) => View::app(
+                    &self.comp,
+                    &self.content,
+                    START_KEY.to_string(),
+                    icon,
+                    false,
+                    self.dpi,
+                ),
                 Entry::Start => View::start(&self.comp, &self.content, icon),
-                Entry::Launchpad => View::app(&self.comp, &self.content, LAUNCHPAD_KEY.to_string(), icon, false, self.dpi),
+                Entry::Launchpad => View::app(
+                    &self.comp,
+                    &self.content,
+                    LAUNCHPAD_KEY.to_string(),
+                    icon,
+                    false,
+                    self.dpi,
+                ),
                 Entry::Sep => View::separator(&self.comp, &self.content, self.m.separator, icon),
-                Entry::Trash => View::app(&self.comp, &self.content, TRASH_PATH.to_string(), icon, false, self.dpi),
-                Entry::Downloads => View::app(&self.comp, &self.content, downloads_key(), icon, false, self.dpi),
+                Entry::Trash => View::app(
+                    &self.comp,
+                    &self.content,
+                    TRASH_PATH.to_string(),
+                    icon,
+                    false,
+                    self.dpi,
+                ),
+                Entry::Downloads => View::app(
+                    &self.comp,
+                    &self.content,
+                    downloads_key(),
+                    icon,
+                    false,
+                    self.dpi,
+                ),
                 Entry::App(i) => {
                     let it = &self.items[i];
-                    View::app(&self.comp, &self.content, it.path.clone(), icon, it.running(), self.dpi)
+                    View::app(
+                        &self.comp,
+                        &self.content,
+                        it.path.clone(),
+                        icon,
+                        it.running(),
+                        self.dpi,
+                    )
                 }
             };
             match v {
@@ -752,10 +927,16 @@ impl Dock {
             let area = self.win.0 as f32;
             let rest = layout(&self.slots, None, area, &self.m);
             let is_item = |i: usize| self.slots[i] == Slot::Item;
-            let nodes: Vec<CompositionObject> = self.views.iter().map(|v| v.node.cast::<CompositionObject>()).collect::<Result<_, _>>()?;
+            let nodes: Vec<CompositionObject> = self
+                .views
+                .iter()
+                .map(|v| v.node.cast::<CompositionObject>())
+                .collect::<Result<_, _>>()?;
             let props: CompositionObject = self.props.cast()?;
             let make = |text: &str| -> windows_core::Result<ExpressionAnimation> {
-                let e = self.comp.CreateExpressionAnimationWithExpression(&HSTRING::from(text))?;
+                let e = self
+                    .comp
+                    .CreateExpressionAnimationWithExpression(&HSTRING::from(text))?;
                 e.SetReferenceParameter(&HSTRING::from("p"), &props)?;
                 for (j, node) in nodes.iter().enumerate() {
                     if is_item(j) {
@@ -764,7 +945,9 @@ impl Dock {
                 }
                 Ok(e)
             };
-            let const_total = self.slots.iter().filter(|s| **s == Slot::Separator).count() as f32 * sep + gap * (n as f32 - 1.0);
+            let const_total = self.slots.iter().filter(|s| **s == Slot::Separator).count() as f32
+                * sep
+                + gap * (n as f32 - 1.0);
             let mut total = format!("{const_total:.3}");
             for j in 0..n {
                 if is_item(j) {
@@ -782,7 +965,11 @@ impl Dock {
                         prefix += &format!(" + {icon:.3}*n{j}.Scale.X");
                     }
                 }
-                let (w_i, base_w) = if is_item(i) { (format!("{icon:.3}*n{i}.Scale.X"), icon) } else { (format!("{sep:.3}"), sep) };
+                let (w_i, base_w) = if is_item(i) {
+                    (format!("{icon:.3}*n{i}.Scale.X"), icon)
+                } else {
+                    (format!("{sep:.3}"), sep)
+                };
                 let box_x = format!("({start} + ({prefix}))");
                 let left = make(&format!("{box_x} + ({w_i})/2 - {:.3}", base_w / 2.0))?;
                 nodes[i].StartAnimation(&HSTRING::from("Offset.X"), &left)?;
@@ -802,12 +989,16 @@ impl Dock {
                 }
             }
             let card_w = format!("({total}) + {:.3}", 2.0 * self.pad_side);
-            self.panel.bind_x_width(&make, &format!("({area:.3} - ({card_w}))/2"), &card_w)?;
+            self.panel
+                .bind_x_width(&make, &format!("({area:.3} - ({card_w}))/2"), &card_w)?;
             Ok(())
         })();
         match r {
             Ok(()) => self.exprs_ok = true,
-            Err(e) => log::line("dock", &format!("ekspresi magnifikasi gagal, memakai jalur animasi per ikon: {e}")),
+            Err(e) => log::line(
+                "dock",
+                &format!("ekspresi magnifikasi gagal, memakai jalur animasi per ikon: {e}"),
+            ),
         }
     }
 
@@ -832,7 +1023,11 @@ impl Dock {
         let cx = (self.win.0 as f32 - card_w) / 2.0;
         let card = (cx, self.card_y, card_w, self.card_h);
         let moved = |a: f32, b: f32| (a - b).abs() >= 0.5;
-        if moved(card.0, self.last_card.0) || moved(card.2, self.last_card.2) || moved(card.1, self.last_card.1) || moved(card.3, self.last_card.3) {
+        if moved(card.0, self.last_card.0)
+            || moved(card.2, self.last_card.2)
+            || moved(card.1, self.last_card.1)
+            || moved(card.3, self.last_card.3)
+        {
             let _ = self.panel.set_rect(card.0, card.1, card.2, card.3);
             self.last_card = card;
         }
@@ -850,7 +1045,12 @@ impl Dock {
         let px = ((self.m.icon * self.m.max_scale * 1.15) as i32).clamp(64, 256) as u32;
         let p = crate::prefs::get();
         let raw = nacre_core::iconplate::free(&nacre_core::trash::icon(px, self.trash_full), px);
-        let data = nacre_core::iconplate::style_icon_v(&raw, p.icon_style, p.icon_tint, crate::prefs::icon_dark());
+        let data = nacre_core::iconplate::style_icon_v(
+            &raw,
+            p.icon_style,
+            p.icon_tint,
+            crate::prefs::icon_dark(),
+        );
         if let Ok(s) = self.gfx.surface_from_bgra(px, px, &data) {
             self.surfaces.insert(TRASH_PATH.to_string(), s);
         }
@@ -875,11 +1075,20 @@ impl Dock {
         while let Ok((path, bmp)) = self.worker.results.try_recv() {
             let Some(mut b) = bmp else { continue };
             if crate::prefs::get().dock_plates && b.w == b.h && !icons::is_themed(&path) {
-                b.bgra = if path == TRASH_PATH || path == downloads_key() { nacre_core::iconplate::free(&b.bgra, b.w) } else { nacre_core::iconplate::plate(&b.bgra, b.w) };
+                b.bgra = if path == TRASH_PATH || path == downloads_key() {
+                    nacre_core::iconplate::free(&b.bgra, b.w)
+                } else {
+                    nacre_core::iconplate::plate(&b.bgra, b.w)
+                };
             }
             if !icons::is_themed(&path) {
                 let p = crate::prefs::get();
-                b.bgra = nacre_core::iconplate::style_icon_v(&b.bgra, p.icon_style, p.icon_tint, crate::prefs::icon_dark());
+                b.bgra = nacre_core::iconplate::style_icon_v(
+                    &b.bgra,
+                    p.icon_style,
+                    p.icon_tint,
+                    crate::prefs::icon_dark(),
+                );
             }
             match self.gfx.surface_from_bgra(b.w, b.h, &b.bgra) {
                 Ok(surface) => {
@@ -897,7 +1106,12 @@ impl Dock {
 
     fn apply_prefs(&mut self) {
         let s = crate::prefs::get();
-        let key = (s.icon_style, s.icon_tint, s.icon_pack, crate::prefs::icon_dark());
+        let key = (
+            s.icon_style,
+            s.icon_tint,
+            s.icon_pack,
+            crate::prefs::icon_dark(),
+        );
         if key != self.icon_key {
             self.icon_key = key;
             nacre_platform::iconpack::configure(&paths::config_dir().join("iconpack"), s.icon_pack);
@@ -920,7 +1134,14 @@ impl Dock {
             } else if self.opts.appbar {
                 self.reserve_strip();
             }
-            log::line("dock", if self.off { "dinonaktifkan" } else { "diaktifkan" });
+            log::line(
+                "dock",
+                if self.off {
+                    "dinonaktifkan"
+                } else {
+                    "diaktifkan"
+                },
+            );
             self.update_visibility();
         }
         let (mode, appbar) = (s.dock.mode(), s.dock.reserves());
@@ -945,10 +1166,15 @@ impl Dock {
             log::line("dock", &format!("perilaku → {mode:?} cadangan={appbar}"));
         }
         self.apply_metrics();
-        let (themed, dark) = (crate::prefs::look(crate::prefs::Role::Dock), crate::prefs::look(crate::prefs::Role::Dark));
+        let (themed, dark) = (
+            crate::prefs::look(crate::prefs::Role::Dock),
+            crate::prefs::look(crate::prefs::Role::Dark),
+        );
         let base = GlassParams::dark((10.0, 10.0), 22.0 * self.dpi);
         let _ = self.panel.set_params(crate::prefs::apply(base, &themed));
-        let _ = self.panel.set_radius(22.0 * self.dpi * crate::prefs::round(crate::prefs::Role::Dock));
+        let _ = self
+            .panel
+            .set_radius(22.0 * self.dpi * crate::prefs::round(crate::prefs::Role::Dock));
         let pd = crate::prefs::apply(base, &dark);
         if let Some(t) = self.tooltip.as_mut() {
             t.apply_look(pd);
@@ -962,7 +1188,10 @@ impl Dock {
     }
 
     fn refresh_tier(&mut self) {
-        let t = self.opts.glass.unwrap_or_else(|| auto_tier(&sys::conditions()));
+        let t = self
+            .opts
+            .glass
+            .unwrap_or_else(|| auto_tier(&sys::conditions()));
         if t != self.tier {
             self.tier = t;
             let _ = self.panel.set_tier(t);
@@ -1011,18 +1240,26 @@ impl Dock {
             Some(Entry::App(i)) => match self.items.get(*i) {
                 Some(it) => {
                     let f = nacre_platform::wins::names::friendly(&it.path);
-                    if f.is_empty() { it.name.clone() } else { f }
+                    if f.is_empty() {
+                        it.name.clone()
+                    } else {
+                        f
+                    }
                 }
                 None => return,
             },
             _ => return,
         };
-        let Some((cx, top)) = self.icon_anchor(slot) else { return };
+        let Some((cx, top)) = self.icon_anchor(slot) else {
+            return;
+        };
         if self.tooltip.is_none() {
-            self.tooltip = Tooltip::new(&self.comp, self.dpi, self.screen.0).ok().map(|mut t| {
-                t.set_tier(self.tier);
-                t
-            });
+            self.tooltip = Tooltip::new(&self.comp, self.dpi, self.screen.0)
+                .ok()
+                .map(|mut t| {
+                    t.set_tier(self.tier);
+                    t
+                });
         }
         if let Some(t) = self.tooltip.as_mut() {
             let bottom = top - (3.0 * self.dpi) as i32;
@@ -1037,20 +1274,29 @@ impl Dock {
         if self.dragging.is_some() {
             return;
         }
-        let Some(Entry::App(i)) = self.entries.get(slot).copied() else { return };
+        let Some(Entry::App(i)) = self.entries.get(slot).copied() else {
+            return;
+        };
         let Some(it) = self.items.get(i) else { return };
         if !it.running() {
             return;
         }
-        let wins: Vec<(isize, String, bool)> =
-            it.hwnds.iter().map(|h| (*h, focus::title(*h), focus::is_minimized(*h))).collect();
+        let wins: Vec<(isize, String, bool)> = it
+            .hwnds
+            .iter()
+            .map(|h| (*h, focus::title(*h), focus::is_minimized(*h)))
+            .collect();
         let icon = self.surfaces.get(&it.path).cloned();
-        let Some((cx, top)) = self.icon_anchor(slot) else { return };
+        let Some((cx, top)) = self.icon_anchor(slot) else {
+            return;
+        };
         if self.preview.is_none() {
-            self.preview = Preview::new(&self.comp, self.hwnd, self.dpi, self.screen.0).ok().map(|mut p| {
-                let _ = p.panel_mut().set_tier(self.tier);
-                p
-            });
+            self.preview = Preview::new(&self.comp, self.hwnd, self.dpi, self.screen.0)
+                .ok()
+                .map(|mut p| {
+                    let _ = p.panel_mut().set_tier(self.tier);
+                    p
+                });
         }
         if let Some(t) = &self.tooltip {
             t.hide();
@@ -1102,7 +1348,9 @@ impl Dock {
                 }
             }
         }
-        if self.cursor.is_some_and(|c| (c - x).abs() < 0.5) || (!self.exprs_ok && self.last_apply.elapsed() < Duration::from_millis(10)) {
+        if self.cursor.is_some_and(|c| (c - x).abs() < 0.5)
+            || (!self.exprs_ok && self.last_apply.elapsed() < Duration::from_millis(10))
+        {
             return;
         }
         self.cursor = Some(x);
@@ -1150,7 +1398,12 @@ impl Dock {
                 Entry::App(i) if self.items.get(i).is_some_and(|it| it.pinned) => Some(i),
                 _ => None,
             };
-            self.press = Some(Press { slot, x, y, pinned_item });
+            self.press = Some(Press {
+                slot,
+                x,
+                y,
+                pinned_item,
+            });
             unsafe {
                 SetCapture(self.hwnd);
             }
@@ -1185,8 +1438,13 @@ impl Dock {
             .filter(|(_, e)| matches!(e, Entry::App(i) if self.items.get(*i).is_some_and(|it| it.pinned)))
             .map(|(s, _)| s)
             .collect();
-        let Some(from) = pinned_slots.iter().position(|s| *s == dragged) else { return };
-        let centers: Vec<f32> = pinned_slots.iter().map(|s| rest.cells[*s].x + rest.cells[*s].w / 2.0).collect();
+        let Some(from) = pinned_slots.iter().position(|s| *s == dragged) else {
+            return;
+        };
+        let centers: Vec<f32> = pinned_slots
+            .iter()
+            .map(|s| rest.cells[*s].x + rest.cells[*s].w / 2.0)
+            .collect();
         let mut order = pinned_slots.clone();
         reorder::move_to(&mut order, from, reorder::target_index(&centers, x));
         let mut display: Vec<usize> = (0..self.views.len()).collect();
@@ -1242,20 +1500,27 @@ impl Dock {
                 log::line("pins", &format!("simpan gagal: {e}"));
             }
         }
-        log::line("dock", &format!("drag selesai dari={from} atas={dropped_above} berubah={changed}"));
+        log::line(
+            "dock",
+            &format!("drag selesai dari={from} atas={dropped_above} berubah={changed}"),
+        );
         self.signature.clear();
         self.refresh_windows();
         self.apply(self.cursor, false);
     }
 
     fn on_click(&mut self, x: f32) {
-        let Some((idx, entry)) = self.entry_at(x) else { return };
+        let Some((idx, entry)) = self.entry_at(x) else {
+            return;
+        };
         self.hide_popups();
         match entry {
             Entry::Start => launch::toggle_start(self.start_open_at_press),
             Entry::Launchpad => crate::launchpad::toggle(),
             Entry::App(i) => {
-                let Some(it) = self.items.get(i).cloned() else { return };
+                let Some(it) = self.items.get(i).cloned() else {
+                    return;
+                };
                 if it.running() {
                     let target = if it.hwnds.len() > 1 {
                         next_in_ring(&it.hwnds, focus::foreground()).unwrap_or(it.hwnds[0])
@@ -1263,7 +1528,10 @@ impl Dock {
                         it.hwnds[0]
                     };
                     let ok = self.activate_target(target);
-                    log::line("dock", &format!("aktifkan {} hwnd={target} ok={ok}", it.name));
+                    log::line(
+                        "dock",
+                        &format!("aktifkan {} hwnd={target} ok={ok}", it.name),
+                    );
                 } else {
                     launch::open(&it.path);
                     if let Some(v) = self.views.get(idx) {
@@ -1291,10 +1559,18 @@ impl Dock {
 
     fn icon_rect(&self, hwnd: isize) -> Option<(i32, i32, i32, i32)> {
         let item = self.items.iter().position(|it| it.hwnds.contains(&hwnd))?;
-        let j = self.entries.iter().position(|e| matches!(e, Entry::App(i) if *i == item))?;
+        let j = self
+            .entries
+            .iter()
+            .position(|e| matches!(e, Entry::App(i) if *i == item))?;
         let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
         let c = rest.cells.get(j)?;
-        Some((self.win_pos.0 + c.x as i32, self.win_pos.1 + self.icon_y as i32, c.w as i32, self.m.icon as i32))
+        Some((
+            self.win_pos.0 + c.x as i32,
+            self.win_pos.1 + self.icon_y as i32,
+            c.w as i32,
+            self.m.icon as i32,
+        ))
     }
 
     fn on_middle_click(&mut self, x: f32) {
@@ -1307,12 +1583,36 @@ impl Dock {
 
     fn menu_info(&self, x: f32) -> MenuInfo {
         match self.entry_at(x) {
-            Some((_, Entry::App(i))) => MenuInfo { item: self.items.get(i).cloned(), trash: false, special: None },
-            Some((_, Entry::Trash)) => MenuInfo { item: None, trash: true, special: None },
-            Some((_, Entry::Downloads)) => MenuInfo { item: None, trash: false, special: Some(DOWNLOADS_KEY) },
-            Some((_, Entry::Start)) => MenuInfo { item: None, trash: false, special: Some(START_KEY) },
-            Some((_, Entry::Launchpad)) => MenuInfo { item: None, trash: false, special: Some(LAUNCHPAD_KEY) },
-            _ => MenuInfo { item: None, trash: false, special: None },
+            Some((_, Entry::App(i))) => MenuInfo {
+                item: self.items.get(i).cloned(),
+                trash: false,
+                special: None,
+            },
+            Some((_, Entry::Trash)) => MenuInfo {
+                item: None,
+                trash: true,
+                special: None,
+            },
+            Some((_, Entry::Downloads)) => MenuInfo {
+                item: None,
+                trash: false,
+                special: Some(DOWNLOADS_KEY),
+            },
+            Some((_, Entry::Start)) => MenuInfo {
+                item: None,
+                trash: false,
+                special: Some(START_KEY),
+            },
+            Some((_, Entry::Launchpad)) => MenuInfo {
+                item: None,
+                trash: false,
+                special: Some(LAUNCHPAD_KEY),
+            },
+            _ => MenuInfo {
+                item: None,
+                trash: false,
+                special: None,
+            },
         }
     }
 
@@ -1322,42 +1622,108 @@ impl Dock {
         let info = self.menu_info(x);
         let mut items = Vec::new();
         if info.trash {
-            items.push(menu::Item::action(CMD_TRASH_OPEN, crate::prefs::tr("Buka"), true));
-            items.push(menu::Item::action(CMD_TRASH_EMPTY, crate::prefs::tr("Kosongkan tempat sampah"), true));
+            items.push(menu::Item::action(
+                CMD_TRASH_OPEN,
+                crate::prefs::tr("Buka"),
+                true,
+            ));
+            items.push(menu::Item::action(
+                CMD_TRASH_EMPTY,
+                crate::prefs::tr("Kosongkan tempat sampah"),
+                true,
+            ));
         }
         if let Some(it) = &info.item {
             items.push(menu::Item::action(CMD_OPEN, crate::prefs::tr("Buka"), true));
             let can_pin = it.pinned || !it.path.contains('?');
-            items.push(menu::Item::action(CMD_PIN, crate::prefs::tr(if it.pinned { "Hapus dari Deck" } else { "Simpan di Deck" }), can_pin));
+            items.push(menu::Item::action(
+                CMD_PIN,
+                crate::prefs::tr(if it.pinned {
+                    "Hapus dari Deck"
+                } else {
+                    "Simpan di Deck"
+                }),
+                can_pin,
+            ));
             if !it.pinned && !it.running() {
-                items.push(menu::Item::action(CMD_FORGET, crate::prefs::tr("Hapus dari Deck"), true));
+                items.push(menu::Item::action(
+                    CMD_FORGET,
+                    crate::prefs::tr("Hapus dari Deck"),
+                    true,
+                ));
             }
-            items.push(menu::Item::action(CMD_ICON, crate::prefs::tr("Ubah ikon…"), true));
+            items.push(menu::Item::action(
+                CMD_ICON,
+                crate::prefs::tr("Ubah ikon…"),
+                true,
+            ));
             if custom_icons::has(&it.path) {
-                items.push(menu::Item::action(CMD_ICON_RESET, crate::prefs::tr("Kembalikan ikon asli"), true));
+                items.push(menu::Item::action(
+                    CMD_ICON_RESET,
+                    crate::prefs::tr("Kembalikan ikon asli"),
+                    true,
+                ));
             }
             if it.running() {
                 items.push(menu::Item::separator());
-                items.push(menu::Item::action(CMD_CLOSE, crate::prefs::tr("Tutup"), true));
+                items.push(menu::Item::action(
+                    CMD_CLOSE,
+                    crate::prefs::tr("Tutup"),
+                    true,
+                ));
             }
         }
         if info.special == Some(DOWNLOADS_KEY) {
-            items.push(menu::Item::action(CMD_STACK_FOLDER, crate::prefs::tr("Buka folder Unduhan"), true));
+            items.push(menu::Item::action(
+                CMD_STACK_FOLDER,
+                crate::prefs::tr("Buka folder Unduhan"),
+                true,
+            ));
             items.push(menu::Item::separator());
         } else if let Some(key) = info.special {
-            items.push(menu::Item::action(CMD_OPEN, crate::prefs::tr(if key == START_KEY { "Buka menu Mulai" } else { "Buka Apps" }), true));
-            items.push(menu::Item::action(CMD_ICON, crate::prefs::tr("Ubah ikon…"), true));
+            items.push(menu::Item::action(
+                CMD_OPEN,
+                crate::prefs::tr(if key == START_KEY {
+                    "Buka menu Mulai"
+                } else {
+                    "Buka Apps"
+                }),
+                true,
+            ));
+            items.push(menu::Item::action(
+                CMD_ICON,
+                crate::prefs::tr("Ubah ikon…"),
+                true,
+            ));
             if custom_icons::has(key) {
-                items.push(menu::Item::action(CMD_ICON_RESET, crate::prefs::tr("Kembalikan ikon asli"), true));
+                items.push(menu::Item::action(
+                    CMD_ICON_RESET,
+                    crate::prefs::tr("Kembalikan ikon asli"),
+                    true,
+                ));
             }
             items.push(menu::Item::separator());
         }
-        let general = info.item.is_none() && !info.trash && (info.special.is_none() || info.special == Some(START_KEY));
+        let general = info.item.is_none()
+            && !info.trash
+            && (info.special.is_none() || info.special == Some(START_KEY));
         if general {
-            items.push(menu::Item::action(CMD_ADD, crate::prefs::tr("Tambah app ke Deck…"), true));
-            items.push(menu::Item::action(CMD_SETTINGS, crate::prefs::tr("Pengaturan ABRA…"), true));
+            items.push(menu::Item::action(
+                CMD_ADD,
+                crate::prefs::tr("Tambah app ke Deck…"),
+                true,
+            ));
+            items.push(menu::Item::action(
+                CMD_SETTINGS,
+                crate::prefs::tr("Pengaturan NEXORA…"),
+                true,
+            ));
             items.push(menu::Item::separator());
-            items.push(menu::Item::action(CMD_QUIT, crate::prefs::tr("Keluar dari ABRA"), true));
+            items.push(menu::Item::action(
+                CMD_QUIT,
+                crate::prefs::tr("Keluar dari NEXORA"),
+                true,
+            ));
         }
         while items.last().is_some_and(|i| i.separator) {
             items.pop();
@@ -1371,7 +1737,13 @@ impl Dock {
             let _ = GetCursorPos(&mut pt);
         }
         let bottom = self.win_pos.1 + self.card_y as i32 - (6.0 * self.dpi) as i32;
-        log::line("dock", &format!("menu: kursor=({},{}) bawah={bottom} dari klik x={x}", pt.x, pt.y));
+        log::line(
+            "dock",
+            &format!(
+                "menu: kursor=({},{}) bawah={bottom} dari klik x={x}",
+                pt.x, pt.y
+            ),
+        );
         if let Some(m) = self.menu.as_mut() {
             if let Err(e) = m.show(&self.comp, &self.gfx, items, pt.x, bottom) {
                 log::line("menu", &format!("gagal: {e}"));
@@ -1393,14 +1765,26 @@ impl Dock {
             if name.chars().count() > 48 {
                 label.push('…');
             }
-            items.push(menu::Item::action(CMD_STACK + self.stack_files.len(), &label, true));
+            items.push(menu::Item::action(
+                CMD_STACK + self.stack_files.len(),
+                &label,
+                true,
+            ));
             self.stack_files.push(path.clone());
         }
         if !items.is_empty() {
             items.push(menu::Item::separator());
         }
-        items.push(menu::Item::action(CMD_STACK_FOLDER, crate::prefs::tr("Buka folder Unduhan"), true));
-        self.pending_menu = Some(MenuInfo { item: None, trash: false, special: Some(DOWNLOADS_KEY) });
+        items.push(menu::Item::action(
+            CMD_STACK_FOLDER,
+            crate::prefs::tr("Buka folder Unduhan"),
+            true,
+        ));
+        self.pending_menu = Some(MenuInfo {
+            item: None,
+            trash: false,
+            special: Some(DOWNLOADS_KEY),
+        });
         if self.menu.is_none() {
             self.menu = Menu::new(&self.comp, self.hwnd, self.dpi, self.screen, self.tier).ok();
         }
@@ -1423,14 +1807,21 @@ impl Dock {
         let mut changed = false;
         for it in items.iter_mut().filter(|i| i.pinned) {
             if it.running() {
-                for p in self.pins.iter_mut().filter(|p| key_of(&p.path) == it.key && p.path != it.path) {
+                for p in self
+                    .pins
+                    .iter_mut()
+                    .filter(|p| key_of(&p.path) == it.key && p.path != it.path)
+                {
                     p.path = it.path.clone();
                     changed = true;
                 }
             } else if !std::path::Path::new(&it.path).exists() {
                 if let Some(family) = package_family(&it.path) {
                     let prefix = format!("shell:appsfolder\\{}!", family.to_lowercase());
-                    if let Some(app) = nacre_platform::apps::snapshot().into_iter().find(|a| a.path.to_lowercase().starts_with(&prefix)) {
+                    if let Some(app) = nacre_platform::apps::snapshot()
+                        .into_iter()
+                        .find(|a| a.path.to_lowercase().starts_with(&prefix))
+                    {
                         it.path = app.path;
                     }
                 }
@@ -1448,9 +1839,19 @@ impl Dock {
             return;
         }
         let mut changed = false;
-        for it in items.iter().filter(|i| i.running() && !i.pinned && !i.path.is_empty() && !i.path.contains('?')).rev() {
+        for it in items
+            .iter()
+            .filter(|i| i.running() && !i.pinned && !i.path.is_empty() && !i.path.contains('?'))
+            .rev()
+        {
             if !self.recents.iter().any(|r| key_of(&r.path) == it.key) {
-                self.recents.insert(0, Pin { path: it.path.clone(), name: it.name.clone() });
+                self.recents.insert(
+                    0,
+                    Pin {
+                        path: it.path.clone(),
+                        name: it.name.clone(),
+                    },
+                );
                 changed = true;
             }
         }
@@ -1475,7 +1876,13 @@ impl Dock {
             if items.iter().any(|i| i.key == k) {
                 continue;
             }
-            items.push(Item { key: k, name: r.name.clone(), path: r.path.clone(), pinned: false, hwnds: vec![] });
+            items.push(Item {
+                key: k,
+                name: r.name.clone(),
+                path: r.path.clone(),
+                pinned: false,
+                hwnds: vec![],
+            });
             added += 1;
         }
     }
@@ -1514,7 +1921,9 @@ impl Dock {
             return;
         };
         let is_store = target.to_ascii_lowercase().starts_with("shell:appsfolder");
-        if !(lower.ends_with(".exe") || lower.ends_with(".lnk")) || !(is_store || std::path::Path::new(&target).exists()) {
+        if !(lower.ends_with(".exe") || lower.ends_with(".lnk"))
+            || !(is_store || std::path::Path::new(&target).exists())
+        {
             log::line("dock", &format!("bukan app yang valid: {picked}"));
             return;
         }
@@ -1523,7 +1932,11 @@ impl Dock {
             return;
         }
         let name = if lower.ends_with(".lnk") {
-            std::path::Path::new(picked).file_stem().and_then(|s| s.to_str()).map(str::to_string).unwrap_or_else(|| pins::name_for(&target))
+            std::path::Path::new(picked)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .map(str::to_string)
+                .unwrap_or_else(|| pins::name_for(&target))
         } else {
             pins::name_for(&target)
         };
@@ -1585,7 +1998,10 @@ impl Dock {
                     if it.pinned {
                         self.pins.retain(|p| key_of(&p.path) != it.key);
                     } else if !it.path.contains('?') {
-                        self.pins.push(Pin { path: it.path.clone(), name: it.name.clone() });
+                        self.pins.push(Pin {
+                            path: it.path.clone(),
+                            name: it.name.clone(),
+                        });
                     }
                     if let Err(e) = pins::save(&self.pins_path, &self.pins) {
                         log::line("pins", &format!("simpan gagal: {e}"));
@@ -1607,13 +2023,20 @@ impl Dock {
             CMD_SETTINGS => crate::settings_win::open(&self.comp),
             CMD_TRASH_OPEN => launch::open("shell:RecycleBinFolder"),
             CMD_TRASH_EMPTY => unsafe {
-                let _ = windows::Win32::UI::Shell::SHEmptyRecycleBinW(Some(self.hwnd), windows::core::PCWSTR::null(), 0);
+                let _ = windows::Win32::UI::Shell::SHEmptyRecycleBinW(
+                    Some(self.hwnd),
+                    windows::core::PCWSTR::null(),
+                    0,
+                );
                 timer(self.hwnd, TIMER_TRASH, 300);
             },
             CMD_ADD => {
                 let picked = nacre_platform::pick::open_file(
                     crate::prefs::tr("Pilih aplikasi"),
-                    &[(crate::prefs::tr("Aplikasi"), "*.exe;*.lnk"), ("*.*", "*.*")],
+                    &[
+                        (crate::prefs::tr("Aplikasi"), "*.exe;*.lnk"),
+                        ("*.*", "*.*"),
+                    ],
                 );
                 if let Some(p) = picked {
                     self.add_app(&p);
@@ -1623,7 +2046,10 @@ impl Dock {
                 let key = info.special.unwrap_or(START_KEY);
                 let picked = nacre_platform::pick::open_file(
                     crate::prefs::tr("Pilih gambar ikon"),
-                    &[(crate::prefs::tr("Gambar"), "*.png;*.jpg;*.jpeg;*.ico;*.bmp;*.gif")],
+                    &[(
+                        crate::prefs::tr("Gambar"),
+                        "*.png;*.jpg;*.jpeg;*.ico;*.bmp;*.gif",
+                    )],
                 );
                 if let Some(img) = picked {
                     if custom_icons::set(key, &img) {
@@ -1646,7 +2072,10 @@ impl Dock {
                 if let Some(it) = &info.item {
                     let picked = nacre_platform::pick::open_file(
                         crate::prefs::tr("Pilih gambar ikon"),
-                        &[(crate::prefs::tr("Gambar"), "*.png;*.jpg;*.jpeg;*.ico;*.bmp;*.gif")],
+                        &[(
+                            crate::prefs::tr("Gambar"),
+                            "*.png;*.jpg;*.jpeg;*.ico;*.bmp;*.gif",
+                        )],
                     );
                     if let Some(img) = picked {
                         if custom_icons::set(&it.path, &img) {
@@ -1664,7 +2093,12 @@ impl Dock {
                 }
             }
             CMD_QUIT => unsafe {
-                let _ = PostMessageW(Some(self.main_hwnd), WM_COMMAND, WPARAM(crate::mainwin::ID_QUIT), LPARAM(0));
+                let _ = PostMessageW(
+                    Some(self.main_hwnd),
+                    WM_COMMAND,
+                    WPARAM(crate::mainwin::ID_QUIT),
+                    LPARAM(0),
+                );
             },
             _ => {}
         }

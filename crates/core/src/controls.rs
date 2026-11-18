@@ -56,7 +56,14 @@ pub enum Category {
 }
 
 impl Category {
-    pub const ALL: [Category; 6] = [Category::Connectivity, Category::Display, Category::Sound, Category::Media, Category::Battery, Category::Utilities];
+    pub const ALL: [Category; 6] = [
+        Category::Connectivity,
+        Category::Display,
+        Category::Sound,
+        Category::Media,
+        Category::Battery,
+        Category::Utilities,
+    ];
 
     pub fn title(self) -> &'static str {
         match self {
@@ -101,7 +108,12 @@ impl Kind {
 
     pub fn size(self) -> (usize, usize) {
         match self {
-            Kind::Wifi | Kind::Bluetooth | Kind::Hotspot | Kind::Share | Kind::Focus | Kind::Battery => (2, 1),
+            Kind::Wifi
+            | Kind::Bluetooth
+            | Kind::Hotspot
+            | Kind::Share
+            | Kind::Focus
+            | Kind::Battery => (2, 1),
             Kind::NowPlaying => (2, 2),
             Kind::Display | Kind::Sound => (4, 1),
             _ => (1, 1),
@@ -110,7 +122,12 @@ impl Kind {
 
     pub fn category(self) -> Category {
         match self {
-            Kind::Wifi | Kind::Bluetooth | Kind::Hotspot | Kind::Share | Kind::Airplane | Kind::Mirror => Category::Connectivity,
+            Kind::Wifi
+            | Kind::Bluetooth
+            | Kind::Hotspot
+            | Kind::Share
+            | Kind::Airplane
+            | Kind::Mirror => Category::Connectivity,
             Kind::Display | Kind::DarkMode => Category::Display,
             Kind::Sound => Category::Sound,
             Kind::NowPlaying => Category::Media,
@@ -166,7 +183,10 @@ impl Size {
             "l" => Some(Size::L),
             t => {
                 let (a, b) = t.split_once('x')?;
-                Some(Size { w: a.trim().parse().ok()?, h: b.trim().parse().ok()? })
+                Some(Size {
+                    w: a.trim().parse().ok()?,
+                    h: b.trim().parse().ok()?,
+                })
             }
         }
     }
@@ -191,7 +211,10 @@ impl Kind {
 
     pub fn clamp(self, w: usize, h: usize) -> Size {
         let m = self.max_size();
-        Size { w: w.clamp(1, m.w.min(COLS)), h: h.clamp(1, m.h) }
+        Size {
+            w: w.clamp(1, m.w.min(COLS)),
+            h: h.clamp(1, m.h),
+        }
     }
 
     pub fn dims(self, s: Size) -> (usize, usize) {
@@ -205,7 +228,19 @@ pub fn cells_for(span: f32, cell: f32, gap: f32) -> usize {
 }
 
 pub fn default_layout() -> Vec<Kind> {
-    vec![Kind::Wifi, Kind::NowPlaying, Kind::Bluetooth, Kind::Share, Kind::Stage, Kind::Mission, Kind::DarkMode, Kind::Screenshot, Kind::Focus, Kind::Display, Kind::Sound]
+    vec![
+        Kind::Wifi,
+        Kind::NowPlaying,
+        Kind::Bluetooth,
+        Kind::Share,
+        Kind::Stage,
+        Kind::Mission,
+        Kind::DarkMode,
+        Kind::Screenshot,
+        Kind::Focus,
+        Kind::Display,
+        Kind::Sound,
+    ]
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -239,7 +274,13 @@ pub fn layout_sized(kinds: &[Kind], size_of: &dyn Fn(Kind) -> Size) -> (Vec<Plac
                             occ[row + dy][col + dx] = true;
                         }
                     }
-                    out.push(Placed { kind: k, col, row, w, h });
+                    out.push(Placed {
+                        kind: k,
+                        col,
+                        row,
+                        w,
+                        h,
+                    });
                     break 'find;
                 }
             }
@@ -262,7 +303,11 @@ pub fn from_text(s: &str) -> Vec<Kind> {
             }
         }
     }
-    if v.is_empty() { default_layout() } else { v }
+    if v.is_empty() {
+        default_layout()
+    } else {
+        v
+    }
 }
 
 pub fn to_text_sized(kinds: &[Kind], sizes: &std::collections::HashMap<Kind, Size>) -> String {
@@ -281,7 +326,10 @@ pub fn from_text_sized(s: &str) -> (Vec<Kind>, std::collections::HashMap<Kind, S
     let mut sizes = std::collections::HashMap::new();
     for part in s.split(',') {
         let mut it = part.split(':');
-        if let (Some(k), Some(sz)) = (it.next().and_then(Kind::parse), it.next().and_then(Size::parse)) {
+        if let (Some(k), Some(sz)) = (
+            it.next().and_then(Kind::parse),
+            it.next().and_then(Size::parse),
+        ) {
             if k.resizable() {
                 sizes.insert(k, sz);
             }
@@ -332,7 +380,10 @@ mod tests {
         assert_eq!(k2, kinds);
         assert_eq!(s2.get(&Kind::Focus), Some(&Size::L));
         let (p, _) = layout_sized(&kinds, &|k| *sizes.get(&k).unwrap_or(&k.default_size()));
-        assert_eq!(p.iter().find(|x| x.kind == Kind::Focus).map(|x| (x.w, x.h)), Some((2, 2)));
+        assert_eq!(
+            p.iter().find(|x| x.kind == Kind::Focus).map(|x| (x.w, x.h)),
+            Some((2, 2))
+        );
     }
 
     #[test]
@@ -341,7 +392,10 @@ mod tests {
         for (i, a) in p.iter().enumerate() {
             assert!(a.col + a.w <= COLS);
             for b in &p[i + 1..] {
-                let overlap = a.col < b.col + b.w && b.col < a.col + a.w && a.row < b.row + b.h && b.row < a.row + a.h;
+                let overlap = a.col < b.col + b.w
+                    && b.col < a.col + a.w
+                    && a.row < b.row + b.h
+                    && b.row < a.row + a.h;
                 assert!(!overlap, "{:?} tumpang tindih {:?}", a.kind, b.kind);
             }
         }
@@ -353,6 +407,9 @@ mod tests {
         let l = default_layout();
         assert_eq!(from_text(&to_text(&l)), l);
         assert_eq!(from_text(""), default_layout());
-        assert_eq!(from_text("wifi,wifi,nope,sound"), vec![Kind::Wifi, Kind::Sound]);
+        assert_eq!(
+            from_text("wifi,wifi,nope,sound"),
+            vec![Kind::Wifi, Kind::Sound]
+        );
     }
 }

@@ -3,38 +3,42 @@
 mod controlcenter;
 mod dock;
 mod fx;
-mod hud;
-mod prefs;
-mod settings_win;
-mod services;
-mod notch;
 mod hotcorners;
+mod hud;
 mod launchpad;
+mod macshortcuts;
+mod mainwin;
 mod menubar;
 mod menulogo;
-mod widgets;
-mod netmenu;
 mod mission;
 mod motion;
-mod spotlight;
-mod stage;
-mod switcher;
-mod mainwin;
+mod netmenu;
+mod notch;
 mod paths;
 mod popup;
-mod strip;
-mod topmost;
-mod macshortcuts;
+mod prefs;
+mod services;
+mod settings_win;
 mod single_instance;
+mod spotlight;
+mod stage;
+mod strip;
+mod switcher;
+mod topmost;
+mod widgets;
 
 use nacre_core::visibility::policy::Mode;
 use nacre_platform::{log, shell::taskbar};
 use nacre_ui::glass::Tier;
 use windows::core::{w, BOOL};
 use windows::Win32::Foundation::HINSTANCE;
-use windows::Win32::System::Console::{SetConsoleCtrlHandler, CTRL_BREAK_EVENT, CTRL_CLOSE_EVENT, CTRL_C_EVENT};
+use windows::Win32::System::Console::{
+    SetConsoleCtrlHandler, CTRL_BREAK_EVENT, CTRL_CLOSE_EVENT, CTRL_C_EVENT,
+};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::UI::HiDpi::{SetProcessDpiAwarenessContext, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2};
+use windows::Win32::UI::HiDpi::{
+    SetProcessDpiAwarenessContext, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
 struct Args {
@@ -56,7 +60,10 @@ struct Args {
 }
 
 fn flag_value(v: &[String], name: &str) -> Option<String> {
-    v.iter().position(|a| a == name).and_then(|i| v.get(i + 1)).cloned()
+    v.iter()
+        .position(|a| a == name)
+        .and_then(|i| v.get(i + 1))
+        .cloned()
 }
 
 fn parse_args() -> Args {
@@ -71,7 +78,10 @@ fn parse_args() -> Args {
         island_mode: flag_value(&v, "--island-mode").and_then(|s| Mode::parse(&s)),
         dock_mode: flag_value(&v, "--dock-mode").and_then(|s| Mode::parse(&s)),
         add_app: flag_value(&v, "--add-app"),
-        set_icon: v.iter().position(|a| a == "--set-icon").and_then(|i| Some((v.get(i + 1)?.clone(), v.get(i + 2)?.clone()))),
+        set_icon: v
+            .iter()
+            .position(|a| a == "--set-icon")
+            .and_then(|i| Some((v.get(i + 1)?.clone(), v.get(i + 2)?.clone()))),
         open_settings: v.iter().any(|a| a == "--open-settings"),
         open_widgets: v.iter().any(|a| a == "--open-widgets"),
         keep_taskbar: v.iter().any(|a| a == "--keep-taskbar"),
@@ -81,7 +91,11 @@ fn parse_args() -> Args {
             "solid" => Some(Tier::Solid),
             _ => None,
         }),
-        exit_after: v.iter().position(|a| a == "--exit-after").and_then(|i| v.get(i + 1)).and_then(|s| s.parse().ok()),
+        exit_after: v
+            .iter()
+            .position(|a| a == "--exit-after")
+            .and_then(|i| v.get(i + 1))
+            .and_then(|s| s.parse().ok()),
     }
 }
 
@@ -121,7 +135,10 @@ fn main() {
         single_instance::Role::Primary(m, e) => (m, e),
     };
     let _keep = mutex;
-    log::line("start", &format!("hide={} demo={}", args.hide_taskbar, args.demo_surface));
+    log::line(
+        "start",
+        &format!("hide={} demo={}", args.hide_taskbar, args.demo_surface),
+    );
 
     taskbar::recover_leftover(&paths::marker());
 
@@ -135,7 +152,10 @@ fn main() {
     let _exit = ExitGuard;
 
     unsafe {
-        let _ = windows::Win32::System::Com::CoInitializeEx(None, windows::Win32::System::Com::COINIT_APARTMENTTHREADED);
+        let _ = windows::Win32::System::Com::CoInitializeEx(
+            None,
+            windows::Win32::System::Com::COINIT_APARTMENTTHREADED,
+        );
     }
 
     prefs::init();
@@ -148,7 +168,9 @@ fn main() {
         }
     };
 
-    let Ok(main_hwnd) = mainwin::create() else { return };
+    let Ok(main_hwnd) = mainwin::create() else {
+        return;
+    };
     single_instance::listen(event, main_hwnd);
     mainwin::add_tray(main_hwnd);
     if let Some(s) = args.exit_after {
@@ -156,11 +178,15 @@ fn main() {
     }
 
     if !args.no_dock {
-        let created = dock::Dock::create(&host, main_hwnd, dock::Options {
-            appbar: args.appbar || (args.dock_mode.is_none() && pref.dock.reserves()),
-            mode: args.dock_mode.unwrap_or(pref.dock.mode()),
-            glass: args.glass,
-        });
+        let created = dock::Dock::create(
+            &host,
+            main_hwnd,
+            dock::Options {
+                appbar: args.appbar || (args.dock_mode.is_none() && pref.dock.reserves()),
+                mode: args.dock_mode.unwrap_or(pref.dock.mode()),
+                glass: args.glass,
+            },
+        );
         match created {
             Ok(h) => dock::cli_commands(h, args.add_app.clone(), args.set_icon.clone()),
             Err(e) => log::line("dock", &format!("gagal dibuat: {e}")),
@@ -168,11 +194,14 @@ fn main() {
     }
 
     if !args.no_island {
-        if let Err(e) = notch::Notch::create(&host, notch::Options {
+        if let Err(e) = notch::Notch::create(
+            &host,
+            notch::Options {
                 glass: args.glass,
                 mode: args.island_mode.unwrap_or(pref.notch.mode()),
                 reserve: args.island_mode.is_none() && pref.notch.reserves(),
-            }) {
+            },
+        ) {
             log::line("notch", &format!("gagal dibuat: {e}"));
         }
     }
@@ -186,7 +215,8 @@ fn main() {
     if let Err(e) = launchpad::init(&host.compositor) {
         log::line("launchpad", &format!("gagal: {e}"));
     }
-    if nacre_platform::cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag")) {
+    if nacre_platform::cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag"))
+    {
         log::line("cursor", "kursor sistem dipulihkan");
     }
     if let Err(e) = macshortcuts::init() {
@@ -227,16 +257,29 @@ fn main() {
         widgets::open_gallery();
     }
     services::init();
-    let _hud = if args.no_hud { None } else { hud::Hud::create(&host, args.glass).ok() };
+    let _hud = if args.no_hud {
+        None
+    } else {
+        hud::Hud::create(&host, args.glass).ok()
+    };
 
-    let _demo = if args.demo_surface { demo_surface(&host).ok() } else { None };
+    let _demo = if args.demo_surface {
+        demo_surface(&host).ok()
+    } else {
+        None
+    };
 
-    mainwin::TAKEOVER_ALLOWED.store(!args.no_dock && !args.keep_taskbar, std::sync::atomic::Ordering::Relaxed);
+    mainwin::TAKEOVER_ALLOWED.store(
+        !args.no_dock && !args.keep_taskbar,
+        std::sync::atomic::Ordering::Relaxed,
+    );
     prefs::listen(main_hwnd);
     if pref.autostart {
         mainwin::apply_autostart();
     }
-    if args.hide_taskbar || (pref.takeover && pref.dock_enabled && !args.no_dock && !args.keep_taskbar) {
+    if args.hide_taskbar
+        || (pref.takeover && pref.dock_enabled && !args.no_dock && !args.keep_taskbar)
+    {
         mainwin::set_taskbar_hidden(true);
     }
 
@@ -253,7 +296,10 @@ fn main() {
     macshortcuts::shutdown();
     release_all("exit");
     unsafe {
-        let _ = windows::Win32::System::Threading::TerminateProcess(windows::Win32::System::Threading::GetCurrentProcess(), 0);
+        let _ = windows::Win32::System::Threading::TerminateProcess(
+            windows::Win32::System::Threading::GetCurrentProcess(),
+            0,
+        );
     }
     std::process::exit(0);
 }
@@ -262,10 +308,20 @@ fn demo_surface(host: &nacre_ui::host::Host) -> windows::core::Result<nacre_ui::
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
         let class = w!("NacreDemo");
-        unsafe extern "system" fn dp(h: windows::Win32::Foundation::HWND, m: u32, w: windows::Win32::Foundation::WPARAM, l: windows::Win32::Foundation::LPARAM) -> windows::Win32::Foundation::LRESULT {
+        unsafe extern "system" fn dp(
+            h: windows::Win32::Foundation::HWND,
+            m: u32,
+            w: windows::Win32::Foundation::WPARAM,
+            l: windows::Win32::Foundation::LPARAM,
+        ) -> windows::Win32::Foundation::LRESULT {
             DefWindowProcW(h, m, w, l)
         }
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(dp), hInstance: hi, lpszClassName: class, ..Default::default() });
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(dp),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
         let (sw, sh) = (GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
         let (w_, h_) = (520, 72);
         let hwnd = CreateWindowExW(
@@ -273,8 +329,14 @@ fn demo_surface(host: &nacre_ui::host::Host) -> windows::core::Result<nacre_ui::
             class,
             w!("nacre-demo"),
             WS_POPUP | WS_VISIBLE,
-            sw / 2 - w_ / 2, sh - 12 - h_, w_, h_,
-            None, None, Some(hi), None,
+            sw / 2 - w_ / 2,
+            sh - 12 - h_,
+            w_,
+            h_,
+            None,
+            None,
+            Some(hi),
+            None,
         )?;
         let surface = host.attach(hwnd, (w_ as f32, h_ as f32))?;
         nacre_ui::glass::add_panel(

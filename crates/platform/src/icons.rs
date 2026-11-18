@@ -2,11 +2,14 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use windows::core::HSTRING;
 use windows::Win32::Foundation::SIZE;
 use windows::Win32::Graphics::Gdi::{
-    DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
-    DIB_RGB_COLORS, HGDIOBJ,
+    DeleteObject, GetDC, GetDIBits, GetObjectW, ReleaseDC, BITMAP, BITMAPINFO, BITMAPINFOHEADER,
+    BI_RGB, DIB_RGB_COLORS, HGDIOBJ,
 };
 use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_MULTITHREADED};
-use windows::Win32::UI::Shell::{IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF_BIGGERSIZEOK, SIIGBF_ICONONLY, SIIGBF_RESIZETOFIT};
+use windows::Win32::UI::Shell::{
+    IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF_BIGGERSIZEOK, SIIGBF_ICONONLY,
+    SIIGBF_RESIZETOFIT,
+};
 
 #[derive(Clone)]
 pub struct Bitmap {
@@ -20,7 +23,10 @@ pub fn fit(b: Bitmap, px: u32) -> Bitmap {
         return b;
     }
     let k = (px as f32 / b.w.max(b.h) as f32).min(1.0);
-    let (ow, oh) = (((b.w as f32 * k).round() as u32).max(1), ((b.h as f32 * k).round() as u32).max(1));
+    let (ow, oh) = (
+        ((b.w as f32 * k).round() as u32).max(1),
+        ((b.h as f32 * k).round() as u32).max(1),
+    );
     let (sx, sy) = (b.w as f32 / ow as f32, b.h as f32 / oh as f32);
     let mut out = vec![0u8; (ow * oh * 4) as usize];
     for y in 0..oh {
@@ -51,10 +57,15 @@ pub fn fit(b: Bitmap, px: u32) -> Bitmap {
             }
         }
     }
-    Bitmap { w: ow, h: oh, bgra: out }
+    Bitmap {
+        w: ow,
+        h: oh,
+        bgra: out,
+    }
 }
 
-static OVERRIDES: std::sync::Mutex<Option<std::collections::HashMap<String, String>>> = std::sync::Mutex::new(None);
+static OVERRIDES: std::sync::Mutex<Option<std::collections::HashMap<String, String>>> =
+    std::sync::Mutex::new(None);
 
 fn key(path: &str) -> String {
     path.replace('/', "\\").to_lowercase()
@@ -74,7 +85,11 @@ pub fn set_override(path: &str, image: Option<String>) {
 }
 
 pub fn override_for(path: &str) -> Option<String> {
-    OVERRIDES.lock().unwrap().as_ref().and_then(|m| m.get(&key(path)).cloned())
+    OVERRIDES
+        .lock()
+        .unwrap()
+        .as_ref()
+        .and_then(|m| m.get(&key(path)).cloned())
 }
 
 pub fn is_themed(path: &str) -> bool {
@@ -97,10 +112,20 @@ pub fn load(path: &str, px: i32) -> Option<Bitmap> {
 
 pub fn thumbnail(path: &str, px: i32) -> Option<Bitmap> {
     unsafe {
-        let factory: IShellItemImageFactory = SHCreateItemFromParsingName(&HSTRING::from(path), None).ok()?;
-        let hbmp = factory.GetImage(SIZE { cx: px, cy: px }, SIIGBF_RESIZETOFIT | SIIGBF_BIGGERSIZEOK).ok()?;
+        let factory: IShellItemImageFactory =
+            SHCreateItemFromParsingName(&HSTRING::from(path), None).ok()?;
+        let hbmp = factory
+            .GetImage(
+                SIZE { cx: px, cy: px },
+                SIIGBF_RESIZETOFIT | SIIGBF_BIGGERSIZEOK,
+            )
+            .ok()?;
         let mut bm = BITMAP::default();
-        let got = GetObjectW(HGDIOBJ(hbmp.0), std::mem::size_of::<BITMAP>() as i32, Some(&mut bm as *mut _ as *mut _));
+        let got = GetObjectW(
+            HGDIOBJ(hbmp.0),
+            std::mem::size_of::<BITMAP>() as i32,
+            Some(&mut bm as *mut _ as *mut _),
+        );
         if got == 0 || bm.bmWidth <= 0 || bm.bmHeight <= 0 {
             let _ = DeleteObject(HGDIOBJ(hbmp.0));
             return None;
@@ -120,7 +145,15 @@ pub fn thumbnail(path: &str, px: i32) -> Option<Bitmap> {
         };
         let mut buf = vec![0u8; (w * h * 4) as usize];
         let dc = GetDC(None);
-        let lines = GetDIBits(dc, hbmp, 0, h, Some(buf.as_mut_ptr() as *mut _), &mut info, DIB_RGB_COLORS);
+        let lines = GetDIBits(
+            dc,
+            hbmp,
+            0,
+            h,
+            Some(buf.as_mut_ptr() as *mut _),
+            &mut info,
+            DIB_RGB_COLORS,
+        );
         ReleaseDC(None, dc);
         let _ = DeleteObject(HGDIOBJ(hbmp.0));
         if lines == 0 {
@@ -138,12 +171,22 @@ pub fn thumbnail(path: &str, px: i32) -> Option<Bitmap> {
 fn load_shell(path: &str, px: i32) -> Option<Bitmap> {
     let path = path.split('?').next().unwrap_or(path);
     unsafe {
-        let factory: IShellItemImageFactory = SHCreateItemFromParsingName(&HSTRING::from(path), None).ok()?;
+        let factory: IShellItemImageFactory =
+            SHCreateItemFromParsingName(&HSTRING::from(path), None).ok()?;
         let req = (px * 2).clamp(128, 256);
-        let hbmp = factory.GetImage(SIZE { cx: req, cy: req }, SIIGBF_ICONONLY | SIIGBF_BIGGERSIZEOK).ok()?;
+        let hbmp = factory
+            .GetImage(
+                SIZE { cx: req, cy: req },
+                SIIGBF_ICONONLY | SIIGBF_BIGGERSIZEOK,
+            )
+            .ok()?;
 
         let mut bm = BITMAP::default();
-        let got = GetObjectW(HGDIOBJ(hbmp.0), std::mem::size_of::<BITMAP>() as i32, Some(&mut bm as *mut _ as *mut _));
+        let got = GetObjectW(
+            HGDIOBJ(hbmp.0),
+            std::mem::size_of::<BITMAP>() as i32,
+            Some(&mut bm as *mut _ as *mut _),
+        );
         if got == 0 || bm.bmWidth <= 0 || bm.bmHeight <= 0 {
             let _ = DeleteObject(HGDIOBJ(hbmp.0));
             return None;
@@ -163,7 +206,15 @@ fn load_shell(path: &str, px: i32) -> Option<Bitmap> {
         };
         let mut buf = vec![0u8; (w * h * 4) as usize];
         let dc = GetDC(None);
-        let lines = GetDIBits(dc, hbmp, 0, h, Some(buf.as_mut_ptr() as *mut _), &mut info, DIB_RGB_COLORS);
+        let lines = GetDIBits(
+            dc,
+            hbmp,
+            0,
+            h,
+            Some(buf.as_mut_ptr() as *mut _),
+            &mut info,
+            DIB_RGB_COLORS,
+        );
         ReleaseDC(None, dc);
         let _ = DeleteObject(HGDIOBJ(hbmp.0));
         if lines == 0 {
@@ -194,5 +245,8 @@ pub fn spawn_worker(px: i32, notify: impl Fn() + Send + 'static) -> Worker {
             unsafe { CoUninitialize() };
         }
     });
-    Worker { requests: req_tx, results: res_rx }
+    Worker {
+        requests: req_tx,
+        results: res_rx,
+    }
 }

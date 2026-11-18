@@ -19,7 +19,15 @@ pub fn ssid() -> Option<String> {
                 }
                 let mut size = 0u32;
                 let mut data: *mut std::ffi::c_void = std::ptr::null_mut();
-                let rc = WlanQueryInterface(h, &info.InterfaceGuid, wlan_intf_opcode_current_connection, None, &mut size, &mut data, None);
+                let rc = WlanQueryInterface(
+                    h,
+                    &info.InterfaceGuid,
+                    wlan_intf_opcode_current_connection,
+                    None,
+                    &mut size,
+                    &mut data,
+                    None,
+                );
                 if rc == 0 && !data.is_null() {
                     let attrs = &*(data as *const WLAN_CONNECTION_ATTRIBUTES);
                     let s = &attrs.wlanAssociationAttributes.dot11Ssid;
@@ -82,7 +90,10 @@ fn interfaces_state(h: HANDLE) -> Vec<(windows::core::GUID, bool)> {
             let l = &*list;
             for i in 0..l.dwNumberOfItems as usize {
                 let info = &*l.InterfaceInfo.as_ptr().add(i);
-                out.push((info.InterfaceGuid, info.isState == wlan_interface_state_connected));
+                out.push((
+                    info.InterfaceGuid,
+                    info.isState == wlan_interface_state_connected,
+                ));
             }
             WlanFreeMemory(list as *const _);
         }
@@ -93,7 +104,11 @@ fn interfaces_state(h: HANDLE) -> Vec<(windows::core::GUID, bool)> {
 fn read(h: HANDLE) -> Scan {
     let state = interfaces_state(h);
     let guids: Vec<_> = state.iter().map(|(g, _)| *g).collect();
-    let mut scan = Scan { adapter: !guids.is_empty(), connected: state.iter().any(|(_, c)| *c), ..Default::default() };
+    let mut scan = Scan {
+        adapter: !guids.is_empty(),
+        connected: state.iter().any(|(_, c)| *c),
+        ..Default::default()
+    };
     let mut raw = Vec::new();
     for g in &guids {
         unsafe {
@@ -115,7 +130,9 @@ fn read(h: HANDLE) -> Scan {
                     signal: n.wlanSignalQuality.min(100) as u8,
                     secured: n.bSecurityEnabled.as_bool(),
                     connected: n.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED != 0,
-                    profile: (n.dwFlags & WLAN_AVAILABLE_NETWORK_HAS_PROFILE != 0 && !profile.is_empty()).then_some(profile),
+                    profile: (n.dwFlags & WLAN_AVAILABLE_NETWORK_HAS_PROFILE != 0
+                        && !profile.is_empty())
+                    .then_some(profile),
                 });
             }
             WlanFreeMemory(list as *const _);
@@ -127,42 +144,112 @@ fn read(h: HANDLE) -> Scan {
         let sig = live.as_ref().map(|l| l.1 * 20).unwrap_or(0);
         raw = saved_profiles()
             .into_iter()
-            .map(|p| Network { connected: cur.as_deref() == Some(p.as_str()), signal: if cur.as_deref() == Some(p.as_str()) { sig } else { 0 }, ssid: p.clone(), secured: true, profile: Some(p) })
+            .map(|p| Network {
+                connected: cur.as_deref() == Some(p.as_str()),
+                signal: if cur.as_deref() == Some(p.as_str()) {
+                    sig
+                } else {
+                    0
+                },
+                ssid: p.clone(),
+                secured: true,
+                profile: Some(p),
+            })
             .collect();
     }
     scan.networks = merge(raw);
     if let Some((name, bars)) = &live {
-        if let Some(n) = scan.networks.iter_mut().find(|n| n.connected || n.ssid == *name) {
+        if let Some(n) = scan
+            .networks
+            .iter_mut()
+            .find(|n| n.connected || n.ssid == *name)
+        {
             n.connected = true;
             n.signal = n.signal.max(bars * 20);
         }
     }
-    scan.current = scan.networks.iter().find(|n| n.connected).map(|n| n.ssid.clone()).or_else(|| live.map(|l| l.0)).or_else(ssid);
+    scan.current = scan
+        .networks
+        .iter()
+        .find(|n| n.connected)
+        .map(|n| n.ssid.clone())
+        .or_else(|| live.map(|l| l.0))
+        .or_else(ssid);
     scan
 }
 
 fn connect(h: HANDLE, n: &Network) {
-    let Some(g) = interfaces(h).into_iter().next() else { return };
+    let Some(g) = interfaces(h).into_iter().next() else {
+        return;
+    };
     let bytes = n.ssid.as_bytes();
-    let mut dot = DOT11_SSID { uSSIDLength: bytes.len().min(32) as u32, ucSSID: [0; 32] };
+    let mut dot = DOT11_SSID {
+        uSSIDLength: bytes.len().min(32) as u32,
+        ucSSID: [0; 32],
+    };
     dot.ucSSID[..bytes.len().min(32)].copy_from_slice(&bytes[..bytes.len().min(32)]);
-    let prof: Vec<u16> = n.profile.clone().unwrap_or_default().encode_utf16().chain(std::iter::once(0)).collect();
+    let prof: Vec<u16> = n
+        .profile
+        .clone()
+        .unwrap_or_default()
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
     let params = WLAN_CONNECTION_PARAMETERS {
-        wlanConnectionMode: if n.profile.is_some() { wlan_connection_mode_profile } else { wlan_connection_mode_discovery_unsecure },
-        strProfile: if n.profile.is_some() { windows::core::PCWSTR(prof.as_ptr()) } else { windows::core::PCWSTR::null() },
-        pDot11Ssid: if n.profile.is_some() { std::ptr::null_mut() } else { &mut dot },
+        wlanConnectionMode: if n.profile.is_some() {
+            wlan_connection_mode_profile
+        } else {
+            wlan_connection_mode_discovery_unsecure
+        },
+        strProfile: if n.profile.is_some() {
+            windows::core::PCWSTR(prof.as_ptr())
+        } else {
+            windows::core::PCWSTR::null()
+        },
+        pDot11Ssid: if n.profile.is_some() {
+            std::ptr::null_mut()
+        } else {
+            &mut dot
+        },
         pDesiredBssidList: std::ptr::null_mut(),
         dot11BssType: dot11_BSS_type_infrastructure,
         dwFlags: 0,
     };
     let rc = unsafe { WlanConnect(h, &g, &params, None) };
-    crate::log::line("wifi", &format!("sambung ({}): {rc}", if n.profile.is_some() { "profil" } else { "terbuka" }));
+    crate::log::line(
+        "wifi",
+        &format!(
+            "sambung ({}): {rc}",
+            if n.profile.is_some() {
+                "profil"
+            } else {
+                "terbuka"
+            }
+        ),
+    );
 }
 
 fn fake() -> Scan {
-    let n = |s: &str, sig: u8, sec: bool, con: bool, known: bool| Network { ssid: s.into(), signal: sig, secured: sec, connected: con, profile: known.then(|| s.to_string()) };
-    let networks = merge(vec![n("Jaringan Uji", 90, true, true, true), n("Kantor Uji", 55, true, false, true), n("Kafe Uji", 70, false, false, false), n("Tetangga Uji", 25, true, false, false)]);
-    Scan { networks, denied: false, adapter: true, current: Some("Jaringan Uji".into()), connected: true }
+    let n = |s: &str, sig: u8, sec: bool, con: bool, known: bool| Network {
+        ssid: s.into(),
+        signal: sig,
+        secured: sec,
+        connected: con,
+        profile: known.then(|| s.to_string()),
+    };
+    let networks = merge(vec![
+        n("Jaringan Uji", 90, true, true, true),
+        n("Kantor Uji", 55, true, false, true),
+        n("Kafe Uji", 70, false, false, false),
+        n("Tetangga Uji", 25, true, false, false),
+    ]);
+    Scan {
+        networks,
+        denied: false,
+        adapter: true,
+        current: Some("Jaringan Uji".into()),
+        connected: true,
+    }
 }
 
 pub fn spawn(notify: impl Fn() + Send + 'static) -> Scanner {
@@ -210,7 +297,10 @@ pub fn spawn(notify: impl Fn() + Send + 'static) -> Scanner {
             }
         }
     });
-    Scanner { commands: cmd_tx, results: res_rx }
+    Scanner {
+        commands: cmd_tx,
+        results: res_rx,
+    }
 }
 
 pub fn link() -> Option<(String, u8)> {
@@ -219,7 +309,11 @@ pub fn link() -> Option<(String, u8)> {
     if !p.IsWlanConnectionProfile().ok()? {
         return None;
     }
-    let bars = p.GetSignalBars().ok().and_then(|r| r.Value().ok()).unwrap_or(0);
+    let bars = p
+        .GetSignalBars()
+        .ok()
+        .and_then(|r| r.Value().ok())
+        .unwrap_or(0);
     let name = p.ProfileName().map(|h| h.to_string()).unwrap_or_default();
     Some((name, bars.min(5)))
 }

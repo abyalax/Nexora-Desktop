@@ -1,10 +1,14 @@
 use windows::core::w;
 use windows::Win32::Foundation::HWND;
-use windows::Win32::UI::WindowsAndMessaging::{FindWindowExW, FindWindowW, ShowWindow, SW_HIDE, SW_SHOWNA};
+use windows::Win32::UI::WindowsAndMessaging::{
+    FindWindowExW, FindWindowW, ShowWindow, SW_HIDE, SW_SHOWNA,
+};
 
 fn list_view() -> Option<HWND> {
     unsafe {
-        let mut view = FindWindowW(w!("Progman"), None).ok().and_then(|p| FindWindowExW(Some(p), None, w!("SHELLDLL_DefView"), None).ok());
+        let mut view = FindWindowW(w!("Progman"), None)
+            .ok()
+            .and_then(|p| FindWindowExW(Some(p), None, w!("SHELLDLL_DefView"), None).ok());
         if view.is_none() {
             let mut prev: Option<HWND> = None;
             while let Ok(wk) = FindWindowExW(None, prev, w!("WorkerW"), None) {

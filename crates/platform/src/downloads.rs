@@ -8,12 +8,20 @@ pub fn folder() -> Option<PathBuf> {
 
 fn skip(name: &str) -> bool {
     let l = name.to_lowercase();
-    name.starts_with('.') || l == "desktop.ini" || [".crdownload", ".part", ".tmp", ".download", ".partial"].iter().any(|e| l.ends_with(e))
+    name.starts_with('.')
+        || l == "desktop.ini"
+        || [".crdownload", ".part", ".tmp", ".download", ".partial"]
+            .iter()
+            .any(|e| l.ends_with(e))
 }
 
 pub fn latest(n: usize) -> Vec<(String, String)> {
-    let Some(dir) = folder() else { return Vec::new() };
-    let Ok(rd) = std::fs::read_dir(&dir) else { return Vec::new() };
+    let Some(dir) = folder() else {
+        return Vec::new();
+    };
+    let Ok(rd) = std::fs::read_dir(&dir) else {
+        return Vec::new();
+    };
     let mut v: Vec<(SystemTime, String, String)> = Vec::new();
     for e in rd.flatten().take(3000) {
         let name = e.file_name().to_string_lossy().to_string();

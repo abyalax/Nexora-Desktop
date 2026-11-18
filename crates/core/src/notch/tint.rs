@@ -28,7 +28,12 @@ pub fn from_art(bgra: &[u8], w: u32, h: u32) -> Option<[u8; 3]> {
     for y in (0..h as usize).step_by(step) {
         for x in (0..w as usize).step_by(step) {
             let i = (y * w as usize + x) * 4;
-            let (b, g, r, a) = (bgra[i] as f32, bgra[i + 1] as f32, bgra[i + 2] as f32, bgra[i + 3] as f32);
+            let (b, g, r, a) = (
+                bgra[i] as f32,
+                bgra[i + 1] as f32,
+                bgra[i + 2] as f32,
+                bgra[i + 3] as f32,
+            );
             if a < 128.0 {
                 continue;
             }
@@ -45,14 +50,22 @@ pub fn from_art(bgra: &[u8], w: u32, h: u32) -> Option<[u8; 3]> {
             sum[k][2] += b * wgt;
         }
     }
-    let (k, best) = weight.iter().copied().enumerate().max_by(|a, b| a.1.total_cmp(&b.1))?;
+    let (k, best) = weight
+        .iter()
+        .copied()
+        .enumerate()
+        .max_by(|a, b| a.1.total_cmp(&b.1))?;
     if total == 0.0 || best / total < 0.04 {
         return None;
     }
     let c = [sum[k][0] / best, sum[k][1] / best, sum[k][2] / best];
     let max = c[0].max(c[1]).max(c[2]).max(1.0);
     let f = 235.0 / max;
-    Some([(c[0] * f).round().min(255.0) as u8, (c[1] * f).round().min(255.0) as u8, (c[2] * f).round().min(255.0) as u8])
+    Some([
+        (c[0] * f).round().min(255.0) as u8,
+        (c[1] * f).round().min(255.0) as u8,
+        (c[2] * f).round().min(255.0) as u8,
+    ])
 }
 
 #[cfg(test)]
@@ -76,15 +89,35 @@ mod tests {
         let c = from_art(&red, 64, 64).unwrap();
         assert_eq!(c[0], 235);
         assert!(c[1] < 60 && c[2] < 60);
-        let mixed = img(64, 64, |x, y| if x < 8 && y < 8 { [255, 140, 0] } else { [20, 40, 160] });
+        let mixed = img(64, 64, |x, y| {
+            if x < 8 && y < 8 {
+                [255, 140, 0]
+            } else {
+                [20, 40, 160]
+            }
+        });
         let c = from_art(&mixed, 64, 64).unwrap();
         assert!(c[2] > c[0] && c[2] == 235);
     }
 
     #[test]
     fn grey_or_dark_art_has_no_colour() {
-        assert_eq!(from_art(&img(32, 32, |x, _| { let v = (x * 8) as u8; [v, v, v] }), 32, 32), None);
-        assert_eq!(from_art(&img(32, 32, |_, _| [10, 5, 30]), 32, 32), None, "terlalu gelap");
+        assert_eq!(
+            from_art(
+                &img(32, 32, |x, _| {
+                    let v = (x * 8) as u8;
+                    [v, v, v]
+                }),
+                32,
+                32
+            ),
+            None
+        );
+        assert_eq!(
+            from_art(&img(32, 32, |_, _| [10, 5, 30]), 32, 32),
+            None,
+            "terlalu gelap"
+        );
         assert_eq!(from_art(&[], 0, 0), None);
     }
 

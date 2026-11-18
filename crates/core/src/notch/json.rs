@@ -77,10 +77,19 @@ impl P<'_> {
     }
     fn number(&mut self) -> Option<Json> {
         let start = self.i;
-        while self.i < self.s.len() && matches!(self.s[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9') {
+        while self.i < self.s.len()
+            && matches!(
+                self.s[self.i],
+                b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9'
+            )
+        {
             self.i += 1;
         }
-        std::str::from_utf8(&self.s[start..self.i]).ok()?.parse().ok().map(Json::Num)
+        std::str::from_utf8(&self.s[start..self.i])
+            .ok()?
+            .parse()
+            .ok()
+            .map(Json::Num)
     }
     fn hex4(&mut self) -> Option<u32> {
         let h = std::str::from_utf8(self.s.get(self.i..self.i + 4)?).ok()?;
@@ -195,7 +204,11 @@ impl P<'_> {
 }
 
 pub fn parse(src: &str) -> Option<Json> {
-    let mut p = P { s: src.as_bytes(), i: 0, depth: 0 };
+    let mut p = P {
+        s: src.as_bytes(),
+        i: 0,
+        depth: 0,
+    };
     let v = p.value()?;
     p.ws();
     (p.i == p.s.len()).then_some(v)
@@ -207,9 +220,16 @@ mod tests {
 
     #[test]
     fn parses_objects_arrays_escapes_and_numbers() {
-        let j = parse(r#" { "a": [1, -2.5e1, true, null], "s": "x\"y\\z\né🎵", "o": {} } "#).unwrap();
-        assert_eq!(j.get("a").unwrap().as_arr().unwrap()[1].as_f64(), Some(-25.0));
-        assert_eq!(j.get("a").unwrap().as_arr().unwrap()[2].as_bool(), Some(true));
+        let j =
+            parse(r#" { "a": [1, -2.5e1, true, null], "s": "x\"y\\z\né🎵", "o": {} } "#).unwrap();
+        assert_eq!(
+            j.get("a").unwrap().as_arr().unwrap()[1].as_f64(),
+            Some(-25.0)
+        );
+        assert_eq!(
+            j.get("a").unwrap().as_arr().unwrap()[2].as_bool(),
+            Some(true)
+        );
         assert_eq!(j.get("s").unwrap().as_str(), Some("x\"y\\z\né🎵"));
         assert_eq!(j.get("o"), Some(&Json::Obj(vec![])));
         assert_eq!(j.get("missing"), None);

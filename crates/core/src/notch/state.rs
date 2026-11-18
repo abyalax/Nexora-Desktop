@@ -135,12 +135,21 @@ pub struct Look {
 }
 
 pub fn look(mode: Mode, act: Option<Activity>) -> Look {
-    let collapsed = |peek| Look { view: act.map_or(View::Rest, View::Compact), peek };
+    let collapsed = |peek| Look {
+        view: act.map_or(View::Rest, View::Compact),
+        peek,
+    };
     match mode {
         Mode::Rest => collapsed(false),
         Mode::Peek => collapsed(true),
-        Mode::Open(t) => Look { view: View::Open(t), peek: false },
-        Mode::Drop => Look { view: View::Drop, peek: false },
+        Mode::Open(t) => Look {
+            view: View::Open(t),
+            peek: false,
+        },
+        Mode::Drop => Look {
+            view: View::Drop,
+            peek: false,
+        },
     }
 }
 
@@ -170,7 +179,11 @@ pub fn size(l: Look, dpi: f32) -> Size {
         h += PEEK_GROW.1;
         r += PEEK_GROW.1 / 2.0;
     }
-    Size { w: w * dpi, h: h * dpi, radius: r * dpi }
+    Size {
+        w: w * dpi,
+        h: h * dpi,
+        radius: r * dpi,
+    }
 }
 
 pub fn shadow(l: Look) -> (f32, f32, f32) {
@@ -220,48 +233,191 @@ mod tests {
     fn click_mode_ignores_dwell_but_opens_on_click() {
         let m = step(Mode::Peek, Event::Dwell, OpenOn::Click, true);
         assert_eq!(m, Mode::Peek);
-        assert_eq!(step(m, Event::Click, OpenOn::Click, true), Mode::Open(Tab::Play));
+        assert_eq!(
+            step(m, Event::Click, OpenOn::Click, true),
+            Mode::Open(Tab::Play)
+        );
     }
 
     #[test]
     fn dragging_files_shows_drop_zones_and_dropping_opens_the_shelf() {
         for from in [Mode::Rest, Mode::Peek, Mode::Open(Tab::Timer)] {
-            assert_eq!(step(from, Event::DragEnter, OpenOn::Hover, false), Mode::Drop);
+            assert_eq!(
+                step(from, Event::DragEnter, OpenOn::Hover, false),
+                Mode::Drop
+            );
         }
-        assert_eq!(step(Mode::Drop, Event::Leave, OpenOn::Hover, false), Mode::Drop, "keluar biasa diabaikan selama menyeret");
-        assert_eq!(step(Mode::Drop, Event::DragLeave, OpenOn::Hover, false), Mode::Rest);
-        assert_eq!(step(Mode::Drop, Event::DragLeave, OpenOn::Hover, true), Mode::Peek);
-        assert_eq!(step(Mode::Drop, Event::Dropped, OpenOn::Hover, true), Mode::Open(Tab::Shelf));
+        assert_eq!(
+            step(Mode::Drop, Event::Leave, OpenOn::Hover, false),
+            Mode::Drop,
+            "keluar biasa diabaikan selama menyeret"
+        );
+        assert_eq!(
+            step(Mode::Drop, Event::DragLeave, OpenOn::Hover, false),
+            Mode::Rest
+        );
+        assert_eq!(
+            step(Mode::Drop, Event::DragLeave, OpenOn::Hover, true),
+            Mode::Peek
+        );
+        assert_eq!(
+            step(Mode::Drop, Event::Dropped, OpenOn::Hover, true),
+            Mode::Open(Tab::Shelf)
+        );
     }
 
     #[test]
     fn tabs_switch_only_while_open_and_escape_collapses() {
-        assert_eq!(step(Mode::Open(Tab::Play), Event::SelectTab(Tab::Shelf), OpenOn::Hover, true), Mode::Open(Tab::Shelf));
-        assert_eq!(step(Mode::Rest, Event::SelectTab(Tab::Shelf), OpenOn::Hover, false), Mode::Rest);
-        assert_eq!(step(Mode::Open(Tab::Shelf), Event::Escape, OpenOn::Hover, true), Mode::Peek);
-        assert_eq!(step(Mode::Open(Tab::Shelf), Event::Escape, OpenOn::Hover, false), Mode::Rest);
+        assert_eq!(
+            step(
+                Mode::Open(Tab::Play),
+                Event::SelectTab(Tab::Shelf),
+                OpenOn::Hover,
+                true
+            ),
+            Mode::Open(Tab::Shelf)
+        );
+        assert_eq!(
+            step(
+                Mode::Rest,
+                Event::SelectTab(Tab::Shelf),
+                OpenOn::Hover,
+                false
+            ),
+            Mode::Rest
+        );
+        assert_eq!(
+            step(Mode::Open(Tab::Shelf), Event::Escape, OpenOn::Hover, true),
+            Mode::Peek
+        );
+        assert_eq!(
+            step(Mode::Open(Tab::Shelf), Event::Escape, OpenOn::Hover, false),
+            Mode::Rest
+        );
     }
 
     #[test]
     fn activity_priority() {
-        let base = Live { media: true, playing: true, lyric_line: true, lyrics_on: true, timer_left_s: Some(30), charging_fresh: true, shelf: 2, glance: true, download: true, wide_music: false };
+        let base = Live {
+            media: true,
+            playing: true,
+            lyric_line: true,
+            lyrics_on: true,
+            timer_left_s: Some(30),
+            charging_fresh: true,
+            shelf: 2,
+            glance: true,
+            download: true,
+            wide_music: false,
+        };
         assert_eq!(activity(&base), Some(Activity::TimerEnding));
-        assert_eq!(activity(&Live { timer_left_s: Some(300), ..base }), Some(Activity::Download), "unduhan di atas lirik dan musik");
-        let l = Live { timer_left_s: Some(300), download: false, ..base };
-        assert_eq!(activity(&Live { wide_music: true, ..l }), Some(Activity::Player), "lebar menggantikan lirik/musik ringkas");
-        assert_eq!(activity(&Live { wide_music: true, playing: false, ..l }), Some(Activity::Player), "dijeda: tetap tampil");
-        assert_eq!(activity(&Live { wide_music: true, media: false, playing: false, charging_fresh: false, timer_left_s: None, shelf: 0, glance: false, ..l }), None, "tanpa lagu: notch kosong");
-        assert_eq!(activity(&Live { wide_music: true, download: true, ..l }), Some(Activity::Download));
+        assert_eq!(
+            activity(&Live {
+                timer_left_s: Some(300),
+                ..base
+            }),
+            Some(Activity::Download),
+            "unduhan di atas lirik dan musik"
+        );
+        let l = Live {
+            timer_left_s: Some(300),
+            download: false,
+            ..base
+        };
+        assert_eq!(
+            activity(&Live {
+                wide_music: true,
+                ..l
+            }),
+            Some(Activity::Player),
+            "lebar menggantikan lirik/musik ringkas"
+        );
+        assert_eq!(
+            activity(&Live {
+                wide_music: true,
+                playing: false,
+                ..l
+            }),
+            Some(Activity::Player),
+            "dijeda: tetap tampil"
+        );
+        assert_eq!(
+            activity(&Live {
+                wide_music: true,
+                media: false,
+                playing: false,
+                charging_fresh: false,
+                timer_left_s: None,
+                shelf: 0,
+                glance: false,
+                ..l
+            }),
+            None,
+            "tanpa lagu: notch kosong"
+        );
+        assert_eq!(
+            activity(&Live {
+                wide_music: true,
+                download: true,
+                ..l
+            }),
+            Some(Activity::Download)
+        );
         assert_eq!(activity(&l), Some(Activity::Lyrics));
-        assert_eq!(activity(&Live { lyrics_on: false, ..l }), Some(Activity::Music));
-        assert_eq!(activity(&Live { playing: false, ..l }), Some(Activity::Music), "dijeda: lirik ringkas tidak tampil");
-        let no_media = Live { media: false, playing: false, ..l };
+        assert_eq!(
+            activity(&Live {
+                lyrics_on: false,
+                ..l
+            }),
+            Some(Activity::Music)
+        );
+        assert_eq!(
+            activity(&Live {
+                playing: false,
+                ..l
+            }),
+            Some(Activity::Music),
+            "dijeda: lirik ringkas tidak tampil"
+        );
+        let no_media = Live {
+            media: false,
+            playing: false,
+            ..l
+        };
         assert_eq!(activity(&no_media), Some(Activity::Charging));
-        assert_eq!(activity(&Live { charging_fresh: false, ..no_media }), Some(Activity::Timer));
-        assert_eq!(activity(&Live { charging_fresh: false, timer_left_s: None, ..no_media }), Some(Activity::Shelf));
-        let idle = Live { charging_fresh: false, timer_left_s: None, shelf: 0, ..no_media };
-        assert_eq!(activity(&idle), Some(Activity::Glance), "sapaan & info hanya bila tidak ada apa-apa lagi");
-        assert_eq!(activity(&Live { glance: false, ..idle }), None);
+        assert_eq!(
+            activity(&Live {
+                charging_fresh: false,
+                ..no_media
+            }),
+            Some(Activity::Timer)
+        );
+        assert_eq!(
+            activity(&Live {
+                charging_fresh: false,
+                timer_left_s: None,
+                ..no_media
+            }),
+            Some(Activity::Shelf)
+        );
+        let idle = Live {
+            charging_fresh: false,
+            timer_left_s: None,
+            shelf: 0,
+            ..no_media
+        };
+        assert_eq!(
+            activity(&idle),
+            Some(Activity::Glance),
+            "sapaan & info hanya bila tidak ada apa-apa lagi"
+        );
+        assert_eq!(
+            activity(&Live {
+                glance: false,
+                ..idle
+            }),
+            None
+        );
         assert_eq!(activity(&Live::default()), None);
     }
 
@@ -272,15 +428,27 @@ mod tests {
         assert_eq!((rest.w, rest.h), (184.0, 30.0));
         assert_eq!((peek.w - rest.w, peek.h - rest.h), PEEK_GROW);
         let glance = size(look(Mode::Rest, Some(Activity::Glance)), 1.0);
-        assert!(glance.w > rest.w && glance.w < 240.0 && glance.h == rest.h, "sapaan & info sedikit lebih lebar dari notch kosong");
+        assert!(
+            glance.w > rest.w && glance.w < 240.0 && glance.h == rest.h,
+            "sapaan & info sedikit lebih lebar dari notch kosong"
+        );
         let player = size(look(Mode::Rest, Some(Activity::Player)), 1.0);
-        assert!(player.w > 500.0 && player.w < 600.0 && player.h > 80.0 && player.h < 214.0, "lebar: lebih kecil dari panel terbuka");
+        assert!(
+            player.w > 500.0 && player.w < 600.0 && player.h > 80.0 && player.h < 214.0,
+            "lebar: lebih kecil dari panel terbuka"
+        );
         let dl = size(look(Mode::Rest, Some(Activity::Download)), 1.0);
-        assert!(dl.h > rest.h && dl.h <= 40.0, "unduhan sedikit lebih tinggi untuk busur + angka");
+        assert!(
+            dl.h > rest.h && dl.h <= 40.0,
+            "unduhan sedikit lebih tinggi untuk busur + angka"
+        );
         let music = size(look(Mode::Rest, Some(Activity::Music)), 1.0);
         let lyr = size(look(Mode::Rest, Some(Activity::Lyrics)), 1.0);
         assert!(music.w > rest.w && music.h == rest.h);
-        assert!(lyr.w > music.w && lyr.h >= music.h && lyr.h < 40.0, "lirik ringkas: satu baris yang lebih lebar");
+        assert!(
+            lyr.w > music.w && lyr.h >= music.h && lyr.h < 40.0,
+            "lirik ringkas: satu baris yang lebih lebar"
+        );
         let open = size(look(Mode::Open(Tab::Play), Some(Activity::Music)), 1.0);
         assert_eq!((open.w, open.h, open.radius), (600.0, 214.0, 28.0));
         for t in Tab::ALL {

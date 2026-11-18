@@ -27,9 +27,14 @@ pub fn conditions() -> Conditions {
             || v != 0
     };
     let mut ps = SYSTEM_POWER_STATUS::default();
-    let battery_saver = unsafe { GetSystemPowerStatus(&mut ps).is_ok() && ps.SystemStatusFlag & 1 != 0 };
+    let battery_saver =
+        unsafe { GetSystemPowerStatus(&mut ps).is_ok() && ps.SystemStatusFlag & 1 != 0 };
     let remote_session = unsafe { GetSystemMetrics(SM_REMOTESESSION) != 0 };
-    Conditions { transparency, battery_saver, remote_session }
+    Conditions {
+        transparency,
+        battery_saver,
+        remote_session,
+    }
 }
 
 pub fn battery() -> Option<(u8, bool)> {
@@ -38,16 +43,33 @@ pub fn battery() -> Option<(u8, bool)> {
     if ps.BatteryFlag & 128 != 0 || ps.BatteryLifePercent > 100 {
         return None;
     }
-    Some((ps.BatteryLifePercent, ps.BatteryFlag & 8 != 0 || ps.ACLineStatus == 1))
+    Some((
+        ps.BatteryLifePercent,
+        ps.BatteryFlag & 8 != 0 || ps.ACLineStatus == 1,
+    ))
 }
 
 pub fn accent_color() -> Option<[u8; 3]> {
     let mut v: u32 = 0;
     let mut size = std::mem::size_of::<u32>() as u32;
     unsafe {
-        RegGetValueW(HKEY_CURRENT_USER, w!("Software\\Microsoft\\Windows\\DWM"), w!("AccentColor"), RRF_RT_REG_DWORD, None, Some(&mut v as *mut u32 as *mut _), Some(&mut size)).ok().ok()?;
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            w!("Software\\Microsoft\\Windows\\DWM"),
+            w!("AccentColor"),
+            RRF_RT_REG_DWORD,
+            None,
+            Some(&mut v as *mut u32 as *mut _),
+            Some(&mut size),
+        )
+        .ok()
+        .ok()?;
     }
-    Some([(v & 0xFF) as u8, ((v >> 8) & 0xFF) as u8, ((v >> 16) & 0xFF) as u8])
+    Some([
+        (v & 0xFF) as u8,
+        ((v >> 8) & 0xFF) as u8,
+        ((v >> 16) & 0xFF) as u8,
+    ])
 }
 
 pub fn screen_size() -> (i32, i32) {
@@ -60,7 +82,12 @@ pub fn screen_size() -> (i32, i32) {
             }
         }
     }
-    unsafe { (GetSystemMetrics(windows::Win32::UI::WindowsAndMessaging::SM_CXSCREEN), GetSystemMetrics(windows::Win32::UI::WindowsAndMessaging::SM_CYSCREEN)) }
+    unsafe {
+        (
+            GetSystemMetrics(windows::Win32::UI::WindowsAndMessaging::SM_CXSCREEN),
+            GetSystemMetrics(windows::Win32::UI::WindowsAndMessaging::SM_CYSCREEN),
+        )
+    }
 }
 
 pub fn apps_dark() -> bool {
@@ -94,7 +121,11 @@ pub fn screen_luma(points: &[(i32, i32)]) -> Option<f32> {
             if c == 0xFFFF_FFFF {
                 continue;
             }
-            let (r, g, b) = ((c & 0xFF) as f32, ((c >> 8) & 0xFF) as f32, ((c >> 16) & 0xFF) as f32);
+            let (r, g, b) = (
+                (c & 0xFF) as f32,
+                ((c >> 8) & 0xFF) as f32,
+                ((c >> 16) & 0xFF) as f32,
+            );
             sum += (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
             n += 1;
         }
@@ -105,15 +136,29 @@ pub fn screen_luma(points: &[(i32, i32)]) -> Option<f32> {
 
 pub fn cpu_times() -> Option<(u64, u64)> {
     use windows::Win32::Foundation::FILETIME;
-    let (mut idle, mut kernel, mut user) = (FILETIME::default(), FILETIME::default(), FILETIME::default());
-    unsafe { windows::Win32::System::Threading::GetSystemTimes(Some(&mut idle), Some(&mut kernel), Some(&mut user)).ok()? };
+    let (mut idle, mut kernel, mut user) = (
+        FILETIME::default(),
+        FILETIME::default(),
+        FILETIME::default(),
+    );
+    unsafe {
+        windows::Win32::System::Threading::GetSystemTimes(
+            Some(&mut idle),
+            Some(&mut kernel),
+            Some(&mut user),
+        )
+        .ok()?
+    };
     let v = |f: FILETIME| ((f.dwHighDateTime as u64) << 32) | f.dwLowDateTime as u64;
     Some((v(idle), v(kernel) + v(user)))
 }
 
 pub fn memory_load() -> Option<u8> {
     use windows::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
-    let mut m = MEMORYSTATUSEX { dwLength: std::mem::size_of::<MEMORYSTATUSEX>() as u32, ..Default::default() };
+    let mut m = MEMORYSTATUSEX {
+        dwLength: std::mem::size_of::<MEMORYSTATUSEX>() as u32,
+        ..Default::default()
+    };
     unsafe { GlobalMemoryStatusEx(&mut m).ok()? };
     Some(m.dwMemoryLoad.min(100) as u8)
 }
@@ -122,7 +167,11 @@ pub fn utc_offset_min() -> i32 {
     use windows::Win32::System::Time::{GetTimeZoneInformation, TIME_ZONE_INFORMATION};
     let mut tz = TIME_ZONE_INFORMATION::default();
     let r = unsafe { GetTimeZoneInformation(&mut tz) };
-    let dst = if r == 2 { tz.DaylightBias } else { tz.StandardBias };
+    let dst = if r == 2 {
+        tz.DaylightBias
+    } else {
+        tz.StandardBias
+    };
     -(tz.Bias + dst)
 }
 
@@ -138,10 +187,12 @@ pub fn trim_memory() {
 pub fn trim_later(ms: u64) {
     use std::sync::atomic::Ordering;
     let gen = TRIM_GEN.fetch_add(1, Ordering::Relaxed) + 1;
-    let _ = std::thread::Builder::new().name("abra-trim".into()).spawn(move || {
-        std::thread::sleep(std::time::Duration::from_millis(ms));
-        if TRIM_GEN.load(Ordering::Relaxed) == gen {
-            trim_memory();
-        }
-    });
+    let _ = std::thread::Builder::new()
+        .name("nexora-trim".into())
+        .spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(ms));
+            if TRIM_GEN.load(Ordering::Relaxed) == gen {
+                trim_memory();
+            }
+        });
 }

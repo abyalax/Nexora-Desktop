@@ -7,10 +7,10 @@ use nacre_ui::gfx::Gfx;
 use nacre_ui::glass::Tier;
 use std::cell::RefCell;
 use windows::core::w;
-use windows::UI::Composition::Compositor;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Composition::Compositor;
 
 const WM_WIFI: u32 = WM_APP + 140;
 const WM_BT: u32 = WM_APP + 141;
@@ -29,7 +29,11 @@ pub enum Anchor {
     Corner(i32, i32),
 }
 
-const CARD: Card = Card { radius: 28.0, pad: 10.0, min_w: 300.0 };
+const CARD: Card = Card {
+    radius: 28.0,
+    pad: 10.0,
+    min_w: 300.0,
+};
 
 const ID_TOGGLE: usize = 1;
 const ID_OTHERS: usize = 2;
@@ -77,11 +81,31 @@ fn ensure(comp: &Compositor) -> bool {
         return true;
     }
     let hwnd = unsafe {
-        let Ok(hi) = GetModuleHandleW(None) else { return false };
+        let Ok(hi) = GetModuleHandleW(None) else {
+            return false;
+        };
         let hi: HINSTANCE = hi.into();
-        let class = w!("AbraNetMenu");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        match CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-netmenu"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None) {
+        let class = w!("NexoraNetMenu");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        match CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-netmenu"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        ) {
             Ok(h) => h,
             Err(_) => return false,
         }
@@ -132,7 +156,9 @@ pub fn show(comp: &Compositor, which: Which, anchor: Anchor, dpi: f32) {
         }
         match which {
             Which::Wifi => {
-                let s = n.scanner.get_or_insert_with(|| wifi::spawn(post(h, WM_WIFI)));
+                let s = n
+                    .scanner
+                    .get_or_insert_with(|| wifi::spawn(post(h, WM_WIFI)));
                 let _ = s.commands.send(wifi::Cmd::Scan);
                 unsafe {
                     SetTimer(Some(n.hwnd), T_LIVE, 2000, None);
@@ -156,7 +182,10 @@ pub fn test_click_audio() {
         return;
     }
     with(|n| {
-        let i = n.devices.as_ref().and_then(|d| d.iter().position(|x| x.audio));
+        let i = n
+            .devices
+            .as_ref()
+            .and_then(|d| d.iter().position(|x| x.audio));
         if let Some(i) = i {
             n.pick(ID_DEV0 + i);
         }
@@ -198,7 +227,9 @@ impl Net {
             }
             return;
         }
-        let Some(scan) = self.scan.as_mut() else { return };
+        let Some(scan) = self.scan.as_mut() else {
+            return;
+        };
         let link = wifi::link();
         let mut changed = false;
         for n in scan.networks.iter_mut() {
@@ -225,10 +256,19 @@ impl Net {
         if on != Some(false) {
             match &self.scan {
                 None => v.push(Item::heading(prefs::tr("Mencari jaringan…"))),
-                Some(s) if !s.adapter => v.push(Item::heading(prefs::tr("Tidak ada adaptor Wi-Fi"))),
+                Some(s) if !s.adapter => {
+                    v.push(Item::heading(prefs::tr("Tidak ada adaptor Wi-Fi")))
+                }
                 Some(s) if s.denied => {
                     let row = |i: usize, n: &nacre_core::netlist::Network| {
-                        let it = Item::action(ID_NET0 + i, &n.ssid, true).with_lead(if n.connected { signal_sym(n.signal) } else { Sym::Wifi }, n.connected);
+                        let it = Item::action(ID_NET0 + i, &n.ssid, true).with_lead(
+                            if n.connected {
+                                signal_sym(n.signal)
+                            } else {
+                                Sym::Wifi
+                            },
+                            n.connected,
+                        );
                         if n.connected && bars(n.signal) <= 1 {
                             it.with_accel(prefs::tr("Sinyal lemah"))
                         } else {
@@ -237,40 +277,86 @@ impl Net {
                     };
                     if s.networks.is_empty() {
                         if s.current.is_some() || s.connected {
-                            let label = s.current.clone().unwrap_or_else(|| prefs::tr("Tersambung").to_string());
+                            let label = s
+                                .current
+                                .clone()
+                                .unwrap_or_else(|| prefs::tr("Tersambung").to_string());
                             v.push(Item::heading(prefs::tr("Jaringan Dikenal")));
-                            v.push(Item::action(ID_CURRENT, &label, true).with_lead(Sym::Wifi, true));
+                            v.push(
+                                Item::action(ID_CURRENT, &label, true).with_lead(Sym::Wifi, true),
+                            );
                         }
                     } else {
                         v.push(Item::heading(prefs::tr("Jaringan Tersimpan")));
                         let limit = if self.others { 20 } else { 6 };
-                        v.extend(s.networks.iter().enumerate().take(limit).map(|(i, n)| row(i, n)));
+                        v.extend(
+                            s.networks
+                                .iter()
+                                .enumerate()
+                                .take(limit)
+                                .map(|(i, n)| row(i, n)),
+                        );
                         if s.networks.len() > 6 {
-                            let label = if self.others { prefs::tr("Lebih sedikit") } else { prefs::tr("Jaringan tersimpan lainnya") };
-                            v.push(Item::action(ID_OTHERS, label, true).with_trail(vec![if self.others { Sym::ChevronDown } else { Sym::ChevronRight }]).keep_open());
+                            let label = if self.others {
+                                prefs::tr("Lebih sedikit")
+                            } else {
+                                prefs::tr("Jaringan tersimpan lainnya")
+                            };
+                            v.push(
+                                Item::action(ID_OTHERS, label, true)
+                                    .with_trail(vec![if self.others {
+                                        Sym::ChevronDown
+                                    } else {
+                                        Sym::ChevronRight
+                                    }])
+                                    .keep_open(),
+                            );
                         }
                     }
-                    v.push(Item::heading(prefs::tr("Jaringan sekitar perlu izin Lokasi Windows")));
-                    v.push(Item::heading(prefs::tr("ABRA tidak membaca atau menyimpan lokasimu")));
-                    v.push(Item::action(ID_LOCATION, prefs::tr("Izinkan di Pengaturan Lokasi\u{2026}"), true));
+                    v.push(Item::heading(prefs::tr(
+                        "Jaringan sekitar perlu izin Lokasi Windows",
+                    )));
+                    v.push(Item::heading(prefs::tr(
+                        "NEXORA tidak membaca atau menyimpan lokasimu",
+                    )));
+                    v.push(Item::action(
+                        ID_LOCATION,
+                        prefs::tr("Izinkan di Pengaturan Lokasi\u{2026}"),
+                        true,
+                    ));
                 }
                 Some(s) => {
                     let row = |i: usize, n: &nacre_core::netlist::Network| {
-                        let it = Item::action(ID_NET0 + i, &n.ssid, true).with_lead(signal_sym(n.signal), n.connected).with_trail(if n.secured { vec![Sym::Lock] } else { vec![] });
+                        let it = Item::action(ID_NET0 + i, &n.ssid, true)
+                            .with_lead(signal_sym(n.signal), n.connected)
+                            .with_trail(if n.secured { vec![Sym::Lock] } else { vec![] });
                         if n.connected && bars(n.signal) <= 1 {
                             it.with_accel(prefs::tr("Sinyal lemah"))
                         } else {
                             it
                         }
                     };
-                    let known: Vec<usize> = (0..s.networks.len()).filter(|i| s.networks[*i].known() || s.networks[*i].connected).collect();
+                    let known: Vec<usize> = (0..s.networks.len())
+                        .filter(|i| s.networks[*i].known() || s.networks[*i].connected)
+                        .collect();
                     if !known.is_empty() {
                         v.push(Item::heading(prefs::tr("Jaringan Dikenal")));
                         v.extend(known.iter().map(|i| row(*i, &s.networks[*i])));
                     }
-                    v.push(Item::action(ID_OTHERS, prefs::tr("Jaringan Lain"), true).with_trail(vec![if self.others { Sym::ChevronDown } else { Sym::ChevronRight }]).keep_open());
+                    v.push(
+                        Item::action(ID_OTHERS, prefs::tr("Jaringan Lain"), true)
+                            .with_trail(vec![if self.others {
+                                Sym::ChevronDown
+                            } else {
+                                Sym::ChevronRight
+                            }])
+                            .keep_open(),
+                    );
                     if self.others {
-                        let others: Vec<usize> = (0..s.networks.len()).filter(|i| !known.contains(i)).take(12).collect();
+                        let others: Vec<usize> = (0..s.networks.len())
+                            .filter(|i| !known.contains(i))
+                            .take(12)
+                            .collect();
                         if others.is_empty() {
                             v.push(Item::heading(prefs::tr("Tidak ada jaringan lain")));
                         }
@@ -280,7 +366,11 @@ impl Net {
             }
         }
         v.push(Item::separator());
-        v.push(Item::action(ID_SETTINGS, prefs::tr("Pengaturan Wi-Fi…"), true));
+        v.push(Item::action(
+            ID_SETTINGS,
+            prefs::tr("Pengaturan Wi-Fi…"),
+            true,
+        ));
         v
     }
 
@@ -293,9 +383,16 @@ impl Net {
                 None => v.push(Item::heading(prefs::tr("Mencari perangkat…"))),
                 Some(d) if d.is_empty() => v.push(Item::heading(prefs::tr("Tidak ada perangkat"))),
                 Some(d) => v.extend(d.iter().take(12).enumerate().map(|(i, dev)| {
-                    let it = Item::action(ID_DEV0 + i, &dev.name, true).with_lead(device_sym(dev.kind), dev.connected);
+                    let it = Item::action(ID_DEV0 + i, &dev.name, true)
+                        .with_lead(device_sym(dev.kind), dev.connected);
                     match self.pending {
-                        Some((a, want, _)) if a == dev.addr && dev.audio => it.with_accel(prefs::tr(if want { "Menyambung…" } else { "Memutus…" })).keep_open(),
+                        Some((a, want, _)) if a == dev.addr && dev.audio => it
+                            .with_accel(prefs::tr(if want {
+                                "Menyambung…"
+                            } else {
+                                "Memutus…"
+                            }))
+                            .keep_open(),
                         _ if dev.audio => it.keep_open(),
                         _ => it,
                     }
@@ -303,12 +400,18 @@ impl Net {
             }
         }
         v.push(Item::separator());
-        v.push(Item::action(ID_SETTINGS, prefs::tr("Pengaturan Bluetooth…"), true));
+        v.push(Item::action(
+            ID_SETTINGS,
+            prefs::tr("Pengaturan Bluetooth…"),
+            true,
+        ));
         v
     }
 
     fn render(&mut self) {
-        let Some((which, anchor)) = self.open else { return };
+        let Some((which, anchor)) = self.open else {
+            return;
+        };
         let items = match which {
             Which::Wifi => self.wifi_items(),
             Which::Bluetooth => self.bt_items(),
@@ -318,13 +421,21 @@ impl Net {
         }
         if self.menu.is_none() {
             let c = sys::conditions();
-            let tier = if !c.transparency || c.battery_saver || c.remote_session { Tier::Solid } else { Tier::Full };
-            self.menu = Menu::new(&self.comp, self.hwnd, self.dpi, sys::screen_size(), tier).ok().map(|mut m| {
-                m.set_card(Some(CARD));
-                m
-            });
+            let tier = if !c.transparency || c.battery_saver || c.remote_session {
+                Tier::Solid
+            } else {
+                Tier::Full
+            };
+            self.menu = Menu::new(&self.comp, self.hwnd, self.dpi, sys::screen_size(), tier)
+                .ok()
+                .map(|mut m| {
+                    m.set_card(Some(CARD));
+                    m
+                });
         }
-        let (Some(menu), Some(gfx)) = (self.menu.as_mut(), self.gfx.as_ref()) else { return };
+        let (Some(menu), Some(gfx)) = (self.menu.as_mut(), self.gfx.as_ref()) else {
+            return;
+        };
         let (x, top, right) = match anchor {
             Anchor::Below(x, top) => (x, top, false),
             Anchor::Corner(r, top) => (r, top, true),
@@ -359,7 +470,11 @@ impl Net {
                 return;
             }
             i if i >= ID_DEV0 => {
-                let dev = self.devices.as_ref().and_then(|d| d.get(i - ID_DEV0)).cloned();
+                let dev = self
+                    .devices
+                    .as_ref()
+                    .and_then(|d| d.get(i - ID_DEV0))
+                    .cloned();
                 if let Some(dev) = dev.filter(|d| d.audio && d.addr != 0) {
                     if self.pending.is_none() {
                         let want = !dev.connected;
@@ -376,11 +491,19 @@ impl Net {
         }
         self.close();
         match id {
-            ID_SETTINGS => launch::open(if which == Which::Wifi { "ms-settings:network-wifi" } else { "ms-settings:bluetooth" }),
+            ID_SETTINGS => launch::open(if which == Which::Wifi {
+                "ms-settings:network-wifi"
+            } else {
+                "ms-settings:bluetooth"
+            }),
             ID_LOCATION => launch::open("ms-settings:privacy-location"),
             ID_FLYOUT => launch::open("ms-availablenetworks:"),
             i if (ID_NET0..ID_DEV0).contains(&i) => {
-                let net = self.scan.as_ref().and_then(|s| s.networks.get(i - ID_NET0)).cloned();
+                let net = self
+                    .scan
+                    .as_ref()
+                    .and_then(|s| s.networks.get(i - ID_NET0))
+                    .cloned();
                 if let Some(n) = net.filter(|n| !n.connected) {
                     if n.known() || !n.secured {
                         if let Some(s) = &self.scanner {
@@ -433,7 +556,10 @@ unsafe extern "system" fn proc(h: HWND, m: u32, wp: WPARAM, lp: LPARAM) -> LRESU
                     }
                 }
                 if let Some((addr, want, since)) = n.pending {
-                    let done = n.devices.as_ref().is_some_and(|d| d.iter().any(|x| x.addr == addr && x.connected == want));
+                    let done = n
+                        .devices
+                        .as_ref()
+                        .is_some_and(|d| d.iter().any(|x| x.addr == addr && x.connected == want));
                     if done || since.elapsed() > std::time::Duration::from_secs(12) {
                         n.pending = None;
                     }

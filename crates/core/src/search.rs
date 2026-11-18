@@ -12,7 +12,10 @@ pub fn score(query: &str, name: &str) -> Option<u32> {
     if n_low.starts_with(&qs) {
         return Some(900 - (n.len() as u32).min(100));
     }
-    let words: Vec<&str> = n_low.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).collect();
+    let words: Vec<&str> = n_low
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .collect();
     if let Some(i) = words.iter().position(|w| w.starts_with(&qs)) {
         return Some(800 - (i as u32 * 20).min(100));
     }
@@ -39,8 +42,15 @@ pub fn score(query: &str, name: &str) -> Option<u32> {
 }
 
 pub fn rank(query: &str, names: &[String], limit: usize) -> Vec<usize> {
-    let mut v: Vec<(usize, u32)> = names.iter().enumerate().filter_map(|(i, n)| score(query, n).map(|s| (i, s))).collect();
-    v.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| names[a.0].to_lowercase().cmp(&names[b.0].to_lowercase())));
+    let mut v: Vec<(usize, u32)> = names
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| score(query, n).map(|s| (i, s)))
+        .collect();
+    v.sort_by(|a, b| {
+        b.1.cmp(&a.1)
+            .then_with(|| names[a.0].to_lowercase().cmp(&names[b.0].to_lowercase()))
+    });
     v.into_iter().take(limit).map(|(i, _)| i).collect()
 }
 
@@ -55,10 +65,16 @@ pub fn eval(expr: &str) -> Option<f64> {
             c => c,
         })
         .collect();
-    if s.is_empty() || !s.iter().any(|c| "+-*/^".contains(*c)) || !s.iter().any(|c| c.is_ascii_digit()) {
+    if s.is_empty()
+        || !s.iter().any(|c| "+-*/^".contains(*c))
+        || !s.iter().any(|c| c.is_ascii_digit())
+    {
         return None;
     }
-    if !s.iter().all(|c| c.is_ascii_digit() || "+-*/^().".contains(*c)) {
+    if !s
+        .iter()
+        .all(|c| c.is_ascii_digit() || "+-*/^().".contains(*c))
+    {
         return None;
     }
     let mut p = Parser { s: &s, i: 0 };
@@ -140,7 +156,11 @@ impl Parser<'_> {
         if start == self.i {
             return None;
         }
-        self.s[start..self.i].iter().collect::<String>().parse().ok()
+        self.s[start..self.i]
+            .iter()
+            .collect::<String>()
+            .parse()
+            .ok()
     }
 }
 
@@ -159,7 +179,10 @@ mod tests {
     #[test]
     fn ranking_priorities() {
         assert!(score("chrome", "Chrome").unwrap() > score("chr", "Chrome").unwrap());
-        assert!(score("vis", "Visual Studio Code").unwrap() > score("studio", "Visual Studio Code").unwrap());
+        assert!(
+            score("vis", "Visual Studio Code").unwrap()
+                > score("studio", "Visual Studio Code").unwrap()
+        );
         assert_eq!(score("vsc", "Visual Studio Code"), Some(700));
         assert!(score("xyz", "Chrome").is_none());
         assert!(score("cme", "Chrome").is_some(), "subsekuens");
@@ -167,7 +190,10 @@ mod tests {
 
     #[test]
     fn rank_orders_and_limits() {
-        let names: Vec<String> = ["Notepad", "Note Taker", "Calculator", "Another Note"].iter().map(|s| s.to_string()).collect();
+        let names: Vec<String> = ["Notepad", "Note Taker", "Calculator", "Another Note"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
         let r = rank("note", &names, 3);
         assert_eq!(names[r[0]], "Notepad");
         assert_eq!(r.len(), 3);

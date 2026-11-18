@@ -39,7 +39,12 @@ pub fn grid(sizes: &[(f32, f32)], area: Rect, gap: f32, label_h: f32) -> Vec<Rec
         let (sw, sh) = (sw.max(1.0), sh.max(1.0));
         let k = (cw / sw).min(ch / sh).min(1.0);
         let (w, h) = (sw * k, sh * k);
-        out.push(Rect { x: x0 + (cw - w) / 2.0, y: y0 + r as f32 * (ch + label_h + gap) + (ch - h), w, h });
+        out.push(Rect {
+            x: x0 + (cw - w) / 2.0,
+            y: y0 + r as f32 * (ch + label_h + gap) + (ch - h),
+            w,
+            h,
+        });
     }
     out
 }
@@ -48,11 +53,22 @@ pub fn grid(sizes: &[(f32, f32)], area: Rect, gap: f32, label_h: f32) -> Vec<Rec
 mod tests {
     use super::*;
 
-    const AREA: Rect = Rect { x: 0.0, y: 0.0, w: 1920.0, h: 1080.0 };
+    const AREA: Rect = Rect {
+        x: 0.0,
+        y: 0.0,
+        w: 1920.0,
+        h: 1080.0,
+    };
 
     #[test]
     fn keeps_aspect_and_stays_inside() {
-        let sizes = [(1600.0, 900.0), (800.0, 600.0), (1000.0, 1000.0), (400.0, 300.0), (1920.0, 1080.0)];
+        let sizes = [
+            (1600.0, 900.0),
+            (800.0, 600.0),
+            (1000.0, 1000.0),
+            (400.0, 300.0),
+            (1920.0, 1080.0),
+        ];
         let g = grid(&sizes, AREA, 24.0, 28.0);
         assert_eq!(g.len(), 5);
         for (r, (sw, sh)) in g.iter().zip(sizes.iter()) {
@@ -74,7 +90,8 @@ mod tests {
         for i in 0..g.len() {
             for j in i + 1..g.len() {
                 let (a, b) = (g[i], g[j]);
-                let overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+                let overlap =
+                    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
                 assert!(!overlap, "{i} dan {j}");
             }
         }

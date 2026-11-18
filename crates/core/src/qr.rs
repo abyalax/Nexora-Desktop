@@ -132,7 +132,11 @@ impl Grid {
     fn alignment(&mut self, cx: usize, cy: usize) {
         for dy in -2i32..=2 {
             for dx in -2i32..=2 {
-                self.set((cx as i32 + dx) as usize, (cy as i32 + dy) as usize, dx.abs().max(dy.abs()) != 1);
+                self.set(
+                    (cx as i32 + dx) as usize,
+                    (cy as i32 + dy) as usize,
+                    dx.abs().max(dy.abs()) != 1,
+                );
             }
         }
     }
@@ -192,7 +196,9 @@ fn penalty(size: usize, m: &[bool]) -> u32 {
     let mut score = 0u32;
     for horizontal in [true, false] {
         for a in 0..size {
-            let line: Vec<bool> = (0..size).map(|b| if horizontal { at(b, a) } else { at(a, b) }).collect();
+            let line: Vec<bool> = (0..size)
+                .map(|b| if horizontal { at(b, a) } else { at(a, b) })
+                .collect();
             let mut run = 1;
             for i in 1..=size {
                 if i < size && line[i] == line[i - 1] {
@@ -207,7 +213,9 @@ fn penalty(size: usize, m: &[bool]) -> u32 {
             let pat = [true, false, true, true, true, false, true];
             for i in 0..size.saturating_sub(6) {
                 if (0..7).all(|k| line[i + k] == pat[k]) {
-                    let light = |from: i32, to: i32| (from..to).all(|k| k < 0 || k >= size as i32 || !line[k as usize]);
+                    let light = |from: i32, to: i32| {
+                        (from..to).all(|k| k < 0 || k >= size as i32 || !line[k as usize])
+                    };
                     if light(i as i32 - 4, i as i32) || light(i as i32 + 7, i as i32 + 11) {
                         score += 40;
                     }
@@ -237,13 +245,17 @@ pub fn encode(text: &str) -> Option<Matrix> {
     })?;
     let cap = data_capacity(version);
     let mut bits: Vec<bool> = Vec::with_capacity(cap * 8);
-    let mut push = |v: u32, n: usize, bits: &mut Vec<bool>| {
+    let push = |v: u32, n: usize, bits: &mut Vec<bool>| {
         for i in (0..n).rev() {
             bits.push((v >> i) & 1 != 0);
         }
     };
     push(0b0100, 4, &mut bits);
-    push(bytes.len() as u32, if version < 10 { 8 } else { 16 }, &mut bits);
+    push(
+        bytes.len() as u32,
+        if version < 10 { 8 } else { 16 },
+        &mut bits,
+    );
     for b in bytes {
         push(*b as u32, 8, &mut bits);
     }
@@ -252,7 +264,10 @@ pub fn encode(text: &str) -> Option<Matrix> {
     while bits.len() % 8 != 0 {
         bits.push(false);
     }
-    let mut data: Vec<u8> = bits.chunks(8).map(|c| c.iter().fold(0u8, |a, b| (a << 1) | *b as u8)).collect();
+    let mut data: Vec<u8> = bits
+        .chunks(8)
+        .map(|c| c.iter().fold(0u8, |a, b| (a << 1) | *b as u8))
+        .collect();
     let mut pad = [0xECu8, 0x11].into_iter().cycle();
     while data.len() < cap {
         data.push(pad.next().unwrap());
@@ -283,7 +298,11 @@ pub fn encode(text: &str) -> Option<Matrix> {
     }
 
     let size = 17 + 4 * version as usize;
-    let mut g = Grid { size, dark: vec![false; size * size], func: vec![false; size * size] };
+    let mut g = Grid {
+        size,
+        dark: vec![false; size * size],
+        func: vec![false; size * size],
+    };
     for i in 0..size {
         g.set(6, i, i % 2 == 0);
         g.set(i, 6, i % 2 == 0);
@@ -326,7 +345,11 @@ pub fn encode(text: &str) -> Option<Matrix> {
 
     let mut best: Option<(u32, u8, Vec<bool>)> = None;
     for mask in 0..8u8 {
-        let mut t = Grid { size, dark: g.dark.clone(), func: g.func.clone() };
+        let mut t = Grid {
+            size,
+            dark: g.dark.clone(),
+            func: g.func.clone(),
+        };
         for y in 0..size {
             for x in 0..size {
                 if !t.func[y * size + x] && mask_bit(mask, x, y) {
@@ -341,7 +364,12 @@ pub fn encode(text: &str) -> Option<Matrix> {
         }
     }
     let (_, mask, modules) = best?;
-    Some(Matrix { size, version, mask, modules })
+    Some(Matrix {
+        size,
+        version,
+        mask,
+        modules,
+    })
 }
 
 pub fn render(m: &Matrix, n: u32, quiet: usize) -> Vec<u8> {
@@ -376,8 +404,13 @@ mod tests {
 
     #[test]
     fn reed_solomon_known_vector() {
-        let data = [32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17];
-        assert_eq!(rs_ecc(&data, 10), vec![196, 35, 39, 119, 235, 215, 231, 226, 93, 23]);
+        let data = [
+            32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17,
+        ];
+        assert_eq!(
+            rs_ecc(&data, 10),
+            vec![196, 35, 39, 119, 235, 215, 231, 226, 93, 23]
+        );
     }
 
     #[test]
@@ -403,21 +436,50 @@ mod tests {
         }
         assert!(m.get(8, m.size - 8));
         let mut f = 0u16;
-        for (k, (x, y)) in [(8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 7), (8, 8), (7, 8), (5, 8), (4, 8), (3, 8), (2, 8), (1, 8), (0, 8)].iter().enumerate() {
+        for (k, (x, y)) in [
+            (8, 0),
+            (8, 1),
+            (8, 2),
+            (8, 3),
+            (8, 4),
+            (8, 5),
+            (8, 7),
+            (8, 8),
+            (7, 8),
+            (5, 8),
+            (4, 8),
+            (3, 8),
+            (2, 8),
+            (1, 8),
+            (0, 8),
+        ]
+        .iter()
+        .enumerate()
+        {
             if m.get(*x, *y) {
                 f |= 1 << k;
             }
         }
         assert_eq!(f, format_bits(m.mask));
         assert!(encode("").is_some());
-        assert!(encode(&"x".repeat(300)).is_none(), "di atas kapasitas versi 10");
+        assert!(
+            encode(&"x".repeat(300)).is_none(),
+            "di atas kapasitas versi 10"
+        );
     }
 
     #[test]
     #[ignore]
     fn dump_for_decoder() {
-        let Ok(dir) = std::env::var("NACRE_QR_DUMP") else { return };
-        let samples = ["http://192.168.1.23:54321/0123456789abcdef0123/", "ABRA", "http://10.0.0.5:61234/ffffffffffffffffffff/", &"x".repeat(200)];
+        let Ok(dir) = std::env::var("NACRE_QR_DUMP") else {
+            return;
+        };
+        let samples = [
+            "http://192.168.1.23:54321/0123456789abcdef0123/",
+            "NEXORA",
+            "http://10.0.0.5:61234/ffffffffffffffffffff/",
+            &"x".repeat(200),
+        ];
         for (i, s) in samples.iter().enumerate() {
             let m = encode(s).unwrap();
             let n = 400u32;
@@ -431,11 +493,14 @@ mod tests {
 
     #[test]
     fn render_is_sharp_and_square() {
-        let m = encode("ABRA").unwrap();
+        let m = encode("NEXORA").unwrap();
         let n = 100;
         let b = render(&m, n, 2);
         assert_eq!(b.len(), (n * n * 4) as usize);
-        assert!(b.chunks(4).all(|p| p[0] == 0 || p[0] == 255), "hanya hitam/putih");
+        assert!(
+            b.chunks(4).all(|p| p[0] == 0 || p[0] == 255),
+            "hanya hitam/putih"
+        );
         assert_eq!(&b[0..4], &[255, 255, 255, 255]);
     }
 }

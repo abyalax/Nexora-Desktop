@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="assets/logo-rounded.png" alt="ABRA" width="200">
+  <img src="assets/logo-rounded.png" alt="NEXORA" width="200">
 </p>
 
-<h1 align="center">ABRA</h1>
+<h1 align="center">NEXORA</h1>
 
 > [!IMPORTANT]
-> **Disclaimer.** ABRA is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
-> Apple Inc.** in any way. ABRA uses its own names (Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Crystal and so on).
+> **Disclaimer.** NEXORA is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
+> Apple Inc.** in any way. NEXORA uses its own names (Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Crystal and so on).
 > “Apple”, “macOS”, “Tahoe”, “Liquid Glass”, “Dynamic Island”, “Stage Manager”, “Mission Control”, “Spotlight”,
-> “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. ABRA ships no Apple code, icons,
+> “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. NEXORA ships no Apple code, icons,
 > fonts or other assets.
 
 <p align="center">
@@ -31,14 +31,14 @@
   <a href="#-privacy">Privacy</a> ·
   <a href="#-built-with">Built with</a> ·
   <a href="#-build-from-source">Build</a> ·
-  <a href="#-support-abra">Support</a>
+  <a href="#-support-nexora">Support</a>
 </p>
 
 ---
 
-## ✨ What is ABRA?
+## ✨ What is NEXORA?
 
-ABRA turns Windows 11 into a clean, modern desktop:
+NEXORA turns Windows 11 into a clean, modern desktop:
 
 - a magnifying **Deck** for your apps,
 - a **Visor** at the top of the screen that shows what is going on (music with live lyrics, downloads, timers, files),
@@ -51,7 +51,7 @@ It is one small native program: no Electron, no web view, no background services
 **15 MB** of private memory.
 
 <p align="center">
-  <img src="assets/screenshots/desktop.png" alt="ABRA desktop: Deck, Rail, Visor and widgets" width="900">
+  <img src="assets/screenshots/desktop.png" alt="NEXORA desktop: Deck, Rail, Visor and widgets" width="900">
 </p>
 
 ### 🆕 New in 0.4.0
@@ -69,7 +69,7 @@ It is one small native program: no Electron, no web view, no background services
 - **Settings** redesigned with a floating glass sidebar, and your own image as the Rail logo.
 - **Own names** for every part: Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Overview and App Grid.
 - **Fixes**: Deck pins survive app updates (Microsoft Store and auto‑updating apps), closed apps can be removed from the
-  Deck, opening apps no longer freezes ABRA, the Visor and Deck always stay above other windows, and text can no longer be
+  Deck, opening apps no longer freezes NEXORA, the Visor and Deck always stay above other windows, and text can no longer be
   garbled by third‑party fonts.
 - **Lighter**: about a third of the memory of the previous development build.
 
@@ -78,26 +78,26 @@ It is one small native program: no Electron, no web view, no background services
 
 - A brand‑new Visor with **Play**, **Shelf** and **Timer** tabs, live lyrics, a music idle mode and download progress.
 - **Send to phone**: drop files on the Visor and scan a QR code with any Android or iPhone.
-- Wi‑Fi and Bluetooth pickers, the ABRA app icon and a **Buy me a coffee** button.
+- Wi‑Fi and Bluetooth pickers, the NEXORA app icon and a **Buy me a coffee** button.
 </details>
 
 ---
 
 ## 🧩 Modular: turn off what you don’t want
 
-Every part of ABRA is independent. Keep only the pieces you like:
+Every part of NEXORA is independent. Keep only the pieces you like:
 
-| Part | Where to turn it off |
-|---|---|
-| Deck | *Settings → Deck → Enable Deck* |
-| Visor | *Settings → Visor → Enable Visor* |
-| Rail | *Settings → Rail → Enable Rail* |
-| Widgets | Right‑click a widget → *Remove Widget* |
-| Scene | *Settings → Scene*, or the Quick Panel control |
-| Screen Corners | *Settings → Screen Corners* (set each corner to “None”) |
-| Windows taskbar | *Settings → General → Hide the Windows taskbar* (turn off to keep your taskbar) |
-| Window animations | *Settings → General → Window animations* |
-| Recent apps in the Deck | *Settings → Deck → Recent apps* |
+| Part                    | Where to turn it off                                                            |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| Deck                    | _Settings → Deck → Enable Deck_                                                 |
+| Visor                   | _Settings → Visor → Enable Visor_                                               |
+| Rail                    | _Settings → Rail → Enable Rail_                                                 |
+| Widgets                 | Right‑click a widget → _Remove Widget_                                          |
+| Scene                   | _Settings → Scene_, or the Quick Panel control                                  |
+| Screen Corners          | _Settings → Screen Corners_ (set each corner to “None”)                         |
+| Windows taskbar         | _Settings → General → Hide the Windows taskbar_ (turn off to keep your taskbar) |
+| Window animations       | _Settings → General → Window animations_                                        |
+| Recent apps in the Deck | _Settings → Deck → Recent apps_                                                 |
 
 Use only the Deck with your normal taskbar, only the Visor, only the Rail — any mix works.
 
@@ -107,29 +107,29 @@ Use only the Deck with your normal taskbar, only the Visor, only the Rail — an
 
 > Requires **Windows 11** (build 22000 or newer), 64‑bit.
 
-Download from the **[Releases](https://github.com/abdeealfarizi/abra/releases)** page:
+Download from the **[Releases](https://github.com/abyalax/Nexora-Desktop/releases)** page:
 
-| File | Best for |
-|---|---|
-| `ABRA-Setup-0.4.0.exe` | Most people. Per‑user install, **no administrator rights**, optional Start menu shortcut and “launch at sign‑in”, clean uninstall from *Windows Settings → Apps*. |
-| `ABRA-0.4.0-win-x64.zip` | Portable. Extract anywhere and keep `abra.exe`, `abra-guard.exe` and the `fonts` folder **together**. |
+| File                       | Best for                                                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXORA-Setup-0.4.0.exe`   | Most people. Per‑user install, **no administrator rights**, optional Start menu shortcut and “launch at sign‑in”, clean uninstall from _Windows Settings → Apps_. |
+| `NEXORA-0.4.0-win-x64.zip` | Portable. Extract anywhere and keep `nexora.exe`, `nexora-guard.exe` and the `fonts` folder **together**.                                                         |
 
 ### Installer
 
-1. Run `ABRA-Setup-0.4.0.exe`.
+1. Run `NEXORA-Setup-0.4.0.exe`.
 2. Windows SmartScreen may warn about an unsigned app: choose **More info → Run anyway** (only for files from this repository).
-3. Pick the options you want (Start menu shortcut, launch at sign‑in) and finish. ABRA starts.
+3. Pick the options you want (Start menu shortcut, launch at sign‑in) and finish. NEXORA starts.
 
 ### Portable
 
-1. Extract the zip to a folder you keep, for example `Documents\ABRA`.
-2. Double‑click `abra.exe`.
+1. Extract the zip to a folder you keep, for example `Documents\NEXORA`.
+2. Double‑click `nexora.exe`.
 
 ### First run
 
-- The Windows taskbar hides and the Deck appears (turn this off in *Settings → General* if you prefer your taskbar).
-- Open **Settings**: right‑click the Deck → **ABRA Settings…**, or click the logo in the Rail.
-- Language: *Settings → General → Language* (**English** or **Indonesia**).
+- The Windows taskbar hides and the Deck appears (turn this off in _Settings → General_ if you prefer your taskbar).
+- Open **Settings**: right‑click the Deck → **NEXORA Settings…**, or click the logo in the Rail.
+- Language: _Settings → General → Language_ (**English** or **Indonesia**).
 
 ### Updating from 0.3.0
 
@@ -137,10 +137,10 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 
 ### Quit and uninstall
 
-- **Quit**: right‑click an empty part of the Deck (or the Start icon) → **Quit ABRA**. The taskbar comes back automatically.
-  If ABRA is ever killed, `abra-guard.exe` restores the taskbar and any windows it moved.
-- **Uninstall**: *Windows Settings → Apps → Installed apps → ABRA → Uninstall* (installer), or quit ABRA and delete the folder
-  (portable). Your settings are in `%APPDATA%\ABRA`; delete that folder too for a clean removal.
+- **Quit**: right‑click an empty part of the Deck (or the Start icon) → **Quit NEXORA**. The taskbar comes back automatically.
+  If NEXORA is ever killed, `nexora-guard.exe` restores the taskbar and any windows it moved.
+- **Uninstall**: _Windows Settings → Apps → Installed apps → NEXORA → Uninstall_ (installer), or quit NEXORA and delete the folder
+  (portable). Your settings are in `%APPDATA%\NEXORA`; delete that folder too for a clean removal.
 
 ---
 
@@ -150,20 +150,20 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 <summary><b>🎛 Deck</b></summary>
 
 - **Open / switch apps**: click an icon. Running apps have a dot. Hover to magnify; hover a running app for live window previews.
-- **Keep / remove**: right‑click an app → *Keep in Deck* / *Remove from Deck*. Drag icons to reorder.
-- **Recent apps** you closed appear on the right; right‑click → *Remove from Deck*, or turn them off in *Settings → Deck*.
-- **Close an app**: right‑click it → **Close**. **Quit ABRA** appears when you right‑click an empty area or the Start icon.
+- **Keep / remove**: right‑click an app → _Keep in Deck_ / _Remove from Deck_. Drag icons to reorder.
+- **Recent apps** you closed appear on the right; right‑click → _Remove from Deck_, or turn them off in _Settings → Deck_.
+- **Close an app**: right‑click it → **Close**. **Quit NEXORA** appears when you right‑click an empty area or the Start icon.
 - **Minimize** a window and it flies into the Deck with a **Funnel** (or **Scale**) effect.
-- **App Grid** button, a **Downloads** stack and a glass **Trash** (right‑click → *Empty Trash*).
-- **Custom icons**: right‑click an app → *Change icon…*.
-- **Size, magnification, behaviour (Fixed · Overlay · Smart)**: *Settings → Deck*.
+- **App Grid** button, a **Downloads** stack and a glass **Trash** (right‑click → _Empty Trash_).
+- **Custom icons**: right‑click an app → _Change icon…_.
+- **Size, magnification, behaviour (Fixed · Overlay · Smart)**: _Settings → Deck_.
 </details>
 
 <details open>
 <summary><b>🕳 Visor</b></summary>
 
 The glass pill at the top center of the screen. Choose **Visor** (attached to the top edge) or **Capsule** (floating) in
-*Settings → Visor → Shape*.
+_Settings → Visor → Shape_.
 
 <p align="center">
   <img src="assets/screenshots/visor-capsule.png" alt="The Visor in the Capsule shape" width="480">
@@ -178,7 +178,7 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 </p>
 
 - **Play tab**: song card (artwork, title, seekable progress, controls) and big **lyrics** that scroll with the song.
-  Put your own `Artist - Title.lrc` files in `%APPDATA%\ABRA\lyrics`, or let ABRA look them up on [LRCLIB](https://lrclib.net).
+  Put your own `Artist - Title.lrc` files in `%APPDATA%\NEXORA\lyrics`, or let NEXORA look them up on [LRCLIB](https://lrclib.net).
 
 <p align="center">
   <img src="assets/screenshots/notch-play.png" alt="Visor Play tab with song card and lyrics" width="560">
@@ -192,7 +192,7 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 </p>
 
 - **Send to phone (Android & iPhone, no app)**: drop files on **Send**, scan the QR code with your phone’s camera and tap
-  **Download**. Both devices must be on the **same Wi‑Fi**; allow ABRA on **Private networks** if Windows Firewall asks.
+  **Download**. Both devices must be on the **same Wi‑Fi**; allow NEXORA on **Private networks** if Windows Firewall asks.
 
 <p align="center">
   <img src="assets/screenshots/notch-send-qr.png" alt="Send to phone: QR code and progress" width="560">
@@ -204,16 +204,15 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 <details open>
 <summary><b>📋 Rail</b></summary>
 
-- **Logo menu**: About this PC, System Settings, Microsoft Store, ABRA Settings, App Grid, Overview, Force Quit, Sleep,
-  Restart, Shut Down, Lock Screen. Use your own image as the logo in *Settings → Rail → Rail logo*.
+- **Logo menu**: About this PC, System Settings, Microsoft Store, NEXORA Settings, App Grid, Overview, Force Quit, Sleep,
+  Restart, Shut Down, Lock Screen. Use your own image as the logo in _Settings → Rail → Rail logo_.
 - **App name and menus**: the active app’s real menus (File, Edit…) when it has classic menus.
 - **Right side**: battery, **Wi‑Fi**, Quick Search, Quick Panel and the clock. The Wi‑Fi icon shows live signal strength;
-  the battery percentage can sit inside the icon, next to it, or be hidden (*Settings → Rail*).
+  the battery percentage can sit inside the icon, next to it, or be hidden (_Settings → Rail_).
 - **Background**: transparent (with a soft shade), light, dark or the glass material.
 
-
 - **Wi‑Fi menu**: a switch, your **saved networks** (click one to connect) and live signal strength for the current one.
-  Windows only lists *nearby* networks to apps when **Location** is allowed; ABRA asks with a button and never reads or
+  Windows only lists _nearby_ networks to apps when **Location** is allowed; NEXORA asks with a button and never reads or
   stores your location.
 
 </details>
@@ -244,10 +243,10 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 <details open>
 <summary><b>🧱 Widgets</b></summary>
 
-- Open the gallery from *Settings → Widgets → Add widgets*, or right‑click a widget → *Edit Widgets…*.
+- Open the gallery from _Settings → Widgets → Add widgets_, or right‑click a widget → _Edit Widgets…_.
 - **Click** a widget in the gallery to add it, or **drag** it onto the desktop; a placeholder shows the grid slot it will snap to.
-- Drag widgets to move them, click one to open the matching app, right‑click → *Remove Widget*.
-- Material: **Original** (solid light and dark cards) or **Crystal** (glass), in *Settings → Widgets*.
+- Drag widgets to move them, click one to open the matching app, right‑click → _Remove Widget_.
+- Material: **Original** (solid light and dark cards) or **Crystal** (glass), in _Settings → Widgets_.
 - Widgets only show the time, your calendar date, battery and CPU/memory usage. They read no personal data.
 
 <p align="center">
@@ -261,7 +260,7 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 
 - `Ctrl` + `Space` opens it. Type to search **Apps**, **Files**, **Actions** and **Clipboard** (switch with `Ctrl` + `1`…`4`).
 - Built‑in calculator, recent files with thumbnails, file‑type filters and “Show more”.
-- **Actions**: your own quick keys (*Settings → Quick Search*). **Clipboard history** is optional and kept in memory only.
+- **Actions**: your own quick keys (_Settings → Quick Search_). **Clipboard history** is optional and kept in memory only.
 
 <p align="center">
   <img src="assets/screenshots/quick-search.png" alt="Quick Search" width="560">
@@ -271,9 +270,9 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 <details>
 <summary><b>🎬 Scene</b></summary>
 
-- Turn it on from the Quick Panel or *Settings → Scene*.
+- Turn it on from the Quick Panel or _Settings → Scene_.
 - Other windows become **live, tilted cards** in a side strip; click one to fly it back to the stage, Shift‑click to group.
-- Click the wallpaper to tuck everything away. `Alt` + `Tab` shows ABRA’s switcher while it is on.
+- Click the wallpaper to tuck everything away. `Alt` + `Tab` shows NEXORA’s switcher while it is on.
 
 </details>
 
@@ -293,28 +292,28 @@ The glass pill at the top center of the screen. Choose **Visor** (attached to th
 <details>
 <summary><b>🎨 Appearance & ⚙️ Settings</b></summary>
 
-- *Settings → Appearance*: Auto · Light · Dark, accent color, icon style (Default · Dark · Clear · Tinted), the glass
+- _Settings → Appearance_: Auto · Light · Dark, accent color, icon style (Default · Dark · Clear · Tinted), the glass
   material (**Blur**, **Crystal** or **Black**), a separate Visor material, blur, transparency, the **scale** of the Deck,
-  Visor, Rail and Quick Panel, and an optional **icon pack** (`%APPDATA%\ABRA\iconpack`, nothing is bundled).
+  Visor, Rail and Quick Panel, and an optional **icon pack** (`%APPDATA%\NEXORA\iconpack`, nothing is bundled).
 - Settings has a floating glass sidebar with search, back / forward buttons, English and Indonesian.
 - **Quick shortcuts**: `` Alt+` `` cycles windows of the same app, `Ctrl+Alt+H` hides, `Ctrl+Alt+M` minimizes,
-  `Ctrl+Alt+Q` quits the active app (*Settings → General*).
+  `Ctrl+Alt+Q` quits the active app (_Settings → General_).
 
 <p align="center">
-  <img src="assets/screenshots/settings.png" alt="ABRA Settings" width="640">
+  <img src="assets/screenshots/settings.png" alt="NEXORA Settings" width="640">
 </p>
 </details>
 
 ### Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `Ctrl` + `Space` | Quick Search |
-| `Ctrl` + `Shift` + `Space` | App Grid |
-| `Ctrl` + `1` … `4` | Inside Quick Search: Apps · Files · Actions · Clipboard |
-| `Ctrl` + `↑` | Overview |
-| `Alt` + `Tab` | ABRA window switcher (while Scene is on) |
-| `Esc` | Close the active overlay |
+| Shortcut                   | Action                                                  |
+| -------------------------- | ------------------------------------------------------- |
+| `Ctrl` + `Space`           | Quick Search                                            |
+| `Ctrl` + `Shift` + `Space` | App Grid                                                |
+| `Ctrl` + `1` … `4`         | Inside Quick Search: Apps · Files · Actions · Clipboard |
+| `Ctrl` + `↑`               | Overview                                                |
+| `Alt` + `Tab`              | NEXORA window switcher (while Scene is on)              |
+| `Esc`                      | Close the active overlay                                |
 
 The complete guide in Indonesian is in [`docs/PANDUAN.md`](docs/PANDUAN.md).
 
@@ -322,15 +321,15 @@ The complete guide in Indonesian is in [`docs/PANDUAN.md`](docs/PANDUAN.md).
 
 ## 🔒 Privacy
 
-**ABRA does not collect, store or send any data about you.** There is no telemetry, no analytics, no account and no ads.
-Everything ABRA knows stays on your PC, in `%APPDATA%\ABRA`.
+**NEXORA does not collect, store or send any data about you.** There is no telemetry, no analytics, no account and no ads.
+Everything NEXORA knows stays on your PC, in `%APPDATA%\NEXORA`.
 
-- **Lyrics** are the only internet request ABRA makes on its own: if a song has no local `.lrc` file, ABRA asks
-  [LRCLIB](https://lrclib.net) using only the title, artist, album and length. You can turn it off (*Settings → Visor*).
+- **Lyrics** are the only internet request NEXORA makes on its own: if a song has no local `.lrc` file, NEXORA asks
+  [LRCLIB](https://lrclib.net) using only the title, artist, album and length. You can turn it off (_Settings → Visor_).
 - **Send to phone** runs a tiny temporary web server on your **local network only**, under a random link, serving only the files
-  you dropped. It stops when you click Done, after 15 idle minutes, or when ABRA quits.
+  you dropped. It stops when you click Done, after 15 idle minutes, or when NEXORA quits.
 - **Read‑only, on demand**: saved Wi‑Fi network names and signal strength, Bluetooth devices, calendar events, download
-  progress (file names and sizes only), and which apps use the microphone / camera. ABRA never reads your location.
+  progress (file names and sizes only), and which apps use the microphone / camera. NEXORA never reads your location.
 - **Clipboard history** is optional, text only, kept in memory for 8 hours and never written to disk.
 - A keyboard hook is used **only** to catch `Alt+Tab` while Scene is on. Keystrokes are never logged or sent.
 - Release builds are checked so that they contain no paths or user names from the developer’s PC.
@@ -347,10 +346,10 @@ Everything ABRA knows stays on your PC, in `%APPDATA%\ABRA`.
   GDI text rendering, OLE drag and drop.
 - **[Inno Setup](https://jrsoftware.org/isinfo.php)** — the installer.
 - Bundled font: **[Inter](https://rsms.me/inter/)** (SIL Open Font License), with Segoe UI Variable as the fallback.
-  ABRA never uses fonts you installed yourself, so a broken third‑party font can’t garble its text.
+  NEXORA never uses fonts you installed yourself, so a broken third‑party font can’t garble its text.
 
 No Electron, no web view, no .NET runtime. Self‑written pieces include the QR‑code encoder, the LRC lyrics parser and the
-small HTTP server for *Send to phone*.
+small HTTP server for _Send to phone_.
 
 ---
 
@@ -371,13 +370,13 @@ small HTTP server for *Send to phone*.
 ### 2. Clone and build
 
 ```powershell
-git clone https://github.com/abdeealfarizi/abra.git
-cd abra
+git clone https://github.com/abyalax/Nexora-Desktop.git
+cd nexora
 cargo build --release
-.\target\release\abra.exe
+.\target\release\nexora.exe
 ```
 
-You get `abra.exe` and `abra-guard.exe` in `target\release\`.
+You get `nexora.exe` and `nexora-guard.exe` in `target\release\`.
 
 > **“link.exe not found”?** Install the C++ workload above, or create a local `.cargo\config.toml` that points Cargo at `rust-lld`
 > and your MSVC / Windows SDK library folders. `.cargo/` is git‑ignored because it holds machine‑specific paths.
@@ -391,8 +390,8 @@ winget install JRSoftware.InnoSetup                            # once
 powershell -File installer\build-installer.ps1 -Version 0.4.0
 ```
 
-The release script rebuilds ABRA with local paths stripped, **refuses to continue** if a binary still contains your user
-name or a local path, and writes `dist\ABRA-Setup-0.4.0.exe` and `dist\ABRA-0.4.0-win-x64.zip`.
+The release script rebuilds NEXORA with local paths stripped, **refuses to continue** if a binary still contains your user
+name or a local path, and writes `dist\NEXORA-Setup-0.4.0.exe` and `dist\NEXORA-0.4.0-win-x64.zip`.
 
 ### 4. Safe experiments
 
@@ -400,26 +399,26 @@ Run an **isolated** instance that does not touch your real settings:
 
 ```powershell
 $env:NACRE_CONFIG_DIR = "$PWD\target\cfg-test"
-.\target\release\abra.exe --keep-taskbar --exit-after 30
+.\target\release\nexora.exe --keep-taskbar --exit-after 30
 ```
 
 Useful flags: `--keep-taskbar`, `--no-dock`, `--no-island`, `--no-hud`, `--open-settings`, `--open-widgets`,
 `--exit-after <seconds>`, `--add-app <path>`, `--set-icon <app|start|launchpad> <image>`.
 
-> With Scene on, ABRA moves your real windows. Let a test instance exit normally (`--exit-after`) instead of killing it.
+> With Scene on, NEXORA moves your real windows. Let a test instance exit normally (`--exit-after`) instead of killing it.
 
 </details>
 
 ### Project layout
 
-| Path | Contents |
-|---|---|
-| `crates/core` | Pure, unit‑tested logic: Visor state, lyrics, QR codes, Deck layout, widgets, settings, i18n, icons |
-| `crates/platform` | Win32 / WinRT wrappers: windows, media, audio, Wi‑Fi, Bluetooth, downloads, icons, text, local send server |
-| `crates/ui` | The glass materials on `Windows.UI.Composition`, the shared graphics device and live window capture |
-| `crates/app` | The `abra` app: Deck, Visor, Rail, Quick Panel, Quick Search, Scene, Widgets, Settings |
-| `crates/guard` | `abra-guard`, the watchdog that restores the taskbar and moved windows |
-| `docs/` · `installer/` · `tools/` | Indonesian user guide, installer and release script, taskbar safety test |
+| Path                              | Contents                                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `crates/core`                     | Pure, unit‑tested logic: Visor state, lyrics, QR codes, Deck layout, widgets, settings, i18n, icons        |
+| `crates/platform`                 | Win32 / WinRT wrappers: windows, media, audio, Wi‑Fi, Bluetooth, downloads, icons, text, local send server |
+| `crates/ui`                       | The glass materials on `Windows.UI.Composition`, the shared graphics device and live window capture        |
+| `crates/app`                      | The `nexora` app: Deck, Visor, Rail, Quick Panel, Quick Search, Scene, Widgets, Settings                   |
+| `crates/guard`                    | `nexora-guard`, the watchdog that restores the taskbar and moved windows                                   |
+| `docs/` · `installer/` · `tools/` | Indonesian user guide, installer and release script, taskbar safety test                                   |
 
 Internal crates are named `nacre-*` (the former codename), and some internal names (settings keys, window classes, flags such
 as `--no-dock`) keep their original words so existing settings keep working.
@@ -428,27 +427,27 @@ as `--no-dock`) keep their original words so existing settings keep working.
 
 ## ⚙️ Configuration & troubleshooting
 
-Settings live in `%APPDATA%\ABRA\settings.cfg` (plain `key=value`), next to `pins.txt` (Deck), `icons.txt` (custom icons),
+Settings live in `%APPDATA%\NEXORA\settings.cfg` (plain `key=value`), next to `pins.txt` (Deck), `icons.txt` (custom icons),
 `cc_layout.txt` (Quick Panel), `widgets.txt` (widget positions), `actions.txt` (Quick Search quick keys),
-`stage_exclude.txt`, `lyrics\` and `abra.log`. Set `NACRE_CONFIG_DIR` to use another folder.
+`stage_exclude.txt`, `lyrics\` and `nexora.log`. Set `NACRE_CONFIG_DIR` to use another folder.
 
-- **Taskbar missing after a crash** — start `abra.exe` and quit normally, or let `abra-guard.exe` do it.
-- **A window seems to have vanished** — Scene parked it. Start ABRA again; it restores parked windows.
-- **Phone can’t open the Send link** — same Wi‑Fi on both? Allow ABRA in Windows Firewall for Private networks.
-- **Wi‑Fi menu shows only saved networks** — Windows needs *Location* allowed before apps can see nearby networks.
-- **A hotkey does nothing** — another program owns the shortcut (see `abra.log`).
+- **Taskbar missing after a crash** — start `nexora.exe` and quit normally, or let `nexora-guard.exe` do it.
+- **A window seems to have vanished** — Scene parked it. Start NEXORA again; it restores parked windows.
+- **Phone can’t open the Send link** — same Wi‑Fi on both? Allow NEXORA in Windows Firewall for Private networks.
+- **Wi‑Fi menu shows only saved networks** — Windows needs _Location_ allowed before apps can see nearby networks.
+- **A hotkey does nothing** — another program owns the shortcut (see `nexora.log`).
 
 **Known limitations**: dragging a Scene card onto the stage isn’t implemented (Shift‑click to group); Focus, Hotspot,
 Nearby Sharing and Airplane mode open the matching Windows Settings page; only Bluetooth audio devices connect from the menu;
-*Send to phone* sends files, not folders; the World Clock uses fixed time zones without daylight saving; tested on Windows 11
+_Send to phone_ sends files, not folders; the World Clock uses fixed time zones without daylight saving; tested on Windows 11
 with a single primary display.
 
 ---
 
 ## 📄 License
 
-[PolyForm Noncommercial License 1.0.0](LICENSE.md). You may use, study, modify and share ABRA for **noncommercial** purposes;
-commercial use needs written permission from the copyright holder. This is a *source‑available* license, not an OSI‑approved open
+[PolyForm Noncommercial License 1.0.0](LICENSE.md). You may use, study, modify and share NEXORA for **noncommercial** purposes;
+commercial use needs written permission from the copyright holder. This is a _source‑available_ license, not an OSI‑approved open
 source license. The bundled **Inter** font is © The Inter Project Authors, under the SIL Open Font License 1.1
 (`assets/fonts/Inter-LICENSE.txt`).
 
@@ -456,9 +455,9 @@ Required Notice: Copyright (c) 2026 Abdee Alfarizi
 
 ---
 
-## ☕ Support ABRA
+## ☕ Support NEXORA
 
-ABRA is free and built in spare time by **[kreativa.dev](https://saweria.co/kreativadev)**. If it makes your desktop nicer,
+NEXORA is free and built in spare time by **[kreativa.dev](https://saweria.co/kreativadev)**. If it makes your desktop nicer,
 you can buy me a coffee — it keeps the project going. Terima kasih! 🙏
 
 <p align="center">

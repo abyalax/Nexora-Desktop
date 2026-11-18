@@ -1,17 +1,30 @@
 use std::sync::atomic::{AtomicIsize, Ordering};
 use windows::core::w;
 use windows::Win32::Foundation::{HWND, RECT};
-use windows::Win32::UI::Shell::{SHAppBarMessage, ABE_BOTTOM, ABE_TOP, ABM_NEW, ABM_QUERYPOS, ABM_REMOVE, ABM_SETPOS, APPBARDATA};
+use windows::Win32::UI::Shell::{
+    SHAppBarMessage, ABE_BOTTOM, ABE_TOP, ABM_NEW, ABM_QUERYPOS, ABM_REMOVE, ABM_SETPOS, APPBARDATA,
+};
 use windows::Win32::UI::WindowsAndMessaging::RegisterWindowMessageW;
 
 static BOTTOM: AtomicIsize = AtomicIsize::new(0);
 static TOP: AtomicIsize = AtomicIsize::new(0);
 
 fn data(h: HWND) -> APPBARDATA {
-    APPBARDATA { cbSize: std::mem::size_of::<APPBARDATA>() as u32, hWnd: h, ..Default::default() }
+    APPBARDATA {
+        cbSize: std::mem::size_of::<APPBARDATA>() as u32,
+        hWnd: h,
+        ..Default::default()
+    }
 }
 
-fn reserve(slot: &AtomicIsize, hwnd: HWND, top_edge: bool, screen_w: i32, screen_h: i32, strip_h: i32) -> Option<i32> {
+fn reserve(
+    slot: &AtomicIsize,
+    hwnd: HWND,
+    top_edge: bool,
+    screen_w: i32,
+    screen_h: i32,
+    strip_h: i32,
+) -> Option<i32> {
     unsafe {
         let mut abd = data(hwnd);
         abd.uCallbackMessage = RegisterWindowMessageW(w!("NacreAppBar"));
@@ -24,14 +37,24 @@ fn reserve(slot: &AtomicIsize, hwnd: HWND, top_edge: bool, screen_w: i32, screen
         }
         if top_edge {
             abd.uEdge = ABE_TOP;
-            abd.rc = RECT { left: 0, top: 0, right: screen_w, bottom: strip_h };
+            abd.rc = RECT {
+                left: 0,
+                top: 0,
+                right: screen_w,
+                bottom: strip_h,
+            };
             SHAppBarMessage(ABM_QUERYPOS, &mut abd);
             abd.rc.bottom = abd.rc.top + strip_h;
             SHAppBarMessage(ABM_SETPOS, &mut abd);
             Some(abd.rc.bottom)
         } else {
             abd.uEdge = ABE_BOTTOM;
-            abd.rc = RECT { left: 0, top: screen_h - strip_h, right: screen_w, bottom: screen_h };
+            abd.rc = RECT {
+                left: 0,
+                top: screen_h - strip_h,
+                right: screen_w,
+                bottom: screen_h,
+            };
             SHAppBarMessage(ABM_QUERYPOS, &mut abd);
             abd.rc.top = abd.rc.bottom - strip_h;
             SHAppBarMessage(ABM_SETPOS, &mut abd);

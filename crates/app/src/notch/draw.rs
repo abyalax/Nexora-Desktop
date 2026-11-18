@@ -3,7 +3,10 @@ use nacre_platform::text::{self, Style};
 use nacre_ui::gfx::Gfx;
 use std::collections::HashMap;
 use windows::UI::Color;
-use windows::UI::Composition::{CompositionClip, CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual};
+use windows::UI::Composition::{
+    CompositionClip, CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual,
+    SpriteVisual,
+};
 use windows_numerics::{Vector2, Vector3};
 
 pub const WHITE: [u8; 3] = [255, 255, 255];
@@ -44,7 +47,12 @@ fn recolor(b: &[u8], rgb: [u8; 3]) -> Vec<u8> {
 
 impl Painter {
     pub fn new(comp: Compositor, gfx: Gfx, dpi: f32) -> Painter {
-        Painter { comp, gfx, dpi, cache: HashMap::new() }
+        Painter {
+            comp,
+            gfx,
+            dpi,
+            cache: HashMap::new(),
+        }
     }
 
     pub fn reset(&mut self, dpi: f32) {
@@ -63,17 +71,37 @@ impl Painter {
     }
 
     pub fn measure(&self, s: &str, size: f32, weight: i32) -> f32 {
-        text::measure(s, &Style { px: (size * self.dpi).round() as i32, weight }).0 as f32
+        text::measure(
+            s,
+            &Style {
+                px: (size * self.dpi).round() as i32,
+                weight,
+            },
+        )
+        .0 as f32
     }
 
-    pub fn place(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, opacity: f32) -> Option<SpriteVisual> {
+    pub fn place(
+        &self,
+        parent: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        opacity: f32,
+    ) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let brush = self.comp.CreateSurfaceBrushWithSurface(s)?;
             brush.SetStretch(CompositionStretch::None)?;
             let v = self.comp.CreateSpriteVisual()?;
             v.SetBrush(&brush)?;
             v.SetSize(Vector2 { X: w, Y: h })?;
-            v.SetOffset(Vector3 { X: x.round(), Y: y.round(), Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: x.round(),
+                Y: y.round(),
+                Z: 0.0,
+            })?;
             v.SetOpacity(opacity)?;
             parent.Children()?.InsertAtTop(&v)?;
             Ok(v)
@@ -82,12 +110,37 @@ impl Painter {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn text(&mut self, parent: &ContainerVisual, s: &str, x: f32, y: f32, size: f32, weight: i32, rgb: [u8; 3], opacity: f32, anchor: Anchor, max_w: f32) -> f32 {
-        self.text_v(parent, s, x, y, size, weight, rgb, opacity, anchor, max_w).0
+    pub fn text(
+        &mut self,
+        parent: &ContainerVisual,
+        s: &str,
+        x: f32,
+        y: f32,
+        size: f32,
+        weight: i32,
+        rgb: [u8; 3],
+        opacity: f32,
+        anchor: Anchor,
+        max_w: f32,
+    ) -> f32 {
+        self.text_v(parent, s, x, y, size, weight, rgb, opacity, anchor, max_w)
+            .0
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn text_v(&mut self, parent: &ContainerVisual, s: &str, x: f32, y: f32, size: f32, weight: i32, rgb: [u8; 3], opacity: f32, anchor: Anchor, max_w: f32) -> (f32, Option<SpriteVisual>) {
+    pub fn text_v(
+        &mut self,
+        parent: &ContainerVisual,
+        s: &str,
+        x: f32,
+        y: f32,
+        size: f32,
+        weight: i32,
+        rgb: [u8; 3],
+        opacity: f32,
+        anchor: Anchor,
+        max_w: f32,
+    ) -> (f32, Option<SpriteVisual>) {
         if s.is_empty() {
             return (0.0, None);
         }
@@ -100,8 +153,15 @@ impl Painter {
         let (surf, w, h) = match hit {
             Some(v) => v,
             None => {
-                let Some(bmp) = text::render(s, &st, w, th) else { return (0.0, None) };
-                let Ok(sf) = self.gfx.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp.bgra, rgb)) else { return (0.0, None) };
+                let Some(bmp) = text::render(s, &st, w, th) else {
+                    return (0.0, None);
+                };
+                let Ok(sf) = self
+                    .gfx
+                    .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp.bgra, rgb))
+                else {
+                    return (0.0, None);
+                };
                 self.trim();
                 let v = (sf, bmp.w as i32, bmp.h as i32);
                 self.cache.insert(key, v.clone());
@@ -118,7 +178,18 @@ impl Painter {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn text_soft(&mut self, parent: &ContainerVisual, s: &str, x: f32, y: f32, size: f32, weight: i32, rgb: [u8; 3], opacity: f32, blur: f32) -> Option<SpriteVisual> {
+    pub fn text_soft(
+        &mut self,
+        parent: &ContainerVisual,
+        s: &str,
+        x: f32,
+        y: f32,
+        size: f32,
+        weight: i32,
+        rgb: [u8; 3],
+        opacity: f32,
+        blur: f32,
+    ) -> Option<SpriteVisual> {
         if s.is_empty() {
             return None;
         }
@@ -148,11 +219,28 @@ impl Painter {
                 v
             }
         };
-        self.place(parent, &surf, x - r as f32, y - r as f32, w as f32, h as f32, opacity)
+        self.place(
+            parent,
+            &surf,
+            x - r as f32,
+            y - r as f32,
+            w as f32,
+            h as f32,
+            opacity,
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn sym(&mut self, parent: &ContainerVisual, s: Sym, cx: f32, cy: f32, size: f32, rgb: [u8; 3], opacity: f32) {
+    pub fn sym(
+        &mut self,
+        parent: &ContainerVisual,
+        s: Sym,
+        cx: f32,
+        cy: f32,
+        size: f32,
+        rgb: [u8; 3],
+        opacity: f32,
+    ) {
         let n = (size * self.dpi).round().max(8.0) as u32;
         let key = format!("s|{s:?}|{n}|{rgb:?}");
         let hit = self.cache.get(&key).cloned();
@@ -160,19 +248,42 @@ impl Painter {
             Some(v) => v,
             None => {
                 let data = symbols::render(s, n, rgb);
-                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else { return };
-                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else { return };
+                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else {
+                    return;
+                };
+                let Ok(sf) = self.gfx.surface_from_bgra(cw, ch, &cd) else {
+                    return;
+                };
                 self.trim();
                 let v = (sf, cw as i32, ch as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
-        self.place(parent, &surf, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, opacity);
+        self.place(
+            parent,
+            &surf,
+            cx - w as f32 / 2.0,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            opacity,
+        );
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn arc(&mut self, parent: &ContainerVisual, cx: f32, cy: f32, r: f32, w: f32, from: f32, to: f32, rgb: [u8; 3], alpha: u8) -> Option<(SpriteVisual, f32)> {
+    pub fn arc(
+        &mut self,
+        parent: &ContainerVisual,
+        cx: f32,
+        cy: f32,
+        r: f32,
+        w: f32,
+        from: f32,
+        to: f32,
+        rgb: [u8; 3],
+        alpha: u8,
+    ) -> Option<(SpriteVisual, f32)> {
         let (rp, wp) = (r * self.dpi, w * self.dpi);
         let n = ((rp + wp) * 2.0).ceil() as u32 + 2;
         let key = format!("a|{n}|{rp:.1}|{wp:.1}|{from:.3}|{to:.3}|{rgb:?}|{alpha}");
@@ -188,10 +299,20 @@ impl Painter {
             }
         };
         let half = n as f32 / 2.0;
-        self.place(parent, &surf, cx - half, cy - half, n as f32, n as f32, 1.0).map(|v| (v, n as f32))
+        self.place(parent, &surf, cx - half, cy - half, n as f32, n as f32, 1.0)
+            .map(|v| (v, n as f32))
     }
 
-    pub fn rect(&self, parent: &ContainerVisual, x: f32, y: f32, w: f32, h: f32, radius: f32, c: Color) -> Option<SpriteVisual> {
+    pub fn rect(
+        &self,
+        parent: &ContainerVisual,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        radius: f32,
+        c: Color,
+    ) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetSize(Vector2 { X: w, Y: h })?;
@@ -207,7 +328,16 @@ impl Painter {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn image(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, radius: f32) -> Option<SpriteVisual> {
+    pub fn image(
+        &self,
+        parent: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        radius: f32,
+    ) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
             b.SetStretch(CompositionStretch::UniformToFill)?;
@@ -226,23 +356,49 @@ impl Painter {
 }
 
 impl Painter {
-    pub fn battery(&mut self, parent: &ContainerVisual, x: f32, cy: f32, pct: u8, charging: bool) -> f32 {
-        let (bw, bh) = ((24.0 * self.dpi).round() as u32, (11.0 * self.dpi).round() as u32);
-        let fill = if charging { [52, 199, 89] } else if pct <= 10 { [255, 69, 58] } else { WHITE };
+    pub fn battery(
+        &mut self,
+        parent: &ContainerVisual,
+        x: f32,
+        cy: f32,
+        pct: u8,
+        charging: bool,
+    ) -> f32 {
+        let (bw, bh) = (
+            (24.0 * self.dpi).round() as u32,
+            (11.0 * self.dpi).round() as u32,
+        );
+        let fill = if charging {
+            [52, 199, 89]
+        } else if pct <= 10 {
+            [255, 69, 58]
+        } else {
+            WHITE
+        };
         let key = format!("b|{bw}|{bh}|{pct}|{fill:?}");
         let hit = self.cache.get(&key).cloned();
         let (surf, w, h) = match hit {
             Some(v) => v,
             None => {
                 let data = nacre_core::logo::render_battery(bw, bh, pct, WHITE, fill);
-                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else { return 0.0 };
+                let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else {
+                    return 0.0;
+                };
                 self.trim();
                 let v = (s, bw as i32, bh as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
-        self.place(parent, &surf, x, cy - h as f32 / 2.0, w as f32, h as f32, 0.95);
+        self.place(
+            parent,
+            &surf,
+            x,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            0.95,
+        );
         w as f32
     }
 
@@ -263,5 +419,10 @@ impl Painter {
 }
 
 pub fn white(a: u8) -> Color {
-    Color { A: a, R: 255, G: 255, B: 255 }
+    Color {
+        A: a,
+        R: 255,
+        G: 255,
+        B: 255,
+    }
 }

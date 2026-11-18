@@ -19,7 +19,12 @@ pub struct Timer {
 impl Timer {
     pub fn new(duration_secs: i64) -> Timer {
         let d = duration_secs.clamp(1, MAX_SECONDS);
-        Timer { duration: d, remaining_ms: d * 1000, deadline_ms: 0, phase: Phase::Idle }
+        Timer {
+            duration: d,
+            remaining_ms: d * 1000,
+            deadline_ms: 0,
+            phase: Phase::Idle,
+        }
     }
 
     pub fn set_duration(&mut self, secs: i64) {
@@ -63,7 +68,11 @@ impl Timer {
     }
 
     pub fn remaining_secs(&self, now_ms: i64) -> i64 {
-        let ms = if self.phase == Phase::Running { (self.deadline_ms - now_ms).max(0) } else { self.remaining_ms };
+        let ms = if self.phase == Phase::Running {
+            (self.deadline_ms - now_ms).max(0)
+        } else {
+            self.remaining_ms
+        };
         (ms + 999) / 1000
     }
 }

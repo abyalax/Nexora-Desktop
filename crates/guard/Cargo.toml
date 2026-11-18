@@ -1,11 +1,11 @@
 ﻿[package]
-name = "abra-guard"
+name = "nexora-guard"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "abra-guard"
+name = "nexora-guard"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,6 +1,6 @@
+use crate::dock::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{motion, paths, prefs, services};
-use crate::dock::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use nacre_core::controls::{self, Category, Kind, Placed, Size};
 use nacre_core::symbols::{self, Sym};
 use nacre_platform::icons::Bitmap;
@@ -8,18 +8,22 @@ use nacre_platform::media::{self, ArtUpdate, Command};
 use nacre_platform::radio::{self, Cmd as RadioCmd, Kind as RK};
 use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
 use nacre_platform::{audio, brightness, keys, launch, wifi};
-use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
 use nacre_ui::gfx::Gfx;
+use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
-use windows::UI::Color;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::HiDpi::GetDpiForWindow;
-use windows::Win32::UI::Input::KeyboardAndMouse::{ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_ESCAPE};
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_ESCAPE,
+};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Color;
+use windows::UI::Composition::{
+    CompositionDrawingSurface, CompositionStretch, Compositor, ContainerVisual, SpriteVisual,
+};
 const WM_MOUSELEAVE: u32 = 0x02A3;
 use windows_core::Interface;
 use windows_numerics::{Vector2, Vector3};
@@ -87,6 +91,7 @@ struct Mod {
     cont: Option<ContainerVisual>,
 }
 
+#[allow(dead_code)]
 struct Panel {
     popup: Popup,
     dpi: f32,
@@ -109,13 +114,23 @@ struct Panel {
 }
 
 fn grid_rect(p: &Placed, cell: f32, gap: f32, top: f32) -> Rect {
-    (p.col as f32 * (cell + gap), top + p.row as f32 * (cell + gap), p.w as f32 * cell + (p.w - 1) as f32 * gap, p.h as f32 * cell + (p.h - 1) as f32 * gap)
+    (
+        p.col as f32 * (cell + gap),
+        top + p.row as f32 * (cell + gap),
+        p.w as f32 * cell + (p.w - 1) as f32 * gap,
+        p.h as f32 * cell + (p.h - 1) as f32 * gap,
+    )
 }
 
 fn center_of(r: Rect) -> Vector3 {
-    Vector3 { X: r.0 + r.2 / 2.0, Y: r.1 + r.3 / 2.0, Z: 0.0 }
+    Vector3 {
+        X: r.0 + r.2 / 2.0,
+        Y: r.1 + r.3 / 2.0,
+        Z: 0.0,
+    }
 }
 
+#[allow(dead_code)]
 struct Gallery {
     popup: Popup,
     dpi: f32,
@@ -177,10 +192,29 @@ fn layout_file() -> std::path::PathBuf {
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
-        let class = w!("AbraCcCtl");
-        RegisterClassW(&WNDCLASSW { lpfnWndProc: Some(ctl_proc), hInstance: hi, lpszClassName: class, ..Default::default() });
-        let hwnd = CreateWindowExW(WINDOW_EX_STYLE(0), class, w!("abra-cc-ctl"), WS_POPUP, 0, 0, 0, 0, Some(HWND_MESSAGE), None, Some(hi), None)?;
-        let (layout, sizes) = controls::from_text_sized(&std::fs::read_to_string(layout_file()).unwrap_or_default());
+        let class = w!("NexoraCcCtl");
+        RegisterClassW(&WNDCLASSW {
+            lpfnWndProc: Some(ctl_proc),
+            hInstance: hi,
+            lpszClassName: class,
+            ..Default::default()
+        });
+        let hwnd = CreateWindowExW(
+            WINDOW_EX_STYLE(0),
+            class,
+            w!("nexora-cc-ctl"),
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            Some(HWND_MESSAGE),
+            None,
+            Some(hi),
+            None,
+        )?;
+        let (layout, sizes) =
+            controls::from_text_sized(&std::fs::read_to_string(layout_file()).unwrap_or_default());
         CC.with(|c| {
             *c.borrow_mut() = Some(Cc {
                 ctl: hwnd,
@@ -234,7 +268,10 @@ pub fn close() {
 
 pub fn test_open_picker() {
     with(|c| {
-        let i = c.panel.as_ref().and_then(|p| p.mods.iter().position(|m| m.placed.kind == Kind::Wifi));
+        let i = c
+            .panel
+            .as_ref()
+            .and_then(|p| p.mods.iter().position(|m| m.placed.kind == Kind::Wifi));
         if let Some(i) = i {
             c.open_picker(i);
         }
@@ -268,7 +305,10 @@ const WHITE: [u8; 3] = [255, 255, 255];
 
 impl Cc {
     fn save_layout(&self) {
-        let _ = std::fs::write(layout_file(), controls::to_text_sized(&self.layout, &self.sizes));
+        let _ = std::fs::write(
+            layout_file(),
+            controls::to_text_sized(&self.layout, &self.sizes),
+        );
     }
 
     fn open(&mut self, top: i32) {
@@ -310,7 +350,19 @@ impl Cc {
             return;
         }
         let Some(p) = self.panel.as_ref() else { return };
-        let _ = motion::pop_in(&self.comp, p.popup.root(), Vector3 { X: pad() + p.w - 24.0 * p.dpi, Y: pad(), Z: 0.0 }, 0.45, 1.025, 0, motion::CC_OPEN_MS);
+        let _ = motion::pop_in(
+            &self.comp,
+            p.popup.root(),
+            Vector3 {
+                X: pad() + p.w - 24.0 * p.dpi,
+                Y: pad(),
+                Z: 0.0,
+            },
+            0.45,
+            1.025,
+            0,
+            motion::CC_OPEN_MS,
+        );
         for (v, center, delay) in items {
             let _ = motion::pop_in(&self.comp, &v, center, 0.7, 1.04, delay, 360);
         }
@@ -334,7 +386,19 @@ impl Cc {
             }
         }
         let Some(p) = self.panel.as_ref() else { return };
-        if motion::pop_out(&self.comp, p.popup.root(), Vector3 { X: pad() + p.w - 24.0 * p.dpi, Y: pad(), Z: 0.0 }, 0.55, motion::CC_CLOSE_MS).is_ok() {
+        if motion::pop_out(
+            &self.comp,
+            p.popup.root(),
+            Vector3 {
+                X: pad() + p.w - 24.0 * p.dpi,
+                Y: pad(),
+                Z: 0.0,
+            },
+            0.55,
+            motion::CC_CLOSE_MS,
+        )
+        .is_ok()
+        {
             self.closing = true;
             unsafe {
                 SetTimer(Some(self.ctl), T_CLOSE, motion::CC_CLOSE_MS + 20, None);
@@ -361,7 +425,14 @@ impl Cc {
         }
     }
 
-    fn text_surf(&mut self, text: &str, px: i32, weight: i32, rgb: [u8; 3], maxw: i32) -> Option<(CompositionDrawingSurface, i32, i32)> {
+    fn text_surf(
+        &mut self,
+        text: &str,
+        px: i32,
+        weight: i32,
+        rgb: [u8; 3],
+        maxw: i32,
+    ) -> Option<(CompositionDrawingSurface, i32, i32)> {
         let key = format!("t|{px}|{weight}|{rgb:?}|{maxw}|{text}");
         if let Some(v) = self.cache.get(&key) {
             return Some(v.clone());
@@ -370,13 +441,22 @@ impl Cc {
         let (tw, th) = measure(text, &style);
         let tw = (tw + 2).min(maxw.max(8));
         let bmp = render(text, &style, tw, th)?;
-        let s = self.gfx.as_ref()?.surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb)).ok()?;
+        let s = self
+            .gfx
+            .as_ref()?
+            .surface_from_bgra(bmp.w, bmp.h, &recolor(&bmp, rgb))
+            .ok()?;
         let v = (s, tw, th);
         self.cache.insert(key, v.clone());
         Some(v)
     }
 
-    fn glyph_surf(&mut self, g: &str, px: i32, rgb: [u8; 3]) -> Option<(CompositionDrawingSurface, i32, i32)> {
+    fn glyph_surf(
+        &mut self,
+        g: &str,
+        px: i32,
+        rgb: [u8; 3],
+    ) -> Option<(CompositionDrawingSurface, i32, i32)> {
         let key = format!("g|{px}|{rgb:?}|{g}");
         if let Some(v) = self.cache.get(&key) {
             return Some(v.clone());
@@ -408,13 +488,26 @@ impl Cc {
                 data[d..d + 4].copy_from_slice(&rec[s..s + 4]);
             }
         }
-        let s = self.gfx.as_ref()?.surface_from_bgra(gw as u32, gh as u32, &data).ok()?;
+        let s = self
+            .gfx
+            .as_ref()?
+            .surface_from_bgra(gw as u32, gh as u32, &data)
+            .ok()?;
         let v = (s, gw as i32, gh as i32);
         self.cache.insert(key, v.clone());
         Some(v)
     }
 
-    fn symbol(&mut self, parent: &ContainerVisual, s: Sym, px: i32, rgb: [u8; 3], cx: f32, cy: f32, op: f32) {
+    fn symbol(
+        &mut self,
+        parent: &ContainerVisual,
+        s: Sym,
+        px: i32,
+        rgb: [u8; 3],
+        cx: f32,
+        cy: f32,
+        op: f32,
+    ) {
         let n = px.max(8) as u32;
         let key = format!("sym|{s:?}|{n}|{rgb:?}");
         let hit = self.cache.get(&key).cloned();
@@ -422,17 +515,39 @@ impl Cc {
             Some(v) => v,
             None => {
                 let data = symbols::render(s, n, rgb);
-                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else { return };
-                let Some(Ok(sf)) = self.gfx.as_ref().map(|g| g.surface_from_bgra(cw, ch, &cd)) else { return };
+                let Some((cd, cw, ch)) = symbols::crop_ink(&data, n, n) else {
+                    return;
+                };
+                let Some(Ok(sf)) = self.gfx.as_ref().map(|g| g.surface_from_bgra(cw, ch, &cd))
+                else {
+                    return;
+                };
                 let v = (sf, cw as i32, ch as i32);
                 self.cache.insert(key, v.clone());
                 v
             }
         };
-        self.put(parent, &surf, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, op);
+        self.put(
+            parent,
+            &surf,
+            cx - w as f32 / 2.0,
+            cy - h as f32 / 2.0,
+            w as f32,
+            h as f32,
+            op,
+        );
     }
 
-    fn put(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, op: f32) {
+    fn put(
+        &self,
+        parent: &ContainerVisual,
+        s: &CompositionDrawingSurface,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        op: f32,
+    ) {
         let go = || -> windows_core::Result<()> {
             let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
             b.SetStretch(CompositionStretch::None)?;
@@ -446,27 +561,68 @@ impl Cc {
         let _ = go();
     }
 
-    fn text(&mut self, parent: &ContainerVisual, t: &str, px: i32, weight: i32, rgb: [u8; 3], x: f32, y: f32, maxw: f32, op: f32) {
+    fn text(
+        &mut self,
+        parent: &ContainerVisual,
+        t: &str,
+        px: i32,
+        weight: i32,
+        rgb: [u8; 3],
+        x: f32,
+        y: f32,
+        maxw: f32,
+        op: f32,
+    ) {
         if let Some((s, w, h)) = self.text_surf(t, px, weight, rgb, maxw as i32) {
             self.put(parent, &s, x, y, w as f32, h as f32, op);
         }
     }
 
-    fn glyph(&mut self, parent: &ContainerVisual, g: &str, px: i32, rgb: [u8; 3], cx: f32, cy: f32, op: f32) {
+    fn glyph(
+        &mut self,
+        parent: &ContainerVisual,
+        g: &str,
+        px: i32,
+        rgb: [u8; 3],
+        cx: f32,
+        cy: f32,
+        op: f32,
+    ) {
         if let Some((s, w, h)) = self.glyph_surf(g, px, rgb) {
-            self.put(parent, &s, cx - w as f32 / 2.0, cy - h as f32 / 2.0, w as f32, h as f32, op);
+            self.put(
+                parent,
+                &s,
+                cx - w as f32 / 2.0,
+                cy - h as f32 / 2.0,
+                w as f32,
+                h as f32,
+                op,
+            );
         }
     }
 
-    fn rrect(&self, parent: &ContainerVisual, r: Rect, radius: f32, c: Color) -> Option<SpriteVisual> {
+    fn rrect(
+        &self,
+        parent: &ContainerVisual,
+        r: Rect,
+        radius: f32,
+        c: Color,
+    ) -> Option<SpriteVisual> {
         let go = || -> windows_core::Result<SpriteVisual> {
             let v = self.comp.CreateSpriteVisual()?;
             v.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-            v.SetOffset(Vector3 { X: r.0, Y: r.1, Z: 0.0 })?;
+            v.SetOffset(Vector3 {
+                X: r.0,
+                Y: r.1,
+                Z: 0.0,
+            })?;
             v.SetBrush(&self.comp.CreateColorBrushWithColor(c)?)?;
             let g = self.comp.CreateRoundedRectangleGeometry()?;
             g.SetSize(Vector2 { X: r.2, Y: r.3 })?;
-            g.SetCornerRadius(Vector2 { X: radius, Y: radius })?;
+            g.SetCornerRadius(Vector2 {
+                X: radius,
+                Y: radius,
+            })?;
             let clip = self.comp.CreateGeometricClip()?;
             clip.SetGeometry(&g)?;
             v.SetClip(&clip)?;
@@ -490,7 +646,10 @@ impl Cc {
             Kind::Wifi => self.wifi == Some(true),
             Kind::Bluetooth => self.bt == Some(true),
             Kind::Stage => prefs::get().stage,
-            Kind::DarkMode => prefs::look(prefs::Role::Dark).dark && prefs::get().theme == nacre_core::settings::Theme::Dark,
+            Kind::DarkMode => {
+                prefs::look(prefs::Role::Dark).dark
+                    && prefs::get().theme == nacre_core::settings::Theme::Dark
+            }
             _ => false,
         }
     }
@@ -534,19 +693,37 @@ impl Cc {
             }
             None => {
                 let base = GlassParams::dark((10.0, 10.0), 0.0);
-                let Ok(popup) = Popup::new(&self.comp, w!("AbraControlCenter"), Some(panel_proc), WINDOW_EX_STYLE(0), base) else { return };
-                dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0 * prefs::ui_scale();
+                let Ok(popup) = Popup::new(
+                    &self.comp,
+                    w!("NexoraControlCenter"),
+                    Some(panel_proc),
+                    WINDOW_EX_STYLE(0),
+                    base,
+                ) else {
+                    return;
+                };
+                dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0
+                    * prefs::ui_scale();
                 popup
             }
         };
         let mut popup = popup;
         let (cell, gap) = (82.0 * dpi, 14.0 * dpi);
         let sizes = self.sizes.clone();
-        let (placed, rows) = controls::layout_sized(&self.layout, &|k| *sizes.get(&k).unwrap_or(&k.default_size()));
+        let (placed, rows) = controls::layout_sized(&self.layout, &|k| {
+            *sizes.get(&k).unwrap_or(&k.default_size())
+        });
         let rows = if self.edit { rows + 2 } else { rows };
-        let (gw, gh) = (4.0 * cell + 3.0 * gap, rows as f32 * cell + (rows.max(1) - 1) as f32 * gap);
+        let (gw, gh) = (
+            4.0 * cell + 3.0 * gap,
+            rows as f32 * cell + (rows.max(1) - 1) as f32 * gap,
+        );
         let btn_h = 34.0 * dpi;
-        let inuse = if self.edit { Vec::new() } else { nacre_platform::privacy::active() };
+        let inuse = if self.edit {
+            Vec::new()
+        } else {
+            nacre_platform::privacy::active()
+        };
         let top = if inuse.is_empty() { 0.0 } else { 36.0 * dpi };
         let (pw, ph) = (gw, top + gh + 14.0 * dpi + btn_h + 4.0 * dpi);
         let (sw, _) = nacre_platform::sys::screen_size();
@@ -554,7 +731,12 @@ impl Cc {
         let y = self.top + (6.0 * dpi) as i32;
         let m = (8.0 * dpi).round();
         PAD.store(m.to_bits(), std::sync::atomic::Ordering::Relaxed);
-        let _ = popup.set_rect(x - m as i32, y - m as i32, (pw + 2.0 * m).ceil() as i32, (ph + 2.0 * m).ceil() as i32);
+        let _ = popup.set_rect(
+            x - m as i32,
+            y - m as i32,
+            (pw + 2.0 * m).ceil() as i32,
+            (ph + 2.0 * m).ceil() as i32,
+        );
         let _ = popup.panel.set_rect(0.0, 0.0, 0.0, 0.0);
         let _ = popup.content.SetOffset(Vector3 { X: m, Y: m, Z: 0.0 });
         let content = popup.content.clone();
@@ -570,7 +752,13 @@ impl Cc {
                     occupied.push((p.col + dx, p.row + dy));
                 }
             }
-            let radius = if p.w == 1 && p.h == 1 { r.2 / 2.0 } else if p.h >= 2 || p.w >= 3 { CARD_R * cell } else { r.3 / 2.0 };
+            let radius = if p.w == 1 && p.h == 1 {
+                r.2 / 2.0
+            } else if p.h >= 2 || p.w >= 3 {
+                CARD_R * cell
+            } else {
+                r.3 / 2.0
+            };
             let mc = self.comp.CreateContainerVisual().ok();
             if let Some(mc) = &mc {
                 let _ = content.Children().and_then(|k| k.InsertAtTop(mc));
@@ -591,13 +779,32 @@ impl Cc {
                     if occupied.contains(&(col, row)) {
                         continue;
                     }
-                    let r: Rect = (col as f32 * (cell + gap), row as f32 * (cell + gap), cell, cell);
-                    let _ = self.rrect(&content, r, cell / 2.0, Color { A: 40, R: 255, G: 255, B: 255 });
+                    let r: Rect = (
+                        col as f32 * (cell + gap),
+                        row as f32 * (cell + gap),
+                        cell,
+                        cell,
+                    );
+                    let _ = self.rrect(
+                        &content,
+                        r,
+                        cell / 2.0,
+                        Color {
+                            A: 40,
+                            R: 255,
+                            G: 255,
+                            B: 255,
+                        },
+                    );
                     slots.push(r);
                 }
             }
         }
-        let label = if self.edit { prefs::tr("Selesai") } else { prefs::tr("Edit Kontrol…") };
+        let label = if self.edit {
+            prefs::tr("Selesai")
+        } else {
+            prefs::tr("Edit Kontrol…")
+        };
         let bw = 128.0 * dpi;
         let bx = (pw - bw) / 2.0;
         let edit_btn: Rect = (bx, top + gh + 14.0 * dpi, bw, btn_h);
@@ -610,34 +817,91 @@ impl Cc {
         if let Some(g) = self.glass(eparent, edit_btn, btn_h / 2.0) {
             panels.push(g);
         }
-        let (lw, _) = measure(label, &Style { px: (13.0 * dpi) as i32, weight: 600 });
-        self.text(eparent, label, (13.0 * dpi) as i32, 600, WHITE, bx + ((bw - lw as f32) / 2.0).max(8.0 * dpi), edit_btn.1 + 8.0 * dpi, bw - 16.0 * dpi, 1.0);
+        let (lw, _) = measure(
+            label,
+            &Style {
+                px: (13.0 * dpi) as i32,
+                weight: 600,
+            },
+        );
+        self.text(
+            eparent,
+            label,
+            (13.0 * dpi) as i32,
+            600,
+            WHITE,
+            bx + ((bw - lw as f32) / 2.0).max(8.0 * dpi),
+            edit_btn.1 + 8.0 * dpi,
+            bw - 16.0 * dpi,
+            1.0,
+        );
         let chip = self.draw_chip(&content, &inuse, pw, dpi, &mut groups, &mut panels);
         self.intro_items.clear();
         if self.intro {
             let icon = (pw - 24.0 * dpi, 0.0f32);
             let mut order: Vec<usize> = (0..groups.len()).collect();
-            let dist = |r: &Rect| ((r.0 + r.2 / 2.0 - icon.0).powi(2) + (r.1 + r.3 / 2.0 - icon.1).powi(2)).sqrt();
+            let dist = |r: &Rect| {
+                ((r.0 + r.2 / 2.0 - icon.0).powi(2) + (r.1 + r.3 / 2.0 - icon.1).powi(2)).sqrt()
+            };
             order.sort_by(|a, b| dist(&groups[*a].1).total_cmp(&dist(&groups[*b].1)));
             for (rank, i) in order.into_iter().enumerate() {
                 let (v, r) = &groups[i];
-                let center = Vector3 { X: r.0 + r.2 / 2.0, Y: r.1 + r.3 / 2.0, Z: 0.0 };
+                let center = Vector3 {
+                    X: r.0 + r.2 / 2.0,
+                    Y: r.1 + r.3 / 2.0,
+                    Z: 0.0,
+                };
                 let _ = v.SetOpacity(0.0);
-                self.intro_items.push((v.clone(), center, 40 + rank as u32 * motion::CC_STAGGER_MS));
+                self.intro_items.push((
+                    v.clone(),
+                    center,
+                    40 + rank as u32 * motion::CC_STAGGER_MS,
+                ));
             }
         }
 
         let hwnd = popup.hwnd;
         let rect = popup.rect;
-        self.panel = Some(Panel { popup, dpi, cell, gap, mods, slots, edit_btn, panels, drag: None, slider: None, w: pw, chip, hover: None, preview: Vec::new(), shift: HashMap::new(), lift: (0.0, 0.0), resize: None, ghost: None });
+        self.panel = Some(Panel {
+            popup,
+            dpi,
+            cell,
+            gap,
+            mods,
+            slots,
+            edit_btn,
+            panels,
+            drag: None,
+            slider: None,
+            w: pw,
+            chip,
+            hover: None,
+            preview: Vec::new(),
+            shift: HashMap::new(),
+            lift: (0.0, 0.0),
+            resize: None,
+            ghost: None,
+        });
         if self.edit {
             nacre_platform::input::end_dismiss();
         } else {
-            nacre_platform::input::begin_dismiss((rect.0, rect.1, rect.0 + rect.2, rect.1 + rect.3), hwnd.0 as isize, WM_CLOSE_CC);
+            nacre_platform::input::begin_dismiss(
+                (rect.0, rect.1, rect.0 + rect.2, rect.1 + rect.3),
+                hwnd.0 as isize,
+                WM_CLOSE_CC,
+            );
         }
     }
 
-    fn draw_chip(&mut self, content: &ContainerVisual, inuse: &[nacre_platform::privacy::InUse], pw: f32, dpi: f32, groups: &mut Vec<(ContainerVisual, Rect)>, panels: &mut Vec<GlassPanel>) -> Option<(Rect, bool)> {
+    fn draw_chip(
+        &mut self,
+        content: &ContainerVisual,
+        inuse: &[nacre_platform::privacy::InUse],
+        pw: f32,
+        dpi: f32,
+        groups: &mut Vec<(ContainerVisual, Rect)>,
+        panels: &mut Vec<GlassPanel>,
+    ) -> Option<(Rect, bool)> {
         if inuse.is_empty() {
             return None;
         }
@@ -647,9 +911,15 @@ impl Cc {
                 apps.push(&u.app);
             }
         }
-        let (mic, cam) = (inuse.iter().any(|u| !u.camera), inuse.iter().any(|u| u.camera));
+        let (mic, cam) = (
+            inuse.iter().any(|u| !u.camera),
+            inuse.iter().any(|u| u.camera),
+        );
         let label = apps.iter().take(2).copied().collect::<Vec<_>>().join(", ");
-        let style = Style { px: (12.5 * dpi) as i32, weight: 600 };
+        let style = Style {
+            px: (12.5 * dpi) as i32,
+            weight: 600,
+        };
         let (lw, _) = measure(&label, &style);
         let ch = 28.0 * dpi;
         let dots = (mic as u32 + cam as u32) as f32 * 13.0 * dpi;
@@ -663,17 +933,53 @@ impl Cc {
         }
         let mut x = cr.0 + 12.0 * dpi;
         let d = 8.0 * dpi;
-        for (on, col) in [(mic, Color { A: 255, R: 255, G: 149, B: 0 }), (cam, Color { A: 255, R: 52, G: 199, B: 89 })] {
+        for (on, col) in [
+            (
+                mic,
+                Color {
+                    A: 255,
+                    R: 255,
+                    G: 149,
+                    B: 0,
+                },
+            ),
+            (
+                cam,
+                Color {
+                    A: 255,
+                    R: 52,
+                    G: 199,
+                    B: 89,
+                },
+            ),
+        ] {
             if on {
                 let _ = self.rrect(&cc, (x, cr.1 + (ch - d) / 2.0, d, d), d / 2.0, col);
                 x += 13.0 * dpi;
             }
         }
-        self.text(&cc, &label, style.px, 600, WHITE, x + 3.0 * dpi, cr.1 + 6.0 * dpi, lw as f32 + 4.0, 1.0);
+        self.text(
+            &cc,
+            &label,
+            style.px,
+            600,
+            WHITE,
+            x + 3.0 * dpi,
+            cr.1 + 6.0 * dpi,
+            lw as f32 + 4.0,
+            1.0,
+        );
         Some((cr, cam && !mic))
     }
 
-    fn draw_module(&mut self, c: &ContainerVisual, p: &Placed, r: Rect, dpi: f32, radius: f32) -> Mod {
+    fn draw_module(
+        &mut self,
+        c: &ContainerVisual,
+        p: &Placed,
+        r: Rect,
+        dpi: f32,
+        radius: f32,
+    ) -> Mod {
         let k = p.kind;
         let on = self.is_on(k);
         let px = |v: f32| (v * dpi) as i32;
@@ -681,12 +987,35 @@ impl Cc {
         let (gt, grc) = (17.0 * dpi, rad + 2.5 * dpi);
         let (gcx, gcy) = (r.0 + r.2 - rad, r.1 + r.3 - rad);
         let grip_box: Rect = (gcx - gt, gcy - gt, grc + 2.0 * gt, grc + 2.0 * gt);
-        let mut m = Mod { placed: *p, rect: r, track: None, fill: None, thumb: vec![], btns: vec![], badge: (r.0 - 6.0 * dpi, r.1 - 6.0 * dpi, 24.0 * dpi, 24.0 * dpi), grip: grip_box, vertical: false, cont: None };
+        let mut m = Mod {
+            placed: *p,
+            rect: r,
+            track: None,
+            fill: None,
+            thumb: vec![],
+            btns: vec![],
+            badge: (r.0 - 6.0 * dpi, r.1 - 6.0 * dpi, 24.0 * dpi, 24.0 * dpi),
+            grip: grip_box,
+            vertical: false,
+            cont: None,
+        };
         let small = p.w == 1 && p.h == 1;
         match k {
             Kind::Display | Kind::Sound if small => {
-                let sym = if k == Kind::Display { Sym::Sun } else { Sym::SpeakerWave };
-                self.symbol(c, sym, px(20.0), WHITE, r.0 + r.2 / 2.0, r.1 + r.3 / 2.0, 0.95);
+                let sym = if k == Kind::Display {
+                    Sym::Sun
+                } else {
+                    Sym::SpeakerWave
+                };
+                self.symbol(
+                    c,
+                    sym,
+                    px(20.0),
+                    WHITE,
+                    r.0 + r.2 / 2.0,
+                    r.1 + r.3 / 2.0,
+                    0.95,
+                );
                 m.btns.push((r, 10));
             }
             Kind::Display | Kind::Sound if p.w == 1 => {
@@ -694,19 +1023,62 @@ impl Cc {
                 let (top, bot) = (r.1 + 16.0 * dpi, r.1 + r.3 - 40.0 * dpi);
                 let tx = r.0 + (r.2 - tw) / 2.0;
                 let th = (bot - top).max(20.0 * dpi);
-                let _ = self.rrect(c, (tx, top, tw, th), tw / 2.0, Color { A: 45, R: 255, G: 255, B: 255 });
-                let frac = if k == Kind::Display { brightness::latest().map(|v| v as f32 / 100.0).unwrap_or(0.5) } else { audio::latest().level };
+                let _ = self.rrect(
+                    c,
+                    (tx, top, tw, th),
+                    tw / 2.0,
+                    Color {
+                        A: 45,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
+                let frac = if k == Kind::Display {
+                    brightness::latest()
+                        .map(|v| v as f32 / 100.0)
+                        .unwrap_or(0.5)
+                } else {
+                    audio::latest().level
+                };
                 let (kw, kh) = (KNOB.1 * dpi, KNOB.0 * dpi);
                 let ky = (top + th * (1.0 - frac)).clamp(top + kh / 2.0, top + th - kh / 2.0);
-                let fill = self.rrect(c, (tx, ky, tw, (top + th - ky).max(tw)), tw / 2.0, Color { A: 240, R: 255, G: 255, B: 255 });
-                let sym = if k == Kind::Display { Sym::Sun } else { Sym::SpeakerWave };
-                self.symbol(c, sym, px(17.0), WHITE, r.0 + r.2 / 2.0, r.1 + r.3 - 21.0 * dpi, 0.85);
+                let fill = self.rrect(
+                    c,
+                    (tx, ky, tw, (top + th - ky).max(tw)),
+                    tw / 2.0,
+                    Color {
+                        A: 240,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
+                let sym = if k == Kind::Display {
+                    Sym::Sun
+                } else {
+                    Sym::SpeakerWave
+                };
+                self.symbol(
+                    c,
+                    sym,
+                    px(17.0),
+                    WHITE,
+                    r.0 + r.2 / 2.0,
+                    r.1 + r.3 - 21.0 * dpi,
+                    0.85,
+                );
                 let mut thumb = Vec::new();
                 let sh = 1.0 * dpi;
                 let [s0, s1, s2] = DROP_IDLE;
                 for (inset, col) in [(-sh, s0), (0.0, s1), (1.5 * dpi, s2)] {
                     let (w, h) = (kw - 2.0 * inset, kh - 2.0 * inset);
-                    if let Some(v) = self.rrect(c, (r.0 + r.2 / 2.0 - w / 2.0, ky - h / 2.0, w, h), w / 2.0, col) {
+                    if let Some(v) = self.rrect(
+                        c,
+                        (r.0 + r.2 / 2.0 - w / 2.0, ky - h / 2.0, w, h),
+                        w / 2.0,
+                        col,
+                    ) {
                         thumb.push(v);
                     }
                 }
@@ -719,27 +1091,99 @@ impl Cc {
                 let title = prefs::tr(k.title());
                 let titled = p.w >= 3 || p.h >= 2;
                 if titled {
-                    self.text(c, title, px(15.5), 600, WHITE, r.0 + 20.0 * dpi, r.1 + 12.0 * dpi, r.2 - 40.0 * dpi, 0.95);
+                    self.text(
+                        c,
+                        title,
+                        px(15.5),
+                        600,
+                        WHITE,
+                        r.0 + 20.0 * dpi,
+                        r.1 + 12.0 * dpi,
+                        r.2 - 40.0 * dpi,
+                        0.95,
+                    );
                 }
                 let th = 10.0 * dpi;
-                let out = if k == Kind::Sound && r.2 > 250.0 * dpi { 36.0 * dpi } else { 0.0 };
+                let out = if k == Kind::Sound && r.2 > 250.0 * dpi {
+                    36.0 * dpi
+                } else {
+                    0.0
+                };
                 let right = if out > 0.0 { 108.0 * dpi } else { 40.0 * dpi };
-                let cy = if p.h >= 2 { r.1 + r.3 - 36.0 * dpi } else if titled { r.1 + r.3 * 0.65 } else { r.1 + r.3 / 2.0 };
+                let cy = if p.h >= 2 {
+                    r.1 + r.3 - 36.0 * dpi
+                } else if titled {
+                    r.1 + r.3 * 0.65
+                } else {
+                    r.1 + r.3 / 2.0
+                };
                 let (tx, ty) = (r.0 + 42.0 * dpi, cy - th / 2.0);
                 let tw = r.2 - 42.0 * dpi - right;
-                let _ = self.rrect(c, (tx, ty, tw, th), th / 2.0, Color { A: 45, R: 255, G: 255, B: 255 });
-                let frac = if k == Kind::Display { brightness::latest().map(|v| v as f32 / 100.0).unwrap_or(0.5) } else { audio::latest().level };
+                let _ = self.rrect(
+                    c,
+                    (tx, ty, tw, th),
+                    th / 2.0,
+                    Color {
+                        A: 45,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
+                let frac = if k == Kind::Display {
+                    brightness::latest()
+                        .map(|v| v as f32 / 100.0)
+                        .unwrap_or(0.5)
+                } else {
+                    audio::latest().level
+                };
                 let (kw, kh) = (KNOB.0 * dpi, KNOB.1 * dpi);
                 let kx = (tx + tw * frac).clamp(tx + kw / 2.0, tx + tw - kw / 2.0);
-                let fill = self.rrect(c, (tx, ty, (kx - tx).max(th), th), th / 2.0, Color { A: 240, R: 255, G: 255, B: 255 });
-                let (lo, hi, lo_px, hi_px) = if k == Kind::Display { (Sym::SunSmall, Sym::Sun, 15, 19) } else { (Sym::Speaker, Sym::SpeakerWave, 19, 25) };
+                let fill = self.rrect(
+                    c,
+                    (tx, ty, (kx - tx).max(th), th),
+                    th / 2.0,
+                    Color {
+                        A: 240,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
+                let (lo, hi, lo_px, hi_px) = if k == Kind::Display {
+                    (Sym::SunSmall, Sym::Sun, 15, 19)
+                } else {
+                    (Sym::Speaker, Sym::SpeakerWave, 19, 25)
+                };
                 self.symbol(c, lo, px(lo_px as f32), WHITE, r.0 + 23.0 * dpi, cy, 0.85);
-                let hi_x = if out > 0.0 { r.0 + r.2 - 86.0 * dpi } else { r.0 + r.2 - 21.0 * dpi };
+                let hi_x = if out > 0.0 {
+                    r.0 + r.2 - 86.0 * dpi
+                } else {
+                    r.0 + r.2 - 21.0 * dpi
+                };
                 self.symbol(c, hi, px(hi_px as f32), WHITE, hi_x, cy, 0.85);
                 if out > 0.0 {
                     let b: Rect = (r.0 + r.2 - 39.0 * dpi - out / 2.0, cy - out / 2.0, out, out);
-                    let _ = self.rrect(c, b, out / 2.0, Color { A: 45, R: 255, G: 255, B: 255 });
-                    self.symbol(c, Sym::Headphones, px(19.0), WHITE, b.0 + out / 2.0, cy, 0.9);
+                    let _ = self.rrect(
+                        c,
+                        b,
+                        out / 2.0,
+                        Color {
+                            A: 45,
+                            R: 255,
+                            G: 255,
+                            B: 255,
+                        },
+                    );
+                    self.symbol(
+                        c,
+                        Sym::Headphones,
+                        px(19.0),
+                        WHITE,
+                        b.0 + out / 2.0,
+                        cy,
+                        0.9,
+                    );
                     m.btns.push((b, 10));
                 }
                 let mut thumb = Vec::new();
@@ -747,7 +1191,8 @@ impl Cc {
                 let [s0, s1, s2] = DROP_IDLE;
                 for (inset, col) in [(-sh, s0), (0.0, s1), (1.5 * dpi, s2)] {
                     let (w, h) = (kw - 2.0 * inset, kh - 2.0 * inset);
-                    if let Some(v) = self.rrect(c, (kx - w / 2.0, cy - h / 2.0, w, h), h / 2.0, col) {
+                    if let Some(v) = self.rrect(c, (kx - w / 2.0, cy - h / 2.0, w, h), h / 2.0, col)
+                    {
                         thumb.push(v);
                     }
                 }
@@ -761,9 +1206,31 @@ impl Cc {
                 let play = if playing { Sym::Pause } else { Sym::Play };
                 if !has {
                     let (cx, cy) = (r.0 + r.2 / 2.0, r.1 + r.3 / 2.0);
-                    self.glyph(c, "\u{E8D6}", px(if small { 20.0 } else { 26.0 }), WHITE, cx, if small || p.h == 1 { cy } else { cy - 10.0 * dpi }, 0.6);
+                    self.glyph(
+                        c,
+                        "\u{E8D6}",
+                        px(if small { 20.0 } else { 26.0 }),
+                        WHITE,
+                        cx,
+                        if small || p.h == 1 {
+                            cy
+                        } else {
+                            cy - 10.0 * dpi
+                        },
+                        0.6,
+                    );
                     if !small && p.h >= 2 {
-                        self.text(c, prefs::tr("Tidak diputar"), px(12.0), 500, WHITE, r.0 + 16.0 * dpi, cy + 14.0 * dpi, r.2 - 20.0 * dpi, 0.7);
+                        self.text(
+                            c,
+                            prefs::tr("Tidak diputar"),
+                            px(12.0),
+                            500,
+                            WHITE,
+                            r.0 + 16.0 * dpi,
+                            cy + 14.0 * dpi,
+                            r.2 - 20.0 * dpi,
+                            0.7,
+                        );
                     }
                 } else if small {
                     let (cx, cy) = (r.0 + r.2 / 2.0, r.1 + r.3 / 2.0);
@@ -772,20 +1239,52 @@ impl Cc {
                 } else if p.h == 1 {
                     let art = r.3 - 2.0 * pad;
                     self.art_at(c, r.0 + pad, r.1 + pad, art, dpi);
-                    let ctrl: Vec<(Sym, u8)> = if p.w >= 3 { vec![(Sym::Backward, 0), (play, 1), (Sym::Forward, 2)] } else { vec![(play, 1)] };
+                    let ctrl: Vec<(Sym, u8)> = if p.w >= 3 {
+                        vec![(Sym::Backward, 0), (play, 1), (Sym::Forward, 2)]
+                    } else {
+                        vec![(play, 1)]
+                    };
                     let bw = 38.0 * dpi;
                     let cy = r.1 + r.3 / 2.0;
                     let x_end = r.0 + r.2 - pad;
                     for (j, (sy, id)) in ctrl.iter().enumerate() {
                         let cx = x_end - bw * (ctrl.len() - j) as f32 + bw / 2.0;
-                        self.symbol(c, *sy, px(if *id == 1 { 20.0 } else { 16.0 }), WHITE, cx, cy, 1.0);
+                        self.symbol(
+                            c,
+                            *sy,
+                            px(if *id == 1 { 20.0 } else { 16.0 }),
+                            WHITE,
+                            cx,
+                            cy,
+                            1.0,
+                        );
                         m.btns.push(((cx - bw / 2.0, cy - bw / 2.0, bw, bw), *id));
                     }
                     let tx = r.0 + pad + art + 10.0 * dpi;
                     let tw = x_end - bw * ctrl.len() as f32 - tx - 6.0 * dpi;
                     if tw > 30.0 * dpi {
-                        self.text(c, &title, px(13.0), 600, WHITE, tx, cy - 18.0 * dpi, tw, 1.0);
-                        self.text(c, &artist, px(12.0), 400, WHITE, tx, cy + 1.0 * dpi, tw, 0.65);
+                        self.text(
+                            c,
+                            &title,
+                            px(13.0),
+                            600,
+                            WHITE,
+                            tx,
+                            cy - 18.0 * dpi,
+                            tw,
+                            1.0,
+                        );
+                        self.text(
+                            c,
+                            &artist,
+                            px(12.0),
+                            400,
+                            WHITE,
+                            tx,
+                            cy + 1.0 * dpi,
+                            tw,
+                            0.65,
+                        );
                     }
                 } else if p.w == 1 {
                     let art = r.2 - 2.0 * pad;
@@ -798,76 +1297,284 @@ impl Cc {
                     self.art_at(c, r.0 + pad, r.1 + pad, art, dpi);
                     let tx = r.0 + pad + art + 14.0 * dpi;
                     let tw = r.0 + r.2 - pad - tx;
-                    self.text(c, &title, px(15.0), 600, WHITE, tx, r.1 + pad + 4.0 * dpi, tw, 1.0);
-                    self.text(c, &artist, px(13.0), 400, WHITE, tx, r.1 + pad + 26.0 * dpi, tw, 0.65);
+                    self.text(
+                        c,
+                        &title,
+                        px(15.0),
+                        600,
+                        WHITE,
+                        tx,
+                        r.1 + pad + 4.0 * dpi,
+                        tw,
+                        1.0,
+                    );
+                    self.text(
+                        c,
+                        &artist,
+                        px(13.0),
+                        400,
+                        WHITE,
+                        tx,
+                        r.1 + pad + 26.0 * dpi,
+                        tw,
+                        0.65,
+                    );
                     let cy = r.1 + r.3 - pad - 22.0 * dpi;
                     let syms = [Sym::Backward, play, Sym::Forward];
                     for (i, sy) in syms.iter().enumerate() {
                         let cx = tx + tw * (0.18 + i as f32 * 0.32);
-                        self.symbol(c, *sy, px(if i == 1 { 24.0 } else { 19.0 }), WHITE, cx, cy, 1.0);
-                        m.btns.push(((cx - 22.0 * dpi, cy - 22.0 * dpi, 44.0 * dpi, 44.0 * dpi), i as u8));
+                        self.symbol(
+                            c,
+                            *sy,
+                            px(if i == 1 { 24.0 } else { 19.0 }),
+                            WHITE,
+                            cx,
+                            cy,
+                            1.0,
+                        );
+                        m.btns.push((
+                            (cx - 22.0 * dpi, cy - 22.0 * dpi, 44.0 * dpi, 44.0 * dpi),
+                            i as u8,
+                        ));
                     }
                 } else {
-                    let art = (r.3 - 120.0 * dpi).min(r.2 - 2.0 * pad).max(40.0 * dpi).min(r.2 * 0.24 * p.h as f32);
+                    let art = (r.3 - 120.0 * dpi)
+                        .min(r.2 - 2.0 * pad)
+                        .max(40.0 * dpi)
+                        .min(r.2 * 0.24 * p.h as f32);
                     self.art_at(c, r.0 + pad, r.1 + pad, art, dpi);
-                    self.text(c, &title, px(13.0), 600, WHITE, r.0 + 16.0 * dpi, r.1 + 18.0 * dpi + art, r.2 - 28.0 * dpi, 1.0);
-                    self.text(c, &artist, px(12.0), 400, WHITE, r.0 + 16.0 * dpi, r.1 + 38.0 * dpi + art, r.2 - 28.0 * dpi, 0.65);
+                    self.text(
+                        c,
+                        &title,
+                        px(13.0),
+                        600,
+                        WHITE,
+                        r.0 + 16.0 * dpi,
+                        r.1 + 18.0 * dpi + art,
+                        r.2 - 28.0 * dpi,
+                        1.0,
+                    );
+                    self.text(
+                        c,
+                        &artist,
+                        px(12.0),
+                        400,
+                        WHITE,
+                        r.0 + 16.0 * dpi,
+                        r.1 + 38.0 * dpi + art,
+                        r.2 - 28.0 * dpi,
+                        0.65,
+                    );
                     let cy = r.1 + r.3 - 24.0 * dpi;
                     let cxs = [r.0 + r.2 * 0.22, r.0 + r.2 * 0.5, r.0 + r.2 * 0.78];
                     let syms = [Sym::Backward, play, Sym::Forward];
                     for (i, (cx, sy)) in cxs.iter().zip(syms).enumerate() {
-                        self.symbol(c, sy, px(if i == 1 { 20.0 } else { 17.0 }), WHITE, *cx, cy, 1.0);
-                        m.btns.push(((cx - 20.0 * dpi, cy - 20.0 * dpi, 40.0 * dpi, 40.0 * dpi), i as u8));
+                        self.symbol(
+                            c,
+                            sy,
+                            px(if i == 1 { 20.0 } else { 17.0 }),
+                            WHITE,
+                            *cx,
+                            cy,
+                            1.0,
+                        );
+                        m.btns.push((
+                            (cx - 20.0 * dpi, cy - 20.0 * dpi, 40.0 * dpi, 40.0 * dpi),
+                            i as u8,
+                        ));
                     }
                 }
             }
             _ if p.h >= 2 => {
                 let d = 46.0 * dpi;
                 let disc: Rect = (r.0 + 12.0 * dpi, r.1 + 12.0 * dpi, d, d);
-                let (bg, fg) = if on { (Color { A: 245, R: 255, G: 255, B: 255 }, prefs::accent()) } else { (Color { A: 70, R: 0, G: 0, B: 0 }, WHITE) };
+                let (bg, fg) = if on {
+                    (
+                        Color {
+                            A: 245,
+                            R: 255,
+                            G: 255,
+                            B: 255,
+                        },
+                        prefs::accent(),
+                    )
+                } else {
+                    (
+                        Color {
+                            A: 70,
+                            R: 0,
+                            G: 0,
+                            B: 0,
+                        },
+                        WHITE,
+                    )
+                };
                 let _ = self.rrect(c, disc, d / 2.0, bg);
-                self.glyph(c, glyph_of(k), px(20.0), fg, disc.0 + d / 2.0, disc.1 + d / 2.0, 1.0);
+                self.glyph(
+                    c,
+                    glyph_of(k),
+                    px(20.0),
+                    fg,
+                    disc.0 + d / 2.0,
+                    disc.1 + d / 2.0,
+                    1.0,
+                );
                 m.btns.push((disc, BTN_DISC));
                 let title = prefs::tr(k.title());
-                self.text(c, title, px(14.0), 600, WHITE, r.0 + 16.0 * dpi, r.1 + r.3 - 48.0 * dpi, r.2 - 28.0 * dpi, 1.0);
+                self.text(
+                    c,
+                    title,
+                    px(14.0),
+                    600,
+                    WHITE,
+                    r.0 + 16.0 * dpi,
+                    r.1 + r.3 - 48.0 * dpi,
+                    r.2 - 28.0 * dpi,
+                    1.0,
+                );
                 let status = self.status(k);
                 if !status.is_empty() {
-                    self.text(c, &status, px(12.0), 400, WHITE, r.0 + 16.0 * dpi, r.1 + r.3 - 28.0 * dpi, r.2 - 28.0 * dpi, 0.65);
+                    self.text(
+                        c,
+                        &status,
+                        px(12.0),
+                        400,
+                        WHITE,
+                        r.0 + 16.0 * dpi,
+                        r.1 + r.3 - 28.0 * dpi,
+                        r.2 - 28.0 * dpi,
+                        0.65,
+                    );
                 }
             }
             _ if p.w == 1 && p.h == 1 => {
                 if on {
                     let _ = self.rrect(c, r, r.2 / 2.0, prefs::accent_c(245));
                 }
-                self.glyph(c, glyph_of(k), px(20.0), WHITE, r.0 + r.2 / 2.0, r.1 + r.3 / 2.0, 1.0);
+                self.glyph(
+                    c,
+                    glyph_of(k),
+                    px(20.0),
+                    WHITE,
+                    r.0 + r.2 / 2.0,
+                    r.1 + r.3 / 2.0,
+                    1.0,
+                );
             }
             _ => {
                 let d = r.3 * 0.58;
                 let off = (r.3 - d) / 2.0;
                 let disc: Rect = (r.0 + off, r.1 + off, d, d);
-                let (bg, fg) = if on { (Color { A: 245, R: 255, G: 255, B: 255 }, prefs::accent()) } else { (Color { A: 70, R: 0, G: 0, B: 0 }, WHITE) };
+                let (bg, fg) = if on {
+                    (
+                        Color {
+                            A: 245,
+                            R: 255,
+                            G: 255,
+                            B: 255,
+                        },
+                        prefs::accent(),
+                    )
+                } else {
+                    (
+                        Color {
+                            A: 70,
+                            R: 0,
+                            G: 0,
+                            B: 0,
+                        },
+                        WHITE,
+                    )
+                };
                 let _ = self.rrect(c, disc, d / 2.0, bg);
-                self.glyph(c, glyph_of(k), px(16.0), fg, disc.0 + d / 2.0, disc.1 + d / 2.0, 1.0);
+                self.glyph(
+                    c,
+                    glyph_of(k),
+                    px(16.0),
+                    fg,
+                    disc.0 + d / 2.0,
+                    disc.1 + d / 2.0,
+                    1.0,
+                );
                 m.btns.push((disc, BTN_DISC));
                 let tx = disc.0 + d + 11.0 * dpi;
                 let title = prefs::tr(k.title());
                 let status = self.status(k);
                 let ty = r.1 + r.3 / 2.0 - if status.is_empty() { 9.5 } else { 19.0 } * dpi;
-                self.text(c, title, px(14.0), 600, WHITE, tx, ty, r.2 - d - off - 22.0 * dpi, 1.0);
+                self.text(
+                    c,
+                    title,
+                    px(14.0),
+                    600,
+                    WHITE,
+                    tx,
+                    ty,
+                    r.2 - d - off - 22.0 * dpi,
+                    1.0,
+                );
                 if !status.is_empty() {
-                    self.text(c, &status, px(12.0), 400, WHITE, tx, ty + 19.0 * dpi, r.2 - d - off - 22.0 * dpi, 0.65);
+                    self.text(
+                        c,
+                        &status,
+                        px(12.0),
+                        400,
+                        WHITE,
+                        tx,
+                        ty + 19.0 * dpi,
+                        r.2 - d - off - 22.0 * dpi,
+                        0.65,
+                    );
                 }
             }
         }
         if self.edit {
             let b = m.badge;
-            let _ = self.rrect(c, b, b.2 / 2.0, Color { A: 150, R: 70, G: 70, B: 74 });
-            let _ = self.rrect(c, b, b.2 / 2.0, Color { A: 46, R: 255, G: 255, B: 255 });
+            let _ = self.rrect(
+                c,
+                b,
+                b.2 / 2.0,
+                Color {
+                    A: 150,
+                    R: 70,
+                    G: 70,
+                    B: 74,
+                },
+            );
+            let _ = self.rrect(
+                c,
+                b,
+                b.2 / 2.0,
+                Color {
+                    A: 46,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                },
+            );
             self.glass_ring(c, b, dpi);
-            let _ = self.rrect(c, (b.0 + 6.0 * dpi, b.1 + b.3 / 2.0 - 1.0 * dpi, b.2 - 12.0 * dpi, 2.2 * dpi), dpi, Color { A: 255, R: 255, G: 255, B: 255 });
+            let _ = self.rrect(
+                c,
+                (
+                    b.0 + 6.0 * dpi,
+                    b.1 + b.3 / 2.0 - 1.0 * dpi,
+                    b.2 - 12.0 * dpi,
+                    2.2 * dpi,
+                ),
+                dpi,
+                Color {
+                    A: 255,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                },
+            );
             let (bw, bh) = (grip_box.2.ceil() as u32, grip_box.3.ceil() as u32);
             let data = nacre_core::logo::render_grip(bw, bh, (gt, gt), grc, gt, 14.0, 76.0);
-            if let Some(Ok(sf)) = self.gfx.as_ref().map(|g| g.surface_from_bgra(bw, bh, &data)) {
+            if let Some(Ok(sf)) = self
+                .gfx
+                .as_ref()
+                .map(|g| g.surface_from_bgra(bw, bh, &data))
+            {
                 self.put(c, &sf, grip_box.0, grip_box.1, bw as f32, bh as f32, 1.0);
             }
         }
@@ -884,7 +1591,17 @@ impl Cc {
 
     fn art_at(&self, c: &ContainerVisual, x: f32, y: f32, art: f32, dpi: f32) {
         let Some(a) = self.art.clone() else {
-            let _ = self.rrect(c, (x, y, art, art), (art * 0.18).min(12.0 * dpi), Color { A: 60, R: 255, G: 255, B: 255 });
+            let _ = self.rrect(
+                c,
+                (x, y, art, art),
+                (art * 0.18).min(12.0 * dpi),
+                Color {
+                    A: 60,
+                    R: 255,
+                    G: 255,
+                    B: 255,
+                },
+            );
             return;
         };
         let Some(gfx) = self.gfx.as_ref() else { return };
@@ -927,9 +1644,21 @@ impl Cc {
         let Some(p) = self.panel.as_ref() else { return };
         let (cell, gap, dpi) = (p.cell, p.gap, p.dpi);
         let Some(m) = p.mods.get(i) else { return };
-        let origin = (m.rect.0 + p.shift.get(&m.placed.kind).map(|s| s.0).unwrap_or(0.0), m.rect.1 + p.shift.get(&m.placed.kind).map(|s| s.1).unwrap_or(0.0));
-        let (w, h) = (size.w as f32 * cell + (size.w - 1) as f32 * gap, size.h as f32 * cell + (size.h - 1) as f32 * gap);
-        let radius = if size.w == 1 && size.h == 1 { w / 2.0 } else if size.h >= 2 || size.w >= 3 { CARD_R * cell } else { h / 2.0 };
+        let origin = (
+            m.rect.0 + p.shift.get(&m.placed.kind).map(|s| s.0).unwrap_or(0.0),
+            m.rect.1 + p.shift.get(&m.placed.kind).map(|s| s.1).unwrap_or(0.0),
+        );
+        let (w, h) = (
+            size.w as f32 * cell + (size.w - 1) as f32 * gap,
+            size.h as f32 * cell + (size.h - 1) as f32 * gap,
+        );
+        let radius = if size.w == 1 && size.h == 1 {
+            w / 2.0
+        } else if size.h >= 2 || size.w >= 3 {
+            CARD_R * cell
+        } else {
+            h / 2.0
+        };
         let content = p.popup.content.clone();
         let old = p.ghost.clone();
         if let Some(g) = old {
@@ -937,14 +1666,44 @@ impl Cc {
                 let _ = k.Remove(&g);
             }
         }
-        let Ok(g) = self.comp.CreateContainerVisual() else { return };
-        let _ = self.rrect(&g, (origin.0, origin.1, w, h), radius, Color { A: 60, R: 255, G: 255, B: 255 });
+        let Ok(g) = self.comp.CreateContainerVisual() else {
+            return;
+        };
+        let _ = self.rrect(
+            &g,
+            (origin.0, origin.1, w, h),
+            radius,
+            Color {
+                A: 60,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        );
         let t = 2.0 * dpi;
-        let _ = self.rrect(&g, (origin.0 + t, origin.1 + t, w - 2.0 * t, h - 2.0 * t), (radius - t).max(0.0), Color { A: 30, R: 0, G: 0, B: 0 });
+        let _ = self.rrect(
+            &g,
+            (origin.0 + t, origin.1 + t, w - 2.0 * t, h - 2.0 * t),
+            (radius - t).max(0.0),
+            Color {
+                A: 30,
+                R: 0,
+                G: 0,
+                B: 0,
+            },
+        );
         let _ = content.Children().and_then(|k| k.InsertAtTop(&g));
-        let center = Vector3 { X: origin.0 + w / 2.0, Y: origin.1 + h / 2.0, Z: 0.0 };
+        let center = Vector3 {
+            X: origin.0 + w / 2.0,
+            Y: origin.1 + h / 2.0,
+            Z: 0.0,
+        };
         let _ = g.SetCenterPoint(center);
-        let _ = g.SetScale(Vector3 { X: 0.93, Y: 0.93, Z: 1.0 });
+        let _ = g.SetScale(Vector3 {
+            X: 0.93,
+            Y: 0.93,
+            Z: 1.0,
+        });
         let _ = motion::hover_pop(&comp, &g, center, 1.0);
         if let Some(p) = self.panel.as_mut() {
             p.ghost = Some(g);
@@ -958,19 +1717,29 @@ impl Cc {
         let Some(m) = p.mods.get(i) else { return };
         let k = m.placed.kind;
         let (cell, gap) = (p.cell, p.gap);
-        let origin = (m.rect.0 + p.shift.get(&k).map(|s| s.0).unwrap_or(0.0), m.rect.1 + p.shift.get(&k).map(|s| s.1).unwrap_or(0.0));
-        let want = k.clamp(controls::cells_for(x - origin.0, cell, gap), controls::cells_for(y - origin.1, cell, gap));
+        let origin = (
+            m.rect.0 + p.shift.get(&k).map(|s| s.0).unwrap_or(0.0),
+            m.rect.1 + p.shift.get(&k).map(|s| s.1).unwrap_or(0.0),
+        );
+        let want = k.clamp(
+            controls::cells_for(x - origin.0, cell, gap),
+            controls::cells_for(y - origin.1, cell, gap),
+        );
         if want == cur {
             return;
         }
         let mut sizes = self.sizes.clone();
         sizes.insert(k, want);
         let preview = p.preview.clone();
-        let (placed, _) = controls::layout_sized(&preview, &|kk| *sizes.get(&kk).unwrap_or(&kk.default_size()));
+        let (placed, _) = controls::layout_sized(&preview, &|kk| {
+            *sizes.get(&kk).unwrap_or(&kk.default_size())
+        });
         let mut moves = Vec::new();
         for mm in &p.mods {
             let kk = mm.placed.kind;
-            let Some(q) = placed.iter().find(|q| q.kind == kk) else { continue };
+            let Some(q) = placed.iter().find(|q| q.kind == kk) else {
+                continue;
+            };
             let r = grid_rect(q, cell, gap, 0.0);
             let to = (r.0 - mm.rect.0, r.1 - mm.rect.1);
             let from = p.shift.get(&kk).copied().unwrap_or((0.0, 0.0));
@@ -982,7 +1751,20 @@ impl Cc {
             p.resize = Some((i, want));
             for (kk, cont, from, to) in moves {
                 if let Some(c) = cont {
-                    let _ = motion::slide_pop(&comp, &c, Vector3 { X: from.0, Y: from.1, Z: 0.0 }, Vector3 { X: to.0, Y: to.1, Z: 0.0 });
+                    let _ = motion::slide_pop(
+                        &comp,
+                        &c,
+                        Vector3 {
+                            X: from.0,
+                            Y: from.1,
+                            Z: 0.0,
+                        },
+                        Vector3 {
+                            X: to.0,
+                            Y: to.1,
+                            Z: 0.0,
+                        },
+                    );
                 }
                 p.shift.insert(kk, to);
             }
@@ -993,7 +1775,9 @@ impl Cc {
     fn end_resize(&mut self) {
         let from = self.origins();
         let Some(p) = self.panel.as_mut() else { return };
-        let Some((i, want)) = p.resize.take() else { return };
+        let Some((i, want)) = p.resize.take() else {
+            return;
+        };
         let k = p.mods[i].placed.kind;
         p.preview.clear();
         p.shift.clear();
@@ -1012,11 +1796,28 @@ impl Cc {
             return;
         }
         for (i, on) in [(p.hover, false), (hit, true)] {
-            let Some(m) = i.and_then(|i| p.mods.get(i)) else { continue };
+            let Some(m) = i.and_then(|i| p.mods.get(i)) else {
+                continue;
+            };
             let Some(c) = &m.cont else { continue };
             let r = m.rect;
-            let to = if !on { 1.0 } else if m.placed.w == 1 && m.placed.h == 1 { motion::HOVER_BUTTON } else { motion::HOVER_ROW };
-            let _ = motion::hover_pop(&comp, c, Vector3 { X: r.0 + r.2 / 2.0, Y: r.1 + r.3 / 2.0, Z: 0.0 }, to);
+            let to = if !on {
+                1.0
+            } else if m.placed.w == 1 && m.placed.h == 1 {
+                motion::HOVER_BUTTON
+            } else {
+                motion::HOVER_ROW
+            };
+            let _ = motion::hover_pop(
+                &comp,
+                c,
+                Vector3 {
+                    X: r.0 + r.2 / 2.0,
+                    Y: r.1 + r.3 / 2.0,
+                    Z: 0.0,
+                },
+                to,
+            );
         }
         p.hover = hit;
     }
@@ -1025,7 +1826,11 @@ impl Cc {
         let Some(p) = self.panel.as_ref() else { return };
         let Some(m) = p.mods.get(i) else { return };
         let Some(t) = m.track else { return };
-        let frac = if m.vertical { (1.0 - (y - t.1) / t.3).clamp(0.0, 1.0) } else { ((x - t.0) / t.2).clamp(0.0, 1.0) };
+        let frac = if m.vertical {
+            (1.0 - (y - t.1) / t.3).clamp(0.0, 1.0)
+        } else {
+            ((x - t.0) / t.2).clamp(0.0, 1.0)
+        };
         if let Some(f) = &m.fill {
             if m.vertical {
                 place_slider_v(f, &m.thumb, t, frac, p.dpi);
@@ -1052,16 +1857,42 @@ impl Cc {
         let (rect, dpi, hwnd) = (p.popup.rect, p.dpi, p.popup.hwnd);
         let Some(gfx) = self.gfx.as_ref() else { return };
         if self.menu.is_none() {
-            match Menu::new(&self.comp, hwnd, dpi, nacre_platform::sys::screen_size(), Tier::Full) {
+            match Menu::new(
+                &self.comp,
+                hwnd,
+                dpi,
+                nacre_platform::sys::screen_size(),
+                Tier::Full,
+            ) {
                 Ok(m) => self.menu = Some(m),
                 Err(_) => return,
             }
         }
-        let mk = |id: usize, label: &'static str, s: Size| MItem::action(id, &format!("{}{}", if cur == s { "\u{2713} " } else { "" }, prefs::tr(label)), true);
-        let items = vec![mk(1, "Kecil", Size::S), mk(2, "Sedang", Size::M), mk(3, "Besar", Size::L)];
+        let mk = |id: usize, label: &'static str, s: Size| {
+            MItem::action(
+                id,
+                &format!(
+                    "{}{}",
+                    if cur == s { "\u{2713} " } else { "" },
+                    prefs::tr(label)
+                ),
+                true,
+            )
+        };
+        let items = vec![
+            mk(1, "Kecil", Size::S),
+            mk(2, "Sedang", Size::M),
+            mk(3, "Besar", Size::L),
+        ];
         self.menu_kind = Some(kind);
         if let Some(m) = self.menu.as_mut() {
-            let _ = m.show(&self.comp, gfx, items, rect.0 + (x + pad()) as i32, rect.1 + (y + pad()) as i32);
+            let _ = m.show(
+                &self.comp,
+                gfx,
+                items,
+                rect.0 + (x + pad()) as i32,
+                rect.1 + (y + pad()) as i32,
+            );
         }
     }
 
@@ -1069,7 +1900,9 @@ impl Cc {
         if let Some(m) = &self.menu {
             m.hide();
         }
-        let Some(kind) = self.menu_kind.take() else { return };
+        let Some(kind) = self.menu_kind.take() else {
+            return;
+        };
         let s = match id {
             1 => Size::S,
             2 => Size::M,
@@ -1082,19 +1915,30 @@ impl Cc {
     }
 
     fn origins(&self) -> HashMap<Kind, (f32, f32)> {
-        let Some(p) = self.panel.as_ref() else { return HashMap::new() };
+        let Some(p) = self.panel.as_ref() else {
+            return HashMap::new();
+        };
         let dragged = p.drag.map(|(i, _, _)| p.mods[i].placed.kind);
         p.mods
             .iter()
             .map(|m| {
                 let k = m.placed.kind;
-                let (dx, dy) = if Some(k) == dragged { p.lift } else { p.shift.get(&k).copied().unwrap_or((0.0, 0.0)) };
+                let (dx, dy) = if Some(k) == dragged {
+                    p.lift
+                } else {
+                    p.shift.get(&k).copied().unwrap_or((0.0, 0.0))
+                };
                 (k, (m.rect.0 + dx, m.rect.1 + dy))
             })
             .collect()
     }
 
-    fn build_flip(&mut self, from: HashMap<Kind, (f32, f32)>, pop: Option<Kind>, lifted: Option<Kind>) {
+    fn build_flip(
+        &mut self,
+        from: HashMap<Kind, (f32, f32)>,
+        pop: Option<Kind>,
+        lifted: Option<Kind>,
+    ) {
         self.build();
         let comp = self.comp.clone();
         let Some(p) = self.panel.as_ref() else { return };
@@ -1109,12 +1953,29 @@ impl Cc {
             if let Some(o) = from.get(&k) {
                 let (dx, dy) = (o.0 - m.rect.0, o.1 - m.rect.1);
                 if dx.abs() > 0.5 || dy.abs() > 0.5 {
-                    let _ = motion::slide_pop(&comp, c, Vector3 { X: dx, Y: dy, Z: 0.0 }, Vector3 { X: 0.0, Y: 0.0, Z: 0.0 });
+                    let _ = motion::slide_pop(
+                        &comp,
+                        c,
+                        Vector3 {
+                            X: dx,
+                            Y: dy,
+                            Z: 0.0,
+                        },
+                        Vector3 {
+                            X: 0.0,
+                            Y: 0.0,
+                            Z: 0.0,
+                        },
+                    );
                 }
             }
             if Some(k) == lifted {
                 let _ = c.SetCenterPoint(center);
-                let _ = c.SetScale(Vector3 { X: 1.08, Y: 1.08, Z: 1.0 });
+                let _ = c.SetScale(Vector3 {
+                    X: 1.08,
+                    Y: 1.08,
+                    Z: 1.0,
+                });
                 let _ = motion::hover_pop(&comp, c, center, 1.0);
             }
         }
@@ -1125,7 +1986,15 @@ impl Cc {
         for (rank, m) in p.mods.iter().enumerate() {
             if let Some(c) = &m.cont {
                 let _ = c.SetOpacity(0.0);
-                let _ = motion::pop_in(&self.comp, c, center_of(m.rect), 0.86, 1.05, rank as u32 * 14, 340);
+                let _ = motion::pop_in(
+                    &self.comp,
+                    c,
+                    center_of(m.rect),
+                    0.86,
+                    1.05,
+                    rank as u32 * 14,
+                    340,
+                );
             }
         }
     }
@@ -1156,18 +2025,36 @@ impl Cc {
         let size_of = |k: Kind| *sizes.get(&k).unwrap_or(&k.default_size());
         let Some(p) = self.panel.as_mut() else { return };
         let Some((i, x0, y0)) = p.drag else { return };
-        let Some(kind) = p.mods.get(i).map(|m| m.placed.kind) else { return };
+        let Some(kind) = p.mods.get(i).map(|m| m.placed.kind) else {
+            return;
+        };
         p.lift = (x - x0, y - y0);
         if let Some(c) = &p.mods[i].cont {
             if let Ok(o) = c.cast::<windows::UI::Composition::CompositionObject>() {
                 let _ = o.StopAnimation(&windows_core::HSTRING::from("Offset"));
             }
-            let _ = c.SetOffset(Vector3 { X: p.lift.0, Y: p.lift.1, Z: 0.0 });
+            let _ = c.SetOffset(Vector3 {
+                X: p.lift.0,
+                Y: p.lift.1,
+                Z: 0.0,
+            });
         }
         let (cell, gap) = (p.cell, p.gap);
         let (placed, _) = controls::layout_sized(&p.preview, &size_of);
-        let Some(over) = placed.iter().filter(|q| q.kind != kind).find(|q| hit(grid_rect(q, cell, gap, 0.0), x, y)).map(|q| q.kind) else { return };
-        let (Some(a), Some(b)) = (p.preview.iter().position(|k| *k == kind), p.preview.iter().position(|k| *k == over)) else { return };
+        let Some(over) = placed
+            .iter()
+            .filter(|q| q.kind != kind)
+            .find(|q| hit(grid_rect(q, cell, gap, 0.0), x, y))
+            .map(|q| q.kind)
+        else {
+            return;
+        };
+        let (Some(a), Some(b)) = (
+            p.preview.iter().position(|k| *k == kind),
+            p.preview.iter().position(|k| *k == over),
+        ) else {
+            return;
+        };
         let k = p.preview.remove(a);
         p.preview.insert(b, k);
         let (placed, _) = controls::layout_sized(&p.preview, &size_of);
@@ -1176,13 +2063,28 @@ impl Cc {
             if k == kind {
                 continue;
             }
-            let Some(q) = placed.iter().find(|q| q.kind == k) else { continue };
+            let Some(q) = placed.iter().find(|q| q.kind == k) else {
+                continue;
+            };
             let r = grid_rect(q, cell, gap, 0.0);
             let to = (r.0 - m.rect.0, r.1 - m.rect.1);
             let cur = p.shift.get(&k).copied().unwrap_or((0.0, 0.0));
             if (to.0 - cur.0).abs() > 0.5 || (to.1 - cur.1).abs() > 0.5 {
                 if let Some(c) = &m.cont {
-                    let _ = motion::slide_pop(&comp, c, Vector3 { X: cur.0, Y: cur.1, Z: 0.0 }, Vector3 { X: to.0, Y: to.1, Z: 0.0 });
+                    let _ = motion::slide_pop(
+                        &comp,
+                        c,
+                        Vector3 {
+                            X: cur.0,
+                            Y: cur.1,
+                            Z: 0.0,
+                        },
+                        Vector3 {
+                            X: to.0,
+                            Y: to.1,
+                            Z: 0.0,
+                        },
+                    );
                 }
                 p.shift.insert(k, to);
             }
@@ -1192,7 +2094,9 @@ impl Cc {
     fn end_drag(&mut self) {
         let from = self.origins();
         let Some(p) = self.panel.as_mut() else { return };
-        let Some((i, _, _)) = p.drag.take() else { return };
+        let Some((i, _, _)) = p.drag.take() else {
+            return;
+        };
         let kind = p.mods[i].placed.kind;
         let preview = std::mem::take(&mut p.preview);
         p.shift.clear();
@@ -1207,7 +2111,9 @@ impl Cc {
         unsafe {
             let _ = KillTimer(Some(self.ctl), T_REMOVE);
         }
-        let Some(kind) = self.pending_remove.take() else { return };
+        let Some(kind) = self.pending_remove.take() else {
+            return;
+        };
         let from = self.origins();
         self.layout.retain(|k| *k != kind);
         self.build_flip(from, None, None);
@@ -1216,7 +2122,9 @@ impl Cc {
 
     fn set_gallery_hover(&mut self, i: Option<usize>) {
         let comp = self.comp.clone();
-        let Some(g) = self.gallery.as_mut() else { return };
+        let Some(g) = self.gallery.as_mut() else {
+            return;
+        };
         if g.hover == i {
             return;
         }
@@ -1239,7 +2147,12 @@ impl Cc {
         let (rect, dpi) = (p.popup.rect, p.dpi);
         self.close();
         let m = pad() as i32;
-        crate::netmenu::show(&self.comp, which, crate::netmenu::Anchor::Corner(rect.0 + rect.2 - m, rect.1 + m), dpi);
+        crate::netmenu::show(
+            &self.comp,
+            which,
+            crate::netmenu::Anchor::Corner(rect.0 + rect.2 - m, rect.1 + m),
+            dpi,
+        );
     }
 
     fn click(&mut self, i: usize, x: f32, y: f32) {
@@ -1272,7 +2185,11 @@ impl Cc {
             }
             Kind::DarkMode => {
                 prefs::update(|s| {
-                    s.theme = if s.theme == nacre_core::settings::Theme::Dark { nacre_core::settings::Theme::Light } else { nacre_core::settings::Theme::Dark }
+                    s.theme = if s.theme == nacre_core::settings::Theme::Dark {
+                        nacre_core::settings::Theme::Light
+                    } else {
+                        nacre_core::settings::Theme::Dark
+                    }
                 });
                 self.build();
             }
@@ -1332,7 +2249,11 @@ impl Cc {
         if self.pending_remove.is_some() {
             self.finish_remove();
         }
-        if let Some(m) = self.panel.as_ref().and_then(|p| p.mods.iter().find(|m| m.placed.kind == kind)) {
+        if let Some(m) = self
+            .panel
+            .as_ref()
+            .and_then(|p| p.mods.iter().find(|m| m.placed.kind == kind))
+        {
             if let Some(c) = &m.cont {
                 let _ = motion::pop_out(&self.comp, c, center_of(m.rect), 0.4, 180);
             }
@@ -1358,8 +2279,14 @@ impl Cc {
         }
     }
 
+    #[allow(dead_code)]
     fn move_to(&mut self, from: Kind, over: Kind) {
-        let (Some(a), Some(b)) = (self.layout.iter().position(|k| *k == from), self.layout.iter().position(|k| *k == over)) else { return };
+        let (Some(a), Some(b)) = (
+            self.layout.iter().position(|k| *k == from),
+            self.layout.iter().position(|k| *k == over),
+        ) else {
+            return;
+        };
         if a == b {
             return;
         }
@@ -1373,22 +2300,59 @@ impl Cc {
         let dpi = p.dpi;
         let base = GlassParams::dark((10.0, 10.0), 26.0 * dpi);
         let look = prefs::look(prefs::Role::Dark);
-        let Ok(mut popup) = Popup::new_with(&self.comp, w!("AbraCcGallery"), Some(gallery_proc), WINDOW_EX_STYLE(0), prefs::apply(base, &look), true) else { return };
+        let Ok(mut popup) = Popup::new_with(
+            &self.comp,
+            w!("NexoraCcGallery"),
+            Some(gallery_proc),
+            WINDOW_EX_STYLE(0),
+            prefs::apply(base, &look),
+            true,
+        ) else {
+            return;
+        };
         let (gw, gh) = (620.0 * dpi, 560.0 * dpi);
         let rect = p.popup.rect;
         let x = (rect.0 as f32 + pad() - gw - 16.0 * dpi).max(10.0 * dpi);
         let _ = popup.set_rect(x as i32, rect.1 + pad() as i32, gw as i32, gh as i32);
         let _ = popup.panel.set_radius(26.0 * dpi);
-        self.gallery = Some(Gallery { popup, dpi, cat: None, query: String::new(), cards: vec![], cats: vec![], done: (0.0, 0.0, 0.0, 0.0), scroll: 0.0, content_h: 0.0, panels: vec![], conts: vec![], hover: None, tracking: false });
+        self.gallery = Some(Gallery {
+            popup,
+            dpi,
+            cat: None,
+            query: String::new(),
+            cards: vec![],
+            cats: vec![],
+            done: (0.0, 0.0, 0.0, 0.0),
+            scroll: 0.0,
+            content_h: 0.0,
+            panels: vec![],
+            conts: vec![],
+            hover: None,
+            tracking: false,
+        });
         self.refresh_gallery();
         if let Some(g) = &self.gallery {
             g.popup.show();
-            let _ = motion::pop_in(&self.comp, g.popup.root(), Vector3 { X: g.popup.rect.2 as f32, Y: 0.0, Z: 0.0 }, 0.82, 1.02, 0, 340);
+            let _ = motion::pop_in(
+                &self.comp,
+                g.popup.root(),
+                Vector3 {
+                    X: g.popup.rect.2 as f32,
+                    Y: 0.0,
+                    Z: 0.0,
+                },
+                0.82,
+                1.02,
+                0,
+                340,
+            );
         }
     }
 
     fn refresh_gallery(&mut self) {
-        let Some(g) = self.gallery.as_ref() else { return };
+        let Some(g) = self.gallery.as_ref() else {
+            return;
+        };
         let (dpi, cat, query, scroll) = (g.dpi, g.cat, g.query.to_lowercase(), g.scroll);
         let content = g.popup.content.clone();
         let (gw, gh) = (g.popup.rect.2 as f32, g.popup.rect.3 as f32);
@@ -1399,20 +2363,56 @@ impl Cc {
         let mut cats = Vec::new();
         let mut conts: Vec<(Rect, ContainerVisual, f32)> = Vec::new();
         let sb: Rect = (16.0 * dpi, 16.0 * dpi, side - 8.0 * dpi, 36.0 * dpi);
-        let _ = self.rrect(&content, sb, 10.0 * dpi, Color { A: 60, R: 255, G: 255, B: 255 });
-        let q = if query.is_empty() { prefs::tr("Cari Kontrol").to_string() } else { g.query.clone() };
-        self.text(&content, &q, (13.0 * dpi) as i32, 400, WHITE, sb.0 + 12.0 * dpi, sb.1 + 9.0 * dpi, sb.2 - 20.0 * dpi, if query.is_empty() { 0.55 } else { 1.0 });
+        let _ = self.rrect(
+            &content,
+            sb,
+            10.0 * dpi,
+            Color {
+                A: 60,
+                R: 255,
+                G: 255,
+                B: 255,
+            },
+        );
+        let q = if query.is_empty() {
+            prefs::tr("Cari Kontrol").to_string()
+        } else {
+            g.query.clone()
+        };
+        self.text(
+            &content,
+            &q,
+            (13.0 * dpi) as i32,
+            400,
+            WHITE,
+            sb.0 + 12.0 * dpi,
+            sb.1 + 9.0 * dpi,
+            sb.2 - 20.0 * dpi,
+            if query.is_empty() { 0.55 } else { 1.0 },
+        );
         let mut y = 66.0 * dpi;
         let mut entries: Vec<(Option<Category>, &str)> = vec![(None, "Semua Kontrol")];
         entries.extend(Category::ALL.iter().map(|c| (Some(*c), c.title())));
         for (c, title) in entries {
             let r: Rect = (12.0 * dpi, y, side, 36.0 * dpi);
-            let Ok(row) = self.comp.CreateContainerVisual() else { continue };
+            let Ok(row) = self.comp.CreateContainerVisual() else {
+                continue;
+            };
             let _ = content.Children().and_then(|k| k.InsertAtTop(&row));
             conts.push((r, row.clone(), motion::HOVER_ROW));
             let content = row;
             if c == cat {
-                let _ = self.rrect(&content, r, 10.0 * dpi, Color { A: 70, R: 255, G: 255, B: 255 });
+                let _ = self.rrect(
+                    &content,
+                    r,
+                    10.0 * dpi,
+                    Color {
+                        A: 70,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
             }
             let (gl, col): (&str, [u8; 3]) = match c {
                 None => ("\u{E71D}", [99, 99, 108]),
@@ -1424,9 +2424,37 @@ impl Cc {
                 Some(Category::Utilities) => ("\u{E713}", [142, 142, 147]),
             };
             let ic: Rect = (r.0 + 10.0 * dpi, r.1 + 7.0 * dpi, 22.0 * dpi, 22.0 * dpi);
-            let _ = self.rrect(&content, ic, 6.0 * dpi, Color { A: 255, R: col[0], G: col[1], B: col[2] });
-            self.glyph(&content, gl, (12.0 * dpi) as i32, WHITE, ic.0 + ic.2 / 2.0, ic.1 + ic.3 / 2.0, 1.0);
-            self.text(&content, prefs::tr(title), (13.0 * dpi) as i32, 500, WHITE, r.0 + 42.0 * dpi, r.1 + 9.0 * dpi, r.2 - 48.0 * dpi, 1.0);
+            let _ = self.rrect(
+                &content,
+                ic,
+                6.0 * dpi,
+                Color {
+                    A: 255,
+                    R: col[0],
+                    G: col[1],
+                    B: col[2],
+                },
+            );
+            self.glyph(
+                &content,
+                gl,
+                (12.0 * dpi) as i32,
+                WHITE,
+                ic.0 + ic.2 / 2.0,
+                ic.1 + ic.3 / 2.0,
+                1.0,
+            );
+            self.text(
+                &content,
+                prefs::tr(title),
+                (13.0 * dpi) as i32,
+                500,
+                WHITE,
+                r.0 + 42.0 * dpi,
+                r.1 + 9.0 * dpi,
+                r.2 - 48.0 * dpi,
+                1.0,
+            );
             cats.push((c, r));
             y += 38.0 * dpi;
         }
@@ -1449,30 +2477,100 @@ impl Cc {
                 continue;
             }
             if cy + 24.0 * dpi > 0.0 && cy < gh - 60.0 * dpi {
-                self.text(&content, prefs::tr(c.title()), (13.0 * dpi) as i32, 600, WHITE, cx0, cy, 3.0 * cw, 0.85);
+                self.text(
+                    &content,
+                    prefs::tr(c.title()),
+                    (13.0 * dpi) as i32,
+                    600,
+                    WHITE,
+                    cx0,
+                    cy,
+                    3.0 * cw,
+                    0.85,
+                );
             }
             cy += 28.0 * dpi;
             for (i, k) in ks.iter().enumerate() {
                 let (col, row) = (i % 3, i / 3);
-                let r: Rect = (cx0 + col as f32 * (cw + cg), cy + row as f32 * (ch + cg), cw, ch);
+                let r: Rect = (
+                    cx0 + col as f32 * (cw + cg),
+                    cy + row as f32 * (ch + cg),
+                    cw,
+                    ch,
+                );
                 if r.1 + r.3 < 0.0 || r.1 > gh - 60.0 * dpi {
                     continue;
                 }
                 let present = self.layout.contains(k);
-                let Ok(card) = self.comp.CreateContainerVisual() else { continue };
+                let Ok(card) = self.comp.CreateContainerVisual() else {
+                    continue;
+                };
                 let _ = content.Children().and_then(|k| k.InsertAtTop(&card));
                 conts.push((r, card.clone(), 1.06));
                 let content = card;
-                let _ = self.rrect(&content, r, 20.0 * dpi, Color { A: if present { 30 } else { 85 }, R: 255, G: 255, B: 255 });
-                let disc: Rect = (r.0 + r.2 / 2.0 - 22.0 * dpi, r.1 + 18.0 * dpi, 44.0 * dpi, 44.0 * dpi);
-                let _ = self.rrect(&content, disc, 22.0 * dpi, Color { A: if present { 60 } else { 150 }, R: 0, G: 0, B: 0 });
-                self.glyph(&content, glyph_of(*k), (20.0 * dpi) as i32, WHITE, disc.0 + 22.0 * dpi, disc.1 + 22.0 * dpi, if present { 0.5 } else { 1.0 });
-                self.text(&content, prefs::tr(k.title()), (12.0 * dpi) as i32, 500, WHITE, r.0 + 10.0 * dpi, r.1 + r.3 - 30.0 * dpi, r.2 - 20.0 * dpi, if present { 0.5 } else { 1.0 });
+                let _ = self.rrect(
+                    &content,
+                    r,
+                    20.0 * dpi,
+                    Color {
+                        A: if present { 30 } else { 85 },
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
+                let disc: Rect = (
+                    r.0 + r.2 / 2.0 - 22.0 * dpi,
+                    r.1 + 18.0 * dpi,
+                    44.0 * dpi,
+                    44.0 * dpi,
+                );
+                let _ = self.rrect(
+                    &content,
+                    disc,
+                    22.0 * dpi,
+                    Color {
+                        A: if present { 60 } else { 150 },
+                        R: 0,
+                        G: 0,
+                        B: 0,
+                    },
+                );
+                self.glyph(
+                    &content,
+                    glyph_of(*k),
+                    (20.0 * dpi) as i32,
+                    WHITE,
+                    disc.0 + 22.0 * dpi,
+                    disc.1 + 22.0 * dpi,
+                    if present { 0.5 } else { 1.0 },
+                );
+                self.text(
+                    &content,
+                    prefs::tr(k.title()),
+                    (12.0 * dpi) as i32,
+                    500,
+                    WHITE,
+                    r.0 + 10.0 * dpi,
+                    r.1 + r.3 - 30.0 * dpi,
+                    r.2 - 20.0 * dpi,
+                    if present { 0.5 } else { 1.0 },
+                );
                 cards.push((*k, r));
             }
             cy += ks.len().div_ceil(3) as f32 * (ch + cg);
             if r_sep_visible(cy, gh, dpi) {
-                let _ = self.rrect(&content, (cx0, cy - cg / 2.0, 3.0 * cw + 2.0 * cg, 1.0), 0.5, Color { A: 40, R: 255, G: 255, B: 255 });
+                let _ = self.rrect(
+                    &content,
+                    (cx0, cy - cg / 2.0, 3.0 * cw + 2.0 * cg, 1.0),
+                    0.5,
+                    Color {
+                        A: 40,
+                        R: 255,
+                        G: 255,
+                        B: 255,
+                    },
+                );
             }
             cy += 14.0 * dpi;
         }
@@ -1480,12 +2578,32 @@ impl Cc {
         if let Some(g) = self.gallery.as_mut() {
             g.content_h = content_h;
         }
-        self.text(&content, prefs::tr("Klik kontrol untuk menambahkannya ke Quick Panel."), (12.0 * dpi) as i32, 400, WHITE, side + 36.0 * dpi, gh - 34.0 * dpi, gw - side - 180.0 * dpi, 0.55);
+        self.text(
+            &content,
+            prefs::tr("Klik kontrol untuk menambahkannya ke Quick Panel."),
+            (12.0 * dpi) as i32,
+            400,
+            WHITE,
+            side + 36.0 * dpi,
+            gh - 34.0 * dpi,
+            gw - side - 180.0 * dpi,
+            0.55,
+        );
         let done: Rect = (gw - 100.0 * dpi, gh - 46.0 * dpi, 84.0 * dpi, 32.0 * dpi);
         if let Ok(dc) = self.comp.CreateContainerVisual() {
             let _ = content.Children().and_then(|k| k.InsertAtTop(&dc));
             let _ = self.rrect(&dc, done, 16.0 * dpi, prefs::accent_c(255));
-            self.text(&dc, prefs::tr("Selesai"), (13.0 * dpi) as i32, 600, WHITE, done.0 + 18.0 * dpi, done.1 + 7.0 * dpi, 70.0 * dpi, 1.0);
+            self.text(
+                &dc,
+                prefs::tr("Selesai"),
+                (13.0 * dpi) as i32,
+                600,
+                WHITE,
+                done.0 + 18.0 * dpi,
+                done.1 + 7.0 * dpi,
+                70.0 * dpi,
+                1.0,
+            );
             conts.push((done, dc, motion::HOVER_BUTTON));
         }
         if let Some(g) = self.gallery.as_mut() {
@@ -1501,7 +2619,13 @@ impl Cc {
         let Some(p) = self.panel.as_ref() else { return };
         for m in &p.mods {
             if let (Some(t), Some(f)) = (m.track, &m.fill) {
-                let frac = if m.placed.kind == Kind::Display { brightness::latest().map(|v| v as f32 / 100.0).unwrap_or(0.5) } else { audio::latest().level };
+                let frac = if m.placed.kind == Kind::Display {
+                    brightness::latest()
+                        .map(|v| v as f32 / 100.0)
+                        .unwrap_or(0.5)
+                } else {
+                    audio::latest().level
+                };
                 if m.vertical {
                     place_slider_v(f, &m.thumb, t, frac, p.dpi);
                 } else {
@@ -1517,10 +2641,17 @@ fn place_slider(fill: &SpriteVisual, thumb: &[SpriteVisual], t: Rect, frac: f32,
     let (kw, kh) = (KNOB.0 * dpi, KNOB.1 * dpi);
     let kx = (t.0 + t.2 * frac).clamp(t.0 + kw / 2.0, t.0 + t.2 - kw / 2.0);
     let cy = t.1 + t.3 / 2.0;
-    let _ = fill.SetSize(Vector2 { X: (kx - t.0).max(th), Y: th });
+    let _ = fill.SetSize(Vector2 {
+        X: (kx - t.0).max(th),
+        Y: th,
+    });
     for (j, s) in thumb.iter().enumerate() {
         let inset = [-1.0, 0.0, 1.5].get(j).copied().unwrap_or(0.0) * dpi;
-        let _ = s.SetOffset(Vector3 { X: kx - kw / 2.0 + inset, Y: cy - kh / 2.0 + inset, Z: 0.0 });
+        let _ = s.SetOffset(Vector3 {
+            X: kx - kw / 2.0 + inset,
+            Y: cy - kh / 2.0 + inset,
+            Z: 0.0,
+        });
     }
 }
 
@@ -1529,30 +2660,102 @@ fn place_slider_v(fill: &SpriteVisual, thumb: &[SpriteVisual], t: Rect, frac: f3
     let (kw, kh) = (KNOB.1 * dpi, KNOB.0 * dpi);
     let ky = (t.1 + t.3 * (1.0 - frac)).clamp(t.1 + kh / 2.0, t.1 + t.3 - kh / 2.0);
     let cx = t.0 + t.2 / 2.0;
-    let _ = fill.SetOffset(Vector3 { X: cx - tw / 2.0, Y: ky, Z: 0.0 });
-    let _ = fill.SetSize(Vector2 { X: tw, Y: (t.1 + t.3 - ky).max(tw) });
+    let _ = fill.SetOffset(Vector3 {
+        X: cx - tw / 2.0,
+        Y: ky,
+        Z: 0.0,
+    });
+    let _ = fill.SetSize(Vector2 {
+        X: tw,
+        Y: (t.1 + t.3 - ky).max(tw),
+    });
     for (j, s) in thumb.iter().enumerate() {
         let inset = [-1.0, 0.0, 1.5].get(j).copied().unwrap_or(0.0) * dpi;
-        let _ = s.SetOffset(Vector3 { X: cx - kw / 2.0 + inset, Y: ky - kh / 2.0 + inset, Z: 0.0 });
+        let _ = s.SetOffset(Vector3 {
+            X: cx - kw / 2.0 + inset,
+            Y: ky - kh / 2.0 + inset,
+            Z: 0.0,
+        });
     }
 }
 
 const KNOB: (f32, f32) = (42.0, 28.0);
 const CARD_R: f32 = 0.34;
 
-const DROP_IDLE: [Color; 3] = [Color { A: 45, R: 0, G: 0, B: 0 }, Color { A: 250, R: 255, G: 255, B: 255 }, Color { A: 0, R: 255, G: 255, B: 255 }];
-const DROP_ACTIVE: [Color; 3] = [Color { A: 0, R: 0, G: 0, B: 0 }, Color { A: 125, R: 255, G: 255, B: 255 }, Color { A: 40, R: 255, G: 255, B: 255 }];
+const DROP_IDLE: [Color; 3] = [
+    Color {
+        A: 45,
+        R: 0,
+        G: 0,
+        B: 0,
+    },
+    Color {
+        A: 250,
+        R: 255,
+        G: 255,
+        B: 255,
+    },
+    Color {
+        A: 0,
+        R: 255,
+        G: 255,
+        B: 255,
+    },
+];
+const DROP_ACTIVE: [Color; 3] = [
+    Color {
+        A: 0,
+        R: 0,
+        G: 0,
+        B: 0,
+    },
+    Color {
+        A: 125,
+        R: 255,
+        G: 255,
+        B: 255,
+    },
+    Color {
+        A: 40,
+        R: 255,
+        G: 255,
+        B: 255,
+    },
+];
 
 fn raindrop(comp: &Compositor, thumb: &[SpriteVisual], active: bool) {
-    let (cols, from, to) = if active { (DROP_ACTIVE, 1.0, 1.22) } else { (DROP_IDLE, 1.22, 1.0) };
+    let (cols, from, to) = if active {
+        (DROP_ACTIVE, 1.0, 1.22)
+    } else {
+        (DROP_IDLE, 1.22, 1.0)
+    };
     for (j, v) in thumb.iter().enumerate() {
         if let Ok(b) = v.Brush() {
             let _ = motion::color(comp, &b, cols[j.min(2)], 150);
         }
         if let Ok(sz) = v.Size() {
-            let _ = v.SetCenterPoint(Vector3 { X: sz.X / 2.0, Y: sz.Y / 2.0, Z: 0.0 });
+            let _ = v.SetCenterPoint(Vector3 {
+                X: sz.X / 2.0,
+                Y: sz.Y / 2.0,
+                Z: 0.0,
+            });
         }
-        let _ = motion::vec3(comp, v, "Scale", Vector3 { X: from, Y: from, Z: 1.0 }, Vector3 { X: to, Y: to, Z: 1.0 }, 170);
+        let _ = motion::vec3(
+            comp,
+            v,
+            "Scale",
+            Vector3 {
+                X: from,
+                Y: from,
+                Z: 1.0,
+            },
+            Vector3 {
+                X: to,
+                Y: to,
+                Z: 1.0,
+            },
+            170,
+        );
     }
 }
 
@@ -1632,16 +2835,28 @@ unsafe extern "system" fn panel_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARA
                 }
                 let Some(p) = c.panel.as_ref() else { return };
                 if hit(p.edit_btn, x, y) {
-                    if c.edit { c.leave_edit() } else { c.enter_edit() }
+                    if c.edit {
+                        c.leave_edit()
+                    } else {
+                        c.enter_edit()
+                    }
                     return;
                 }
                 if let Some((_, cam)) = p.chip.filter(|(r, _)| hit(*r, x, y)) {
                     c.close();
-                    launch::open(if cam { "ms-settings:privacy-webcam" } else { "ms-settings:privacy-microphone" });
+                    launch::open(if cam {
+                        "ms-settings:privacy-webcam"
+                    } else {
+                        "ms-settings:privacy-microphone"
+                    });
                     return;
                 }
                 let edit = c.edit;
-                let Some(i) = p.mods.iter().position(|m| hit(m.rect, x, y) || (edit && (hit(m.badge, x, y) || hit(m.grip, x, y)))) else { return };
+                let Some(i) = p.mods.iter().position(|m| {
+                    hit(m.rect, x, y) || (edit && (hit(m.badge, x, y) || hit(m.grip, x, y)))
+                }) else {
+                    return;
+                };
                 let m = &p.mods[i];
                 if edit {
                     if hit(m.badge, x, y) {
@@ -1683,9 +2898,18 @@ unsafe extern "system" fn panel_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARA
                     c.drag_move(x, y);
                     return;
                 }
-                let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                let mut t = TRACKMOUSEEVENT {
+                    cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                    dwFlags: TME_LEAVE,
+                    hwndTrack: hwnd,
+                    dwHoverTime: 0,
+                };
                 let _ = TrackMouseEvent(&mut t);
-                let hit = c.panel.as_ref().filter(|p| p.drag.is_none() && !c.edit && !c.closing).and_then(|p| p.mods.iter().position(|m| hit(m.rect, x, y)));
+                let hit = c
+                    .panel
+                    .as_ref()
+                    .filter(|p| p.drag.is_none() && !c.edit && !c.closing)
+                    .and_then(|p| p.mods.iter().position(|m| hit(m.rect, x, y)));
                 c.set_hover(hit);
             });
             LRESULT(0)
@@ -1714,7 +2938,9 @@ unsafe extern "system" fn panel_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARA
                     return;
                 }
                 let Some(p) = c.panel.as_ref() else { return };
-                let Some(i) = p.mods.iter().position(|m| hit(m.rect, x, y)) else { return };
+                let Some(i) = p.mods.iter().position(|m| hit(m.rect, x, y)) else {
+                    return;
+                };
                 if c.edit {
                     c.open_size_menu(i, x, y);
                 } else if matches!(p.mods[i].placed.kind, Kind::Wifi | Kind::Bluetooth) {
@@ -1760,7 +2986,12 @@ unsafe extern "system" fn gallery_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPA
             with(|c| {
                 let Some(g) = c.gallery.as_mut() else { return };
                 if !g.tracking {
-                    let mut t = TRACKMOUSEEVENT { cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32, dwFlags: TME_LEAVE, hwndTrack: hwnd, dwHoverTime: 0 };
+                    let mut t = TRACKMOUSEEVENT {
+                        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                        dwFlags: TME_LEAVE,
+                        hwndTrack: hwnd,
+                        dwHoverTime: 0,
+                    };
                     g.tracking = TrackMouseEvent(&mut t).is_ok();
                 }
                 let i = g.conts.iter().position(|(r, _, _)| hit(*r, x, y));

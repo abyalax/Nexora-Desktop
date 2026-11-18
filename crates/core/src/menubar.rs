@@ -17,7 +17,13 @@ pub struct Gap {
     pub right: f32,
 }
 
-pub fn layout(screen_w: f32, margin: f32, left: &[Item], right: &[Item], gap: Option<Gap>) -> (Vec<Placed>, Vec<Placed>) {
+pub fn layout(
+    screen_w: f32,
+    margin: f32,
+    left: &[Item],
+    right: &[Item],
+    gap: Option<Gap>,
+) -> (Vec<Placed>, Vec<Placed>) {
     let left_limit = gap.map(|g| g.left - margin).unwrap_or(screen_w - margin);
     let mut l_out = Vec::new();
     let mut x = margin;
@@ -25,7 +31,11 @@ pub fn layout(screen_w: f32, margin: f32, left: &[Item], right: &[Item], gap: Op
         if x + it.width > left_limit {
             break;
         }
-        l_out.push(Placed { id: it.id, x, w: it.width });
+        l_out.push(Placed {
+            id: it.id,
+            x,
+            w: it.width,
+        });
         x += it.width;
     }
     let right_limit = gap.map(|g| g.right + margin).unwrap_or(margin);
@@ -36,13 +46,20 @@ pub fn layout(screen_w: f32, margin: f32, left: &[Item], right: &[Item], gap: Op
             break;
         }
         rx -= it.width;
-        r_out.push(Placed { id: it.id, x: rx, w: it.width });
+        r_out.push(Placed {
+            id: it.id,
+            x: rx,
+            w: it.width,
+        });
     }
     (l_out, r_out)
 }
 
 pub fn hit(placed: &[Placed], x: f32) -> Option<u32> {
-    placed.iter().find(|p| x >= p.x && x < p.x + p.w).map(|p| p.id)
+    placed
+        .iter()
+        .find(|p| x >= p.x && x < p.x + p.w)
+        .map(|p| p.id)
 }
 
 pub fn bar_height(dpi: f32, notch_height_dp: Option<f32>) -> f32 {
@@ -54,12 +71,24 @@ mod tests {
     use super::*;
 
     fn items(ws: &[f32]) -> Vec<Item> {
-        ws.iter().enumerate().map(|(i, w)| Item { id: i as u32, width: *w }).collect()
+        ws.iter()
+            .enumerate()
+            .map(|(i, w)| Item {
+                id: i as u32,
+                width: *w,
+            })
+            .collect()
     }
 
     #[test]
     fn no_gap_places_everything() {
-        let (l, r) = layout(1000.0, 10.0, &items(&[40.0, 60.0]), &items(&[30.0, 30.0]), None);
+        let (l, r) = layout(
+            1000.0,
+            10.0,
+            &items(&[40.0, 60.0]),
+            &items(&[30.0, 30.0]),
+            None,
+        );
         assert_eq!(l.iter().map(|p| p.id).collect::<Vec<_>>(), vec![0, 1]);
         assert_eq!(l[1].x, 50.0);
         assert_eq!(r[0].x, 960.0);
@@ -68,14 +97,26 @@ mod tests {
 
     #[test]
     fn left_items_hidden_before_notch() {
-        let gap = Gap { left: 200.0, right: 400.0 };
-        let (l, _) = layout(1000.0, 10.0, &items(&[60.0, 60.0, 60.0, 60.0]), &[], Some(gap));
+        let gap = Gap {
+            left: 200.0,
+            right: 400.0,
+        };
+        let (l, _) = layout(
+            1000.0,
+            10.0,
+            &items(&[60.0, 60.0, 60.0, 60.0]),
+            &[],
+            Some(gap),
+        );
         assert_eq!(l.len(), 3);
     }
 
     #[test]
     fn right_items_stop_at_notch() {
-        let gap = Gap { left: 100.0, right: 900.0 };
+        let gap = Gap {
+            left: 100.0,
+            right: 900.0,
+        };
         let (_, r) = layout(1000.0, 10.0, &[], &items(&[40.0, 40.0, 40.0]), Some(gap));
         assert_eq!(r.len(), 2);
     }

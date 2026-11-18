@@ -1,9 +1,11 @@
 use windows::core::{HSTRING, PWSTR};
 use windows::Win32::System::Registry::{
-    RegCloseKey, RegEnumKeyExW, RegGetValueW, RegOpenKeyExW, HKEY, HKEY_CURRENT_USER, KEY_READ, RRF_RT_REG_QWORD,
+    RegCloseKey, RegEnumKeyExW, RegGetValueW, RegOpenKeyExW, HKEY, HKEY_CURRENT_USER, KEY_READ,
+    RRF_RT_REG_QWORD,
 };
 
-const BASE: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore";
+const BASE: &str =
+    "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InUse {
@@ -15,13 +17,32 @@ fn subkeys(path: &str) -> Vec<String> {
     let mut out = Vec::new();
     unsafe {
         let mut key = HKEY::default();
-        if RegOpenKeyExW(HKEY_CURRENT_USER, &HSTRING::from(path), Some(0), KEY_READ, &mut key).is_err() {
+        if RegOpenKeyExW(
+            HKEY_CURRENT_USER,
+            &HSTRING::from(path),
+            Some(0),
+            KEY_READ,
+            &mut key,
+        )
+        .is_err()
+        {
             return out;
         }
         for i in 0..512u32 {
             let mut buf = [0u16; 512];
             let mut len = buf.len() as u32;
-            if RegEnumKeyExW(key, i, Some(PWSTR(buf.as_mut_ptr())), &mut len, None, None, None, None).is_err() {
+            if RegEnumKeyExW(
+                key,
+                i,
+                Some(PWSTR(buf.as_mut_ptr())),
+                &mut len,
+                None,
+                None,
+                None,
+                None,
+            )
+            .is_err()
+            {
                 break;
             }
             out.push(String::from_utf16_lossy(&buf[..len as usize]));
@@ -35,7 +56,17 @@ fn qword(path: &str, name: &str) -> Option<u64> {
     let mut v: u64 = 0;
     let mut size = std::mem::size_of::<u64>() as u32;
     unsafe {
-        RegGetValueW(HKEY_CURRENT_USER, &HSTRING::from(path), &HSTRING::from(name), RRF_RT_REG_QWORD, None, Some(&mut v as *mut u64 as *mut _), Some(&mut size)).ok().ok()?;
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            &HSTRING::from(path),
+            &HSTRING::from(name),
+            RRF_RT_REG_QWORD,
+            None,
+            Some(&mut v as *mut u64 as *mut _),
+            Some(&mut size),
+        )
+        .ok()
+        .ok()?;
     }
     Some(v)
 }
@@ -46,7 +77,10 @@ pub fn display_name(key: &str, packaged: bool) -> String {
         return family.rsplit('.').next().unwrap_or(family).to_string();
     }
     let file = key.rsplit(['#', '\\', '/']).next().unwrap_or(key);
-    file.rsplit_once('.').map(|(s, _)| s).unwrap_or(file).to_string()
+    file.rsplit_once('.')
+        .map(|(s, _)| s)
+        .unwrap_or(file)
+        .to_string()
 }
 
 fn in_use(path: &str) -> bool {
@@ -55,7 +89,14 @@ fn in_use(path: &str) -> bool {
 
 pub fn active() -> Vec<InUse> {
     if let Ok(t) = std::env::var("NACRE_TEST_INUSE") {
-        return t.split(';').filter_map(|e| e.split_once(':')).map(|(k, n)| InUse { camera: k == "c", app: n.to_string() }).collect();
+        return t
+            .split(';')
+            .filter_map(|e| e.split_once(':'))
+            .map(|(k, n)| InUse {
+                camera: k == "c",
+                app: n.to_string(),
+            })
+            .collect();
     }
     let mut out = Vec::new();
     for (cap, camera) in [("microphone", false), ("webcam", true)] {
@@ -65,11 +106,17 @@ pub fn active() -> Vec<InUse> {
                 let np = format!("{root}\\NonPackaged");
                 for e in subkeys(&np) {
                     if in_use(&format!("{np}\\{e}")) {
-                        out.push(InUse { camera, app: display_name(&e, false) });
+                        out.push(InUse {
+                            camera,
+                            app: display_name(&e, false),
+                        });
                     }
                 }
             } else if in_use(&format!("{root}\\{k}")) {
-                out.push(InUse { camera, app: display_name(&k, true) });
+                out.push(InUse {
+                    camera,
+                    app: display_name(&k, true),
+                });
             }
         }
     }
@@ -82,7 +129,13 @@ mod tests {
 
     #[test]
     fn names_from_registry_keys() {
-        assert_eq!(display_name("Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe", true), "WindowsSoundRecorder");
-        assert_eq!(display_name("C:#Program Files#Zoom#bin#Zoom.exe", false), "Zoom");
+        assert_eq!(
+            display_name("Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe", true),
+            "WindowsSoundRecorder"
+        );
+        assert_eq!(
+            display_name("C:#Program Files#Zoom#bin#Zoom.exe", false),
+            "Zoom"
+        );
     }
 }

@@ -15,7 +15,12 @@ pub fn is_rounded_square(bgra: &[u8], n: u32) -> bool {
     let solid = |x: u32, y: u32| alpha(bgra, n, x, y) > 200;
     let edges = solid(m, e) && solid(m, n - 1 - e) && solid(e, m) && solid(n - 1 - e, m);
     let q = n / 4;
-    let quarters = solid(q, e + 1) && solid(n - 1 - q, e + 1) && solid(q, n - 2 - e) && solid(n - 1 - q, n - 2 - e) && solid(e + 1, q) && solid(e + 1, n - 1 - q);
+    let quarters = solid(q, e + 1)
+        && solid(n - 1 - q, e + 1)
+        && solid(q, n - 2 - e)
+        && solid(n - 1 - q, n - 2 - e)
+        && solid(e + 1, q)
+        && solid(e + 1, n - 1 - q);
     let filled = bgra.chunks_exact(4).filter(|p| p[3] > 128).count() as f32 / (n * n) as f32;
     edges && quarters && filled > 0.80
 }
@@ -100,7 +105,11 @@ fn box_blur(a: &mut [f32], n: usize, r: usize) {
             for k in 0..=(2 * r) {
                 let i = k as isize - r as isize;
                 if i >= 0 && (i as usize) < n {
-                    sum += if pass == 0 { a[y * n + i as usize] } else { a[i as usize * n + y] };
+                    sum += if pass == 0 {
+                        a[y * n + i as usize]
+                    } else {
+                        a[i as usize * n + y]
+                    };
                 }
             }
             for x in 0..n {
@@ -112,10 +121,18 @@ fn box_blur(a: &mut [f32], n: usize, r: usize) {
                 let add = x + r + 1;
                 let sub = x as isize - r as isize;
                 if add < n {
-                    sum += if pass == 0 { a[y * n + add] } else { a[add * n + y] };
+                    sum += if pass == 0 {
+                        a[y * n + add]
+                    } else {
+                        a[add * n + y]
+                    };
                 }
                 if sub >= 0 {
-                    sum -= if pass == 0 { a[y * n + sub as usize] } else { a[sub as usize * n + y] };
+                    sum -= if pass == 0 {
+                        a[y * n + sub as usize]
+                    } else {
+                        a[sub as usize * n + y]
+                    };
                 }
             }
         }
@@ -147,13 +164,24 @@ fn with_shadow(img: &[u8], n: u32) -> Vec<u8> {
     out
 }
 
-pub const TINTS: [[u8; 3]; 5] = [[10, 132, 255], [175, 82, 222], [255, 55, 95], [255, 149, 10], [48, 209, 88]];
+pub const TINTS: [[u8; 3]; 5] = [
+    [10, 132, 255],
+    [175, 82, 222],
+    [255, 55, 95],
+    [255, 149, 10],
+    [48, 209, 88],
+];
 
 pub fn style_icon(bgra: &[u8], style: crate::settings::IconStyle, tint_index: u8) -> Vec<u8> {
     style_icon_v(bgra, style, tint_index, true)
 }
 
-pub fn style_icon_v(bgra: &[u8], style: crate::settings::IconStyle, tint_index: u8, dark: bool) -> Vec<u8> {
+pub fn style_icon_v(
+    bgra: &[u8],
+    style: crate::settings::IconStyle,
+    tint_index: u8,
+    dark: bool,
+) -> Vec<u8> {
     use crate::settings::IconStyle;
     let mut out = bgra.to_vec();
     if style == IconStyle::Default || (style == IconStyle::Dark && !dark) {
@@ -165,11 +193,19 @@ pub fn style_icon_v(bgra: &[u8], style: crate::settings::IconStyle, tint_index: 
         if a == 0 {
             continue;
         }
-        let (b, g, r) = ((px[0] as u32 * 255 / a).min(255) as f32, (px[1] as u32 * 255 / a).min(255) as f32, (px[2] as u32 * 255 / a).min(255) as f32);
+        let (b, g, r) = (
+            (px[0] as u32 * 255 / a).min(255) as f32,
+            (px[1] as u32 * 255 / a).min(255) as f32,
+            (px[2] as u32 * 255 / a).min(255) as f32,
+        );
         let lum = 0.299 * r + 0.587 * g + 0.114 * b;
         let (nr, ng, nb, na) = match style {
             IconStyle::Dark => {
-                let (sr, sg, sb) = (r * 0.75 + lum * 0.25, g * 0.75 + lum * 0.25, b * 0.75 + lum * 0.25);
+                let (sr, sg, sb) = (
+                    r * 0.75 + lum * 0.25,
+                    g * 0.75 + lum * 0.25,
+                    b * 0.75 + lum * 0.25,
+                );
                 (sr * 0.38 + 8.0, sg * 0.38 + 8.0, sb * 0.40 + 14.0, a as f32)
             }
             IconStyle::Clear if !dark => {
@@ -184,16 +220,30 @@ pub fn style_icon_v(bgra: &[u8], style: crate::settings::IconStyle, tint_index: 
                 let f = lum / 255.0;
                 let base = 0.45 + 0.5 * f;
                 let hi = ((f - 0.55).max(0.0) * 1.4) * 255.0;
-                (tint[0] as f32 * base + hi + 30.0, tint[1] as f32 * base + hi + 30.0, tint[2] as f32 * base + hi + 30.0, a as f32)
+                (
+                    tint[0] as f32 * base + hi + 30.0,
+                    tint[1] as f32 * base + hi + 30.0,
+                    tint[2] as f32 * base + hi + 30.0,
+                    a as f32,
+                )
             }
             _ => {
                 let f = lum / 255.0;
                 let base = 0.22 + 0.62 * f;
                 let hi = ((f - 0.62).max(0.0) * 1.6) * 255.0;
-                (tint[0] as f32 * base + hi, tint[1] as f32 * base + hi, tint[2] as f32 * base + hi, a as f32)
+                (
+                    tint[0] as f32 * base + hi,
+                    tint[1] as f32 * base + hi,
+                    tint[2] as f32 * base + hi,
+                    a as f32,
+                )
             }
         };
-        let (nr, ng, nb) = (nr.clamp(0.0, 255.0), ng.clamp(0.0, 255.0), nb.clamp(0.0, 255.0));
+        let (nr, ng, nb) = (
+            nr.clamp(0.0, 255.0),
+            ng.clamp(0.0, 255.0),
+            nb.clamp(0.0, 255.0),
+        );
         let na = na.clamp(0.0, 255.0);
         px[0] = (nb * na / 255.0) as u8;
         px[1] = (ng * na / 255.0) as u8;
@@ -275,7 +325,10 @@ pub fn launchpad_icon(n: u32) -> Vec<u8> {
             let (px, py) = (x as f32 + 0.5, y as f32 + 0.5);
             let (mut r, mut g, mut b) = (br, bg, bb);
             for (i, col) in DOTS.iter().enumerate() {
-                let (cx, cy) = (c + ((i % 3) as f32 - 1.0) * pitch, c + ((i / 3) as f32 - 1.0) * pitch);
+                let (cx, cy) = (
+                    c + ((i % 3) as f32 - 1.0) * pitch,
+                    c + ((i / 3) as f32 - 1.0) * pitch,
+                );
                 let d = ((px - cx).powi(2) + (py - cy).powi(2)).sqrt();
                 let k = (radius + 0.5 - d).clamp(0.0, 1.0);
                 if k > 0.0 {
@@ -328,8 +381,15 @@ mod style_tests {
         let p = &t[4..8];
         assert!(p[0] > p[2] && p[0] > p[1], "biru dominan: {p:?}");
         let pink = style_icon(&src, IconStyle::Tinted, 2);
-        let lum = |b: &[u8]| b.chunks_exact(4).map(|p| p[0] as u32 + p[1] as u32 + p[2] as u32).sum::<u32>();
-        assert!(lum(&style_icon_v(&src, IconStyle::Clear, 0, false)) > lum(&style_icon(&src, IconStyle::Clear, 0)));
+        let lum = |b: &[u8]| {
+            b.chunks_exact(4)
+                .map(|p| p[0] as u32 + p[1] as u32 + p[2] as u32)
+                .sum::<u32>()
+        };
+        assert!(
+            lum(&style_icon_v(&src, IconStyle::Clear, 0, false))
+                > lum(&style_icon(&src, IconStyle::Clear, 0))
+        );
         assert_eq!(style_icon_v(&src, IconStyle::Dark, 0, false), src);
         let q = &pink[4..8];
         assert!(q[2] > q[0], "merah muda: R > B: {q:?}");
@@ -344,7 +404,8 @@ mod tests {
         let mut b = vec![0u8; (n * n * 4) as usize];
         for y in inset..n - inset {
             for x in inset..n - inset {
-                let corner = (x < inset + radius_cut || x >= n - inset - radius_cut) && (y < inset + radius_cut || y >= n - inset - radius_cut);
+                let corner = (x < inset + radius_cut || x >= n - inset - radius_cut)
+                    && (y < inset + radius_cut || y >= n - inset - radius_cut);
                 if !corner {
                     let i = ((y * n + x) * 4) as usize;
                     b[i..i + 4].copy_from_slice(&[200, 100, 50, 255]);
@@ -410,7 +471,10 @@ mod tests {
         assert_eq!(p.len(), (n * n * 4) as usize);
         assert_eq!(alpha(&p, n, 1, 1), 0);
         let mid = ((64 * n + 64) * 4) as usize;
-        assert!(p[mid] > 200 && p[mid + 3] == 255, "titik tengah berwarna cerah");
+        assert!(
+            p[mid] > 200 && p[mid + 3] == 255,
+            "titik tengah berwarna cerah"
+        );
         let body = ((20 * n + 64) * 4) as usize;
         assert!(p[body + 1] > 200 && p[body + 3] > 240);
         for px in p.chunks_exact(4) {

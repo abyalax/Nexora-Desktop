@@ -22,7 +22,11 @@ impl Found {
         if self.instrumental {
             return String::new();
         }
-        self.synced.clone().filter(|s| !s.trim().is_empty()).or_else(|| self.plain.clone()).unwrap_or_default()
+        self.synced
+            .clone()
+            .filter(|s| !s.trim().is_empty())
+            .or_else(|| self.plain.clone())
+            .unwrap_or_default()
     }
 }
 
@@ -39,13 +43,31 @@ pub fn encode(s: &str) -> String {
 }
 
 const NOISE: [&str; 16] = [
-    "official", "video", "audio", "lyric", "lyrics", "visualizer", "visualiser", "mv", "m/v", "hd", "4k", "remaster", "remastered",
-    "explicit", "clean", "color coded",
+    "official",
+    "video",
+    "audio",
+    "lyric",
+    "lyrics",
+    "visualizer",
+    "visualiser",
+    "mv",
+    "m/v",
+    "hd",
+    "4k",
+    "remaster",
+    "remastered",
+    "explicit",
+    "clean",
+    "color coded",
 ];
 
 fn is_noise(inner: &str) -> bool {
     let l = inner.to_lowercase();
-    NOISE.iter().any(|w| l.split(|c: char| !c.is_alphanumeric() && c != '/').any(|t| t == *w) || (w.contains(' ') && l.contains(w)))
+    NOISE.iter().any(|w| {
+        l.split(|c: char| !c.is_alphanumeric() && c != '/')
+            .any(|t| t == *w)
+            || (w.contains(' ') && l.contains(w))
+    })
 }
 
 pub fn clean(title: &str, artist: &str) -> (String, String) {
@@ -96,7 +118,11 @@ pub fn clean(title: &str, artist: &str) -> (String, String) {
 }
 
 fn query(t: &Track, with_album: bool) -> String {
-    let mut q = format!("track_name={}&artist_name={}", encode(&t.title), encode(&t.artist));
+    let mut q = format!(
+        "track_name={}&artist_name={}",
+        encode(&t.title),
+        encode(&t.artist)
+    );
     if with_album && !t.album.trim().is_empty() {
         q.push_str(&format!("&album_name={}", encode(&t.album)));
     }
@@ -107,8 +133,11 @@ fn query(t: &Track, with_album: bool) -> String {
 }
 
 pub fn get_url(t: &Track) -> Option<String> {
-    (!t.title.is_empty() && !t.artist.is_empty() && !t.album.trim().is_empty() && t.duration_s.is_some())
-        .then(|| format!("{API}/get?{}", query(t, true)))
+    (!t.title.is_empty()
+        && !t.artist.is_empty()
+        && !t.album.trim().is_empty()
+        && t.duration_s.is_some())
+    .then(|| format!("{API}/get?{}", query(t, true)))
 }
 
 pub fn search_url(t: &Track) -> Option<String> {
@@ -125,8 +154,20 @@ fn found(o: &Json) -> Option<(Found, Option<f64>)> {
     if !matches!(o, Json::Obj(_)) {
         return None;
     }
-    let s = |k: &str| o.get(k).and_then(Json::as_str).map(str::to_string).filter(|s| !s.trim().is_empty());
-    let f = Found { synced: s("syncedLyrics"), plain: s("plainLyrics"), instrumental: o.get("instrumental").and_then(Json::as_bool).unwrap_or(false) };
+    let s = |k: &str| {
+        o.get(k)
+            .and_then(Json::as_str)
+            .map(str::to_string)
+            .filter(|s| !s.trim().is_empty())
+    };
+    let f = Found {
+        synced: s("syncedLyrics"),
+        plain: s("plainLyrics"),
+        instrumental: o
+            .get("instrumental")
+            .and_then(Json::as_bool)
+            .unwrap_or(false),
+    };
     if f.synced.is_none() && f.plain.is_none() && !f.instrumental {
         return None;
     }
@@ -181,35 +222,76 @@ mod tests {
     use super::*;
 
     fn tr(title: &str, artist: &str, album: &str, d: Option<u32>) -> Track {
-        Track { title: title.into(), artist: artist.into(), album: album.into(), duration_s: d }
+        Track {
+            title: title.into(),
+            artist: artist.into(),
+            album: album.into(),
+            duration_s: d,
+        }
     }
 
     #[test]
     fn encodes_like_rfc3986() {
-        assert_eq!(encode("Rock & Roll/é ~ok"), "Rock%20%26%20Roll%2F%C3%A9%20~ok");
+        assert_eq!(
+            encode("Rock & Roll/é ~ok"),
+            "Rock%20%26%20Roll%2F%C3%A9%20~ok"
+        );
     }
 
     #[test]
     fn urls_include_only_what_is_known() {
-        let t = tr("Clocks", "Coldplay", "A Rush of Blood to the Head", Some(307));
+        let t = tr(
+            "Clocks",
+            "Coldplay",
+            "A Rush of Blood to the Head",
+            Some(307),
+        );
         assert_eq!(
             get_url(&t).unwrap(),
             "https://lrclib.net/api/get?track_name=Clocks&artist_name=Coldplay&album_name=A%20Rush%20of%20Blood%20to%20the%20Head&duration=307"
         );
-        assert_eq!(get_url(&tr("Clocks", "Coldplay", "", Some(307))), None, "tanpa album: pakai pencarian");
-        assert_eq!(search_url(&tr("Clocks", "Coldplay", "", None)).unwrap(), "https://lrclib.net/api/search?track_name=Clocks&artist_name=Coldplay");
+        assert_eq!(
+            get_url(&tr("Clocks", "Coldplay", "", Some(307))),
+            None,
+            "tanpa album: pakai pencarian"
+        );
+        assert_eq!(
+            search_url(&tr("Clocks", "Coldplay", "", None)).unwrap(),
+            "https://lrclib.net/api/search?track_name=Clocks&artist_name=Coldplay"
+        );
         assert_eq!(search_url(&tr("", "Coldplay", "", None)), None);
     }
 
     #[test]
     fn cleans_streaming_titles() {
-        assert_eq!(clean("Coldplay - Clocks (Official Video)", ""), ("Clocks".into(), "Coldplay".into()));
-        assert_eq!(clean("Coldplay - Clocks [Lyrics]", "Coldplay"), ("Clocks".into(), "Coldplay".into()));
-        assert_eq!(clean("Clocks", "Coldplay - Topic"), ("Clocks".into(), "Coldplay".into()));
-        assert_eq!(clean("Clocks", "ColdplayVEVO"), ("Clocks".into(), "Coldplay".into()));
-        assert_eq!(clean("Here Comes the Sun - Remastered 2009", "The Beatles"), ("Here Comes the Sun".into(), "The Beatles".into()));
-        assert_eq!(clean("Stay (feat. Justin Bieber)", "The Kid LAROI"), ("Stay (feat. Justin Bieber)".into(), "The Kid LAROI".into()));
-        assert_eq!(clean("Anti-Hero", "Taylor Swift"), ("Anti-Hero".into(), "Taylor Swift".into()));
+        assert_eq!(
+            clean("Coldplay - Clocks (Official Video)", ""),
+            ("Clocks".into(), "Coldplay".into())
+        );
+        assert_eq!(
+            clean("Coldplay - Clocks [Lyrics]", "Coldplay"),
+            ("Clocks".into(), "Coldplay".into())
+        );
+        assert_eq!(
+            clean("Clocks", "Coldplay - Topic"),
+            ("Clocks".into(), "Coldplay".into())
+        );
+        assert_eq!(
+            clean("Clocks", "ColdplayVEVO"),
+            ("Clocks".into(), "Coldplay".into())
+        );
+        assert_eq!(
+            clean("Here Comes the Sun - Remastered 2009", "The Beatles"),
+            ("Here Comes the Sun".into(), "The Beatles".into())
+        );
+        assert_eq!(
+            clean("Stay (feat. Justin Bieber)", "The Kid LAROI"),
+            ("Stay (feat. Justin Bieber)".into(), "The Kid LAROI".into())
+        );
+        assert_eq!(
+            clean("Anti-Hero", "Taylor Swift"),
+            ("Anti-Hero".into(), "Taylor Swift".into())
+        );
     }
 
     #[test]
@@ -223,9 +305,17 @@ mod tests {
             {"duration":306.0,"plainLyrics":"p","syncedLyrics":"[00:02.00]synced"},
             {"duration":307.0,"plainLyrics":null,"syncedLyrics":null,"instrumental":false}
         ]"#;
-        assert_eq!(pick_search(many, Some(307)).unwrap().text(), "[00:02.00]synced");
-        assert_eq!(pick_search(r#"[{"duration":200.0,"plainLyrics":"x"}]"#, Some(307)), None, "durasi terlalu jauh");
-        let inst = parse_get(r#"{"instrumental":true,"plainLyrics":null,"syncedLyrics":null}"#).unwrap();
+        assert_eq!(
+            pick_search(many, Some(307)).unwrap().text(),
+            "[00:02.00]synced"
+        );
+        assert_eq!(
+            pick_search(r#"[{"duration":200.0,"plainLyrics":"x"}]"#, Some(307)),
+            None,
+            "durasi terlalu jauh"
+        );
+        let inst =
+            parse_get(r#"{"instrumental":true,"plainLyrics":null,"syncedLyrics":null}"#).unwrap();
         assert_eq!(inst.text(), "");
         assert_eq!(parse_get(r#"{"code":404,"name":"TrackNotFound"}"#), None);
     }

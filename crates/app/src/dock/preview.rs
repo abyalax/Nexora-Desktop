@@ -2,13 +2,12 @@ use crate::popup::Popup;
 use nacre_platform::text::{render, Style};
 use nacre_platform::wins::thumbnail;
 use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::GlassParams;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use windows::core::w;
-use windows::UI::Composition::{CompositionDrawingSurface, CompositionStretch, Compositor};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::UI::Input::KeyboardAndMouse::{TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT};
 use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::UI::Composition::{CompositionDrawingSurface, CompositionStretch, Compositor};
 use windows_core::Result;
 use windows_numerics::{Vector2, Vector3};
 
@@ -43,7 +42,12 @@ unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT
             LRESULT(0)
         }
         WM_LBUTTONUP => {
-            let _ = PostMessageW(Some(target), PREVIEW_CLICK, WPARAM((l.0 as i16) as isize as usize), LPARAM(0));
+            let _ = PostMessageW(
+                Some(target),
+                PREVIEW_CLICK,
+                WPARAM((l.0 as i16) as isize as usize),
+                LPARAM(0),
+            );
             LRESULT(0)
         }
         _ => DefWindowProcW(h, m, w, l),
@@ -74,7 +78,12 @@ impl Preview {
             WINDOW_EX_STYLE(0),
             crate::prefs::glass((10.0, 10.0), 18.0 * dpi, crate::prefs::Role::Dark),
         )?;
-        Ok(Preview { popup, cells: vec![], dpi, screen_w })
+        Ok(Preview {
+            popup,
+            cells: vec![],
+            dpi,
+            screen_w,
+        })
     }
 
     pub fn panel_mut(&mut self) -> &mut nacre_ui::glass::GlassPanel {
@@ -109,10 +118,17 @@ impl Preview {
         self.popup.panel.set_radius(18.0 * d)?;
         self.popup.show();
 
-        let style = Style { px: (12.0 * d).round() as i32, weight: 500 };
+        let style = Style {
+            px: (12.0 * d).round() as i32,
+            weight: 500,
+        };
         for (i, (hwnd, title, minimized)) in windows.iter().take(n).enumerate() {
             let x0 = pad + i as i32 * (tw + pad);
-            let thumb = if *minimized { None } else { thumbnail::register(self.popup.hwnd.0 as isize, *hwnd) };
+            let thumb = if *minimized {
+                None
+            } else {
+                thumbnail::register(self.popup.hwnd.0 as isize, *hwnd)
+            };
             if *minimized {
                 if let Some(s) = icon {
                     let sz = (64.0 * d) as i32;
@@ -120,16 +136,28 @@ impl Preview {
                     brush.SetStretch(CompositionStretch::Uniform)?;
                     let sprite = comp.CreateSpriteVisual()?;
                     sprite.SetBrush(&brush)?;
-                    sprite.SetSize(Vector2 { X: sz as f32, Y: sz as f32 })?;
-                    sprite.SetOffset(Vector3 { X: (x0 + (tw - sz) / 2) as f32, Y: (pad + (th - sz) / 2) as f32, Z: 0.0 })?;
+                    sprite.SetSize(Vector2 {
+                        X: sz as f32,
+                        Y: sz as f32,
+                    })?;
+                    sprite.SetOffset(Vector3 {
+                        X: (x0 + (tw - sz) / 2) as f32,
+                        Y: (pad + (th - sz) / 2) as f32,
+                        Z: 0.0,
+                    })?;
                     sprite.SetOpacity(0.55)?;
                     self.popup.content.Children()?.InsertAtTop(&sprite)?;
                 }
             }
             if let Some(t) = thumb {
-                let (sw, sh) = thumbnail::source_size(t).filter(|s| s.0 > 0 && s.1 > 0).unwrap_or((tw, th));
+                let (sw, sh) = thumbnail::source_size(t)
+                    .filter(|s| s.0 > 0 && s.1 > 0)
+                    .unwrap_or((tw, th));
                 let k = (tw as f32 / sw as f32).min(th as f32 / sh as f32).min(1.0);
-                let (dw, dh) = (((sw as f32 * k) as i32).max(1), ((sh as f32 * k) as i32).max(1));
+                let (dw, dh) = (
+                    ((sw as f32 * k) as i32).max(1),
+                    ((sh as f32 * k) as i32).max(1),
+                );
                 let (dx, dy) = (x0 + (tw - dw) / 2, pad + (th - dh) / 2);
                 thumbnail::place(t, (dx, dy, dx + dw, dy + dh), 255);
             }
@@ -139,17 +167,32 @@ impl Preview {
                 brush.SetStretch(CompositionStretch::None)?;
                 let sprite = comp.CreateSpriteVisual()?;
                 sprite.SetBrush(&brush)?;
-                sprite.SetSize(Vector2 { X: tw as f32, Y: title_h as f32 })?;
-                sprite.SetOffset(Vector3 { X: x0 as f32, Y: (pad + th + gap) as f32, Z: 0.0 })?;
+                sprite.SetSize(Vector2 {
+                    X: tw as f32,
+                    Y: title_h as f32,
+                })?;
+                sprite.SetOffset(Vector3 {
+                    X: x0 as f32,
+                    Y: (pad + th + gap) as f32,
+                    Z: 0.0,
+                })?;
                 self.popup.content.Children()?.InsertAtTop(&sprite)?;
             }
-            self.cells.push(Cell { left: x0 - pad / 2, right: x0 + tw + pad / 2, hwnd: *hwnd, thumb });
+            self.cells.push(Cell {
+                left: x0 - pad / 2,
+                right: x0 + tw + pad / 2,
+                hwnd: *hwnd,
+                thumb,
+            });
         }
         Ok(())
     }
 
     pub fn hit(&self, x: i32) -> Option<isize> {
-        self.cells.iter().find(|c| x >= c.left && x < c.right).map(|c| c.hwnd)
+        self.cells
+            .iter()
+            .find(|c| x >= c.left && x < c.right)
+            .map(|c| c.hwnd)
     }
 
     fn clear(&mut self) {

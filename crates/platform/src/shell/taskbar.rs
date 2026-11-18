@@ -9,9 +9,9 @@ use windows::Win32::UI::Shell::{
     SHAppBarMessage, ABM_GETSTATE, ABM_GETTASKBARPOS, ABM_SETSTATE, APPBARDATA,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    EnumWindows, FindWindowW, GetClassNameW, GetWindowRect, GetWindowThreadProcessId, IsWindowVisible,
-    SetWindowPos, ShowWindow, EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW, SWP_NOACTIVATE, SWP_NOSIZE,
-    SWP_NOZORDER, SW_HIDE, SW_SHOW, WINEVENT_OUTOFCONTEXT,
+    EnumWindows, FindWindowW, GetClassNameW, GetWindowRect, GetWindowThreadProcessId,
+    IsWindowVisible, SetWindowPos, ShowWindow, EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW,
+    SWP_NOACTIVATE, SWP_NOSIZE, SWP_NOZORDER, SW_HIDE, SW_SHOW, WINEVENT_OUTOFCONTEXT,
 };
 
 const PRIMARY_CLASS: &str = "Shell_TrayWnd";
@@ -65,11 +65,20 @@ fn secondaries() -> Vec<HWND> {
 fn rect_of(h: HWND) -> Option<Rect> {
     let mut r = RECT::default();
     unsafe { GetWindowRect(h, &mut r).ok()? };
-    Some(Rect { left: r.left, top: r.top, right: r.right, bottom: r.bottom })
+    Some(Rect {
+        left: r.left,
+        top: r.top,
+        right: r.right,
+        bottom: r.bottom,
+    })
 }
 
 fn abm_data(h: HWND) -> APPBARDATA {
-    APPBARDATA { cbSize: std::mem::size_of::<APPBARDATA>() as u32, hWnd: h, ..Default::default() }
+    APPBARDATA {
+        cbSize: std::mem::size_of::<APPBARDATA>() as u32,
+        hWnd: h,
+        ..Default::default()
+    }
 }
 
 fn abm_get_state(h: HWND) -> i32 {
@@ -90,7 +99,12 @@ fn abm_taskbar_pos(h: HWND) -> Option<Rect> {
     if unsafe { SHAppBarMessage(ABM_GETTASKBARPOS, &mut d) } == 0 {
         return None;
     }
-    Some(Rect { left: d.rc.left, top: d.rc.top, right: d.rc.right, bottom: d.rc.bottom })
+    Some(Rect {
+        left: d.rc.left,
+        top: d.rc.top,
+        right: d.rc.right,
+        bottom: d.rc.bottom,
+    })
 }
 
 fn is_parked(h: HWND) -> bool {
@@ -100,14 +114,30 @@ fn is_parked(h: HWND) -> bool {
 fn park(h: HWND) {
     unsafe {
         let _ = ShowWindow(h, SW_HIDE);
-        let _ = SetWindowPos(h, None, PARK_X, PARK_X, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        let _ = SetWindowPos(
+            h,
+            None,
+            PARK_X,
+            PARK_X,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE,
+        );
     }
 }
 
 fn place_and_show(h: HWND, rect: Option<Rect>) {
     unsafe {
         if let Some(r) = rect {
-            let _ = SetWindowPos(h, None, r.left, r.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                h,
+                None,
+                r.left,
+                r.top,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE,
+            );
         }
         let _ = ShowWindow(h, SW_SHOW);
     }
@@ -137,9 +167,17 @@ pub fn marker_exists(path: &Path) -> bool {
 pub fn restore_marker(m: &Marker) -> bool {
     let Some(p) = primary() else { return false };
     HIDDEN.store(false, Ordering::Relaxed);
-    abm_set_state(p, if m.abstate >= 0 { m.abstate } else { ABS_ALWAYSONTOP });
+    abm_set_state(
+        p,
+        if m.abstate >= 0 {
+            m.abstate
+        } else {
+            ABS_ALWAYSONTOP
+        },
+    );
     place_and_show(p, m.primary);
-    let mut ok = unsafe { IsWindowVisible(p).as_bool() } && rect_of(p).is_some_and(|r| r.is_placed());
+    let mut ok =
+        unsafe { IsWindowVisible(p).as_bool() } && rect_of(p).is_some_and(|r| r.is_placed());
     for s in secondaries() {
         place_and_show(s, m.secondary_rect(s.0 as isize));
         ok &= unsafe { IsWindowVisible(s).as_bool() } && rect_of(s).is_some_and(|r| r.is_placed());
@@ -153,7 +191,10 @@ pub fn recover_leftover(path: &Path) -> bool {
     }
     let m = read_marker(path).unwrap_or_else(|| Marker::new(-1, 0));
     if m.pid != 0 && m.pid != std::process::id() && crate::process::is_alive(m.pid) {
-        crate::log::line("taskbar", "marker dimiliki proses Nacre lain yang masih hidup; tidak disentuh");
+        crate::log::line(
+            "taskbar",
+            "marker dimiliki proses Nacre lain yang masih hidup; tidak disentuh",
+        );
         return false;
     }
     let ok = restore_marker(&m);
@@ -176,7 +217,9 @@ pub fn hide(marker_path: &Path, guard_exe: &Path) -> Result<(), String> {
     let pid = std::process::id();
 
     let mut m = Marker::new(abm_get_state(p), pid);
-    m.primary = rect_of(p).filter(|r| r.is_placed()).or_else(|| abm_taskbar_pos(p).filter(|r| r.is_placed()));
+    m.primary = rect_of(p)
+        .filter(|r| r.is_placed())
+        .or_else(|| abm_taskbar_pos(p).filter(|r| r.is_placed()));
     for s in secondaries() {
         if let Some(r) = rect_of(s).filter(|r| r.is_placed()) {
             m.secondaries.push((s.0 as isize, r));
@@ -186,10 +229,16 @@ pub fn hide(marker_path: &Path, guard_exe: &Path) -> Result<(), String> {
     write_marker(marker_path, &m).map_err(|e| format!("marker: {e}"))?;
     if let Err(e) = super::guard_spawn::spawn_once(guard_exe, pid, marker_path) {
         let _ = std::fs::remove_file(marker_path);
-        return Err(format!("guard tidak bisa dijalankan ({}): {e}", guard_exe.display()));
+        return Err(format!(
+            "guard tidak bisa dijalankan ({}): {e}",
+            guard_exe.display()
+        ));
     }
 
-    *lock(&ACTIVE) = Some(Active { marker: m, path: marker_path.to_path_buf() });
+    *lock(&ACTIVE) = Some(Active {
+        marker: m,
+        path: marker_path.to_path_buf(),
+    });
     abm_set_state(p, ABS_AUTOHIDE);
     park(p);
     for s in secondaries() {
@@ -260,7 +309,8 @@ fn install_enforcer() {
     }
     let mut hooks = lock(&HOOKS);
     for ev in [EVENT_OBJECT_SHOW, EVENT_OBJECT_LOCATIONCHANGE] {
-        let h = unsafe { SetWinEventHook(ev, ev, None, Some(enforcer), pid, 0, WINEVENT_OUTOFCONTEXT) };
+        let h =
+            unsafe { SetWinEventHook(ev, ev, None, Some(enforcer), pid, 0, WINEVENT_OUTOFCONTEXT) };
         if !h.is_invalid() {
             hooks.push(h.0 as isize);
         }

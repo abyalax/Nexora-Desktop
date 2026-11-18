@@ -1,9 +1,11 @@
 use crate::icons::Bitmap;
 use windows::Win32::Foundation::{HWND, RECT};
-use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DwmSetWindowAttribute, DWMWINDOWATTRIBUTE};
+use windows::Win32::Graphics::Dwm::{
+    DwmGetWindowAttribute, DwmSetWindowAttribute, DWMWINDOWATTRIBUTE,
+};
 use windows::Win32::Graphics::Gdi::{
-    CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC, SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
-    DIB_RGB_COLORS, HGDIOBJ,
+    CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC, SelectObject,
+    BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HGDIOBJ,
 };
 use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS};
 use windows::Win32::UI::HiDpi::{GetDpiForSystem, GetDpiForWindow};
@@ -15,7 +17,13 @@ const DWMWA_EXTENDED_FRAME_BOUNDS: i32 = 9;
 pub fn set_transitions_disabled(hwnd: isize, disabled: bool) -> bool {
     let v: i32 = disabled as i32;
     unsafe {
-        DwmSetWindowAttribute(HWND(hwnd as *mut _), DWMWINDOWATTRIBUTE(DWMWA_TRANSITIONS_FORCEDISABLED), &v as *const _ as *const _, 4).is_ok()
+        DwmSetWindowAttribute(
+            HWND(hwnd as *mut _),
+            DWMWINDOWATTRIBUTE(DWMWA_TRANSITIONS_FORCEDISABLED),
+            &v as *const _ as *const _,
+            4,
+        )
+        .is_ok()
     }
 }
 
@@ -28,7 +36,14 @@ pub fn frame_rect(hwnd: isize) -> Option<(i32, i32, i32, i32)> {
     unsafe {
         let h = HWND(hwnd as *mut _);
         let mut r = RECT::default();
-        if DwmGetWindowAttribute(h, DWMWINDOWATTRIBUTE(DWMWA_EXTENDED_FRAME_BOUNDS), &mut r as *mut _ as *mut _, std::mem::size_of::<RECT>() as u32).is_err() {
+        if DwmGetWindowAttribute(
+            h,
+            DWMWINDOWATTRIBUTE(DWMWA_EXTENDED_FRAME_BOUNDS),
+            &mut r as *mut _ as *mut _,
+            std::mem::size_of::<RECT>() as u32,
+        )
+        .is_err()
+        {
             GetWindowRect(h, &mut r).ok()?;
         }
         Some((r.left, r.top, r.right - r.left, r.bottom - r.top))
@@ -48,7 +63,10 @@ pub fn capture(hwnd: isize, shrink: u32) -> Option<Shot> {
             return None;
         }
         let (fx, fy, fw, fh) = frame_rect(hwnd)?;
-        let (cx, cy) = ((fx - wr.left).clamp(0, ww - 1), (fy - wr.top).clamp(0, wh - 1));
+        let (cx, cy) = (
+            (fx - wr.left).clamp(0, ww - 1),
+            (fy - wr.top).clamp(0, wh - 1),
+        );
         let (cw, ch) = (fw.min(ww - cx), fh.min(wh - cy));
         if cw < 40 || ch < 40 {
             return None;
@@ -97,7 +115,10 @@ pub fn capture(hwnd: isize, shrink: u32) -> Option<Shot> {
                 let mut n = 0u32;
                 for dy in 0..s {
                     for dx in 0..s {
-                        let (sx, sy) = ((((cx + x * s + dx) as f32) * ratio) as i32, (((cy + y * s + dy) as f32) * ratio) as i32);
+                        let (sx, sy) = (
+                            (((cx + x * s + dx) as f32) * ratio) as i32,
+                            (((cy + y * s + dy) as f32) * ratio) as i32,
+                        );
                         if sx < ww && sy < wh {
                             let i = ((sy * ww + sx) * 4) as usize;
                             b += src[i] as u32;
@@ -122,13 +143,32 @@ pub fn capture(hwnd: isize, shrink: u32) -> Option<Shot> {
         if !ok {
             return None;
         }
-        Some(Shot { rect: (fx, fy, fw, fh), bmp: Bitmap { w: ow as u32, h: oh as u32, bgra: out } })
+        Some(Shot {
+            rect: (fx, fy, fw, fh),
+            bmp: Bitmap {
+                w: ow as u32,
+                h: oh as u32,
+                bgra: out,
+            },
+        })
     }
 }
 
 fn corner_alpha(x: f32, y: f32, w: f32, h: f32, r: f32) -> u8 {
-    let dx = if x < r { r - x } else if x > w - r { x - (w - r) } else { 0.0 };
-    let dy = if y < r { r - y } else if y > h - r { y - (h - r) } else { 0.0 };
+    let dx = if x < r {
+        r - x
+    } else if x > w - r {
+        x - (w - r)
+    } else {
+        0.0
+    };
+    let dy = if y < r {
+        r - y
+    } else if y > h - r {
+        y - (h - r)
+    } else {
+        0.0
+    };
     if dx == 0.0 || dy == 0.0 {
         return 255;
     }

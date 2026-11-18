@@ -7,8 +7,9 @@ use windows::Win32::System::Threading::{
     OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    EnumWindows, GetClassNameW, GetWindow, GetWindowLongW, GetWindowTextW, GetWindowThreadProcessId,
-    IsWindowVisible, GWL_EXSTYLE, GW_OWNER, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+    EnumWindows, GetClassNameW, GetWindow, GetWindowLongW, GetWindowTextW,
+    GetWindowThreadProcessId, IsWindowVisible, GWL_EXSTYLE, GW_OWNER, WS_EX_APPWINDOW,
+    WS_EX_TOOLWINDOW,
 };
 
 const HIDDEN_EXES: &[&str] = &[
@@ -37,7 +38,12 @@ pub fn exe_path_of_pid(pid: u32) -> Option<String> {
         let h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
         let mut buf = [0u16; 1024];
         let mut len = buf.len() as u32;
-        let ok = QueryFullProcessImageNameW(h, PROCESS_NAME_WIN32, windows::core::PWSTR(buf.as_mut_ptr()), &mut len);
+        let ok = QueryFullProcessImageNameW(
+            h,
+            PROCESS_NAME_WIN32,
+            windows::core::PWSTR(buf.as_mut_ptr()),
+            &mut len,
+        );
         let _ = CloseHandle(h);
         ok.ok()?;
         Some(String::from_utf16_lossy(&buf[..len as usize]))
@@ -67,7 +73,11 @@ pub fn exe_path_of_running(name: &str) -> Option<String> {
         }
         BOOL(1)
     }
-    let mut f = Find { name: name.to_ascii_lowercase(), found: None, seen: Vec::new() };
+    let mut f = Find {
+        name: name.to_ascii_lowercase(),
+        found: None,
+        seen: Vec::new(),
+    };
     unsafe {
         let _ = EnumWindows(Some(cb), LPARAM(&mut f as *mut Find as isize));
     }
@@ -81,7 +91,14 @@ pub fn cloaked(hwnd: isize) -> bool {
 fn is_cloaked(hwnd: HWND) -> bool {
     let mut cloaked = 0u32;
     unsafe {
-        DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &mut cloaked as *mut u32 as *mut c_void, 4).is_ok() && cloaked != 0
+        DwmGetWindowAttribute(
+            hwnd,
+            DWMWA_CLOAKED,
+            &mut cloaked as *mut u32 as *mut c_void,
+            4,
+        )
+        .is_ok()
+            && cloaked != 0
     }
 }
 
@@ -116,7 +133,9 @@ unsafe extern "system" fn each(hwnd: HWND, lparam: LPARAM) -> BOOL {
     if pid == 0 || pid == ctx.own_pid {
         return BOOL(1);
     }
-    let Some(path) = exe_path_of_pid(pid) else { return BOOL(1) };
+    let Some(path) = exe_path_of_pid(pid) else {
+        return BOOL(1);
+    };
     let lower = path.to_lowercase();
     let file = lower.rsplit('\\').next().unwrap_or("");
     if HIDDEN_EXES.contains(&file) {
@@ -137,12 +156,20 @@ unsafe extern "system" fn each(hwnd: HWND, lparam: LPARAM) -> BOOL {
         };
     }
     let name = super::names::friendly(&path);
-    ctx.out.push(Win { hwnd: hwnd.0 as isize, path, title, name });
+    ctx.out.push(Win {
+        hwnd: hwnd.0 as isize,
+        path,
+        title,
+        name,
+    });
     BOOL(1)
 }
 
 pub fn list(own_pid: u32) -> Vec<Win> {
-    let mut ctx = Ctx { own_pid, out: Vec::new() };
+    let mut ctx = Ctx {
+        own_pid,
+        out: Vec::new(),
+    };
     unsafe {
         let _ = EnumWindows(Some(each), LPARAM(&mut ctx as *mut Ctx as isize));
     }

@@ -16,7 +16,10 @@ fn read() -> Vec<(String, String)> {
         .map(|t| {
             t.trim_start_matches('\u{feff}')
                 .lines()
-                .filter_map(|l| l.split_once('\t').map(|(a, b)| (a.trim().to_string(), b.trim().to_string())))
+                .filter_map(|l| {
+                    l.split_once('\t')
+                        .map(|(a, b)| (a.trim().to_string(), b.trim().to_string()))
+                })
                 .filter(|(a, b)| !a.is_empty() && !b.is_empty())
                 .collect()
         })
@@ -50,7 +53,11 @@ fn fnv(s: &str) -> u64 {
 }
 
 pub fn set(app: &str, image: &str) -> bool {
-    let ext = std::path::Path::new(image).extension().and_then(|e| e.to_str()).unwrap_or("png").to_ascii_lowercase();
+    let ext = std::path::Path::new(image)
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("png")
+        .to_ascii_lowercase();
     let dest = dir().join(format!("{:016x}.{ext}", fnv(&key_of(app))));
     let _ = std::fs::create_dir_all(dir());
     if let Err(e) = std::fs::copy(image, &dest) {

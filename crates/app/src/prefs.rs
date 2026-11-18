@@ -3,9 +3,9 @@ use nacre_core::settings::{self, Look, Settings};
 use nacre_platform::{log, sys};
 use nacre_ui::glass::GlassParams;
 use std::sync::Mutex;
-use windows::UI::Color;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
+use windows::UI::Color;
 
 pub const WM_PREFS: u32 = WM_APP + 40;
 
@@ -18,7 +18,9 @@ fn file() -> std::path::PathBuf {
 }
 
 pub fn init() {
-    let s = std::fs::read_to_string(file()).map(|t| Settings::parse(&t)).unwrap_or_default();
+    let s = std::fs::read_to_string(file())
+        .map(|t| Settings::parse(&t))
+        .unwrap_or_default();
     log::line("prefs", &format!("dimuat: {s:?}"));
     *CUR.lock().unwrap() = Some(s);
 }
@@ -97,11 +99,25 @@ pub fn look(role: Role) -> Look {
 }
 
 fn c(a: [u8; 4]) -> Color {
-    Color { A: a[0], R: a[1], G: a[2], B: a[3] }
+    Color {
+        A: a[0],
+        R: a[1],
+        G: a[2],
+        B: a[3],
+    }
 }
 
 pub fn apply(base: GlassParams, l: &Look) -> GlassParams {
-    GlassParams { blur_sigma: l.blur_sigma, saturation: l.saturation, tint: c(l.tint), rim: c(l.rim), solid: c(l.solid), highlight: l.highlight, liquify: l.liquify, ..base }
+    GlassParams {
+        blur_sigma: l.blur_sigma,
+        saturation: l.saturation,
+        tint: c(l.tint),
+        rim: c(l.rim),
+        solid: c(l.solid),
+        highlight: l.highlight,
+        liquify: l.liquify,
+        ..base
+    }
 }
 
 pub fn ui_scale() -> f32 {
@@ -110,7 +126,11 @@ pub fn ui_scale() -> f32 {
 
 pub fn round(role: Role) -> f32 {
     let s = get();
-    settings::round_factor(if role == Role::Notch { s.notch_round } else { s.dock_round })
+    settings::round_factor(if role == Role::Notch {
+        s.notch_round
+    } else {
+        s.dock_round
+    })
 }
 
 pub fn glass(size: (f32, f32), radius: f32, role: Role) -> GlassParams {
@@ -152,10 +172,21 @@ pub fn icon_dark() -> bool {
 
 pub fn accent_c(a: u8) -> Color {
     let c = accent();
-    Color { A: a, R: c[0], G: c[1], B: c[2] }
+    Color {
+        A: a,
+        R: c[0],
+        G: c[1],
+        B: c[2],
+    }
 }
 
+#[allow(dead_code)]
 pub fn fg(a: u8) -> Color {
     let l = look(Role::Themed);
-    Color { A: a, R: l.fg[0], G: l.fg[1], B: l.fg[2] }
+    Color {
+        A: a,
+        R: l.fg[0],
+        G: l.fg[1],
+        B: l.fg[2],
+    }
 }

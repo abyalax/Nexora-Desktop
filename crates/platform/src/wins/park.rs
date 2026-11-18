@@ -5,7 +5,12 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 pub const SLIVER: i32 = 4;
 
 fn rect_is_parked(r: &RECT) -> bool {
-    r.right > 0 && r.right <= SLIVER + 2 && r.bottom > 0 && r.bottom <= SLIVER + 2 && r.left < -100 && r.top < -50
+    r.right > 0
+        && r.right <= SLIVER + 2
+        && r.bottom > 0
+        && r.bottom <= SLIVER + 2
+        && r.left < -100
+        && r.top < -50
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -25,13 +30,20 @@ pub fn park(hwnd: isize) -> Option<Parked> {
         if !IsWindow(Some(w)).as_bool() || IsIconic(w).as_bool() {
             return None;
         }
-        let mut wp = WINDOWPLACEMENT { length: std::mem::size_of::<WINDOWPLACEMENT>() as u32, ..Default::default() };
+        let mut wp = WINDOWPLACEMENT {
+            length: std::mem::size_of::<WINDOWPLACEMENT>() as u32,
+            ..Default::default()
+        };
         GetWindowPlacement(w, &mut wp).ok()?;
         let maximized = IsZoomed(w).as_bool();
         let r = wp.rcNormalPosition;
         let mut cur = RECT::default();
         GetWindowRect(w, &mut cur).ok()?;
-        let rect = if maximized { (r.left, r.top, r.right, r.bottom) } else { (cur.left, cur.top, cur.right, cur.bottom) };
+        let rect = if maximized {
+            (r.left, r.top, r.right, r.bottom)
+        } else {
+            (cur.left, cur.top, cur.right, cur.bottom)
+        };
         if rect_is_parked(&cur) {
             return None;
         }
@@ -40,8 +52,20 @@ pub fn park(hwnd: isize) -> Option<Parked> {
             let _ = ShowWindow(w, SW_RESTORE);
         }
         let (pw, ph) = (size.0.max(200), size.1.max(120));
-        let _ = SetWindowPos(w, None, SLIVER - pw, SLIVER - ph, pw, ph, SWP_NOACTIVATE | SWP_NOZORDER);
-        Some(Parked { hwnd, rect, maximized })
+        let _ = SetWindowPos(
+            w,
+            None,
+            SLIVER - pw,
+            SLIVER - ph,
+            pw,
+            ph,
+            SWP_NOACTIVATE | SWP_NOZORDER,
+        );
+        Some(Parked {
+            hwnd,
+            rect,
+            maximized,
+        })
     }
 }
 
@@ -73,17 +97,29 @@ pub fn save(path: &Path, list: &[Parked]) {
     }
     let mut s = String::new();
     for p in list {
-        s.push_str(&format!("{} {} {} {} {} {}\n", p.hwnd, p.rect.0, p.rect.1, p.rect.2, p.rect.3, p.maximized as u8));
+        s.push_str(&format!(
+            "{} {} {} {} {} {}\n",
+            p.hwnd, p.rect.0, p.rect.1, p.rect.2, p.rect.3, p.maximized as u8
+        ));
     }
     let _ = std::fs::write(path, s);
 }
 
 pub fn load(path: &Path) -> Vec<Parked> {
-    let Ok(s) = std::fs::read_to_string(path) else { return vec![] };
+    let Ok(s) = std::fs::read_to_string(path) else {
+        return vec![];
+    };
     s.lines()
         .filter_map(|l| {
-            let v: Vec<i64> = l.split_whitespace().filter_map(|x| x.parse().ok()).collect();
-            (v.len() == 6).then(|| Parked { hwnd: v[0] as isize, rect: (v[1] as i32, v[2] as i32, v[3] as i32, v[4] as i32), maximized: v[5] != 0 })
+            let v: Vec<i64> = l
+                .split_whitespace()
+                .filter_map(|x| x.parse().ok())
+                .collect();
+            (v.len() == 6).then(|| Parked {
+                hwnd: v[0] as isize,
+                rect: (v[1] as i32, v[2] as i32, v[3] as i32, v[4] as i32),
+                maximized: v[5] != 0,
+            })
         })
         .collect()
 }

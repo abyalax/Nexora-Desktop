@@ -109,9 +109,15 @@ mod tests {
 
     #[test]
     fn custom_text_wins_and_name_is_optional() {
-        assert_eq!(greeting_text("", "Rani", 22, Lang::Id), "Selamat malam, Rani");
+        assert_eq!(
+            greeting_text("", "Rani", 22, Lang::Id),
+            "Selamat malam, Rani"
+        );
         assert_eq!(greeting_text("  ", "", 8, Lang::En), "Good morning");
-        assert_eq!(greeting_text("Semangat ngoding!", "Rani", 8, Lang::Id), "Semangat ngoding!");
+        assert_eq!(
+            greeting_text("Semangat ngoding!", "Rani", 8, Lang::Id),
+            "Semangat ngoding!"
+        );
     }
 
     #[test]

@@ -22,7 +22,7 @@ fn res_entry(out: &mut Vec<u8>, typ: u16, name: u16, flags: u16, data: &[u8]) {
 fn ico_to_res(ico: &[u8], group: u16) -> Vec<u8> {
     let u16_at = |o: usize| u16::from_le_bytes([ico[o], ico[o + 1]]);
     let u32_at = |o: usize| u32::from_le_bytes([ico[o], ico[o + 1], ico[o + 2], ico[o + 3]]);
-    assert!(ico.len() > 6 && u16_at(2) == 1, "assets/abra.ico bukan berkas ikon");
+    assert!(ico.len() > 6 && u16_at(2) == 1, "assets/nexora.ico bukan berkas ikon");
     let count = u16_at(4) as usize;
     let mut res = Vec::new();
     res_entry(&mut res, 0, 0, 0, &[]);
@@ -48,13 +48,13 @@ fn ico_to_res(ico: &[u8], group: u16) -> Vec<u8> {
 }
 
 fn embed_icon() {
-    let ico = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/abra.ico");
+    let ico = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/nexora.ico");
     println!("cargo:rerun-if-changed={}", ico.display());
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
         return;
     }
-    let data = std::fs::read(&ico).expect("assets/abra.ico tidak terbaca");
-    let out = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("abra_icon.res");
-    std::fs::write(&out, ico_to_res(&data, 1)).expect("gagal menulis abra_icon.res");
+    let data = std::fs::read(&ico).expect("assets/nexora.ico tidak terbaca");
+    let out = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("nexora_icon.res");
+    std::fs::write(&out, ico_to_res(&data, 1)).expect("gagal menulis nexora_icon.res");
     println!("cargo:rustc-link-arg-bins={}", out.display());
 }
