@@ -2,18 +2,18 @@
 
 mod controlcenter;
 mod dock;
+mod dynamic_island;
+mod finder;
 mod fx;
 mod hotcorners;
 mod hud;
 mod launchpad;
 mod macshortcuts;
 mod mainwin;
-mod menubar;
-mod menulogo;
+mod menu;
 mod mission;
 mod motion;
 mod netmenu;
-mod notch;
 mod paths;
 mod popup;
 mod prefs;
@@ -194,9 +194,9 @@ fn main() {
     }
 
     if !args.no_island {
-        if let Err(e) = notch::Notch::create(
+        if let Err(e) = dynamic_island::Notch::create(
             &host,
-            notch::Options {
+            dynamic_island::Options {
                 glass: args.glass,
                 mode: args.island_mode.unwrap_or(pref.notch.mode()),
                 reserve: args.island_mode.is_none() && pref.notch.reserves(),
@@ -237,7 +237,7 @@ fn main() {
     if let Err(e) = switcher::init(&host.compositor) {
         log::line("switcher", &format!("gagal: {e}"));
     }
-    if let Err(e) = menubar::init(&host.compositor) {
+    if let Err(e) = finder::init(&host.compositor) {
         log::line("menubar", &format!("gagal: {e}"));
     }
     if let Err(e) = topmost::init() {

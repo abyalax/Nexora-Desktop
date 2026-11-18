@@ -1445,7 +1445,7 @@ impl Win {
                         s.greet_name.as_str().to_string()
                     };
                     let hour = nacre_platform::time::local_now().hour;
-                    let auto = nacre_core::notch::glance::greeting_text("", &name, hour, s.lang);
+                    let auto = nacre_core::dynamic_island::glance::greeting_text("", &name, hour, s.lang);
                     vec![
                         RowDef::Seg(
                             prefs::tr("Tampilkan"),
@@ -1557,7 +1557,7 @@ impl Win {
                         ],
                     ),
                     (Some(prefs::tr("Logo Rail")), {
-                        let custom = crate::menulogo::path().is_some();
+                        let custom = crate::finder::logo::path().is_some();
                         let mut rows = vec![RowDef::Pick(
                             prefs::tr("Logo Rail"),
                             prefs::tr(if custom {
@@ -2640,7 +2640,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
                     );
                     if let Some(p) = picked {
-                        if crate::menulogo::set(&p) {
+                        if crate::finder::logo::set(&p) {
                             prefs::broadcast();
                         }
                     }
@@ -2651,7 +2651,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 Some(Action::WidgetGallery) => crate::widgets::open_gallery(),
                 Some(Action::NotchShape(b)) => prefs::update(|s| s.notch_island = b),
                 Some(Action::MenuLogoReset) => {
-                    crate::menulogo::reset();
+                    crate::finder::logo::reset();
                     prefs::broadcast();
                 }
                 Some(Action::LyricsDir) => {

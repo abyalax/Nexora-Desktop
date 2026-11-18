@@ -211,7 +211,7 @@ impl Painter {
                     let d0 = ((yy + r) * w + r) * 4;
                     out[d0..d0 + bw * 4].copy_from_slice(&src[yy * bw * 4..(yy + 1) * bw * 4]);
                 }
-                nacre_core::notch::typeset::box_blur(&mut out, w, h, r);
+                nacre_core::dynamic_island::typeset::box_blur(&mut out, w, h, r);
                 let sf = self.gfx.surface_from_bgra(w as u32, h as u32, &out).ok()?;
                 self.trim();
                 let v = (sf, w as i32, h as i32);
@@ -291,7 +291,7 @@ impl Painter {
         let surf = match hit {
             Some((s, _, _)) => s,
             None => {
-                let data = nacre_core::notch::download::arc_bitmap(n, rp, wp, from, to, rgb, alpha);
+                let data = nacre_core::dynamic_island::download::arc_bitmap(n, rp, wp, from, to, rgb, alpha);
                 let sf = self.gfx.surface_from_bgra(n, n, &data).ok()?;
                 self.trim();
                 self.cache.insert(key, (sf.clone(), n as i32, n as i32));

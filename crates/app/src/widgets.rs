@@ -1,7 +1,7 @@
-use crate::dock::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
+use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{motion, paths, prefs};
-use nacre_core::island::calendar;
+use nacre_core::panels::calendar;
 use nacre_core::widgets::{self, Category, Kind, Placed};
 use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
 use nacre_platform::{launch, log, sys, time};
@@ -733,7 +733,7 @@ impl Mgr {
 
     fn shadow(&self, p: &ContainerVisual, w: f32, h: f32, radius: f32, op: f32) {
         let d = self.dpi;
-        let s = nacre_core::notch::shade::rounded(radius, 16.0 * d, 5.0 * d);
+        let s = nacre_core::dynamic_island::shade::rounded(radius, 16.0 * d, 5.0 * d);
         let Some(gfx) = self.gfx.as_ref() else { return };
         let go = || -> windows_core::Result<()> {
             let surf = gfx.surface_from_bgra(s.w, s.h, &s.bgra)?;

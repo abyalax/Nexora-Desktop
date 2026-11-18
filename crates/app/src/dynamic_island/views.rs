@@ -1,8 +1,8 @@
 use super::draw::{white, Anchor, Painter, WHITE};
 use crate::prefs::tr;
-use nacre_core::island::timer::{format_mmss, Phase, Timer};
-use nacre_core::notch::glance::Item;
-use nacre_core::notch::state::{Activity, Look, Tab, View};
+use nacre_core::dynamic_island::timer::{format_mmss, Phase, Timer};
+use nacre_core::dynamic_island::glance::Item;
+use nacre_core::dynamic_island::state::{Activity, Look, Tab, View};
 use nacre_core::symbols::Sym;
 use windows::UI::Color;
 use windows::UI::Composition::{CompositionDrawingSurface, ContainerVisual, SpriteVisual};
@@ -133,7 +133,7 @@ pub enum LyrState {
 }
 
 pub struct LyricsView<'a> {
-    pub lines: Option<&'a nacre_core::notch::lyrics::Lyrics>,
+    pub lines: Option<&'a nacre_core::dynamic_island::lyrics::Lyrics>,
     pub state: LyrState,
     pub pos_ms: i64,
     pub lrclib: bool,
@@ -1448,7 +1448,7 @@ fn lyrics_flow(
     let maxw = w - 2.0 * pad;
     let blocks = |p: &Painter, text: &str| -> Vec<String> {
         let t = if text.is_empty() { "\u{266A}" } else { text };
-        nacre_core::notch::typeset::wrap(t, maxw, 3, |s| p.measure(s, size, 700))
+        nacre_core::dynamic_island::typeset::wrap(t, maxw, 3, |s| p.measure(s, size, 700))
     };
     if l.synced {
         let active = l.index_at(ly.pos_ms);
@@ -1511,7 +1511,7 @@ fn lyrics_flow(
                 break;
             }
             for t in
-                nacre_core::notch::typeset::wrap(&line.text, maxw, 3, |s| p.measure(s, 15.0, 600))
+                nacre_core::dynamic_island::typeset::wrap(&line.text, maxw, 3, |s| p.measure(s, 15.0, 600))
             {
                 p.text(
                     &sc,
@@ -1732,7 +1732,7 @@ fn calendar_card(
     d: &Data,
     regions: &mut Vec<Region>,
 ) {
-    use nacre_core::island::calendar::{add_days, month_short, weekday, weekday_short};
+    use nacre_core::panels::calendar::{add_days, month_short, weekday, weekday_short};
     card(p, c, x, y, w, h);
     let en = crate::prefs::get().lang == nacre_core::i18n::Lang::En;
     let cal = &d.cal;

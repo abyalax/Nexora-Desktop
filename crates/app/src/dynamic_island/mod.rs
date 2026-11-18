@@ -5,14 +5,14 @@ mod ears;
 mod shadow;
 mod views;
 
-use crate::dock::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
+use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::strip::Strip;
 use body::Body;
 use draw::Painter;
-use nacre_core::island::calendar;
-use nacre_core::island::timer::{Phase, Timer};
-use nacre_core::notch::glance;
-use nacre_core::notch::state::{self, motion, Event, Live, Look, Mode, OpenOn, Size, Tab, View};
+use nacre_core::panels::calendar;
+use nacre_core::dynamic_island::timer::{Phase, Timer};
+use nacre_core::dynamic_island::glance;
+use nacre_core::dynamic_island::state::{self, motion, Event, Live, Look, Mode, OpenOn, Size, Tab, View};
 use nacre_core::visibility::policy::{should_hide, Inputs, Mode as Vis};
 use nacre_platform::loopback::{self, Loopback};
 use nacre_platform::media::{self, ArtUpdate, Command, Media};
@@ -263,14 +263,14 @@ pub struct Notch {
 
     album: String,
     lyr_worker: nacre_platform::lyrics::Lyrics,
-    lyr: Option<nacre_core::notch::lyrics::Lyrics>,
+    lyr: Option<nacre_core::dynamic_island::lyrics::Lyrics>,
     lyr_state: LyrState,
     lyr_lrclib: bool,
     lyr_key: String,
     lyr_track: String,
     lyr_idx: Option<usize>,
 
-    shelf: nacre_core::notch::shelf::Shelf,
+    shelf: nacre_core::dynamic_island::shelf::Shelf,
     shelf_icons: std::collections::HashMap<String, CompositionDrawingSurface>,
     dnd: drop::Shared,
     _drop_target: Option<windows::Win32::System::Ole::IDropTarget>,
@@ -280,8 +280,8 @@ pub struct Notch {
     menu_item: Option<usize>,
     privacy: (bool, bool),
     dl_watch: Option<nacre_platform::dlwatch::Watch>,
-    dl: Option<nacre_core::notch::download::Download>,
-    dl_done: Option<nacre_core::notch::download::Download>,
+    dl: Option<nacre_core::dynamic_island::download::Download>,
+    dl_done: Option<nacre_core::dynamic_island::download::Download>,
     dl_icons: std::collections::HashMap<String, Option<CompositionDrawingSurface>>,
     cal_sel: i32,
     agenda: Option<nacre_platform::agenda::Agenda>,
@@ -425,7 +425,7 @@ impl Notch {
                 lyr_key: String::new(),
                 lyr_track: String::new(),
                 lyr_idx: None,
-                shelf: nacre_core::notch::shelf::Shelf::new(24),
+                shelf: nacre_core::dynamic_island::shelf::Shelf::new(24),
                 shelf_icons: std::collections::HashMap::new(),
                 dnd: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
                 _drop_target: None,
@@ -614,7 +614,7 @@ impl Notch {
             timer(
                 self.hwnd,
                 T_SENDDONE,
-                nacre_core::notch::download::DONE_LINGER_MS,
+                nacre_core::dynamic_island::download::DONE_LINGER_MS,
             );
         } else if s.prog.active {
             s.done_at = None;
@@ -627,11 +627,11 @@ impl Notch {
     fn send_compact(&self) -> Option<(f32, bool)> {
         let s = self.send.as_ref()?;
         let done = s.done_at.is_some_and(|t| {
-            t.elapsed().as_millis() < nacre_core::notch::download::DONE_LINGER_MS as u128
+            t.elapsed().as_millis() < nacre_core::dynamic_island::download::DONE_LINGER_MS as u128
         });
         (s.prog.active || done).then(|| {
             (
-                nacre_core::notch::send::fraction(s.prog.sent, s.prog.total),
+                nacre_core::dynamic_island::send::fraction(s.prog.sent, s.prog.total),
                 done && !s.prog.active,
             )
         })
@@ -644,7 +644,7 @@ impl Notch {
 
     fn cal_date(&self) -> views::Date {
         let (y, m, d) = Self::today();
-        nacre_core::island::calendar::add_days(y, m, d, self.cal_sel)
+        nacre_core::panels::calendar::add_days(y, m, d, self.cal_sel)
     }
 
     fn ensure_events(&mut self) {
@@ -709,7 +709,7 @@ impl Notch {
         let Some(w) = &self.dl_watch else { return };
         let mut changed = false;
         while let Ok(s) = w.snapshots.try_recv() {
-            self.dl = nacre_core::notch::download::primary(&s.active).cloned();
+            self.dl = nacre_core::dynamic_island::download::primary(&s.active).cloned();
             if self.dl.is_some() {
                 self.dl_done = None;
             } else if let Some(f) = s.finished {
@@ -718,7 +718,7 @@ impl Notch {
                 timer(
                     self.hwnd,
                     T_DLDONE,
-                    nacre_core::notch::download::DONE_LINGER_MS,
+                    nacre_core::dynamic_island::download::DONE_LINGER_MS,
                 );
             }
             changed = true;
@@ -741,8 +741,8 @@ impl Notch {
     }
 
     fn download_view<'a>(
-        dl: &'a Option<nacre_core::notch::download::Download>,
-        dl_done: &'a Option<nacre_core::notch::download::Download>,
+        dl: &'a Option<nacre_core::dynamic_island::download::Download>,
+        dl_done: &'a Option<nacre_core::dynamic_island::download::Download>,
         icons: &'a std::collections::HashMap<String, Option<CompositionDrawingSurface>>,
         send: Option<(f32, bool)>,
     ) -> Option<views::DownloadView<'a>> {
@@ -763,7 +763,7 @@ impl Notch {
         };
         Some(views::DownloadView {
             icon: icons.get(&d.app).and_then(|s| s.as_ref()),
-            label: nacre_core::notch::download::label(d),
+            label: nacre_core::dynamic_island::download::label(d),
             frac: d.percent.map(|p| p / 100.0),
             done,
             up: false,
@@ -1002,7 +1002,7 @@ impl Notch {
                 } else {
                     format!("{} {}", crate::prefs::tr("Kirim"), views::count_text(n))
                 };
-                let frac = nacre_core::notch::send::fraction(ss.prog.sent, ss.prog.total);
+                let frac = nacre_core::dynamic_island::send::fraction(ss.prog.sent, ss.prog.total);
                 let done = ss.done_at.is_some() && !ss.prog.active;
                 let status = if done {
                     format!("{} \u{2713}", crate::prefs::tr("Terkirim"))
@@ -1229,7 +1229,7 @@ impl Notch {
                     self.tint = None;
                 }
                 ArtUpdate::New(b) => {
-                    self.tint = nacre_core::notch::tint::from_art(&b.bgra, b.w, b.h);
+                    self.tint = nacre_core::dynamic_island::tint::from_art(&b.bgra, b.w, b.h);
                     self.art = self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok();
                 }
             }
@@ -1258,14 +1258,14 @@ impl Notch {
             self.lyr_key.clear();
             return;
         }
-        let (title, artist) = nacre_core::notch::lrclib::clean(&self.title, &self.artist);
-        let track = nacre_core::notch::lrclib::Track {
+        let (title, artist) = nacre_core::dynamic_island::lrclib::clean(&self.title, &self.artist);
+        let track = nacre_core::dynamic_island::lrclib::Track {
             title,
             artist,
             album: self.album.clone(),
             duration_s: (self.dur_ms > 0).then(|| ((self.dur_ms + 500) / 1000) as u32),
         };
-        self.lyr_key = nacre_core::notch::lrclib::cache_key(&track);
+        self.lyr_key = nacre_core::dynamic_island::lrclib::cache_key(&track);
         self.lyr_state = LyrState::Loading;
         let online = crate::prefs::get().lyrics_online;
         let _ = self
@@ -1283,7 +1283,7 @@ impl Notch {
             got = true;
             let parsed = a
                 .text
-                .map(|t| nacre_core::notch::lyrics::parse(&t))
+                .map(|t| nacre_core::dynamic_island::lyrics::parse(&t))
                 .filter(|l| !l.is_empty());
             self.lyr_state = if parsed.is_some() {
                 LyrState::Ready

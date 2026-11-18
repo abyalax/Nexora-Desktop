@@ -1,4 +1,4 @@
-use crate::dock::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
+use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{motion, paths, prefs, services};
 use nacre_core::controls::{self, Category, Kind, Placed, Size};

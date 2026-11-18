@@ -1,4 +1,4 @@
-use nacre_core::island::bands::{Analyzer, BANDS};
+use nacre_core::dynamic_island::bands::{Analyzer, BANDS};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};

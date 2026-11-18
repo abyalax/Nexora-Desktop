@@ -1,4 +1,4 @@
-use nacre_core::notch::send::{ascii_name, is_private, page, pct, token, url};
+use nacre_core::dynamic_island::send::{ascii_name, is_private, page, pct, token, url};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};

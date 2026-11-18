@@ -1,4 +1,4 @@
-use nacre_core::notch::lrclib::{self, Track};
+use nacre_core::dynamic_island::lrclib::{self, Track};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::{Duration, Instant, SystemTime};

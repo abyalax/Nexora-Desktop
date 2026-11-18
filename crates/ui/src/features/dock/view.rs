@@ -37,6 +37,15 @@ pub fn rounded_clip(comp: &Compositor, w: f32, h: f32, r: f32) -> Result<Composi
     c.cast()
 }
 
+/// Appearance inputs the Dock view needs from user settings (supplied by the caller).
+#[derive(Clone, Copy, Debug)]
+pub struct Appearance {
+    /// Dock surface is dark (running-indicator dots become light).
+    pub dark: bool,
+    /// App icons are drawn on rounded plates (the Start tile shrinks to the plate body).
+    pub plates: bool,
+}
+
 pub enum Kind {
     Start,
     App { path: String },
@@ -98,6 +107,7 @@ impl View {
         icon_px: f32,
         running: bool,
         dpi: f32,
+        look: Appearance,
     ) -> Result<View> {
         let mut v = View::base(comp, content, Kind::App { path }, icon_px, icon_px)?;
         let sprite = comp.CreateSpriteVisual()?;
@@ -119,7 +129,7 @@ impl View {
             let dot = comp.CreateSpriteVisual()?;
             dot.SetSize(Vector2 { X: d, Y: d })?;
             dot.SetBrush(&comp.CreateColorBrushWithColor(
-                if crate::prefs::look(crate::prefs::Role::Dock).dark {
+                if look.dark {
                     Color {
                         A: 225,
                         R: 255,
@@ -142,10 +152,15 @@ impl View {
         Ok(v)
     }
 
-    pub fn start(comp: &Compositor, content: &ContainerVisual, icon_px: f32) -> Result<View> {
+    pub fn start(
+        comp: &Compositor,
+        content: &ContainerVisual,
+        icon_px: f32,
+        look: Appearance,
+    ) -> Result<View> {
         let v = View::base(comp, content, Kind::Start, icon_px, icon_px)?;
         let full = icon_px;
-        let icon_px = if crate::prefs::get().dock_plates {
+        let icon_px = if look.plates {
             (full * nacre_core::iconplate::BODY).round()
         } else {
             full

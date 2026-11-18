@@ -1,4 +1,4 @@
-use crate::dock::menu::{Card, Item, Menu, MENU_CLOSE, MENU_PICK};
+use crate::menu::{Card, Item, Menu, MENU_CLOSE, MENU_PICK};
 use crate::prefs;
 use nacre_core::netlist::{bars, DevKind, Device};
 use nacre_core::symbols::Sym;
@@ -595,7 +595,7 @@ unsafe extern "system" fn proc(h: HWND, m: u32, wp: WPARAM, lp: LPARAM) -> LRESU
             })
             .unwrap_or(false);
             if notify {
-                crate::menubar::refresh_radios();
+                crate::finder::refresh_radios();
                 crate::controlcenter::refresh_radios();
             }
             LRESULT(0)

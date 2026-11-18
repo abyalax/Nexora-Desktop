@@ -6,6 +6,7 @@ publish.workspace = true
 license = "PolyForm-Noncommercial-1.0.0"
 
 [dependencies]
+nacre-core.workspace = true
 windows-core.workspace = true
 windows-numerics.workspace = true
 

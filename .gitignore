@@ -26,6 +26,7 @@ parked.txt
 *.pem
 *.key
 *.p12
+*.patch
 settings.cfg
 pins.txt
 recents.txt

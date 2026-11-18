@@ -1,5 +1,5 @@
 use super::spring;
-use nacre_core::notch::shade;
+use nacre_core::dynamic_island::shade;
 use nacre_ui::gfx::Gfx;
 use nacre_ui::host::Surface;
 use std::collections::HashMap;

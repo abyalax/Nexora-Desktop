@@ -1,4 +1,5 @@
 use nacre_core::dock::items::{name_from_path, Pin};
+use nacre_core::dock::pins;
 use std::io::Write;
 use std::path::Path;
 
@@ -22,35 +23,18 @@ fn default_pins() -> Vec<Pin> {
 
 pub fn load(path: &Path) -> Vec<Pin> {
     match std::fs::read_to_string(path) {
-        Ok(text) => text
-            .trim_start_matches('\u{feff}')
-            .lines()
-            .map(str::trim)
-            .filter(|l| !l.is_empty() && !l.starts_with('#'))
-            .map(|l| match l.split_once('\t') {
-                Some((p, n)) if !n.trim().is_empty() => Pin {
-                    path: p.to_string(),
-                    name: n.trim().to_string(),
-                },
-                _ => Pin {
-                    path: l.to_string(),
-                    name: name_for(l),
-                },
-            })
-            .collect(),
+        Ok(text) => pins::parse(&text, name_for),
         Err(_) => default_pins(),
     }
 }
 
-pub fn save(path: &Path, pins: &[Pin]) -> std::io::Result<()> {
+pub fn save(path: &Path, list: &[Pin]) -> std::io::Result<()> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
     }
     let tmp = path.with_extension("tmp");
     let mut f = std::fs::File::create(&tmp)?;
-    for p in pins {
-        writeln!(f, "{}\t{}", p.path, p.name)?;
-    }
+    f.write_all(pins::serialize(list).as_bytes())?;
     f.sync_all()?;
     drop(f);
     std::fs::rename(&tmp, path)
