@@ -23,7 +23,7 @@ impl Lang {
 
 const EN: &[(&str, &str)] = &[
     ("Pengaturan", "Settings"),
-    ("Pengaturan NEXORA…", "NEXORA Settings…"),
+    ("Pengaturan nexora…", "nexora Settings…"),
     ("MODE PENUH", "FULL MODE"),
     ("Sembunyikan taskbar Windows", "Hide the Windows taskbar"),
     ("DOCK", "DOCK"),
@@ -56,8 +56,8 @@ const EN: &[(&str, &str)] = &[
     ("Pusat Notifikasi", "Notification Center"),
     ("Aktifkan Scene", "Enable Scene"),
     (
-        "Ganti Alt+Tab dengan pengalih NEXORA",
-        "Replace Alt+Tab with the NEXORA switcher",
+        "Ganti Alt+Tab dengan pengalih nexora",
+        "Replace Alt+Tab with the nexora switcher",
     ),
     (
         "Klik wallpaper menyimpan semua jendela",
@@ -115,7 +115,7 @@ const EN: &[(&str, &str)] = &[
     ("Warna aksen", "Accent color"),
     ("Logo menu", "Menu logo"),
     ("Lingkaran", "Circle"),
-    ("NEXORA", "NEXORA"),
+    ("nexora", "nexora"),
     ("Deck", "Deck"),
     ("Visor", "Visor"),
     ("Rail", "Rail"),
@@ -166,8 +166,8 @@ const EN: &[(&str, &str)] = &[
     ("Ikon seragam (squircle)", "Uniform icons (squircle)"),
     ("Kaca", "Glass"),
     (
-        "Sembunyikan ikon desktop saat NEXORA berjalan",
-        "Hide desktop icons while NEXORA runs",
+        "Sembunyikan ikon desktop saat nexora berjalan",
+        "Hide desktop icons while nexora runs",
     ),
     ("Cari", "Search"),
     ("Cari Aplikasi", "Search Applications"),
@@ -196,8 +196,8 @@ const EN: &[(&str, &str)] = &[
         "Nearby networks need Windows Location permission",
     ),
     (
-        "NEXORA tidak membaca atau menyimpan lokasimu",
-        "NEXORA never reads or stores your location",
+        "nexora tidak membaca atau menyimpan lokasimu",
+        "nexora never reads or stores your location",
     ),
     (
         "Izinkan di Pengaturan Lokasi\u{2026}",
@@ -389,7 +389,7 @@ const EN: &[(&str, &str)] = &[
     ("Pilih gambar ikon", "Choose an icon image"),
     ("Aplikasi", "Applications"),
     ("Gambar", "Images"),
-    ("Keluar dari NEXORA", "Quit NEXORA"),
+    ("Keluar dari nexora", "Quit nexora"),
     ("Sembunyikan taskbar (uji)", "Hide taskbar (test)"),
     ("Tidak ada media", "No media playing"),
     ("Putar", "Play"),
@@ -472,8 +472,8 @@ const EN: &[(&str, &str)] = &[
         "Connect this laptop to the same Wi-Fi as the phone.",
     ),
     (
-        "Izinkan NEXORA di Windows Firewall bila diminta.",
-        "Allow NEXORA in Windows Firewall if asked.",
+        "Izinkan nexora di Windows Firewall bila diminta.",
+        "Allow nexora in Windows Firewall if asked.",
     ),
     (
         "Kirim ke HP lewat QR (Wi-Fi yang sama)",

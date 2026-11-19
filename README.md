@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="assets/Nexora.png" alt="NEXORA" width="200">
+  <img src="assets/Nexora.png" alt="nexora" width="200">
 </p>
 
-<h1 align="center">NEXORA</h1>
+<h1 align="center">nexora</h1>
 
 > [!IMPORTANT]
-> **Disclaimer.** NEXORA is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
-> Apple Inc.** in any way. NEXORA uses its own names (Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Crystal and so on).
+> **Disclaimer.** nexora is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
+> Apple Inc.** in any way. nexora uses its own names (Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Crystal and so on).
 > “Apple”, “macOS”, “Tahoe”, “Liquid Glass”, “Dynamic Island”, “Stage Manager”, “Mission Control”, “Spotlight”,
-> “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. NEXORA ships no Apple code, icons,
+> “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. nexora ships no Apple code, icons,
 > fonts or other assets.
 
 <p align="center">
@@ -36,9 +36,9 @@
 
 ---
 
-## ✨ What is NEXORA?
+## ✨ What is nexora?
 
-NEXORA turns Windows 11 into a clean, modern desktop:
+nexora turns Windows 11 into a clean, modern desktop:
 
 - a magnifying **Deck** for your apps,
 - a **Visor** at the top of the screen that shows what is going on (music with live lyrics, downloads, timers, files),
@@ -51,7 +51,7 @@ It is one small native program: no Electron, no web view, no background services
 **15 MB** of private memory.
 
 <p align="center">
-  <img src="assets/screenshots/desktop.png" alt="NEXORA desktop: Deck, Rail, Visor and widgets" width="900">
+  <img src="assets/screenshots/desktop.png" alt="nexora desktop: Deck, Rail, Visor and widgets" width="900">
 </p>
 
 ### 🆕 New in 0.4.0
@@ -69,7 +69,7 @@ It is one small native program: no Electron, no web view, no background services
 - **Settings** redesigned with a floating glass sidebar, and your own image as the Rail logo.
 - **Own names** for every part: Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Overview and App Grid.
 - **Fixes**: Deck pins survive app updates (Microsoft Store and auto‑updating apps), closed apps can be removed from the
-  Deck, opening apps no longer freezes NEXORA, the Visor and Deck always stay above other windows, and text can no longer be
+  Deck, opening apps no longer freezes nexora, the Visor and Deck always stay above other windows, and text can no longer be
   garbled by third‑party fonts.
 - **Lighter**: about a third of the memory of the previous development build.
 
@@ -78,14 +78,14 @@ It is one small native program: no Electron, no web view, no background services
 
 - A brand‑new Visor with **Play**, **Shelf** and **Timer** tabs, live lyrics, a music idle mode and download progress.
 - **Send to phone**: drop files on the Visor and scan a QR code with any Android or iPhone.
-- Wi‑Fi and Bluetooth pickers, the NEXORA app icon and a **Buy me a coffee** button.
+- Wi‑Fi and Bluetooth pickers, the nexora app icon and a **Buy me a coffee** button.
 </details>
 
 ---
 
 ## 🧩 Modular: turn off what you don’t want
 
-Every part of NEXORA is independent. Keep only the pieces you like:
+Every part of nexora is independent. Keep only the pieces you like:
 
 | Part                    | Where to turn it off                                                            |
 | ----------------------- | ------------------------------------------------------------------------------- |
@@ -111,24 +111,24 @@ Download from the **[Releases](https://github.com/abyalax/Nexora-Desktop/release
 
 | File                       | Best for                                                                                                                                                          |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXORA-Setup-0.4.0.exe`   | Most people. Per‑user install, **no administrator rights**, optional Start menu shortcut and “launch at sign‑in”, clean uninstall from _Windows Settings → Apps_. |
-| `NEXORA-0.4.0-win-x64.zip` | Portable. Extract anywhere and keep `nexora.exe`, `nexora-guard.exe` and the `fonts` folder **together**.                                                         |
+| `nexora-Setup-0.4.0.exe`   | Most people. Per‑user install, **no administrator rights**, optional Start menu shortcut and “launch at sign‑in”, clean uninstall from _Windows Settings → Apps_. |
+| `nexora-0.4.0-win-x64.zip` | Portable. Extract anywhere and keep `nexora.exe`, `nexora-guard.exe` and the `fonts` folder **together**.                                                         |
 
 ### Installer
 
-1. Run `NEXORA-Setup-0.4.0.exe`.
+1. Run `nexora-Setup-0.4.0.exe`.
 2. Windows SmartScreen may warn about an unsigned app: choose **More info → Run anyway** (only for files from this repository).
-3. Pick the options you want (Start menu shortcut, launch at sign‑in) and finish. NEXORA starts.
+3. Pick the options you want (Start menu shortcut, launch at sign‑in) and finish. nexora starts.
 
 ### Portable
 
-1. Extract the zip to a folder you keep, for example `Documents\NEXORA`.
+1. Extract the zip to a folder you keep, for example `Documents\nexora`.
 2. Double‑click `nexora.exe`.
 
 ### First run
 
 - The Windows taskbar hides and the Deck appears (turn this off in _Settings → General_ if you prefer your taskbar).
-- Open **Settings**: right‑click the Deck → **NEXORA Settings…**, or click the logo in the Rail.
+- Open **Settings**: right‑click the Deck → **nexora Settings…**, or click the logo in the Rail.
 - Language: _Settings → General → Language_ (**English** or **Indonesia**).
 
 ### Updating from 0.3.0
@@ -137,10 +137,10 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 
 ### Quit and uninstall
 
-- **Quit**: right‑click an empty part of the Deck (or the Start icon) → **Quit NEXORA**. The taskbar comes back automatically.
-  If NEXORA is ever killed, `nexora-guard.exe` restores the taskbar and any windows it moved.
-- **Uninstall**: _Windows Settings → Apps → Installed apps → NEXORA → Uninstall_ (installer), or quit NEXORA and delete the folder
-  (portable). Your settings are in `%APPDATA%\NEXORA`; delete that folder too for a clean removal.
+- **Quit**: right‑click an empty part of the Deck (or the Start icon) → **Quit nexora**. The taskbar comes back automatically.
+  If nexora is ever killed, `nexora-guard.exe` restores the taskbar and any windows it moved.
+- **Uninstall**: _Windows Settings → Apps → Installed apps → nexora → Uninstall_ (installer), or quit nexora and delete the folder
+  (portable). Your settings are in `%APPDATA%\nexora`; delete that folder too for a clean removal.
 
 ---
 
@@ -152,7 +152,7 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 - **Open / switch apps**: click an icon. Running apps have a dot. Hover to magnify; hover a running app for live window previews.
 - **Keep / remove**: right‑click an app → _Keep in Deck_ / _Remove from Deck_. Drag icons to reorder.
 - **Recent apps** you closed appear on the right; right‑click → _Remove from Deck_, or turn them off in _Settings → Deck_.
-- **Close an app**: right‑click it → **Close**. **Quit NEXORA** appears when you right‑click an empty area or the Start icon.
+- **Close an app**: right‑click it → **Close**. **Quit nexora** appears when you right‑click an empty area or the Start icon.
 - **Minimize** a window and it flies into the Deck with a **Funnel** (or **Scale**) effect.
 - **App Grid** button, a **Downloads** stack and a glass **Trash** (right‑click → _Empty Trash_).
 - **Custom icons**: right‑click an app → _Change icon…_.
@@ -178,7 +178,7 @@ _Settings → Visor → Shape_.
 </p>
 
 - **Play tab**: song card (artwork, title, seekable progress, controls) and big **lyrics** that scroll with the song.
-  Put your own `Artist - Title.lrc` files in `%APPDATA%\NEXORA\lyrics`, or let NEXORA look them up on [LRCLIB](https://lrclib.net).
+  Put your own `Artist - Title.lrc` files in `%APPDATA%\nexora\lyrics`, or let nexora look them up on [LRCLIB](https://lrclib.net).
 
 <p align="center">
   <img src="assets/screenshots/notch-play.png" alt="Visor Play tab with song card and lyrics" width="560">
@@ -192,7 +192,7 @@ _Settings → Visor → Shape_.
 </p>
 
 - **Send to phone (Android & iPhone, no app)**: drop files on **Send**, scan the QR code with your phone’s camera and tap
-  **Download**. Both devices must be on the **same Wi‑Fi**; allow NEXORA on **Private networks** if Windows Firewall asks.
+  **Download**. Both devices must be on the **same Wi‑Fi**; allow nexora on **Private networks** if Windows Firewall asks.
 
 <p align="center">
   <img src="assets/screenshots/notch-send-qr.png" alt="Send to phone: QR code and progress" width="560">
@@ -204,7 +204,7 @@ _Settings → Visor → Shape_.
 <details open>
 <summary><b>📋 Rail</b></summary>
 
-- **Logo menu**: About this PC, System Settings, Microsoft Store, NEXORA Settings, App Grid, Overview, Force Quit, Sleep,
+- **Logo menu**: About this PC, System Settings, Microsoft Store, nexora Settings, App Grid, Overview, Force Quit, Sleep,
   Restart, Shut Down, Lock Screen. Use your own image as the logo in _Settings → Rail → Rail logo_.
 - **App name and menus**: the active app’s real menus (File, Edit…) when it has classic menus.
 - **Right side**: battery, **Wi‑Fi**, Quick Search, Quick Panel and the clock. The Wi‑Fi icon shows live signal strength;
@@ -212,7 +212,7 @@ _Settings → Visor → Shape_.
 - **Background**: transparent (with a soft shade), light, dark or the glass material.
 
 - **Wi‑Fi menu**: a switch, your **saved networks** (click one to connect) and live signal strength for the current one.
-  Windows only lists _nearby_ networks to apps when **Location** is allowed; NEXORA asks with a button and never reads or
+  Windows only lists _nearby_ networks to apps when **Location** is allowed; nexora asks with a button and never reads or
   stores your location.
 
 </details>
@@ -272,7 +272,7 @@ _Settings → Visor → Shape_.
 
 - Turn it on from the Quick Panel or _Settings → Scene_.
 - Other windows become **live, tilted cards** in a side strip; click one to fly it back to the stage, Shift‑click to group.
-- Click the wallpaper to tuck everything away. `Alt` + `Tab` shows NEXORA’s switcher while it is on.
+- Click the wallpaper to tuck everything away. `Alt` + `Tab` shows nexora’s switcher while it is on.
 
 </details>
 
@@ -294,13 +294,13 @@ _Settings → Visor → Shape_.
 
 - _Settings → Appearance_: Auto · Light · Dark, accent color, icon style (Default · Dark · Clear · Tinted), the glass
   material (**Blur**, **Crystal** or **Black**), a separate Visor material, blur, transparency, the **scale** of the Deck,
-  Visor, Rail and Quick Panel, and an optional **icon pack** (`%APPDATA%\NEXORA\iconpack`, nothing is bundled).
+  Visor, Rail and Quick Panel, and an optional **icon pack** (`%APPDATA%\nexora\iconpack`, nothing is bundled).
 - Settings has a floating glass sidebar with search, back / forward buttons, English and Indonesian.
 - **Quick shortcuts**: `` Alt+` `` cycles windows of the same app, `Ctrl+Alt+H` hides, `Ctrl+Alt+M` minimizes,
   `Ctrl+Alt+Q` quits the active app (_Settings → General_).
 
 <p align="center">
-  <img src="assets/screenshots/settings.png" alt="NEXORA Settings" width="640">
+  <img src="assets/screenshots/settings.png" alt="nexora Settings" width="640">
 </p>
 </details>
 
@@ -312,7 +312,7 @@ _Settings → Visor → Shape_.
 | `Ctrl` + `Shift` + `Space` | App Grid                                                |
 | `Ctrl` + `1` … `4`         | Inside Quick Search: Apps · Files · Actions · Clipboard |
 | `Ctrl` + `↑`               | Overview                                                |
-| `Alt` + `Tab`              | NEXORA window switcher (while Scene is on)              |
+| `Alt` + `Tab`              | nexora window switcher (while Scene is on)              |
 | `Esc`                      | Close the active overlay                                |
 
 The complete guide in Indonesian is in [`docs/PANDUAN.md`](docs/PANDUAN.md).
@@ -321,15 +321,15 @@ The complete guide in Indonesian is in [`docs/PANDUAN.md`](docs/PANDUAN.md).
 
 ## 🔒 Privacy
 
-**NEXORA does not collect, store or send any data about you.** There is no telemetry, no analytics, no account and no ads.
-Everything NEXORA knows stays on your PC, in `%APPDATA%\NEXORA`.
+**nexora does not collect, store or send any data about you.** There is no telemetry, no analytics, no account and no ads.
+Everything nexora knows stays on your PC, in `%APPDATA%\nexora`.
 
-- **Lyrics** are the only internet request NEXORA makes on its own: if a song has no local `.lrc` file, NEXORA asks
+- **Lyrics** are the only internet request nexora makes on its own: if a song has no local `.lrc` file, nexora asks
   [LRCLIB](https://lrclib.net) using only the title, artist, album and length. You can turn it off (_Settings → Visor_).
 - **Send to phone** runs a tiny temporary web server on your **local network only**, under a random link, serving only the files
-  you dropped. It stops when you click Done, after 15 idle minutes, or when NEXORA quits.
+  you dropped. It stops when you click Done, after 15 idle minutes, or when nexora quits.
 - **Read‑only, on demand**: saved Wi‑Fi network names and signal strength, Bluetooth devices, calendar events, download
-  progress (file names and sizes only), and which apps use the microphone / camera. NEXORA never reads your location.
+  progress (file names and sizes only), and which apps use the microphone / camera. nexora never reads your location.
 - **Clipboard history** is optional, text only, kept in memory for 8 hours and never written to disk.
 - A keyboard hook is used **only** to catch `Alt+Tab` while Scene is on. Keystrokes are never logged or sent.
 - Release builds are checked so that they contain no paths or user names from the developer’s PC.
@@ -346,7 +346,7 @@ Everything NEXORA knows stays on your PC, in `%APPDATA%\NEXORA`.
   GDI text rendering, OLE drag and drop.
 - **[Inno Setup](https://jrsoftware.org/isinfo.php)** — the installer.
 - Bundled font: **[Inter](https://rsms.me/inter/)** (SIL Open Font License), with Segoe UI Variable as the fallback.
-  NEXORA never uses fonts you installed yourself, so a broken third‑party font can’t garble its text.
+  nexora never uses fonts you installed yourself, so a broken third‑party font can’t garble its text.
 
 No Electron, no web view, no .NET runtime. Self‑written pieces include the QR‑code encoder, the LRC lyrics parser and the
 small HTTP server for _Send to phone_.
@@ -390,8 +390,8 @@ winget install JRSoftware.InnoSetup                            # once
 powershell -File installer\build-installer.ps1 -Version 0.4.0
 ```
 
-The release script rebuilds NEXORA with local paths stripped, **refuses to continue** if a binary still contains your user
-name or a local path, and writes `dist\NEXORA-Setup-0.4.0.exe` and `dist\NEXORA-0.4.0-win-x64.zip`.
+The release script rebuilds nexora with local paths stripped, **refuses to continue** if a binary still contains your user
+name or a local path, and writes `dist\nexora-Setup-0.4.0.exe` and `dist\nexora-0.4.0-win-x64.zip`.
 
 ### 4. Safe experiments
 
@@ -405,7 +405,7 @@ $env:NACRE_CONFIG_DIR = "$PWD\target\cfg-test"
 Useful flags: `--keep-taskbar`, `--no-dock`, `--no-island`, `--no-hud`, `--open-settings`, `--open-widgets`,
 `--exit-after <seconds>`, `--add-app <path>`, `--set-icon <app|start|launchpad> <image>`.
 
-> With Scene on, NEXORA moves your real windows. Let a test instance exit normally (`--exit-after`) instead of killing it.
+> With Scene on, nexora moves your real windows. Let a test instance exit normally (`--exit-after`) instead of killing it.
 
 </details>
 
@@ -427,13 +427,13 @@ variables, flags such as `--no-dock`) keep their former-codename words so existi
 
 ## ⚙️ Configuration & troubleshooting
 
-Settings live in `%APPDATA%\NEXORA\settings.cfg` (plain `key=value`), next to `pins.txt` (Deck), `icons.txt` (custom icons),
+Settings live in `%APPDATA%\nexora\settings.cfg` (plain `key=value`), next to `pins.txt` (Deck), `icons.txt` (custom icons),
 `cc_layout.txt` (Quick Panel), `widgets.txt` (widget positions), `actions.txt` (Quick Search quick keys),
 `stage_exclude.txt`, `lyrics\` and `nexora.log`. Set `NACRE_CONFIG_DIR` to use another folder.
 
 - **Taskbar missing after a crash** — start `nexora.exe` and quit normally, or let `nexora-guard.exe` do it.
-- **A window seems to have vanished** — Scene parked it. Start NEXORA again; it restores parked windows.
-- **Phone can’t open the Send link** — same Wi‑Fi on both? Allow NEXORA in Windows Firewall for Private networks.
+- **A window seems to have vanished** — Scene parked it. Start nexora again; it restores parked windows.
+- **Phone can’t open the Send link** — same Wi‑Fi on both? Allow nexora in Windows Firewall for Private networks.
 - **Wi‑Fi menu shows only saved networks** — Windows needs _Location_ allowed before apps can see nearby networks.
 - **A hotkey does nothing** — another program owns the shortcut (see `nexora.log`).
 
@@ -446,7 +446,7 @@ with a single primary display.
 
 ## 📄 License
 
-[PolyForm Noncommercial License 1.0.0](LICENSE.md). You may use, study, modify and share NEXORA for **noncommercial** purposes;
+[PolyForm Noncommercial License 1.0.0](LICENSE.md). You may use, study, modify and share nexora for **noncommercial** purposes;
 commercial use needs written permission from the copyright holder. This is a _source‑available_ license, not an OSI‑approved open
 source license. The bundled **Inter** font is © The Inter Project Authors, under the SIL Open Font License 1.1
 (`assets/fonts/Inter-LICENSE.txt`).
@@ -455,9 +455,9 @@ Required Notice: Copyright (c) 2026 Abdee Alfarizi
 
 ---
 
-## ☕ Support NEXORA
+## ☕ Support nexora
 
-NEXORA is free and built in spare time by **[kreativa.dev](https://saweria.co/kreativadev)**. If it makes your desktop nicer,
+nexora is free and built in spare time by **[kreativa.dev](https://saweria.co/kreativadev)**. If it makes your desktop nicer,
 you can buy me a coffee — it keeps the project going. Terima kasih! 🙏
 
 <p align="center">

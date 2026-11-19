@@ -317,7 +317,7 @@ impl Net {
                         "Jaringan sekitar perlu izin Lokasi Windows",
                     )));
                     v.push(Item::heading(prefs::tr(
-                        "NEXORA tidak membaca atau menyimpan lokasimu",
+                        "nexora tidak membaca atau menyimpan lokasimu",
                     )));
                     v.push(Item::action(
                         ID_LOCATION,

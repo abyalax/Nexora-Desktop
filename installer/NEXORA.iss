@@ -5,14 +5,14 @@
   #define SourceDir "..\target\release"
 #endif
 
-#define AppName "NEXORA"
+#define AppName "nexora"
 #define AppExe "nexora.exe"
 
 [Setup]
 AppId={{939A19A7-DB24-45FB-836C-6ED85D256BC3}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppPublisher=NEXORA contributors
+AppPublisher=nexora contributors
 AppPublisherURL=https://github.com/abyalax/Nexora-Desktop
 AppSupportURL=https://github.com/abyalax/Nexora-Desktop/issues
 DefaultDirName={localappdata}\Programs\{#AppName}
@@ -24,7 +24,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.22000
 LicenseFile=..\LICENSE.md
 OutputDir=..\dist
-OutputBaseFilename=NEXORA-Setup-{#AppVersion}
+OutputBaseFilename=nexora-Setup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -34,7 +34,7 @@ SetupIconFile=..\assets\Nexora.ico
 CloseApplications=no
 
 [Tasks]
-Name: "autostart"; Description: "Launch NEXORA when I sign in to Windows"; Flags: unchecked
+Name: "autostart"; Description: "Launch nexora when I sign in to Windows"; Flags: unchecked
 Name: "startmenu"; Description: "Create a Start menu shortcut"
 
 [Files]
@@ -49,10 +49,10 @@ Source: "..\docs\PANDUAN.md"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: startmenu
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "NEXORA"; ValueData: """{app}\{#AppExe}"""; Flags: uninsdeletevalue; Tasks: autostart
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "nexora"; ValueData: """{app}\{#AppExe}"""; Flags: uninsdeletevalue; Tasks: autostart
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "Launch NEXORA now"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExe}"; Description: "Launch nexora now"; Flags: nowait postinstall skipifsilent
 
 [Code]
 procedure StopNexora();
@@ -81,7 +81,7 @@ procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    if MsgBox('Also delete your NEXORA settings (%APPDATA%\NEXORA)?', mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
-      DelTree(ExpandConstant('{userappdata}\NEXORA'), True, True, True);
+    if MsgBox('Also delete your nexora settings (%APPDATA%\nexora)?', mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
+      DelTree(ExpandConstant('{userappdata}\nexora'), True, True, True);
   end;
 end;

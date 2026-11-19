@@ -91,7 +91,7 @@ fn http_get(url: &str) -> Option<(i32, String)> {
     let client = HttpClient::new().ok()?;
     if let Ok(h) = client.DefaultRequestHeaders() {
         if let Ok(ua) = h.UserAgent() {
-            let _ = ua.TryParseAdd(&HSTRING::from(concat!("NEXORA/", env!("CARGO_PKG_VERSION"))));
+            let _ = ua.TryParseAdd(&HSTRING::from(concat!("nexora/", env!("CARGO_PKG_VERSION"))));
         }
     }
     let op = client

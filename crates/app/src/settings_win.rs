@@ -218,7 +218,7 @@ fn user_name() -> String {
     std::env::var("USERNAME")
         .ok()
         .filter(|u| !u.is_empty())
-        .unwrap_or_else(|| "NEXORA".to_string())
+        .unwrap_or_else(|| "nexora".to_string())
 }
 
 struct Win {
@@ -1330,7 +1330,7 @@ impl Win {
                             Action::Takeover,
                         ),
                         RowDef::Toggle(
-                            prefs::tr("Sembunyikan ikon desktop saat NEXORA berjalan"),
+                            prefs::tr("Sembunyikan ikon desktop saat nexora berjalan"),
                             s.hide_desktop_icons,
                             Action::HideIcons,
                         ),
@@ -1746,7 +1746,7 @@ impl Win {
                     vec![
                         RowDef::Toggle(prefs::tr("Aktifkan Scene"), s.stage, Action::StageOn),
                         RowDef::Toggle(
-                            prefs::tr("Ganti Alt+Tab dengan pengalih NEXORA"),
+                            prefs::tr("Ganti Alt+Tab dengan pengalih nexora"),
                             s.switcher,
                             Action::SwitcherOn,
                         ),

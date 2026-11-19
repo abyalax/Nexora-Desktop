@@ -1,6 +1,6 @@
 # Development Setup
 
-This guide covers setting up the development environment for NEXORA, including Rust toolchain installation, dependencies, and available commands.
+This guide covers setting up the development environment for nexora, including Rust toolchain installation, dependencies, and available commands.
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ This guide covers setting up the development environment for NEXORA, including R
 
 ## 1. Install Rust Toolchain
 
-NEXORA uses Rust with the MSVC toolchain for Windows development.
+nexora uses Rust with the MSVC toolchain for Windows development.
 
 ### Install Rust
 
@@ -212,14 +212,14 @@ The `nexora.exe` supports several command-line flags for development and testing
 
 ### Isolated Test Instance
 
-Run NEXORA with a temporary config directory for safe testing:
+Run nexora with a temporary config directory for safe testing:
 
 ```powershell
 $env:NACRE_CONFIG_DIR = "$PWD\target\cfg-test"
 .\target\release\nexora.exe --keep-taskbar --exit-after 30
 ```
 
-This creates a temporary config in `target\cfg-test` instead of `%APPDATA%\NEXORA`.
+This creates a temporary config in `target\cfg-test` instead of `%APPDATA%\nexora`.
 
 ## 6. Build Installer
 
@@ -242,11 +242,11 @@ powershell -File installer\build-installer.ps1 -Version 0.4.0
 
 This script:
 
-1. Builds NEXORA in release mode
+1. Builds nexora in release mode
 2. Strips local paths and user names from binaries
 3. Verifies no sensitive data remains in the binaries
-4. Creates the installer: `dist\NEXORA-Setup-0.4.0.exe`
-5. Creates the portable zip: `dist\NEXORA-0.4.0-win-x64.zip`
+4. Creates the installer: `dist\nexora-Setup-0.4.0.exe`
+5. Creates the portable zip: `dist\nexora-0.4.0-win-x64.zip`
 
 ### Build Without Rebuilding
 
@@ -273,7 +273,7 @@ Desktop-Macs/
 ├── docs/
 │   └── PANDUAN.md    # Indonesian user guide
 ├── installer/
-│   ├── NEXORA.iss      # Inno Setup installer script
+│   ├── nexora.iss      # Inno Setup installer script
 │   └── build-installer.ps1  # Build script
 ├── tools/            # Utility scripts
 ├── Cargo.toml        # Workspace configuration

@@ -149,7 +149,7 @@ impl Bar {
 
     pub(super) fn app_label(&self) -> String {
         if self.app.is_empty() {
-            "NEXORA".to_string()
+            "nexora".to_string()
         } else {
             self.app.clone()
         }

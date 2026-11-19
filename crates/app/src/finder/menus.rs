@@ -147,7 +147,7 @@ impl Bar {
                     a(808, &prefs::tr("Overview")).with_accel("Ctrl+↑"),
                     a(809, &prefs::tr("Apps")).with_accel("Ctrl+Shift+Space"),
                     Item::separator(),
-                    a(810, &prefs::tr("Pengaturan NEXORA…")),
+                    a(810, &prefs::tr("Pengaturan nexora…")),
                     a(811, &prefs::tr("Pengaturan Sistem…")),
                 ]
             }
@@ -157,7 +157,7 @@ impl Bar {
                 a(101, &prefs::tr("Pengaturan Sistem…")),
                 a(102, &prefs::tr("Toko Microsoft…")),
                 Item::separator(),
-                a(103, &prefs::tr("Pengaturan NEXORA…")),
+                a(103, &prefs::tr("Pengaturan nexora…")),
                 a(105, &prefs::tr("Apps")).with_accel("Ctrl+Shift+Space"),
                 a(106, &prefs::tr("Overview")).with_accel("Ctrl+↑"),
                 a(104, &prefs::tr("Paksa Keluar…")),

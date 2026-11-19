@@ -476,7 +476,7 @@ mod tests {
         };
         let samples = [
             "http://192.168.1.23:54321/0123456789abcdef0123/",
-            "NEXORA",
+            "nexora",
             "http://10.0.0.5:61234/ffffffffffffffffffff/",
             &"x".repeat(200),
         ];
@@ -493,7 +493,7 @@ mod tests {
 
     #[test]
     fn render_is_sharp_and_square() {
-        let m = encode("NEXORA").unwrap();
+        let m = encode("nexora").unwrap();
         let n = 100;
         let b = render(&m, n, 2);
         assert_eq!(b.len(), (n * n * 4) as usize);

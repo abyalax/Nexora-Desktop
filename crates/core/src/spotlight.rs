@@ -88,19 +88,19 @@ pub const ACTIONS: &[ActionDef] = &[
     ActionDef {
         id: "dark",
         title: "Ganti Mode Gelap",
-        app: "NEXORA",
+        app: "nexora",
         default_key: "dm",
     },
     ActionDef {
         id: "stage",
         title: "Nyalakan/Matikan Scene",
-        app: "NEXORA",
+        app: "nexora",
         default_key: "sm",
     },
     ActionDef {
         id: "mission",
         title: "Overview",
-        app: "NEXORA",
+        app: "nexora",
         default_key: "mc",
     },
     ActionDef {
@@ -124,7 +124,7 @@ pub const ACTIONS: &[ActionDef] = &[
     ActionDef {
         id: "clearclip",
         title: "Hapus Riwayat Papan Klip",
-        app: "NEXORA",
+        app: "nexora",
         default_key: "",
     },
 ];

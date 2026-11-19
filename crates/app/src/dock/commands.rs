@@ -137,13 +137,13 @@ impl Dock {
             ));
             items.push(crate::menu::Item::action(
                 CMD_SETTINGS,
-                crate::prefs::tr("Pengaturan NEXORA…"),
+                crate::prefs::tr("Pengaturan nexora…"),
                 true,
             ));
             items.push(crate::menu::Item::separator());
             items.push(crate::menu::Item::action(
                 CMD_QUIT,
-                crate::prefs::tr("Keluar dari NEXORA"),
+                crate::prefs::tr("Keluar dari nexora"),
                 true,
             ));
         }

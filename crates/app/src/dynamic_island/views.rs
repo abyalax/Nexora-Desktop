@@ -458,7 +458,7 @@ fn send_card(p: &mut Painter, c: &ContainerVisual, f: Frame, d: &Data, regions: 
         }
         p.text(
             c,
-            tr("Izinkan NEXORA di Windows Firewall bila diminta."),
+            tr("Izinkan nexora di Windows Firewall bila diminta."),
             tx,
             top + h - p.px(22.0),
             10.0,

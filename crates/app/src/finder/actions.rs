@@ -154,7 +154,7 @@ pub(super) fn confirm_power(question: &'static str, file: &'static str, params: 
         let r = MessageBoxW(
             None,
             &HSTRING::from(text),
-            w!("NEXORA"),
+            w!("nexora"),
             MB_YESNO | MB_ICONQUESTION | MB_TOPMOST | MB_SETFOREGROUND,
         );
         if r == IDYES {

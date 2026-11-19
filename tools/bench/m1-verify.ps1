@@ -1,7 +1,7 @@
 param([string]$Release = "$PSScriptRoot\..\..\target\release", [switch]$KillRunning)
 
 if ((Get-Process nexora, nexora-guard -ErrorAction SilentlyContinue) -and -not $KillRunning) {
-  Write-Host "NEXORA is running. Quit it first, or re-run with -KillRunning to let this script stop it."
+  Write-Host "nexora is running. Quit it first, or re-run with -KillRunning to let this script stop it."
   exit 1
 }
 

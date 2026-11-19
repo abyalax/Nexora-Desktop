@@ -34,7 +34,7 @@ pub fn create() -> windows::core::Result<HWND> {
         CreateWindowExW(
             WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
             class,
-            w!("NEXORA"),
+            w!("nexora"),
             WS_POPUP,
             0,
             0,
@@ -75,7 +75,7 @@ fn tray_data(hwnd: HWND) -> NOTIFYICONDATAW {
         hIcon: tray_icon(),
         ..Default::default()
     };
-    for (i, c) in "NEXORA".encode_utf16().enumerate() {
+    for (i, c) in "nexora".encode_utf16().enumerate() {
         nid.szTip[i] = c;
     }
     nid
@@ -139,7 +139,7 @@ fn show_menu(hwnd: HWND) {
             w!("Sembunyikan taskbar (uji)"),
         );
         let _ = AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null());
-        let _ = AppendMenuW(menu, MF_STRING, ID_QUIT, w!("Keluar dari NEXORA"));
+        let _ = AppendMenuW(menu, MF_STRING, ID_QUIT, w!("Keluar dari nexora"));
         let mut pt = POINT::default();
         let _ = GetCursorPos(&mut pt);
         let _ = SetForegroundWindow(hwnd);

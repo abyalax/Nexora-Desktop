@@ -1,6 +1,6 @@
-# NEXORA User Guide
+# nexora User Guide
 
-NEXORA transforms the Windows 11 taskbar into a modern desktop experience featuring **Deck**, **Visor (Capsule)**, **Rail**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
+nexora transforms the Windows 11 taskbar into a modern desktop experience featuring **Deck**, **Visor (Capsule)**, **Rail**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
 
 > This guide is available in English. For the project overview, build instructions, and development information, see the [README](../README.md).
 
@@ -31,17 +31,17 @@ NEXORA transforms the Windows 11 taskbar into a modern desktop experience featur
 
 **Option A — Installer**
 
-If available on the Releases page, download and run `NEXORA-Setup-<version>.exe`, then follow the installation instructions.
+If available on the Releases page, download and run `nexora-Setup-<version>.exe`, then follow the installation instructions.
 
-Administrator privileges are not required. NEXORA is installed for the current Windows user only.
+Administrator privileges are not required. nexora is installed for the current Windows user only.
 
 **Option B — Portable ZIP**
 
-Download `NEXORA-<version>-win-x64.zip`, extract it to any folder, and run `nexora.exe`.
+Download `nexora-<version>-win-x64.zip`, extract it to any folder, and run `nexora.exe`.
 
 **Keep `nexora.exe` and `nexora-guard.exe` in the same folder.**
 
-> NEXORA binaries are currently unsigned. Windows SmartScreen may display the "Windows protected your PC" warning.
+> nexora binaries are currently unsigned. Windows SmartScreen may display the "Windows protected your PC" warning.
 >
 > Select **More info → Run anyway** only if you downloaded the files from the project's official release page.
 
@@ -49,14 +49,14 @@ Once `nexora.exe` starts, the native Windows taskbar is hidden and Deck appears 
 
 ### Basic Operations
 
-- **Exit NEXORA:** Right-click an icon on Deck or the NEXORA tray icon, then select **Exit NEXORA**. The Windows taskbar is automatically restored.
+- **Exit nexora:** Right-click an icon on Deck or the nexora tray icon, then select **Exit nexora**. The Windows taskbar is automatically restored.
 - **Unexpected shutdown:** `nexora-guard.exe` automatically restores the Windows taskbar and any windows parked by Scene. If recovery does not occur, launch `nexora.exe` again and exit normally.
-- **Open Settings:** Right-click Deck and select **NEXORA Settings...**. You can also use the Settings gear icon on Deck or the circular NEXORA logo on Rail.
+- **Open Settings:** Right-click Deck and select **nexora Settings...**. You can also use the Settings gear icon on Deck or the circular nexora logo on Rail.
 - **Launch at startup:** Go to Settings → General → **Launch at Windows startup**.
 
-Only one NEXORA instance can run at a time. Launching it again simply brings the existing instance back to the foreground.
+Only one nexora instance can run at a time. Launching it again simply brings the existing instance back to the foreground.
 
-NEXORA does not permanently disable the Windows taskbar. It only hides it while NEXORA is running. This behavior can be changed under Settings → General → **Hide Windows taskbar**.
+nexora does not permanently disable the Windows taskbar. It only hides it while nexora is running. This behavior can be changed under Settings → General → **Hide Windows taskbar**.
 
 ## 2. Deck
 
@@ -89,9 +89,9 @@ Right-click it and select **Change Icon...** to customize its appearance. You ca
 
 You can provide your own icon pack by placing a folder containing PNG icons in:
 
-`%APPDATA%\NEXORA\iconpack\`
+`%APPDATA%\nexora\iconpack\`
 
-NEXORA automatically matches supported Windows applications with recognizable icon filenames. Examples include:
+nexora automatically matches supported Windows applications with recognizable icon filenames. Examples include:
 
 | Windows Application         | Icon Filename      |
 | --------------------------- | ------------------ |
@@ -114,7 +114,7 @@ Manually assigned icons always take priority over icon pack icons.
 
 To disable icon packs, go to Settings → Appearance → **Icon Pack**.
 
-**NEXORA does not include or distribute any icon packs.** Users are responsible for supplying their own icons and ensuring compliance with the applicable licenses.
+**nexora does not include or distribute any icon packs.** Users are responsible for supplying their own icons and ensuring compliance with the applicable licenses.
 
 ### Additional Deck Features
 
@@ -244,7 +244,7 @@ Displays files dropped onto Visor.
 - Right-click a file to access **Show in Folder**, **Copy Path**, or **Remove from Shelf**.
 - Select **Clear All** to remove every item.
 
-The Shelf stores **file paths only**. It does not copy file contents, and its contents are cleared when NEXORA exits.
+The Shelf stores **file paths only**. It does not copy file contents, and its contents are cleared when nexora exits.
 
 #### Timer
 
@@ -267,7 +267,7 @@ If no events are available, the calendar displays **No events today**.
 
 Click a date to view its events. The calendar automatically returns to today's date when the panel closes.
 
-The panel also includes a battery indicator and a shortcut to NEXORA Settings in its upper-right corner.
+The panel also includes a battery indicator and a shortcut to nexora Settings in its upper-right corner.
 
 ### Drag-and-Drop Actions
 
@@ -293,8 +293,8 @@ Once the transfer completes, Visor displays **Sent ✓**.
 **Requirements and behavior:**
 
 - Your laptop and phone must be connected to the **same Wi-Fi network or local network**.
-- Windows Firewall may request permission the first time this feature is used. Allow NEXORA on **Private networks** so your phone can access the transfer session.
-- A transfer session ends when **Done** is clicked, after 15 minutes of inactivity, or when NEXORA exits.
+- Windows Firewall may request permission the first time this feature is used. Allow nexora on **Private networks** so your phone can access the transfer session.
+- A transfer session ends when **Done** is clicked, after 15 minutes of inactivity, or when nexora exits.
 - This feature can be disabled under Settings → Visor → Activity → **Send to Phone via QR (Same Wi-Fi)**.
 
 Visor display behavior, including **Fixed**, **Always on Top**, **Auto-hide**, and **When Covered**, can be configured under Settings → Visor.
@@ -317,7 +317,7 @@ Progress reporting depends on the source:
 - **Microsoft Store and Steam:** Provide actual download percentages.
 - **Browsers:** Do not expose the total download size. The progress arc therefore rotates continuously, while the number displays the downloaded file size (for example, `26M`).
 
-NEXORA detects temporary `.crdownload` and `.part` files in the Downloads folder.
+nexora detects temporary `.crdownload` and `.part` files in the Downloads folder.
 
 When a download completes, a full progress arc with a checkmark appears for approximately three seconds.
 
@@ -333,13 +333,13 @@ The expanded **Play** tab displays the larger synchronized lyrics described earl
 
 Lyrics are retrieved in the following order:
 
-1. **Local `.lrc` files:** Place your own lyric files in `%APPDATA%\NEXORA\lyrics`. Supported filenames are `Artist - Title.lrc` and `Title.lrc`. Filename matching is case-insensitive.
+1. **Local `.lrc` files:** Place your own lyric files in `%APPDATA%\nexora\lyrics`. Supported filenames are `Artist - Title.lrc` and `Title.lrc`. Filename matching is case-insensitive.
 
    Open this folder through Settings → Visor → Lyrics → **Lyrics Folder (.lrc)**.
 
 2. **Local cache:** Previously retrieved lyrics are reused from the local cache.
 
-3. **LRCLIB online:** If enabled (on by default), NEXORA searches [LRCLIB](https://lrclib.net) for missing lyrics. Tracks that cannot be found are retried after three days.
+3. **LRCLIB online:** If enabled (on by default), nexora searches [LRCLIB](https://lrclib.net) for missing lyrics. Tracks that cannot be found are retried after three days.
 
 Lyrics without timestamps are displayed only in the Lyrics card.
 
@@ -355,14 +355,14 @@ Rail provides a menu bar across the top of the screen.
 
 The left side contains the following elements.
 
-**NEXORA circular logo**
+**nexora circular logo**
 
 Provides shortcuts to:
 
 - About This PC
 - System Settings
 - Microsoft Store
-- NEXORA Settings
+- nexora Settings
 - Apps
 - Overview
 - Force Quit (opens Task Manager)
@@ -435,7 +435,7 @@ For a newly discovered password-protected network, Windows opens its network sel
 >
 > If Location is disabled, the Wi-Fi menu operates in a limited mode. It still displays the connection status and provides **Enable Location...** and **Other Networks...** shortcuts to the native Windows network interface.
 >
-> NEXORA does not read or store your location.
+> nexora does not read or store your location.
 
 ### Rail Appearance
 
@@ -526,7 +526,7 @@ When an application is using the microphone or camera, a small application-name 
 
 Click the chip to open the relevant Windows microphone or camera privacy settings.
 
-NEXORA only reads Windows usage indicators. It does not access the microphone or camera itself.
+nexora only reads Windows usage indicators. It does not access the microphone or camera itself.
 
 ### Customizing Quick Panel
 
@@ -609,7 +609,7 @@ Filter chips below the search field allow you to narrow results by **Apps**, **M
 
 The **Search the Web** result opens Google in your browser only when explicitly selected.
 
-NEXORA does not independently transmit search queries over the network.
+nexora does not independently transmit search queries over the network.
 
 ### Search Modes
 
@@ -641,7 +641,7 @@ Quick keys are stored in `actions.txt` inside the configuration directory.
 
 Clipboard History can be disabled under Settings → General → **Clipboard History in Quick Search**.
 
-Clipboard history is stored in memory only. It is cleared when NEXORA exits and is never written to disk or transmitted elsewhere.
+Clipboard history is stored in memory only. It is cleared when nexora exits and is never written to disk or transmitted elsewhere.
 
 Content marked as password-manager data is ignored.
 
@@ -656,7 +656,7 @@ You can open it through:
 - The **Apps** button on Deck (colored dot-grid icon).
 - `Ctrl+Shift+Space`.
 - `Ctrl+1` in Quick Search.
-- The Apps option in the NEXORA logo menu.
+- The Apps option in the nexora logo menu.
 - A configured Screen Corner action.
 
 Apps appears as a glass-style panel near the top-center of the screen.
@@ -688,7 +688,7 @@ Overview provides a visual overview of all open windows.
 Open it using:
 
 - `Ctrl+↑`.
-- The NEXORA logo menu.
+- The nexora logo menu.
 - Quick Panel.
 - A configured Screen Corner action.
 
@@ -726,17 +726,17 @@ This means content such as YouTube videos in Brave or Chrome, animations, and cl
 - **Shift-click a card:** Adds the application to the current stage group, allowing multiple applications to share one stage.
 - **Reveal the card strip:** The strip automatically hides when a stage window overlaps it. Move the pointer to the screen edge on the strip's side to reveal it temporarily.
 - **Click the wallpaper:** Parks all windows in the strip and reveals the desktop.
-- **Alt+Tab:** Replaces the native Windows switcher with the NEXORA application switcher, displaying window cards with a blue selection highlight.
+- **Alt+Tab:** Replaces the native Windows switcher with the nexora application switcher, displaying window cards with a blue selection highlight.
 
 Use `Tab`, `Shift+Tab`, or the arrow keys to navigate the switcher. Press `Esc` to cancel or release `Alt` to activate the selected window.
 
-This behavior can be disabled under Settings → Stage → **Replace Alt+Tab with NEXORA Switcher**.
+This behavior can be disabled under Settings → Stage → **Replace Alt+Tab with nexora Switcher**.
 
 ### Recovery Behavior
 
-When Scene is disabled or NEXORA exits, all parked windows are restored to their original positions.
+When Scene is disabled or nexora exits, all parked windows are restored to their original positions.
 
-If NEXORA crashes unexpectedly, `nexora-guard` attempts to restore parked windows. They are also restored when NEXORA is launched again.
+If nexora crashes unexpectedly, `nexora-guard` attempts to restore parked windows. They are also restored when nexora is launched again.
 
 ### Scene Settings
 
@@ -756,11 +756,11 @@ Configurable options include:
   This feature only works with applications that register Windows media sessions.
 
 - **Desktop Icons:** Choose between Hidden, Automatic (shown when the stage is empty), or Visible.
-- **Excluded Applications:** Specify executable names or path fragments, one per line, in lowercase, inside `stage_exclude.txt` in the NEXORA configuration directory.
+- **Excluded Applications:** Specify executable names or path fragments, one per line, in lowercase, inside `stage_exclude.txt` in the nexora configuration directory.
 
   Excluded applications are never parked by Scene.
 
-> Applications running with Administrator privileges cannot be managed by a normal NEXORA process. Scene leaves these windows unchanged.
+> Applications running with Administrator privileges cannot be managed by a normal nexora process. Scene leaves these windows unchanged.
 
 ## 10. Screen Corners
 
@@ -782,7 +782,7 @@ Corner actions are ignored while a mouse button is pressed, preventing accidenta
 
 ## 11. Settings
 
-NEXORA Settings uses a modern settings interface with a colored icon sidebar on the left and grouped configuration cards on the right.
+nexora Settings uses a modern settings interface with a colored icon sidebar on the left and grouped configuration cards on the right.
 
 Long pages can be navigated using the mouse wheel.
 
@@ -839,9 +839,9 @@ All settings changes take effect immediately.
 
 ### Configuration Directory
 
-NEXORA stores its configuration files in:
+nexora stores its configuration files in:
 
-`%APPDATA%\NEXORA\`
+`%APPDATA%\nexora\`
 
 | File                     | Description                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
@@ -858,14 +858,14 @@ The following command-line options are available:
 
 | Option                            | Description                                      |
 | --------------------------------- | ------------------------------------------------ |
-| `--keep-taskbar`                  | Prevents NEXORA from hiding the Windows taskbar. |
-| `--open-settings`                 | Opens NEXORA Settings.                           |
+| `--keep-taskbar`                  | Prevents nexora from hiding the Windows taskbar. |
+| `--open-settings`                 | Opens nexora Settings.                           |
 | `--add-app <path>`                | Adds an application to Deck.                     |
 | `--set-icon <app\|start> <image>` | Changes an application or Start button icon.     |
 
 The `NACRE_CONFIG_DIR` environment variable specifies an alternative configuration directory.
 
-Using a different configuration directory also creates a separate NEXORA instance.
+Using a different configuration directory also creates a separate nexora instance.
 
 ## 12. Keyboard Shortcuts
 
@@ -876,7 +876,7 @@ The following keyboard shortcuts are available.
 | `Ctrl+Space`            | Open Quick Search.                                                                                                |
 | `Ctrl+Shift+Space`      | Open Apps.                                                                                                        |
 | `Ctrl+↑`                | Open Overview.                                                                                                    |
-| `Alt+Tab`               | Open the NEXORA application switcher (only when Scene is enabled).                                                |
+| `Alt+Tab`               | Open the nexora application switcher (only when Scene is enabled).                                                |
 | `Alt+`` / `Alt+Shift+`` | Switch to the next or previous window of the same application.                                                    |
 | `Ctrl+Alt+H`            | Hide (minimize) all windows belonging to the active application.                                                  |
 | `Ctrl+Alt+M`            | Minimize the active window.                                                                                       |
@@ -889,21 +889,21 @@ If a shortcut does not work, another application may already be using the same k
 
 ## 13. Privacy and Security
 
-NEXORA is designed to operate locally and does not collect usage telemetry.
+nexora is designed to operate locally and does not collect usage telemetry.
 
 The following sections describe how its features handle data and system access.
 
 ### No Telemetry
 
-NEXORA does not collect or transmit usage data.
+nexora does not collect or transmit usage data.
 
-The only network requests initiated directly by NEXORA are related to **online lyric lookup** in Visor.
+The only network requests initiated directly by nexora are related to **online lyric lookup** in Visor.
 
-When a track does not have a local `.lrc` file, NEXORA queries [LRCLIB](https://lrclib.net) using only the track title, artist, album, and duration.
+When a track does not have a local `.lrc` file, nexora queries [LRCLIB](https://lrclib.net) using only the track title, artist, album, and duration.
 
 Retrieved lyrics are cached locally in:
 
-`%APPDATA%\NEXORA\lyrics\cache\`
+`%APPDATA%\nexora\lyrics\cache\`
 
 Online lyric lookup is enabled by default and can be disabled under:
 
@@ -915,9 +915,9 @@ The **Search the Web** option in Quick Search only opens your browser when expli
 
 Application settings, pinned applications, and logs are stored locally in:
 
-`%APPDATA%\NEXORA\`
+`%APPDATA%\nexora\`
 
-NEXORA does not collect this information.
+nexora does not collect this information.
 
 ### Download Monitoring
 
@@ -933,11 +933,11 @@ File contents are not opened, and no download information is transmitted.
 
 Network and Bluetooth device lists are retrieved from Windows when their respective menus are opened.
 
-These lists are not stored by NEXORA.
+These lists are not stored by nexora.
 
 ### Send to Phone
 
-During an active transfer session, NEXORA starts a temporary lightweight web server on the laptop's local network address.
+During an active transfer session, nexora starts a temporary lightweight web server on the laptop's local network address.
 
 The server uses a random port and a link containing a random token.
 
@@ -957,7 +957,7 @@ Calendar data is not stored or transmitted.
 
 ### Keyboard Hook
 
-When Scene and its Alt+Tab switcher are enabled, NEXORA installs a low-level keyboard hook solely to intercept `Alt+Tab` and display its own application switcher.
+When Scene and its Alt+Tab switcher are enabled, nexora installs a low-level keyboard hook solely to intercept `Alt+Tab` and display its own application switcher.
 
 Keystrokes are not recorded, stored, or transmitted.
 
@@ -965,13 +965,13 @@ The hook is removed when the feature is disabled.
 
 ### Mouse Hook
 
-NEXORA uses a temporary mouse hook to detect clicks outside an active panel and close it.
+nexora uses a temporary mouse hook to detect clicks outside an active panel and close it.
 
 ### Global Shortcuts
 
 Global shortcuts use the standard Windows `RegisterHotKey` API and standard window messages, such as `WM_CLOSE` and minimize commands.
 
-NEXORA does not inject code into other applications.
+nexora does not inject code into other applications.
 
 Global shortcuts can be disabled under Settings → General.
 
@@ -991,15 +991,15 @@ The only temporary window-related data saved is the position information in `par
 
 ### Automatic Startup
 
-NEXORA uses the following Windows registry entry to launch at startup:
+nexora uses the following Windows registry entry to launch at startup:
 
 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
 
-The value name is `NEXORA`.
+The value name is `nexora`.
 
 Administrator privileges are not required.
 
-Automatic startup can be disabled through NEXORA Settings or Windows Settings → Apps → Startup.
+Automatic startup can be disabled through nexora Settings or Windows Settings → Apps → Startup.
 
 ### License and Warranty
 
@@ -1015,14 +1015,14 @@ The following table covers common issues and their recommended solutions.
 
 | Issue                                                           | Solution                                                                                                                                                                            |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Windows taskbar remains hidden after NEXORA exits unexpectedly. | Launch `nexora.exe` and exit normally, or allow `nexora-guard.exe` to restore the taskbar. Ensure both executables are located in the same folder.                                  |
-| A window appears to be missing.                                 | It may have been parked by Scene. Restart NEXORA to restore parked windows, or disable Scene.                                                                                       |
+| Windows taskbar remains hidden after nexora exits unexpectedly. | Launch `nexora.exe` and exit normally, or allow `nexora-guard.exe` to restore the taskbar. Ensure both executables are located in the same folder.                                  |
+| A window appears to be missing.                                 | It may have been parked by Scene. Restart nexora to restore parked windows, or disable Scene.                                                                                       |
 | Keyboard shortcuts do not work.                                 | Another application may already be using the same shortcut. Check `nexora.log`.                                                                                                     |
-| Application menus do not appear in Rail.                        | The application may not expose a classic Win32 menu. NEXORA uses its standard menu implementation instead.                                                                          |
+| Application menus do not appear in Rail.                        | The application may not expose a classic Win32 menu. nexora uses its standard menu implementation instead.                                                                          |
 | Rail or Deck is not visible in fullscreen mode.                 | Enable Settings → General → **Always on Top of Fullscreen Windows**. This option is enabled by default. Exclusive fullscreen applications cannot be overlaid.                       |
-| Desktop icons are missing.                                      | Go to Settings → General and disable **Hide Desktop Icons While NEXORA Is Running**. Desktop icons are restored when NEXORA exits.                                                  |
+| Desktop icons are missing.                                      | Go to Settings → General and disable **Hide Desktop Icons While nexora Is Running**. Desktop icons are restored when nexora exits.                                                  |
 | Deck icons look different from their original appearance.       | Disable **Uniform Icons** under the Deck settings and set **Icon Style** to Default.                                                                                                |
-| The mouse cursor remains circular after NEXORA exits.           | Restart NEXORA and exit normally, or allow `nexora-guard.exe` to restore the cursor. You can also change it through Windows Settings → Bluetooth & devices → Mouse → Mouse pointer. |
+| The mouse cursor remains circular after nexora exits.           | Restart nexora and exit normally, or allow `nexora-guard.exe` to restore the cursor. You can also change it through Windows Settings → Bluetooth & devices → Mouse → Mouse pointer. |
 | Reporting a bug.                                                | Include your Windows version, reproduction steps, and the contents of `nexora.log` when submitting an issue to the project repository.                                              |
 
 ## 15. Known Limitations
@@ -1043,18 +1043,18 @@ The following limitations currently apply:
 
 Open:
 
-Windows Settings → Apps → NEXORA → Uninstall.
+Windows Settings → Apps → nexora → Uninstall.
 
-The installer automatically stops NEXORA, restores the Windows taskbar, and removes its automatic startup entry.
+The installer automatically stops nexora, restores the Windows taskbar, and removes its automatic startup entry.
 
 ### Portable ZIP Installation
 
-1. Disable **Launch at Windows Startup** in NEXORA Settings.
-2. Exit NEXORA to restore the Windows taskbar.
+1. Disable **Launch at Windows Startup** in nexora Settings.
+2. Exit nexora to restore the Windows taskbar.
 3. Delete the folder containing the portable installation.
 
 ### Optional Configuration Cleanup
 
-To remove all NEXORA settings and locally stored configuration data, delete:
+To remove all nexora settings and locally stored configuration data, delete:
 
-`%APPDATA%\NEXORA\`
+`%APPDATA%\nexora\`

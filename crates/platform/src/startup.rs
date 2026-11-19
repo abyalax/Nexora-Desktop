@@ -6,7 +6,7 @@ use windows::Win32::System::Registry::{
 };
 
 const RUN_KEY: PCWSTR = w!("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
-const NAME: PCWSTR = w!("NEXORA");
+const NAME: PCWSTR = w!("nexora");
 
 pub fn current() -> Option<String> {
     unsafe {

@@ -48,18 +48,18 @@ foreach ($f in $files) {
 Write-Host "Privacy check passed: no local paths or user name inside the binaries."
 
 New-Item -ItemType Directory -Force $dist | Out-Null
-& $iscc "/DAppVersion=$Version" "/DSourceDir=$Source" (Join-Path $PSScriptRoot "NEXORA.iss")
+& $iscc "/DAppVersion=$Version" "/DSourceDir=$Source" (Join-Path $PSScriptRoot "nexora.iss")
 if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
 
-$stage = Join-Path $dist "NEXORA-$Version"
+$stage = Join-Path $dist "nexora-$Version"
 Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force (Join-Path $stage "fonts") | Out-Null
 foreach ($f in $files) { Copy-Item (Join-Path $Source $f) $stage }
 Copy-Item (Join-Path $root "LICENSE.md") $stage
 Copy-Item (Join-Path $root "assets\fonts\*") (Join-Path $stage "fonts")
-$zip = Join-Path $dist "NEXORA-$Version-win-x64.zip"
+$zip = Join-Path $dist "nexora-$Version-win-x64.zip"
 Remove-Item -Force $zip -ErrorAction SilentlyContinue
 Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip
 Remove-Item -Recurse -Force $stage
 
-Write-Host "Done: dist\NEXORA-Setup-$Version.exe and dist\NEXORA-$Version-win-x64.zip"
+Write-Host "Done: dist\nexora-Setup-$Version.exe and dist\nexora-$Version-win-x64.zip"
