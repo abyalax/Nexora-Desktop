@@ -280,7 +280,7 @@ The on-disk `settings.cfg` format must keep reading existing files: keys are not
 Follows `architecture.md` §9. Items marked ✅ are done on this branch; the rest are queued in dependency order.
 
 1. ✅ Toolchain hygiene: crate names `nexora-*`, deny-level clippy errors fixed, icon path case fixed.
-2. ⬜ App composition root: `bootstrap.rs`, `application.rs`, `lifecycle.rs`, `startup/`; keep `main.rs` minimal.
+2. ✅ App composition root: `bootstrap.rs`, `application.rs`, `lifecycle.rs`, `startup/`; keep `main.rs` minimal.
 3. ⬜ Dynamic Island host: split the `Notch` implementation by responsibility inside `app/dynamic_island/`.
 4. ⬜ `core` regrouping into feature folders (`settings/`, `launchpad/`, `window_management/`, `panels/`, `shared/`).
 5. ⬜ `platform` regrouping into `windows/`, `system/`, `media/`, `filesystem/`, `input/`.

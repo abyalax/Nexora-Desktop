@@ -1,4 +1,5 @@
-use crate::{paths, single_instance};
+use crate::startup::single_instance;
+use crate::paths;
 use nexora_platform::shell::taskbar;
 use std::sync::atomic::{AtomicU32, Ordering};
 use windows::core::{w, PCWSTR};
