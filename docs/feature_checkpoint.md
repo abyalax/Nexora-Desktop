@@ -214,7 +214,7 @@ name and text · material and rounding · lyrics compact · online lyrics · dow
 | Layout                                                 | `core/dynamic_island/layout.rs`                                  | ⬜ pill geometry in `app/dynamic_island/{ears,body}.rs`                                      |
 | Media, loopback, calendar, download watch, send server | `platform/media/*`, `platform/system/*`, `platform/filesystem/*` | ✅ implemented, flat layout until the platform regrouping lands                              |
 | Rendering and animation                                | `ui/features/dynamic_island/{view,animations}.rs`                | ⬜ `app/dynamic_island/{views,draw,body,shadow}.rs` (≈2 900 lines)                           |
-| Window host, wndproc, timers                           | `app/dynamic_island/*`                                           | 🟡 one 2 300-line `Notch` type mixes host, timers, platform events, domain steps and drawing |
+| Window host, wndproc, timers                           | `app/dynamic_island/*`                                           | 🟡 `Notch` is split by responsibility into `mod.rs` (struct, `create`, `dispatch`) + `wndproc, pointer, timers, present, placement, reconfigure, playback, lyric_sync, activity, shelf, send`; the type still mixes host, platform and domain state until step 7 |
 
 ### 4.5 Acceptance criteria
 
@@ -281,7 +281,9 @@ Follows `architecture.md` §9. Items marked ✅ are done on this branch; the res
 
 1. ✅ Toolchain hygiene: crate names `nexora-*`, deny-level clippy errors fixed, icon path case fixed.
 2. ✅ App composition root: `bootstrap.rs`, `application.rs`, `lifecycle.rs`, `startup/`; keep `main.rs` minimal.
-3. ⬜ Dynamic Island host: split the `Notch` implementation by responsibility inside `app/dynamic_island/`.
+3. ✅ Dynamic Island host: `Notch` implementation split by responsibility inside `app/dynamic_island/` (mechanical move,
+   no behavior change; `mod.rs` 2 347 → 567 lines). See `decisions/0001-split-island-host-by-responsibility.md`.
+   Still open here: `views.rs` (≈1 900 lines) moves to `ui/features/dynamic_island` in step 7.
 4. ⬜ `core` regrouping into feature folders (`settings/`, `launchpad/`, `window_management/`, `panels/`, `shared/`).
 5. ⬜ `platform` regrouping into `windows/`, `system/`, `media/`, `filesystem/`, `input/`.
 6. ⬜ Settings schema split (section 5.4) with a compatibility test over a real `settings.cfg`.
