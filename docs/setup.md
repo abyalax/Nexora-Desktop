@@ -269,7 +269,7 @@ Desktop-Macs/
 ├── assets/
 │   ├── fonts/        # Bundled Inter font files
 │   ├── screenshots/  # Documentation images
-│   └── nexora.ico      # Application icon
+│   └── Nexora.ico      # Application icon
 ├── docs/
 │   └── PANDUAN.md    # Indonesian user guide
 ├── installer/

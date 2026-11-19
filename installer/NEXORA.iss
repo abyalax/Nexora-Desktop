@@ -30,7 +30,7 @@ SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName={#AppName}
 UninstallDisplayIcon={app}\{#AppExe}
-SetupIconFile=..\assets\nexora.ico
+SetupIconFile=..\assets\Nexora.ico
 CloseApplications=no
 
 [Tasks]
