@@ -1,6 +1,5 @@
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
-    VIRTUAL_KEY,
+  INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_KEYUP, SendInput, VIRTUAL_KEY,
 };
 
 pub const CTRL: u16 = 0x11;
@@ -9,28 +8,24 @@ pub const ALT: u16 = 0x12;
 pub const WIN: u16 = 0x5B;
 
 fn key(vk: u16, up: bool) -> INPUT {
-    INPUT {
-        r#type: INPUT_KEYBOARD,
-        Anonymous: INPUT_0 {
-            ki: KEYBDINPUT {
-                wVk: VIRTUAL_KEY(vk),
-                wScan: 0,
-                dwFlags: if up {
-                    KEYEVENTF_KEYUP
-                } else {
-                    KEYBD_EVENT_FLAGS(0)
-                },
-                time: 0,
-                dwExtraInfo: 0,
-            },
-        },
-    }
+  INPUT {
+    r#type: INPUT_KEYBOARD,
+    Anonymous: INPUT_0 {
+      ki: KEYBDINPUT {
+        wVk: VIRTUAL_KEY(vk),
+        wScan: 0,
+        dwFlags: if up { KEYEVENTF_KEYUP } else { KEYBD_EVENT_FLAGS(0) },
+        time: 0,
+        dwExtraInfo: 0,
+      },
+    },
+  }
 }
 
 pub fn chord(vks: &[u16]) {
-    let mut seq: Vec<INPUT> = vks.iter().map(|v| key(*v, false)).collect();
-    seq.extend(vks.iter().rev().map(|v| key(*v, true)));
-    unsafe {
-        SendInput(&seq, std::mem::size_of::<INPUT>() as i32);
-    }
+  let mut seq: Vec<INPUT> = vks.iter().map(|v| key(*v, false)).collect();
+  seq.extend(vks.iter().rev().map(|v| key(*v, true)));
+  unsafe {
+    SendInput(&seq, std::mem::size_of::<INPUT>() as i32);
+  }
 }

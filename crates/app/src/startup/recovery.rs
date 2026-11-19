@@ -5,11 +5,11 @@ use crate::paths;
 use nexora_platform::{cursors, log, shell::taskbar};
 
 pub fn restore_taskbar() {
-    taskbar::recover_leftover(&paths::marker());
+  taskbar::recover_leftover(&paths::marker());
 }
 
 pub fn restore_cursors() {
-    if cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag")) {
-        log::line("cursor", "kursor sistem dipulihkan");
-    }
+  if cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag")) {
+    log::line("cursor", "kursor sistem dipulihkan");
+  }
 }

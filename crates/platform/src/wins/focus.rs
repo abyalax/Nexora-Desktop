@@ -1,114 +1,109 @@
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, FlashWindow, GetAncestor, GetForegroundWindow, IsIconic, IsWindow,
-    IsWindowVisible, PostMessageW, SetForegroundWindow, ShowWindow, GA_ROOTOWNER, SW_MINIMIZE,
-    SW_RESTORE, SW_SHOW, WM_CLOSE,
+  BringWindowToTop, FlashWindow, GA_ROOTOWNER, GetAncestor, GetForegroundWindow, IsIconic, IsWindow, IsWindowVisible,
+  PostMessageW, SW_MINIMIZE, SW_RESTORE, SW_SHOW, SetForegroundWindow, ShowWindow, WM_CLOSE,
 };
 
 fn h(x: isize) -> HWND {
-    HWND(x as *mut _)
+  HWND(x as *mut _)
 }
 
 pub fn is_alive(hwnd: isize) -> bool {
-    unsafe { IsWindow(Some(h(hwnd))).as_bool() }
+  unsafe { IsWindow(Some(h(hwnd))).as_bool() }
 }
 
 pub fn title(hwnd: isize) -> String {
-    let mut buf = [0u16; 256];
-    let n = unsafe { windows::Win32::UI::WindowsAndMessaging::GetWindowTextW(h(hwnd), &mut buf) };
-    String::from_utf16_lossy(&buf[..n.max(0) as usize])
+  let mut buf = [0u16; 256];
+  let n = unsafe { windows::Win32::UI::WindowsAndMessaging::GetWindowTextW(h(hwnd), &mut buf) };
+  String::from_utf16_lossy(&buf[..n.max(0) as usize])
 }
 
 pub fn is_minimized(hwnd: isize) -> bool {
-    unsafe { IsIconic(h(hwnd)).as_bool() }
+  unsafe { IsIconic(h(hwnd)).as_bool() }
 }
 
 pub fn foreground() -> isize {
-    unsafe { GetForegroundWindow().0 as isize }
+  unsafe { GetForegroundWindow().0 as isize }
 }
 
 pub fn activate(target: isize, dock: isize) -> bool {
-    unsafe {
-        let hwnd = h(target);
-        if !IsWindow(Some(hwnd)).as_bool() {
-            return false;
-        }
-
-        let mut fg = GetForegroundWindow();
-        if fg.0 as isize == dock {
-            if let Some(last) = super::tracker::last_focused_except(dock, is_alive) {
-                fg = h(last);
-            }
-        }
-        let is_front = fg == hwnd || GetAncestor(fg, GA_ROOTOWNER) == hwnd;
-        if is_front && IsWindowVisible(hwnd).as_bool() && !IsIconic(hwnd).as_bool() {
-            let _ = ShowWindow(hwnd, SW_MINIMIZE);
-            return IsIconic(hwnd).as_bool();
-        }
-
-        if !IsWindowVisible(hwnd).as_bool() {
-            let _ = ShowWindow(hwnd, SW_SHOW);
-        }
-        if IsIconic(hwnd).as_bool() {
-            let _ = ShowWindow(hwnd, SW_RESTORE);
-        }
-        if SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd {
-            return true;
-        }
-        let _ = BringWindowToTop(hwnd);
-        if GetForegroundWindow() == hwnd
-            || (SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd)
-        {
-            return true;
-        }
-        let _ = FlashWindow(hwnd, true);
-        false
+  unsafe {
+    let hwnd = h(target);
+    if !IsWindow(Some(hwnd)).as_bool() {
+      return false;
     }
+
+    let mut fg = GetForegroundWindow();
+    if fg.0 as isize == dock {
+      if let Some(last) = super::tracker::last_focused_except(dock, is_alive) {
+        fg = h(last);
+      }
+    }
+    let is_front = fg == hwnd || GetAncestor(fg, GA_ROOTOWNER) == hwnd;
+    if is_front && IsWindowVisible(hwnd).as_bool() && !IsIconic(hwnd).as_bool() {
+      let _ = ShowWindow(hwnd, SW_MINIMIZE);
+      return IsIconic(hwnd).as_bool();
+    }
+
+    if !IsWindowVisible(hwnd).as_bool() {
+      let _ = ShowWindow(hwnd, SW_SHOW);
+    }
+    if IsIconic(hwnd).as_bool() {
+      let _ = ShowWindow(hwnd, SW_RESTORE);
+    }
+    if SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd {
+      return true;
+    }
+    let _ = BringWindowToTop(hwnd);
+    if GetForegroundWindow() == hwnd || (SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd) {
+      return true;
+    }
+    let _ = FlashWindow(hwnd, true);
+    false
+  }
 }
 
 pub fn request_close(hwnd: isize) {
-    unsafe {
-        let _ = PostMessageW(Some(h(hwnd)), WM_CLOSE, WPARAM(0), LPARAM(0));
-    }
+  unsafe {
+    let _ = PostMessageW(Some(h(hwnd)), WM_CLOSE, WPARAM(0), LPARAM(0));
+  }
 }
 
 pub fn force_foreground(target: isize) -> bool {
-    use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-    use windows::Win32::UI::Input::KeyboardAndMouse::{
-        keybd_event, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, VK_MENU,
-    };
-    use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
-    unsafe {
-        let hwnd = h(target);
-        if !IsWindow(Some(hwnd)).as_bool() {
-            return false;
-        }
-        if !IsWindowVisible(hwnd).as_bool() {
-            let _ = ShowWindow(hwnd, SW_SHOW);
-        }
-        if IsIconic(hwnd).as_bool() {
-            let _ = ShowWindow(hwnd, SW_RESTORE);
-        }
-        if GetForegroundWindow() == hwnd {
-            return true;
-        }
-        let fg = GetForegroundWindow();
-        let (me, other) = (GetCurrentThreadId(), GetWindowThreadProcessId(fg, None));
-        let attached = other != 0 && other != me && AttachThreadInput(me, other, true).as_bool();
-        let _ = BringWindowToTop(hwnd);
-        let mut ok = SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd;
-        if attached {
-            let _ = AttachThreadInput(me, other, false);
-        }
-        if !ok {
-            keybd_event(VK_MENU.0 as u8, 0, KEYBD_EVENT_FLAGS(0), 0);
-            keybd_event(VK_MENU.0 as u8, 0, KEYEVENTF_KEYUP, 0);
-            let _ = BringWindowToTop(hwnd);
-            ok = SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd;
-        }
-        if !ok {
-            let _ = FlashWindow(hwnd, true);
-        }
-        ok
+  use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
+  use windows::Win32::UI::Input::KeyboardAndMouse::{KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, VK_MENU, keybd_event};
+  use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
+  unsafe {
+    let hwnd = h(target);
+    if !IsWindow(Some(hwnd)).as_bool() {
+      return false;
     }
+    if !IsWindowVisible(hwnd).as_bool() {
+      let _ = ShowWindow(hwnd, SW_SHOW);
+    }
+    if IsIconic(hwnd).as_bool() {
+      let _ = ShowWindow(hwnd, SW_RESTORE);
+    }
+    if GetForegroundWindow() == hwnd {
+      return true;
+    }
+    let fg = GetForegroundWindow();
+    let (me, other) = (GetCurrentThreadId(), GetWindowThreadProcessId(fg, None));
+    let attached = other != 0 && other != me && AttachThreadInput(me, other, true).as_bool();
+    let _ = BringWindowToTop(hwnd);
+    let mut ok = SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd;
+    if attached {
+      let _ = AttachThreadInput(me, other, false);
+    }
+    if !ok {
+      keybd_event(VK_MENU.0 as u8, 0, KEYBD_EVENT_FLAGS(0), 0);
+      keybd_event(VK_MENU.0 as u8, 0, KEYEVENTF_KEYUP, 0);
+      let _ = BringWindowToTop(hwnd);
+      ok = SetForegroundWindow(hwnd).as_bool() && GetForegroundWindow() == hwnd;
+    }
+    if !ok {
+      let _ = FlashWindow(hwnd, true);
+    }
+    ok
+  }
 }

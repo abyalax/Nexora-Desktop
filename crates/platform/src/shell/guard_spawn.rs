@@ -11,21 +11,19 @@ const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const CREATE_BREAKAWAY_FROM_JOB: u32 = 0x0100_0000;
 
 pub fn spawn_once(guard_exe: &Path, parent_pid: u32, marker: &Path) -> std::io::Result<()> {
-    let mut started = STARTED
-        .lock()
-        .map_err(|_| std::io::Error::other("lock poisoned"))?;
-    if *started {
-        return Ok(());
-    }
-    let base = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW;
-    let run = |flags: u32| {
-        Command::new(guard_exe)
-            .arg(parent_pid.to_string())
-            .arg(marker)
-            .creation_flags(flags)
-            .spawn()
-    };
-    run(base | CREATE_BREAKAWAY_FROM_JOB).or_else(|_| run(base))?;
-    *started = true;
-    Ok(())
+  let mut started = STARTED.lock().map_err(|_| std::io::Error::other("lock poisoned"))?;
+  if *started {
+    return Ok(());
+  }
+  let base = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW;
+  let run = |flags: u32| {
+    Command::new(guard_exe)
+      .arg(parent_pid.to_string())
+      .arg(marker)
+      .creation_flags(flags)
+      .spawn()
+  };
+  run(base | CREATE_BREAKAWAY_FROM_JOB).or_else(|_| run(base))?;
+  *started = true;
+  Ok(())
 }

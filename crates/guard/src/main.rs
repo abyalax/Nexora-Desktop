@@ -1,54 +1,51 @@
 #![windows_subsystem = "windows"]
 
-use nexora_platform::process::{wait_for_exit, WaitOutcome};
+use nexora_platform::process::{WaitOutcome, wait_for_exit};
 use nexora_platform::shell::taskbar;
 use std::path::PathBuf;
 use std::time::Duration;
 
 fn main() {
-    let mut args = std::env::args_os().skip(1);
-    let (Some(pid), Some(marker)) = (args.next(), args.next()) else {
-        return;
-    };
-    let Ok(pid) = pid.to_string_lossy().parse::<u32>() else {
-        return;
-    };
-    let marker = PathBuf::from(marker);
+  let mut args = std::env::args_os().skip(1);
+  let (Some(pid), Some(marker)) = (args.next(), args.next()) else {
+    return;
+  };
+  let Ok(pid) = pid.to_string_lossy().parse::<u32>() else {
+    return;
+  };
+  let marker = PathBuf::from(marker);
 
-    nexora_platform::log::init(marker.with_file_name("nexora-guard.log"));
-    nexora_platform::log::line("guard", &format!("menunggu pid {pid}"));
+  nexora_platform::log::init(marker.with_file_name("nexora-guard.log"));
+  nexora_platform::log::line("guard", &format!("menunggu pid {pid}"));
 
-    if wait_for_exit(pid) == WaitOutcome::Unknown {
-        nexora_platform::log::line(
-            "guard",
-            "tidak bisa memastikan proses induk; keluar tanpa tindakan",
-        );
-        return;
+  if wait_for_exit(pid) == WaitOutcome::Unknown {
+    nexora_platform::log::line("guard", "tidak bisa memastikan proses induk; keluar tanpa tindakan");
+    return;
+  }
+
+  let parked = marker.with_file_name("parked.txt");
+  if parked.exists() {
+    let n = nexora_platform::wins::park::restore_file(&parked);
+    nexora_platform::log::line("guard", &format!("{n} jendela terparkir dikembalikan"));
+  }
+
+  let cur_flag = marker.with_file_name("cursors_replaced.flag");
+  if nexora_platform::cursors::flagged(&cur_flag) {
+    nexora_platform::cursors::restore(&cur_flag);
+    nexora_platform::log::line("guard", "kursor sistem dipulihkan");
+  }
+
+  for _ in 0..120 {
+    match taskbar::read_marker(&marker) {
+      Some(m) if m.pid != pid => return,
+      None if !marker.exists() => return,
+      _ => {}
     }
-
-    let parked = marker.with_file_name("parked.txt");
-    if parked.exists() {
-        let n = nexora_platform::wins::park::restore_file(&parked);
-        nexora_platform::log::line("guard", &format!("{n} jendela terparkir dikembalikan"));
+    if taskbar::recover_leftover(&marker) && !marker.exists() {
+      nexora_platform::log::line("guard", "taskbar dipulihkan");
+      return;
     }
-
-    let cur_flag = marker.with_file_name("cursors_replaced.flag");
-    if nexora_platform::cursors::flagged(&cur_flag) {
-        nexora_platform::cursors::restore(&cur_flag);
-        nexora_platform::log::line("guard", "kursor sistem dipulihkan");
-    }
-
-    for _ in 0..120 {
-        match taskbar::read_marker(&marker) {
-            Some(m) if m.pid != pid => return,
-            None if !marker.exists() => return,
-            _ => {}
-        }
-        if taskbar::recover_leftover(&marker) && !marker.exists() {
-            nexora_platform::log::line("guard", "taskbar dipulihkan");
-            return;
-        }
-        std::thread::sleep(Duration::from_millis(250));
-    }
-    nexora_platform::log::line("guard", "menyerah setelah 30 s");
+    std::thread::sleep(Duration::from_millis(250));
+  }
+  nexora_platform::log::line("guard", "menyerah setelah 30 s");
 }

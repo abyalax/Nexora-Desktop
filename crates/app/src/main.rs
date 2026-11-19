@@ -31,5 +31,5 @@ mod topmost;
 mod widgets;
 
 fn main() {
-    bootstrap::run();
+  bootstrap::run();
 }
