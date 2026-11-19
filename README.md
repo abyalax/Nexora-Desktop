@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo-rounded.png" alt="NEXORA" width="200">
+  <img src="assets/Nexora.png" alt="NEXORA" width="200">
 </p>
 
 <h1 align="center">NEXORA</h1>
