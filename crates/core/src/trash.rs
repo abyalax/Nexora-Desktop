@@ -3,6 +3,8 @@ const BOT: f32 = 0.905;
 const HW_TOP: f32 = 0.300;
 const HW_BOT: f32 = 0.250;
 const CORNER: f32 = 0.07;
+// Hand-tuned ellipse radii in unit-square space; 0.318 only resembles 1/PI.
+#[allow(clippy::approx_constant)]
 const RIM: (f32, f32) = (0.318, 0.078);
 const MOUTH: (f32, f32) = (0.272, 0.054);
 
