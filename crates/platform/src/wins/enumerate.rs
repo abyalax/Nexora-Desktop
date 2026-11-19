@@ -1,4 +1,4 @@
-use nacre_core::dock::items::Win;
+use nexora_core::dock::items::Win;
 use std::ffi::c_void;
 use windows::core::BOOL;
 use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM};

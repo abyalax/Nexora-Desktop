@@ -14,7 +14,7 @@ impl Bar {
     }
 
     pub(super) fn apply_bg(&mut self) {
-        use nacre_core::settings::BarStyle;
+        use nexora_core::settings::BarStyle;
         let p = prefs::get();
         let d = self.dpi;
         let flat = if p.menubar_glass && !p.menubar_material {
@@ -28,7 +28,7 @@ impl Bar {
         if p.menubar_material {
             let look = prefs::look(prefs::Role::Themed);
             let base =
-                nacre_ui::glass::GlassParams::dark((self.screen.0 as f32, self.h as f32), 0.0);
+                nexora_ui::glass::GlassParams::dark((self.screen.0 as f32, self.h as f32), 0.0);
             let mut gp = prefs::apply(base, &look);
             gp.rim.A = 0;
             gp.highlight = 0.0;
@@ -140,7 +140,7 @@ impl Bar {
     }
 
     pub(super) fn update_text_color(&mut self) -> bool {
-        use nacre_core::settings::BarStyle;
+        use nexora_core::settings::BarStyle;
         let before = self.dark_text;
         let p = prefs::get();
         self.dark_text =

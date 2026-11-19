@@ -52,7 +52,7 @@ impl Dock {
             }
             TIMER_RECONF => self.on_reconfigure(),
             TIMER_TRASH => {
-                let full = nacre_platform::recycle::is_full();
+                let full = nexora_platform::recycle::is_full();
                 if full != self.trash_full {
                     self.trash_full = full;
                     self.update_trash_icon();

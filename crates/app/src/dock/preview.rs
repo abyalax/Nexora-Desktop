@@ -1,7 +1,7 @@
 use crate::popup::Popup;
-use nacre_platform::text::{render, Style};
-use nacre_platform::wins::thumbnail;
-use nacre_ui::gfx::Gfx;
+use nexora_platform::text::{render, Style};
+use nexora_platform::wins::thumbnail;
+use nexora_ui::gfx::Gfx;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use windows::core::w;
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
@@ -86,7 +86,7 @@ impl Preview {
         })
     }
 
-    pub fn panel_mut(&mut self) -> &mut nacre_ui::glass::GlassPanel {
+    pub fn panel_mut(&mut self) -> &mut nexora_ui::glass::GlassPanel {
         &mut self.popup.panel
     }
 

@@ -258,7 +258,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "menimpa papan klip sistem; jalankan manual: cargo test -p nacre-platform clipboard -- --ignored"]
+    #[ignore = "menimpa papan klip sistem; jalankan manual: cargo test -p nexora-platform clipboard -- --ignored"]
     fn papan_klip_asli_menghormati_can_include() {
         unsafe {
             let lama = read_text(HWND::default());

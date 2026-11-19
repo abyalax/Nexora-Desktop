@@ -1,7 +1,7 @@
 use crate::popup::Popup;
-use nacre_platform::text::{measure, render, Style};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::GlassParams;
+use nexora_platform::text::{measure, render, Style};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::GlassParams;
 use std::collections::HashMap;
 use windows::core::w;
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
@@ -165,7 +165,7 @@ impl Tooltip {
         self.tail_surface = None;
     }
 
-    pub fn set_tier(&mut self, tier: nacre_ui::glass::Tier) {
+    pub fn set_tier(&mut self, tier: nexora_ui::glass::Tier) {
         let _ = self.popup.panel.set_tier(tier);
     }
 

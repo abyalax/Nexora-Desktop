@@ -109,10 +109,10 @@ cargo build
 cargo build --release
 
 # Build specific crate
-cargo build -p nacre-app
-cargo build -p nacre-core
-cargo build -p nacre-platform
-cargo build -p nacre-ui
+cargo build -p nexora-app
+cargo build -p nexora-core
+cargo build -p nexora-platform
+cargo build -p nexora-ui
 cargo build -p nacre-guard
 ```
 
@@ -123,7 +123,7 @@ cargo build -p nacre-guard
 cargo check
 
 # Check specific crate
-cargo check -p nacre-app
+cargo check -p nexora-app
 
 # Run Clippy linter
 cargo clippy
@@ -139,7 +139,7 @@ cargo clippy --all-targets
 cargo test --workspace
 
 # Run tests for specific crate
-cargo test -p nacre-core
+cargo test -p nexora-core
 
 # Run tests with output
 cargo test -- --nocapture
@@ -165,7 +165,7 @@ cargo doc --workspace --open
 cargo clean
 
 # Clean specific crate
-cargo clean -p nacre-app
+cargo clean -p nexora-app
 ```
 
 ### Code Formatting

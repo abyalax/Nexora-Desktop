@@ -1,7 +1,7 @@
 use crate::prefs;
 use crate::strip::Strip;
-use nacre_core::settings::HotAction;
-use nacre_platform::{keys, launch, log, sys};
+use nexora_core::settings::HotAction;
+use nexora_platform::{keys, launch, log, sys};
 use std::cell::RefCell;
 use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};

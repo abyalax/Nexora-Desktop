@@ -1,6 +1,6 @@
 use crate::paths;
-use nacre_core::dock::items::key_of;
-use nacre_platform::{icons, log};
+use nexora_core::dock::items::key_of;
+use nexora_platform::{icons, log};
 use std::path::PathBuf;
 
 fn list_path() -> PathBuf {
@@ -65,7 +65,7 @@ pub fn set(app: &str, image: &str) -> bool {
         return false;
     }
     let dest_s = dest.to_string_lossy().to_string();
-    if nacre_platform::wic::decode_file_fit(&dest_s, 16).is_none() {
+    if nexora_platform::wic::decode_file_fit(&dest_s, 16).is_none() {
         let _ = std::fs::remove_file(&dest);
         return false;
     }

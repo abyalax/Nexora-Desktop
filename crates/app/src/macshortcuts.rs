@@ -1,7 +1,7 @@
 use crate::prefs;
-use nacre_core::dock::ring::{next_in_ring, prev_in_ring};
-use nacre_platform::log;
-use nacre_platform::wins::{enumerate, focus, tracker};
+use nexora_core::dock::ring::{next_in_ring, prev_in_ring};
+use nexora_platform::log;
+use nexora_platform::wins::{enumerate, focus, tracker};
 use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -20,7 +20,7 @@ const ID_QUIT: i32 = 0xAB24;
 static CTL: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
 static REGISTERED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-fn exe_of(wins: &[nacre_core::dock::items::Win], hwnd: isize) -> Option<String> {
+fn exe_of(wins: &[nexora_core::dock::items::Win], hwnd: isize) -> Option<String> {
     wins.iter()
         .find(|w| w.hwnd == hwnd)
         .map(|w| w.path.to_lowercase())

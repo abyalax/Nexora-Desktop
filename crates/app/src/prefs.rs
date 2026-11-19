@@ -1,7 +1,7 @@
 use crate::paths;
-use nacre_core::settings::{self, Look, Settings};
-use nacre_platform::{log, sys};
-use nacre_ui::glass::GlassParams;
+use nexora_core::settings::{self, Look, Settings};
+use nexora_platform::{log, sys};
+use nexora_ui::glass::GlassParams;
 use std::sync::Mutex;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
@@ -139,10 +139,10 @@ pub fn glass(size: (f32, f32), radius: f32, role: Role) -> GlassParams {
 
 pub fn tr(src: &'static str) -> &'static str {
     let lang = get().lang;
-    if lang == nacre_core::i18n::Lang::En && !nacre_core::i18n::is_known(src) {
+    if lang == nexora_core::i18n::Lang::En && !nexora_core::i18n::is_known(src) {
         note_missing(src);
     }
-    nacre_core::i18n::tr(lang, src)
+    nexora_core::i18n::tr(lang, src)
 }
 
 fn note_missing(src: &'static str) {
@@ -150,14 +150,14 @@ fn note_missing(src: &'static str) {
     let mut g = SEEN.lock().unwrap_or_else(|e| e.into_inner());
     if !g.contains(&src) && g.len() < 400 {
         g.push(src);
-        nacre_platform::log::line("i18n", &format!("belum diterjemahkan: {src:?}"));
+        nexora_platform::log::line("i18n", &format!("belum diterjemahkan: {src:?}"));
     }
 }
 
 pub fn accent() -> [u8; 3] {
     let a = get().accent;
     if a == settings::ACCENT_MULTI {
-        return nacre_platform::sys::accent_color().unwrap_or(settings::ACCENTS[0]);
+        return nexora_platform::sys::accent_color().unwrap_or(settings::ACCENTS[0]);
     }
     settings::ACCENTS[(a as usize).min(settings::ACCENTS.len() - 1)]
 }

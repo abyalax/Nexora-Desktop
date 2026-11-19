@@ -1,10 +1,10 @@
 use crate::menu::{Card, Item, Menu, MENU_CLOSE, MENU_PICK};
 use crate::prefs;
-use nacre_core::netlist::{bars, DevKind, Device};
-use nacre_core::symbols::Sym;
-use nacre_platform::{bt, launch, radio, sys, wifi};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::Tier;
+use nexora_core::netlist::{bars, DevKind, Device};
+use nexora_core::symbols::Sym;
+use nexora_platform::{bt, launch, radio, sys, wifi};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::Tier;
 use std::cell::RefCell;
 use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
@@ -260,7 +260,7 @@ impl Net {
                     v.push(Item::heading(prefs::tr("Tidak ada adaptor Wi-Fi")))
                 }
                 Some(s) if s.denied => {
-                    let row = |i: usize, n: &nacre_core::netlist::Network| {
+                    let row = |i: usize, n: &nexora_core::netlist::Network| {
                         let it = Item::action(ID_NET0 + i, &n.ssid, true).with_lead(
                             if n.connected {
                                 signal_sym(n.signal)
@@ -326,7 +326,7 @@ impl Net {
                     ));
                 }
                 Some(s) => {
-                    let row = |i: usize, n: &nacre_core::netlist::Network| {
+                    let row = |i: usize, n: &nexora_core::netlist::Network| {
                         let it = Item::action(ID_NET0 + i, &n.ssid, true)
                             .with_lead(signal_sym(n.signal), n.connected)
                             .with_trail(if n.secured { vec![Sym::Lock] } else { vec![] });
@@ -441,7 +441,7 @@ impl Net {
             Anchor::Corner(r, top) => (r, top, true),
         };
         if let Err(e) = menu.show_card(&self.comp, gfx, items, x, top, right) {
-            nacre_platform::log::line("netmenu", &format!("menu gagal: {e}"));
+            nexora_platform::log::line("netmenu", &format!("menu gagal: {e}"));
             return;
         }
         menu.raise();

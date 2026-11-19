@@ -1,9 +1,9 @@
 use super::draw::{white, Anchor, Painter, WHITE};
 use crate::prefs::tr;
-use nacre_core::dynamic_island::timer::{format_mmss, Phase, Timer};
-use nacre_core::dynamic_island::glance::Item;
-use nacre_core::dynamic_island::state::{Activity, Look, Tab, View};
-use nacre_core::symbols::Sym;
+use nexora_core::dynamic_island::timer::{format_mmss, Phase, Timer};
+use nexora_core::dynamic_island::glance::Item;
+use nexora_core::dynamic_island::state::{Activity, Look, Tab, View};
+use nexora_core::symbols::Sym;
 use windows::UI::Color;
 use windows::UI::Composition::{CompositionDrawingSurface, ContainerVisual, SpriteVisual};
 use windows_numerics::Vector3;
@@ -113,7 +113,7 @@ pub struct CalView<'a> {
 pub enum Events<'a> {
     Loading,
     Unavailable,
-    List(&'a [nacre_platform::agenda::Event]),
+    List(&'a [nexora_platform::agenda::Event]),
 }
 
 pub struct DownloadView<'a> {
@@ -133,7 +133,7 @@ pub enum LyrState {
 }
 
 pub struct LyricsView<'a> {
-    pub lines: Option<&'a nacre_core::dynamic_island::lyrics::Lyrics>,
+    pub lines: Option<&'a nexora_core::dynamic_island::lyrics::Lyrics>,
     pub state: LyrState,
     pub pos_ms: i64,
     pub lrclib: bool,
@@ -231,7 +231,7 @@ fn privacy_dots(p: &mut Painter, c: &ContainerVisual, f: Frame, (mic, cam): (boo
 }
 
 pub(super) fn count_text(n: usize) -> String {
-    if crate::prefs::get().lang == nacre_core::i18n::Lang::En {
+    if crate::prefs::get().lang == nexora_core::i18n::Lang::En {
         format!("{n} {}", if n == 1 { "file" } else { "files" })
     } else {
         format!("{n} berkas")
@@ -1448,7 +1448,7 @@ fn lyrics_flow(
     let maxw = w - 2.0 * pad;
     let blocks = |p: &Painter, text: &str| -> Vec<String> {
         let t = if text.is_empty() { "\u{266A}" } else { text };
-        nacre_core::dynamic_island::typeset::wrap(t, maxw, 3, |s| p.measure(s, size, 700))
+        nexora_core::dynamic_island::typeset::wrap(t, maxw, 3, |s| p.measure(s, size, 700))
     };
     if l.synced {
         let active = l.index_at(ly.pos_ms);
@@ -1511,7 +1511,7 @@ fn lyrics_flow(
                 break;
             }
             for t in
-                nacre_core::dynamic_island::typeset::wrap(&line.text, maxw, 3, |s| p.measure(s, 15.0, 600))
+                nexora_core::dynamic_island::typeset::wrap(&line.text, maxw, 3, |s| p.measure(s, 15.0, 600))
             {
                 p.text(
                     &sc,
@@ -1732,9 +1732,9 @@ fn calendar_card(
     d: &Data,
     regions: &mut Vec<Region>,
 ) {
-    use nacre_core::panels::calendar::{add_days, month_short, weekday, weekday_short};
+    use nexora_core::panels::calendar::{add_days, month_short, weekday, weekday_short};
     card(p, c, x, y, w, h);
-    let en = crate::prefs::get().lang == nacre_core::i18n::Lang::En;
+    let en = crate::prefs::get().lang == nexora_core::i18n::Lang::En;
     let cal = &d.cal;
     let accent = crate::prefs::accent();
     let (sy, sm, sd) = cal.sel;

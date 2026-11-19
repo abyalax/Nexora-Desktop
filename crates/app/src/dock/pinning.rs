@@ -18,7 +18,7 @@ impl Dock {
             } else if !std::path::Path::new(&it.path).exists() {
                 if let Some(family) = package_family(&it.path) {
                     let prefix = format!("shell:appsfolder\\{}!", family.to_lowercase());
-                    if let Some(app) = nacre_platform::apps::snapshot()
+                    if let Some(app) = nexora_platform::apps::snapshot()
                         .into_iter()
                         .find(|a| a.path.to_lowercase().starts_with(&prefix))
                     {
@@ -53,7 +53,7 @@ impl Dock {
 
     pub fn add_app(&mut self, picked: &str) {
         let lower = picked.to_ascii_lowercase();
-        let Some(target) = nacre_platform::pick::resolve_shortcut(picked) else {
+        let Some(target) = nexora_platform::pick::resolve_shortcut(picked) else {
             log::line("dock", &format!("pintasan tak terbaca: {picked}"));
             return;
         };

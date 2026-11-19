@@ -34,7 +34,7 @@ impl Dock {
             Some(Entry::Downloads) => crate::prefs::tr("Unduhan").to_string(),
             Some(Entry::App(i)) => match self.items.get(*i) {
                 Some(it) => {
-                    let f = nacre_platform::wins::names::friendly(&it.path);
+                    let f = nexora_platform::wins::names::friendly(&it.path);
                     if f.is_empty() {
                         it.name.clone()
                     } else {

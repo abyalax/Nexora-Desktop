@@ -9,18 +9,18 @@ use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::strip::Strip;
 use body::Body;
 use draw::Painter;
-use nacre_core::panels::calendar;
-use nacre_core::dynamic_island::timer::{Phase, Timer};
-use nacre_core::dynamic_island::glance;
-use nacre_core::dynamic_island::state::{self, motion, Event, Live, Look, Mode, OpenOn, Size, Tab, View};
-use nacre_core::visibility::policy::{should_hide, Inputs, Mode as Vis};
-use nacre_platform::loopback::{self, Loopback};
-use nacre_platform::media::{self, ArtUpdate, Command, Media};
-use nacre_platform::wins::{overlap, tracker};
-use nacre_platform::{log, sys};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::Tier;
-use nacre_ui::host::{Host, Surface};
+use nexora_core::panels::calendar;
+use nexora_core::dynamic_island::timer::{Phase, Timer};
+use nexora_core::dynamic_island::glance;
+use nexora_core::dynamic_island::state::{self, motion, Event, Live, Look, Mode, OpenOn, Size, Tab, View};
+use nexora_core::visibility::policy::{should_hide, Inputs, Mode as Vis};
+use nexora_platform::loopback::{self, Loopback};
+use nexora_platform::media::{self, ArtUpdate, Command, Media};
+use nexora_platform::wins::{overlap, tracker};
+use nexora_platform::{log, sys};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::Tier;
+use nexora_ui::host::{Host, Surface};
 use shadow::Shadow;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::time::Instant;
@@ -80,11 +80,11 @@ const T_TESTSEND: usize = 21;
 const SEND_IDLE: std::time::Duration = std::time::Duration::from_secs(15 * 60);
 
 struct SendSess {
-    server: nacre_platform::sendsrv::Server,
+    server: nexora_platform::sendsrv::Server,
     qr: Option<CompositionDrawingSurface>,
     qr_px: f32,
     names: Vec<String>,
-    prog: nacre_platform::sendsrv::Progress,
+    prog: nexora_platform::sendsrv::Progress,
     last: Instant,
     done_at: Option<Instant>,
 }
@@ -262,15 +262,15 @@ pub struct Notch {
     seek_drag: Option<(f32, f32, f32)>,
 
     album: String,
-    lyr_worker: nacre_platform::lyrics::Lyrics,
-    lyr: Option<nacre_core::dynamic_island::lyrics::Lyrics>,
+    lyr_worker: nexora_platform::lyrics::Lyrics,
+    lyr: Option<nexora_core::dynamic_island::lyrics::Lyrics>,
     lyr_state: LyrState,
     lyr_lrclib: bool,
     lyr_key: String,
     lyr_track: String,
     lyr_idx: Option<usize>,
 
-    shelf: nacre_core::dynamic_island::shelf::Shelf,
+    shelf: nexora_core::dynamic_island::shelf::Shelf,
     shelf_icons: std::collections::HashMap<String, CompositionDrawingSurface>,
     dnd: drop::Shared,
     _drop_target: Option<windows::Win32::System::Ole::IDropTarget>,
@@ -279,13 +279,13 @@ pub struct Notch {
     menu: Option<Menu>,
     menu_item: Option<usize>,
     privacy: (bool, bool),
-    dl_watch: Option<nacre_platform::dlwatch::Watch>,
-    dl: Option<nacre_core::dynamic_island::download::Download>,
-    dl_done: Option<nacre_core::dynamic_island::download::Download>,
+    dl_watch: Option<nexora_platform::dlwatch::Watch>,
+    dl: Option<nexora_core::dynamic_island::download::Download>,
+    dl_done: Option<nexora_core::dynamic_island::download::Download>,
     dl_icons: std::collections::HashMap<String, Option<CompositionDrawingSurface>>,
     cal_sel: i32,
-    agenda: Option<nacre_platform::agenda::Agenda>,
-    cal_events: Option<(views::Date, Option<Vec<nacre_platform::agenda::Event>>)>,
+    agenda: Option<nexora_platform::agenda::Agenda>,
+    cal_events: Option<(views::Date, Option<Vec<nexora_platform::agenda::Event>>)>,
     send: Option<SendSess>,
     send_err: bool,
     media_app: String,
@@ -393,7 +393,7 @@ impl Notch {
                             snapshots,
                         }
                     } else if std::env::var_os("NACRE_FAKE_MEDIA").is_some() {
-                        nacre_platform::media_fake::spawn(move || post(hw, WM_MEDIA))
+                        nexora_platform::media_fake::spawn(move || post(hw, WM_MEDIA))
                     } else {
                         media::spawn(move || post(hw, WM_MEDIA))
                     }
@@ -414,7 +414,7 @@ impl Notch {
                 album: String::new(),
                 lyr_worker: {
                     let hw = hwnd.0 as isize;
-                    nacre_platform::lyrics::spawn(
+                    nexora_platform::lyrics::spawn(
                         crate::paths::config_dir().join("lyrics"),
                         move || post(hw, WM_LYRICS),
                     )
@@ -425,7 +425,7 @@ impl Notch {
                 lyr_key: String::new(),
                 lyr_track: String::new(),
                 lyr_idx: None,
-                shelf: nacre_core::dynamic_island::shelf::Shelf::new(24),
+                shelf: nexora_core::dynamic_island::shelf::Shelf::new(24),
                 shelf_icons: std::collections::HashMap::new(),
                 dnd: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
                 _drop_target: None,
@@ -464,7 +464,7 @@ impl Notch {
             tracker::install(on_windows_changed);
             let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
             timer(hwnd, T_START, 1600);
-            timer(hwnd, T_MINUTE, nacre_platform::time::ms_to_next_minute());
+            timer(hwnd, T_MINUTE, nexora_platform::time::ms_to_next_minute());
             timer(hwnd, T_PRIVACY, 1500);
             with(hwnd, |d| {
                 d._drop_target = drop::register(hwnd, WM_DND, d.dnd.clone());
@@ -526,13 +526,13 @@ impl Notch {
             return;
         }
         self.send = None;
-        let en = crate::prefs::get().lang == nacre_core::i18n::Lang::En;
+        let en = crate::prefs::get().lang == nexora_core::i18n::Lang::En;
         let hw = self.hwnd.0 as isize;
-        match nacre_platform::sendsrv::start(&paths, en, move || post(hw, WM_SEND)) {
+        match nexora_platform::sendsrv::start(&paths, en, move || post(hw, WM_SEND)) {
             Ok(server) => {
                 let px = (86.0 * self.dpi).floor();
-                let qr = nacre_core::qr::encode(&server.url).and_then(|m| {
-                    let bmp = nacre_core::qr::render(&m, px as u32, 1);
+                let qr = nexora_core::qr::encode(&server.url).and_then(|m| {
+                    let bmp = nexora_core::qr::render(&m, px as u32, 1);
                     self.paint
                         .gfx
                         .surface_from_bgra(px as u32, px as u32, &bmp)
@@ -556,7 +556,7 @@ impl Notch {
                     qr,
                     qr_px: px,
                     names,
-                    prog: nacre_platform::sendsrv::Progress {
+                    prog: nexora_platform::sendsrv::Progress {
                         total,
                         ..Default::default()
                     },
@@ -614,7 +614,7 @@ impl Notch {
             timer(
                 self.hwnd,
                 T_SENDDONE,
-                nacre_core::dynamic_island::download::DONE_LINGER_MS,
+                nexora_core::dynamic_island::download::DONE_LINGER_MS,
             );
         } else if s.prog.active {
             s.done_at = None;
@@ -627,24 +627,24 @@ impl Notch {
     fn send_compact(&self) -> Option<(f32, bool)> {
         let s = self.send.as_ref()?;
         let done = s.done_at.is_some_and(|t| {
-            t.elapsed().as_millis() < nacre_core::dynamic_island::download::DONE_LINGER_MS as u128
+            t.elapsed().as_millis() < nexora_core::dynamic_island::download::DONE_LINGER_MS as u128
         });
         (s.prog.active || done).then(|| {
             (
-                nacre_core::dynamic_island::send::fraction(s.prog.sent, s.prog.total),
+                nexora_core::dynamic_island::send::fraction(s.prog.sent, s.prog.total),
                 done && !s.prog.active,
             )
         })
     }
 
     fn today() -> views::Date {
-        let t = nacre_platform::time::local_now();
+        let t = nexora_platform::time::local_now();
         (t.year, t.month, t.day)
     }
 
     fn cal_date(&self) -> views::Date {
         let (y, m, d) = Self::today();
-        nacre_core::panels::calendar::add_days(y, m, d, self.cal_sel)
+        nexora_core::panels::calendar::add_days(y, m, d, self.cal_sel)
     }
 
     fn ensure_events(&mut self) {
@@ -654,7 +654,7 @@ impl Notch {
         }
         if self.agenda.is_none() {
             let hw = self.hwnd.0 as isize;
-            self.agenda = Some(nacre_platform::agenda::spawn(move || post(hw, WM_AGENDA)));
+            self.agenda = Some(nexora_platform::agenda::spawn(move || post(hw, WM_AGENDA)));
         }
         if let Some(a) = &self.agenda {
             let _ = a.requests.send(date);
@@ -680,12 +680,12 @@ impl Notch {
         }
         let px = (48.0 * self.dpi).round() as i32;
         let bmp =
-            nacre_platform::icons::load(&format!("shell:AppsFolder\\{id}"), px).or_else(|| {
+            nexora_platform::icons::load(&format!("shell:AppsFolder\\{id}"), px).or_else(|| {
                 id.to_ascii_lowercase()
                     .ends_with(".exe")
-                    .then(|| nacre_platform::wins::enumerate::exe_path_of_running(&id))
+                    .then(|| nexora_platform::wins::enumerate::exe_path_of_running(&id))
                     .flatten()
-                    .and_then(|p| nacre_platform::icons::load(&p, px))
+                    .and_then(|p| nexora_platform::icons::load(&p, px))
             });
         let s = bmp.and_then(|b| self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok());
         self.app_icons.insert(id, s);
@@ -695,7 +695,7 @@ impl Notch {
         let on = crate::prefs::get().notch_downloads;
         if on && self.dl_watch.is_none() {
             let hw = self.hwnd.0 as isize;
-            self.dl_watch = Some(nacre_platform::dlwatch::spawn(move || {
+            self.dl_watch = Some(nexora_platform::dlwatch::spawn(move || {
                 post(hw, WM_DOWNLOAD)
             }));
         } else if !on && self.dl_watch.is_some() {
@@ -709,7 +709,7 @@ impl Notch {
         let Some(w) = &self.dl_watch else { return };
         let mut changed = false;
         while let Ok(s) = w.snapshots.try_recv() {
-            self.dl = nacre_core::dynamic_island::download::primary(&s.active).cloned();
+            self.dl = nexora_core::dynamic_island::download::primary(&s.active).cloned();
             if self.dl.is_some() {
                 self.dl_done = None;
             } else if let Some(f) = s.finished {
@@ -718,7 +718,7 @@ impl Notch {
                 timer(
                     self.hwnd,
                     T_DLDONE,
-                    nacre_core::dynamic_island::download::DONE_LINGER_MS,
+                    nexora_core::dynamic_island::download::DONE_LINGER_MS,
                 );
             }
             changed = true;
@@ -732,7 +732,7 @@ impl Notch {
                 .unwrap_or_default();
             if !app.is_empty() && !self.dl_icons.contains_key(&app) {
                 let px = (44.0 * self.dpi).round() as i32;
-                let s = nacre_platform::icons::load(&app, px)
+                let s = nexora_platform::icons::load(&app, px)
                     .and_then(|b| self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok());
                 self.dl_icons.insert(app, s);
             }
@@ -741,8 +741,8 @@ impl Notch {
     }
 
     fn download_view<'a>(
-        dl: &'a Option<nacre_core::dynamic_island::download::Download>,
-        dl_done: &'a Option<nacre_core::dynamic_island::download::Download>,
+        dl: &'a Option<nexora_core::dynamic_island::download::Download>,
+        dl_done: &'a Option<nexora_core::dynamic_island::download::Download>,
         icons: &'a std::collections::HashMap<String, Option<CompositionDrawingSurface>>,
         send: Option<(f32, bool)>,
     ) -> Option<views::DownloadView<'a>> {
@@ -763,7 +763,7 @@ impl Notch {
         };
         Some(views::DownloadView {
             icon: icons.get(&d.app).and_then(|s| s.as_ref()),
-            label: nacre_core::dynamic_island::download::label(d),
+            label: nexora_core::dynamic_island::download::label(d),
             frac: d.percent.map(|p| p / 100.0),
             done,
             up: false,
@@ -776,7 +776,7 @@ impl Notch {
 
     fn glance_text(&self, item: glance::Item) -> String {
         let s = crate::prefs::get();
-        let now = nacre_platform::time::local_now();
+        let now = nexora_platform::time::local_now();
         let lang = s.lang;
         match item {
             glance::Item::Greeting => {
@@ -791,9 +791,9 @@ impl Notch {
             glance::Item::Date => {
                 let wd = calendar::weekday(now.year, now.month, now.day) as usize;
                 let days =
-                    nacre_core::i18n::weekday_labels(lang, false, calendar::weekday_labels(false));
+                    nexora_core::i18n::weekday_labels(lang, false, calendar::weekday_labels(false));
                 let month: String =
-                    nacre_core::i18n::month_name(lang, now.month, calendar::month_name(now.month))
+                    nexora_core::i18n::month_name(lang, now.month, calendar::month_name(now.month))
                         .chars()
                         .take(3)
                         .collect();
@@ -1002,7 +1002,7 @@ impl Notch {
                 } else {
                     format!("{} {}", crate::prefs::tr("Kirim"), views::count_text(n))
                 };
-                let frac = nacre_core::dynamic_island::send::fraction(ss.prog.sent, ss.prog.total);
+                let frac = nexora_core::dynamic_island::send::fraction(ss.prog.sent, ss.prog.total);
                 let done = ss.done_at.is_some() && !ss.prog.active;
                 let status = if done {
                     format!("{} \u{2713}", crate::prefs::tr("Terkirim"))
@@ -1229,7 +1229,7 @@ impl Notch {
                     self.tint = None;
                 }
                 ArtUpdate::New(b) => {
-                    self.tint = nacre_core::dynamic_island::tint::from_art(&b.bgra, b.w, b.h);
+                    self.tint = nexora_core::dynamic_island::tint::from_art(&b.bgra, b.w, b.h);
                     self.art = self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra).ok();
                 }
             }
@@ -1258,20 +1258,20 @@ impl Notch {
             self.lyr_key.clear();
             return;
         }
-        let (title, artist) = nacre_core::dynamic_island::lrclib::clean(&self.title, &self.artist);
-        let track = nacre_core::dynamic_island::lrclib::Track {
+        let (title, artist) = nexora_core::dynamic_island::lrclib::clean(&self.title, &self.artist);
+        let track = nexora_core::dynamic_island::lrclib::Track {
             title,
             artist,
             album: self.album.clone(),
             duration_s: (self.dur_ms > 0).then(|| ((self.dur_ms + 500) / 1000) as u32),
         };
-        self.lyr_key = nacre_core::dynamic_island::lrclib::cache_key(&track);
+        self.lyr_key = nexora_core::dynamic_island::lrclib::cache_key(&track);
         self.lyr_state = LyrState::Loading;
         let online = crate::prefs::get().lyrics_online;
         let _ = self
             .lyr_worker
             .requests
-            .send(nacre_platform::lyrics::Request { track, online });
+            .send(nexora_platform::lyrics::Request { track, online });
     }
 
     fn on_lyrics(&mut self) {
@@ -1283,14 +1283,14 @@ impl Notch {
             got = true;
             let parsed = a
                 .text
-                .map(|t| nacre_core::dynamic_island::lyrics::parse(&t))
+                .map(|t| nexora_core::dynamic_island::lyrics::parse(&t))
                 .filter(|l| !l.is_empty());
             self.lyr_state = if parsed.is_some() {
                 LyrState::Ready
             } else {
                 LyrState::Missing
             };
-            self.lyr_lrclib = a.source == nacre_platform::lyrics::Source::Lrclib;
+            self.lyr_lrclib = a.source == nexora_platform::lyrics::Source::Lrclib;
             log::line(
                 "lirik",
                 &format!(
@@ -1466,8 +1466,8 @@ impl Notch {
             if self.shelf_icons.contains_key(&it.path) {
                 continue;
             }
-            let bmp = nacre_platform::icons::thumbnail(&it.path, px)
-                .or_else(|| nacre_platform::icons::load(&it.path, px));
+            let bmp = nexora_platform::icons::thumbnail(&it.path, px)
+                .or_else(|| nexora_platform::icons::load(&it.path, px));
             if let Some(b) = bmp {
                 if let Ok(s) = self.paint.gfx.surface_from_bgra(b.w, b.h, &b.bgra) {
                     self.shelf_icons.insert(it.path.clone(), s);
@@ -1581,10 +1581,10 @@ impl Notch {
             return;
         };
         match id {
-            1 => nacre_platform::launch::open(&path),
-            2 => nacre_platform::launch::run("explorer.exe", &format!("/select,\"{path}\"")),
+            1 => nexora_platform::launch::open(&path),
+            2 => nexora_platform::launch::run("explorer.exe", &format!("/select,\"{path}\"")),
             3 => {
-                let _ = nacre_platform::clipboard::copy_text(&path);
+                let _ = nexora_platform::clipboard::copy_text(&path);
             }
             4 => {
                 self.shelf.remove(&path);
@@ -1609,7 +1609,7 @@ impl Notch {
 
     fn poll_privacy(&mut self) {
         if self.shown && !self.off {
-            let a = nacre_platform::privacy::active();
+            let a = nexora_platform::privacy::active();
             let v = (a.iter().any(|u| !u.camera), a.iter().any(|u| u.camera));
             if v != self.privacy {
                 self.privacy = v;
@@ -1734,7 +1734,7 @@ impl Notch {
             Action::Seek(..) | Action::Zone(_) => {}
             Action::ShelfItem(i) => {
                 if let Some(it) = self.shelf.items().get(i) {
-                    nacre_platform::launch::open(&it.path);
+                    nexora_platform::launch::open(&it.path);
                 }
             }
             Action::ShelfClear => {
@@ -1901,10 +1901,10 @@ impl Notch {
         self.reserved = on;
         if on {
             let strip = (34.0 * self.dpi).ceil() as i32;
-            let r = nacre_platform::shell::appbar::reserve_top(self.hwnd, self.screen_w, strip);
+            let r = nexora_platform::shell::appbar::reserve_top(self.hwnd, self.screen_w, strip);
             log::line("appbar", &format!("atas strip={strip} hasil={r:?}"));
         } else {
-            nacre_platform::shell::appbar::release_top();
+            nexora_platform::shell::appbar::release_top();
         }
     }
 
@@ -2111,7 +2111,7 @@ impl Notch {
                 timer(
                     self.hwnd,
                     T_MINUTE,
-                    nacre_platform::time::ms_to_next_minute(),
+                    nexora_platform::time::ms_to_next_minute(),
                 );
             }
             T_HIDEWIN => {
@@ -2134,7 +2134,7 @@ fn after_drop(paths: &[String], zone: usize) {
         return;
     }
     if zone == 2 {
-        let Some(dir) = nacre_platform::pick::folder(crate::prefs::tr("Salin ke folder")) else {
+        let Some(dir) = nexora_platform::pick::folder(crate::prefs::tr("Salin ke folder")) else {
             return;
         };
         let from: Vec<u16> = paths

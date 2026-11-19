@@ -38,7 +38,7 @@ impl Bar {
     pub(super) fn pick(&mut self, cmd: usize) {
         self.close_menu();
         if cmd >= NATIVE_CMD {
-            nacre_platform::menus::invoke(self.native_hwnd, (cmd - NATIVE_CMD) as u32);
+            nexora_platform::menus::invoke(self.native_hwnd, (cmd - NATIVE_CMD) as u32);
             return;
         }
         match cmd {
@@ -61,22 +61,22 @@ impl Bar {
             800 | 801 => {
                 if let Some(rd) = &self.radios {
                     let (k, cur) = if cmd == 800 {
-                        (nacre_platform::radio::Kind::Wifi, self.wifi)
+                        (nexora_platform::radio::Kind::Wifi, self.wifi)
                     } else {
-                        (nacre_platform::radio::Kind::Bluetooth, self.bt)
+                        (nexora_platform::radio::Kind::Bluetooth, self.bt)
                     };
                     let _ = rd
                         .commands
-                        .send(nacre_platform::radio::Cmd::Set(k, !cur.unwrap_or(false)));
+                        .send(nexora_platform::radio::Cmd::Set(k, !cur.unwrap_or(false)));
                 }
             }
             802 | 803 => {
-                let v = nacre_platform::audio::latest().level;
+                let v = nexora_platform::audio::latest().level;
                 services::set_volume((v + if cmd == 802 { 0.1 } else { -0.1 }).clamp(0.0, 1.0));
             }
             804 => services::toggle_mute(),
             805 | 806 => {
-                if let Some(v) = nacre_platform::brightness::latest() {
+                if let Some(v) = nexora_platform::brightness::latest() {
                     services::set_brightness(
                         (v as f32 / 100.0 + if cmd == 805 { 0.1 } else { -0.1 }).clamp(0.0, 1.0),
                     );

@@ -1,4 +1,4 @@
-use nacre_platform::{audio, brightness};
+use nexora_platform::{audio, brightness};
 use std::sync::atomic::{AtomicIsize, Ordering};
 use std::sync::mpsc::Sender;
 use std::sync::OnceLock;

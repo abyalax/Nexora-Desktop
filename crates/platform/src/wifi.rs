@@ -49,7 +49,7 @@ pub fn ssid() -> Option<String> {
     }
 }
 
-use nacre_core::netlist::{merge, Network};
+use nexora_core::netlist::{merge, Network};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

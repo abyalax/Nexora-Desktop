@@ -2,14 +2,14 @@ use crate::motion;
 use crate::popup::Popup;
 use crate::services::{self, WM_BRIGHT, WM_VOLUME};
 use crate::strip::Strip;
-use nacre_core::hud::slider;
-use nacre_core::hud::timeline::Timeline;
-use nacre_platform::icons::Bitmap;
-use nacre_platform::text::{self, Style};
-use nacre_platform::{audio, brightness, log, osd, sys};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::Tier;
-use nacre_ui::host::Host;
+use nexora_core::hud::slider;
+use nexora_core::hud::timeline::Timeline;
+use nexora_platform::icons::Bitmap;
+use nexora_platform::text::{self, Style};
+use nexora_platform::{audio, brightness, log, osd, sys};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::Tier;
+use nexora_ui::host::Host;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 use windows::core::w;
@@ -282,18 +282,18 @@ impl Hud {
                 }
                 let (sl, sr) = if i == 0 {
                     (
-                        nacre_core::symbols::Sym::Speaker,
-                        nacre_core::symbols::Sym::SpeakerWave,
+                        nexora_core::symbols::Sym::Speaker,
+                        nexora_core::symbols::Sym::SpeakerWave,
                     )
                 } else {
                     (
-                        nacre_core::symbols::Sym::SunSmall,
-                        nacre_core::symbols::Sym::Sun,
+                        nexora_core::symbols::Sym::SunSmall,
+                        nexora_core::symbols::Sym::Sun,
                     )
                 };
                 let isz = (16.0 * dpi).round() as u32;
                 let mk = |sym, x: f32| -> windows_core::Result<SpriteVisual> {
-                    let data = nacre_core::symbols::render(sym, isz, [255, 255, 255]);
+                    let data = nexora_core::symbols::render(sym, isz, [255, 255, 255]);
                     let surf = gfx.surface_from_bgra(isz, isz, &data)?;
                     let br = host.compositor.CreateSurfaceBrushWithSurface(&surf)?;
                     br.SetStretch(CompositionStretch::None)?;

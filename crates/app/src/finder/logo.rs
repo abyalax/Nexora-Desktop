@@ -1,6 +1,6 @@
 use crate::paths;
-use nacre_platform::icons::Bitmap;
-use nacre_platform::log;
+use nexora_platform::icons::Bitmap;
+use nexora_platform::log;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU32, Ordering};
 
@@ -34,7 +34,7 @@ pub fn set(src: &str) -> bool {
         .and_then(|e| e.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
-    if !EXTS.contains(&ext.as_str()) || nacre_platform::wic::decode_file_fit(src, 32).is_none() {
+    if !EXTS.contains(&ext.as_str()) || nexora_platform::wic::decode_file_fit(src, 32).is_none() {
         log::line("menulogo", "berkas bukan gambar yang bisa dibaca");
         return false;
     }
@@ -55,7 +55,7 @@ pub fn reset() {
 
 pub fn bitmap(px: u32, rgb: [u8; 3]) -> Option<Bitmap> {
     let p = path()?;
-    let b = nacre_platform::wic::decode_file_fit(&p.to_string_lossy(), (px * 4).max(64))?;
+    let b = nexora_platform::wic::decode_file_fit(&p.to_string_lossy(), (px * 4).max(64))?;
     Some(fit(trim(template(b, rgb)), (px as f32 * 1.3) as u32, px))
 }
 

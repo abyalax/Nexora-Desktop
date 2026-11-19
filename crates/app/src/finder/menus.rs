@@ -44,7 +44,7 @@ impl Bar {
         items
             .into_iter()
             .map(|it| {
-                let s = nacre_core::symbols::for_command(it.id);
+                let s = nexora_core::symbols::for_command(it.id);
                 it.with_sym(s)
             })
             .collect()
@@ -53,7 +53,7 @@ impl Bar {
     pub(super) fn menu_items_raw(&self, id: u32) -> Vec<Item> {
         let a = |id: usize, label: &str| Item::action(id, label, true);
         if (NATIVE0..NATIVE0 + 20).contains(&id) {
-            let tops = nacre_platform::menus::read(self.native_hwnd)
+            let tops = nexora_platform::menus::read(self.native_hwnd)
                 .unwrap_or_else(|| self.native.clone());
             let Some(top) = tops.get((id - NATIVE0) as usize) else {
                 return vec![];
@@ -96,7 +96,7 @@ impl Bar {
                     Some(false) => prefs::tr("Mati").to_string(),
                     None => "-".to_string(),
                 };
-                let vol = nacre_platform::audio::latest();
+                let vol = nexora_platform::audio::latest();
                 let vtxt = if vol.available {
                     format!(
                         "{} {}%{}",
@@ -111,7 +111,7 @@ impl Bar {
                 } else {
                     prefs::tr("Volume").to_string()
                 };
-                let btxt = match nacre_platform::brightness::latest() {
+                let btxt = match nexora_platform::brightness::latest() {
                     Some(v) => format!("{} {}%", prefs::tr("Kecerahan"), v),
                     None => prefs::tr("Kecerahan").to_string(),
                 };
@@ -128,12 +128,12 @@ impl Bar {
                     Item::action(
                         805,
                         &prefs::tr("Lebih Terang"),
-                        nacre_platform::brightness::latest().is_some(),
+                        nexora_platform::brightness::latest().is_some(),
                     ),
                     Item::action(
                         806,
                         &prefs::tr("Lebih Redup"),
-                        nacre_platform::brightness::latest().is_some(),
+                        nexora_platform::brightness::latest().is_some(),
                     ),
                     Item::separator(),
                     a(

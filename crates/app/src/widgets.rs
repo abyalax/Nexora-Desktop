@@ -1,12 +1,12 @@
 use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{motion, paths, prefs};
-use nacre_core::panels::calendar;
-use nacre_core::widgets::{self, Category, Kind, Placed};
-use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
-use nacre_platform::{launch, log, sys, time};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassParams, Tier};
+use nexora_core::panels::calendar;
+use nexora_core::widgets::{self, Category, Kind, Placed};
+use nexora_platform::text::{measure, render, render_face, Style, ICON_FACE};
+use nexora_platform::{launch, log, sys, time};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassParams, Tier};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -127,7 +127,7 @@ fn col(rgb: [u8; 3], a: u8) -> Color {
     }
 }
 
-fn recolor(b: &nacre_platform::icons::Bitmap, rgb: [u8; 3]) -> Vec<u8> {
+fn recolor(b: &nexora_platform::icons::Bitmap, rgb: [u8; 3]) -> Vec<u8> {
     let mut out = b.bgra.clone();
     for px in out.chunks_exact_mut(4) {
         let a = px[3] as u32;
@@ -151,7 +151,7 @@ fn hit(r: Rect, x: f32, y: f32) -> bool {
 }
 
 fn en() -> bool {
-    prefs::get().lang == nacre_core::i18n::Lang::En
+    prefs::get().lang == nexora_core::i18n::Lang::En
 }
 
 fn month_label(m: u32) -> String {
@@ -733,7 +733,7 @@ impl Mgr {
 
     fn shadow(&self, p: &ContainerVisual, w: f32, h: f32, radius: f32, op: f32) {
         let d = self.dpi;
-        let s = nacre_core::dynamic_island::shade::rounded(radius, 16.0 * d, 5.0 * d);
+        let s = nexora_core::dynamic_island::shade::rounded(radius, 16.0 * d, 5.0 * d);
         let Some(gfx) = self.gfx.as_ref() else { return };
         let go = || -> windows_core::Result<()> {
             let surf = gfx.surface_from_bgra(s.w, s.h, &s.bgra)?;
@@ -1662,7 +1662,7 @@ impl Mgr {
                 let _ = DestroyWindow(g.popup.hwnd);
             }
             self.cache.clear();
-            nacre_platform::sys::trim_later(5000);
+            nexora_platform::sys::trim_later(5000);
         }
     }
 

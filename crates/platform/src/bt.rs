@@ -1,4 +1,4 @@
-use nacre_core::netlist::{
+use nexora_core::netlist::{
     bt_addr_from_path, kind_from_appearance, kind_from_cod, merge_devices, Device,
 };
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -179,7 +179,7 @@ fn read() -> Vec<Device> {
 }
 
 fn fake(connected_headphone: bool) -> Vec<Device> {
-    use nacre_core::netlist::DevKind;
+    use nexora_core::netlist::DevKind;
     let d = |n: &str, c: bool, k: DevKind, addr: u64, audio: bool| Device {
         name: n.into(),
         connected: c,

@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 
-use nacre_platform::process::{wait_for_exit, WaitOutcome};
-use nacre_platform::shell::taskbar;
+use nexora_platform::process::{wait_for_exit, WaitOutcome};
+use nexora_platform::shell::taskbar;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -15,11 +15,11 @@ fn main() {
     };
     let marker = PathBuf::from(marker);
 
-    nacre_platform::log::init(marker.with_file_name("nexora-guard.log"));
-    nacre_platform::log::line("guard", &format!("menunggu pid {pid}"));
+    nexora_platform::log::init(marker.with_file_name("nexora-guard.log"));
+    nexora_platform::log::line("guard", &format!("menunggu pid {pid}"));
 
     if wait_for_exit(pid) == WaitOutcome::Unknown {
-        nacre_platform::log::line(
+        nexora_platform::log::line(
             "guard",
             "tidak bisa memastikan proses induk; keluar tanpa tindakan",
         );
@@ -28,14 +28,14 @@ fn main() {
 
     let parked = marker.with_file_name("parked.txt");
     if parked.exists() {
-        let n = nacre_platform::wins::park::restore_file(&parked);
-        nacre_platform::log::line("guard", &format!("{n} jendela terparkir dikembalikan"));
+        let n = nexora_platform::wins::park::restore_file(&parked);
+        nexora_platform::log::line("guard", &format!("{n} jendela terparkir dikembalikan"));
     }
 
     let cur_flag = marker.with_file_name("cursors_replaced.flag");
-    if nacre_platform::cursors::flagged(&cur_flag) {
-        nacre_platform::cursors::restore(&cur_flag);
-        nacre_platform::log::line("guard", "kursor sistem dipulihkan");
+    if nexora_platform::cursors::flagged(&cur_flag) {
+        nexora_platform::cursors::restore(&cur_flag);
+        nexora_platform::log::line("guard", "kursor sistem dipulihkan");
     }
 
     for _ in 0..120 {
@@ -45,10 +45,10 @@ fn main() {
             _ => {}
         }
         if taskbar::recover_leftover(&marker) && !marker.exists() {
-            nacre_platform::log::line("guard", "taskbar dipulihkan");
+            nexora_platform::log::line("guard", "taskbar dipulihkan");
             return;
         }
         std::thread::sleep(Duration::from_millis(250));
     }
-    nacre_platform::log::line("guard", "menyerah setelah 30 s");
+    nexora_platform::log::line("guard", "menyerah setelah 30 s");
 }

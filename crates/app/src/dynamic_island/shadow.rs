@@ -1,7 +1,7 @@
 use super::spring;
-use nacre_core::dynamic_island::shade;
-use nacre_ui::gfx::Gfx;
-use nacre_ui::host::Surface;
+use nexora_core::dynamic_island::shade;
+use nexora_ui::gfx::Gfx;
+use nexora_ui::host::Surface;
 use std::collections::HashMap;
 use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM};
@@ -70,7 +70,7 @@ impl Shadow {
                 255,
                 LWA_ALPHA,
             );
-            let surface = nacre_ui::host::attach(comp, hwnd, (size.0 as f32, size.1 as f32))?;
+            let surface = nexora_ui::host::attach(comp, hwnd, (size.0 as f32, size.1 as f32))?;
             let stage = comp.CreateContainerVisual()?;
             surface.root.Children()?.InsertAtTop(&stage)?;
             let sprite = comp.CreateSpriteVisual()?;

@@ -1,4 +1,4 @@
-use nacre_core::dynamic_island::download::{steam_libraries, steam_progress, vdf_value, Download, Source};
+use nexora_core::dynamic_island::download::{steam_libraries, steam_progress, vdf_value, Download, Source};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{channel, Receiver};

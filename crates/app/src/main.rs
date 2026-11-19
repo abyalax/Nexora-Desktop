@@ -27,9 +27,9 @@ mod switcher;
 mod topmost;
 mod widgets;
 
-use nacre_core::visibility::policy::Mode;
-use nacre_platform::{log, shell::taskbar};
-use nacre_ui::glass::Tier;
+use nexora_core::visibility::policy::Mode;
+use nexora_platform::{log, shell::taskbar};
+use nexora_ui::glass::Tier;
 use windows::core::{w, BOOL};
 use windows::Win32::Foundation::HINSTANCE;
 use windows::Win32::System::Console::{
@@ -101,7 +101,7 @@ fn parse_args() -> Args {
 
 fn release_all(why: &str) {
     log::line("exit", why);
-    nacre_platform::shell::appbar::release();
+    nexora_platform::shell::appbar::release();
     log::line("exit", "appbar ok");
     fx::restore_all();
     log::line("exit", "fx ok");
@@ -160,7 +160,7 @@ fn main() {
 
     prefs::init();
     let pref = prefs::get();
-    let host = match nacre_ui::host::Host::new() {
+    let host = match nexora_ui::host::Host::new() {
         Ok(h) => h,
         Err(e) => {
             log::line("host", &format!("gagal: {e}"));
@@ -215,14 +215,14 @@ fn main() {
     if let Err(e) = launchpad::init(&host.compositor) {
         log::line("launchpad", &format!("gagal: {e}"));
     }
-    if nacre_platform::cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag"))
+    if nexora_platform::cursors::recover_leftover(&paths::config_dir().join("cursors_replaced.flag"))
     {
         log::line("cursor", "kursor sistem dipulihkan");
     }
     if let Err(e) = macshortcuts::init() {
         log::line("macshortcuts", &format!("gagal: {e}"));
     }
-    if let Err(e) = nacre_platform::clipboard::init() {
+    if let Err(e) = nexora_platform::clipboard::init() {
         log::line("clipboard", &format!("gagal: {e}"));
     }
     if let Err(e) = spotlight::init(&host.compositor) {
@@ -252,7 +252,7 @@ fn main() {
     if let Err(e) = widgets::init(&host.compositor) {
         log::line("widgets", &format!("gagal: {e}"));
     }
-    nacre_platform::sys::trim_later(20_000);
+    nexora_platform::sys::trim_later(20_000);
     if args.open_widgets {
         widgets::open_gallery();
     }
@@ -292,7 +292,7 @@ fn main() {
     }
     switcher::shutdown();
     stage::shutdown();
-    nacre_platform::clipboard::shutdown();
+    nexora_platform::clipboard::shutdown();
     macshortcuts::shutdown();
     release_all("exit");
     unsafe {
@@ -304,7 +304,7 @@ fn main() {
     std::process::exit(0);
 }
 
-fn demo_surface(host: &nacre_ui::host::Host) -> windows::core::Result<nacre_ui::host::Surface> {
+fn demo_surface(host: &nexora_ui::host::Host) -> windows::core::Result<nexora_ui::host::Surface> {
     unsafe {
         let hi: HINSTANCE = GetModuleHandleW(None)?.into();
         let class = w!("NacreDemo");
@@ -339,10 +339,10 @@ fn demo_surface(host: &nacre_ui::host::Host) -> windows::core::Result<nacre_ui::
             None,
         )?;
         let surface = host.attach(hwnd, (w_ as f32, h_ as f32))?;
-        nacre_ui::glass::add_panel(
+        nexora_ui::glass::add_panel(
             &host.compositor,
             &surface.root,
-            nacre_ui::glass::GlassParams::light((w_ as f32, h_ as f32), 24.0),
+            nexora_ui::glass::GlassParams::light((w_ as f32, h_ as f32), 24.0),
         )?;
         Ok(surface)
     }

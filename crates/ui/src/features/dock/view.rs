@@ -161,7 +161,7 @@ impl View {
         let v = View::base(comp, content, Kind::Start, icon_px, icon_px)?;
         let full = icon_px;
         let icon_px = if look.plates {
-            (full * nacre_core::iconplate::BODY).round()
+            (full * nexora_core::iconplate::BODY).round()
         } else {
             full
         };

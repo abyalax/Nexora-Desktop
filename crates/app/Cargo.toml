@@ -1,5 +1,5 @@
 ﻿[package]
-name = "nacre-app"
+name = "nexora-app"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
@@ -10,9 +10,9 @@ name = "nexora"
 path = "src/main.rs"
 
 [dependencies]
-nacre-core.workspace = true
-nacre-platform.workspace = true
-nacre-ui.workspace = true
+nexora-core.workspace = true
+nexora-platform.workspace = true
+nexora-ui.workspace = true
 windows-core.workspace = true
 windows-numerics.workspace = true
 

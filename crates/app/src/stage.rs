@@ -1,12 +1,12 @@
 use crate::popup::Popup;
 use crate::{motion, paths, prefs};
-use nacre_core::stage::{Change, Stage};
-use nacre_platform::icons::{self, Bitmap};
-use nacre_platform::log;
-use nacre_platform::wins::park::{self, Parked};
-use nacre_platform::wins::{enumerate, focus, snapshot, tracker};
-use nacre_ui::capture::{self, Capture};
-use nacre_ui::gfx::Gfx;
+use nexora_core::stage::{Change, Stage};
+use nexora_platform::icons::{self, Bitmap};
+use nexora_platform::log;
+use nexora_platform::wins::park::{self, Parked};
+use nexora_platform::wins::{enumerate, focus, snapshot, tracker};
+use nexora_ui::capture::{self, Capture};
+use nexora_ui::gfx::Gfx;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
@@ -210,7 +210,7 @@ pub fn init(comp: &Compositor) -> windows_core::Result<()> {
 
 fn noop() {}
 
-fn running_apps(wins: &[nacre_core::dock::items::Win], refused: &[String]) -> Vec<String> {
+fn running_apps(wins: &[nexora_core::dock::items::Win], refused: &[String]) -> Vec<String> {
     let mut running: Vec<String> = Vec::new();
     for w in wins {
         let k = key_of(&w.path);
@@ -263,7 +263,7 @@ fn parked_file() -> std::path::PathBuf {
 
 pub fn shutdown() {
     with(|s| s.deactivate());
-    nacre_platform::desktopicons::set_visible(true);
+    nexora_platform::desktopicons::set_visible(true);
 }
 
 #[allow(dead_code)]
@@ -394,7 +394,7 @@ impl St {
             park::unpark(&p);
         }
         for ids in take_paused(None) {
-            nacre_platform::media::resume_ids(ids);
+            nexora_platform::media::resume_ids(ids);
         }
         let _ = std::fs::remove_file(parked_file());
         self.destroy_strip();
@@ -404,7 +404,7 @@ impl St {
     }
 
     fn apply_icons(&self) {
-        nacre_platform::desktopicons::set_visible(icons_visible(
+        nexora_platform::desktopicons::set_visible(icons_visible(
             self.active,
             self.model.current.is_empty(),
         ));
@@ -518,7 +518,7 @@ impl St {
         }
     }
 
-    fn apply(&mut self, ch: Change, wins: &[nacre_core::dock::items::Win], activate: isize) {
+    fn apply(&mut self, ch: Change, wins: &[nexora_core::dock::items::Win], activate: isize) {
         self.finish_fly();
         if activate != 0 {
             self.want_fg = activate;
@@ -539,7 +539,7 @@ impl St {
         let media_on = prefs::get().stage_media;
         for app in &ch.show {
             for ids in take_paused(Some(app)) {
-                nacre_platform::media::resume_ids(ids);
+                nexora_platform::media::resume_ids(ids);
             }
         }
         for app in &ch.show {
@@ -562,7 +562,7 @@ impl St {
                     .unwrap_or_default();
                 if !stem.is_empty() {
                     let key = app.clone();
-                    nacre_platform::media::pause_app(stem, move |ids| {
+                    nexora_platform::media::pause_app(stem, move |ids| {
                         if !ids.is_empty() {
                             if let Ok(mut g) = PAUSED.lock() {
                                 g.push((key, ids));
@@ -660,7 +660,7 @@ impl St {
         for (p, a) in self.parked.drain(..) {
             if apps.contains(&a) {
                 let mut q = p;
-                let sw = nacre_platform::sys::screen_size().0;
+                let sw = nexora_platform::sys::screen_size().0;
                 let right = self.strip.as_ref().map(|s| s.right).unwrap_or(false);
                 let edge = self
                     .strip
@@ -692,9 +692,9 @@ impl St {
             self.gfx = Gfx::shared(&comp).ok();
         }
         let Some(gfx) = self.gfx.as_ref() else { return };
-        let (sw, sh) = nacre_platform::sys::screen_size();
+        let (sw, sh) = nexora_platform::sys::screen_size();
         let go = || -> windows_core::Result<Popup> {
-            let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
+            let base = nexora_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
             let mut popup = Popup::new(
                 &comp,
                 w!("NexoraStageFly"),
@@ -871,7 +871,7 @@ impl St {
         }
         let mut look = prefs::look(prefs::Role::Dark);
         look.blur_sigma = 0.0;
-        let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
+        let base = nexora_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
         let Ok(popup) = Popup::new(
             &self.comp,
             w!("NexoraStageStrip"),
@@ -920,7 +920,7 @@ impl St {
             }
         }
         let comp = self.comp.clone();
-        let (sw, sh) = nacre_platform::sys::screen_size();
+        let (sw, sh) = nexora_platform::sys::screen_size();
         let mut ars: HashMap<String, f32> = self
             .shots
             .iter()
@@ -1273,7 +1273,7 @@ impl St {
         }
         let overlap = if strip.right {
             (r.right as f32)
-                > nacre_platform::sys::screen_size().0 as f32 - strip.w + 6.0 * strip.dpi
+                > nexora_platform::sys::screen_size().0 as f32 - strip.w + 6.0 * strip.dpi
         } else {
             (r.left as f32) < strip.w - 6.0 * strip.dpi
         };
@@ -1451,7 +1451,7 @@ fn title_surface(
     i32,
     i32,
 )> {
-    use nacre_platform::text::{measure, render, Style};
+    use nexora_platform::text::{measure, render, Style};
     let stem = std::path::Path::new(app)
         .file_stem()?
         .to_string_lossy()

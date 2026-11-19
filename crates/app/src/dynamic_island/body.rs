@@ -1,8 +1,8 @@
 use super::{ears, spring};
-use nacre_core::settings::Material;
-use nacre_platform::log;
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
+use nexora_core::settings::Material;
+use nexora_platform::log;
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassPanel, GlassParams, Tier};
 use windows::UI::Color;
 use windows::UI::Composition::{
     CompositionBrush, CompositionDrawingSurface, CompositionObject, Compositor, ContainerVisual,
@@ -163,7 +163,7 @@ impl Body {
                 let base: CompositionBrush = if tier == Tier::Solid {
                     self.comp.CreateColorBrushWithColor(g.solid)?.cast()?
                 } else {
-                    nacre_ui::glass::backdrop_blur_brush(&self.comp, g.blur_sigma, g.saturation)?
+                    nexora_ui::glass::backdrop_blur_brush(&self.comp, g.blur_sigma, g.saturation)?
                         .cast()?
                 };
                 let mb = self.comp.CreateMaskBrush()?;

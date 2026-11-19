@@ -51,7 +51,7 @@ impl Dock {
                     .join(", ")
             ),
         );
-        let show_downloads = crate::prefs::get().downloads_stack && nacre_platform::downloads::folder().is_some();
+        let show_downloads = crate::prefs::get().downloads_stack && nexora_platform::downloads::folder().is_some();
         self.entries = entries::build(&self.items, show_downloads);
         self.slots = entries::slots(&self.entries);
 
@@ -63,8 +63,8 @@ impl Dock {
         if !icons::is_themed(LAUNCHPAD_KEY) && !self.surfaces.contains_key(LAUNCHPAD_KEY) {
             let px = ((self.m.icon * self.m.max_scale * 1.15) as i32).clamp(64, 256) as u32;
             let p = crate::prefs::get();
-            let data = nacre_core::iconplate::style_icon_v(
-                &nacre_core::iconplate::launchpad_icon(px),
+            let data = nexora_core::iconplate::style_icon_v(
+                &nexora_core::iconplate::launchpad_icon(px),
                 p.icon_style,
                 p.icon_tint,
                 crate::prefs::icon_dark(),
@@ -288,8 +288,8 @@ impl Dock {
     pub(super) fn make_trash_surface(&mut self) {
         let px = ((self.m.icon * self.m.max_scale * 1.15) as i32).clamp(64, 256) as u32;
         let p = crate::prefs::get();
-        let raw = nacre_core::iconplate::free(&nacre_core::trash::icon(px, self.trash_full), px);
-        let data = nacre_core::iconplate::style_icon_v(
+        let raw = nexora_core::iconplate::free(&nexora_core::trash::icon(px, self.trash_full), px);
+        let data = nexora_core::iconplate::style_icon_v(
             &raw,
             p.icon_style,
             p.icon_tint,
@@ -320,14 +320,14 @@ impl Dock {
             let Some(mut b) = bmp else { continue };
             if crate::prefs::get().dock_plates && b.w == b.h && !icons::is_themed(&path) {
                 b.bgra = if path == TRASH_PATH || path == downloads_key() {
-                    nacre_core::iconplate::free(&b.bgra, b.w)
+                    nexora_core::iconplate::free(&b.bgra, b.w)
                 } else {
-                    nacre_core::iconplate::plate(&b.bgra, b.w)
+                    nexora_core::iconplate::plate(&b.bgra, b.w)
                 };
             }
             if !icons::is_themed(&path) {
                 let p = crate::prefs::get();
-                b.bgra = nacre_core::iconplate::style_icon_v(
+                b.bgra = nexora_core::iconplate::style_icon_v(
                     &b.bgra,
                     p.icon_style,
                     p.icon_tint,
@@ -358,7 +358,7 @@ impl Dock {
         );
         if key != self.icon_key {
             self.icon_key = key;
-            nacre_platform::iconpack::configure(&paths::config_dir().join("iconpack"), s.icon_pack);
+            nexora_platform::iconpack::configure(&paths::config_dir().join("iconpack"), s.icon_pack);
             self.surfaces.clear();
             self.requested.clear();
             self.signature.clear();
@@ -374,7 +374,7 @@ impl Dock {
         if self.off == s.dock_enabled {
             self.off = !s.dock_enabled;
             if self.off {
-                nacre_platform::shell::appbar::release_bottom();
+                nexora_platform::shell::appbar::release_bottom();
             } else if self.opts.appbar {
                 self.reserve_strip();
             }
@@ -403,7 +403,7 @@ impl Dock {
             if appbar {
                 self.reserve_strip();
             } else if was_appbar {
-                nacre_platform::shell::appbar::release_bottom();
+                nexora_platform::shell::appbar::release_bottom();
             }
             self.sync_strip();
             self.update_visibility();

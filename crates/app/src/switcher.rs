@@ -1,9 +1,9 @@
 use crate::popup::Popup;
 use crate::{motion, prefs};
-use nacre_platform::icons::{self, Bitmap};
-use nacre_platform::text::{measure, render, Style};
-use nacre_platform::wins::{enumerate, tracker};
-use nacre_ui::gfx::Gfx;
+use nexora_platform::icons::{self, Bitmap};
+use nexora_platform::text::{measure, render, Style};
+use nexora_platform::wins::{enumerate, tracker};
+use nexora_ui::gfx::Gfx;
 use std::cell::RefCell;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use windows::core::w;
@@ -175,11 +175,11 @@ unsafe extern "system" fn ll_proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT 
     CallNextHookEx(None, code, wp, lp)
 }
 
-fn name_of(w: &nacre_core::dock::items::Win) -> String {
+fn name_of(w: &nexora_core::dock::items::Win) -> String {
     if !w.name.is_empty() {
         w.name.clone()
     } else {
-        nacre_core::dock::items::name_from_path(&w.path)
+        nexora_core::dock::items::name_from_path(&w.path)
     }
 }
 
@@ -253,7 +253,7 @@ impl Ctl {
         let go = || -> windows_core::Result<Ui> {
             let mut look = prefs::look(prefs::Role::Dark);
             look.blur_sigma = look.blur_sigma.max(18.0);
-            let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 10.0);
+            let base = nexora_ui::glass::GlassParams::dark((10.0, 10.0), 10.0);
             let mut popup = Popup::new(
                 &comp,
                 w!("NexoraSwitcher"),
@@ -262,12 +262,12 @@ impl Ctl {
                 prefs::apply(base, &look),
             )?;
             let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0;
-            let (sw, sh) = nacre_platform::sys::screen_size();
+            let (sw, sh) = nexora_platform::sys::screen_size();
 
             let shots: Vec<Option<Bitmap>> = entries
                 .iter()
                 .map(|e| {
-                    let live = nacre_platform::wins::snapshot::capture(e.hwnd, 2)
+                    let live = nexora_platform::wins::snapshot::capture(e.hwnd, 2)
                         .map(|s| s.bmp)
                         .filter(|b| !crate::stage::blank(b));
                     live.or_else(|| crate::stage::shot_for(&e.path))
@@ -464,7 +464,7 @@ impl Ctl {
                 self.ui = Some(ui);
                 self.select(self.ui.as_ref().map(|u| u.sel).unwrap_or(1), false);
             }
-            Err(e) => nacre_platform::log::line("switcher", &format!("gagal: {e}")),
+            Err(e) => nexora_platform::log::line("switcher", &format!("gagal: {e}")),
         }
     }
 

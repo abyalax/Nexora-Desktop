@@ -16,28 +16,28 @@ mod wndproc;
 use crate::paths;
 use crate::strip::Strip;
 use crate::menu::{Menu, MENU_CLOSE, MENU_PICK};
-use nacre_core::dock::entries::{self, Entry, LAUNCHPAD_KEY, START_KEY, TRASH_PATH};
-use nacre_core::dock::geometry;
-use nacre_core::dock::items::{key_of, merge, package_family, Item, Pin};
-use nacre_core::dock::recents;
-use nacre_core::dock::layout::{hit, layout, Layout, Metrics, Slot};
-use nacre_core::dock::reorder;
-use nacre_core::dock::ring::next_in_ring;
-use nacre_core::visibility::policy::{should_hide, Inputs, Mode};
-use nacre_platform::icons;
-use nacre_platform::wins::overlap::{self, Overlap};
-use nacre_platform::wins::{enumerate, focus, tracker};
-use nacre_platform::{launch, log, sys};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
-use nacre_ui::host::{Host, Surface};
+use nexora_core::dock::entries::{self, Entry, LAUNCHPAD_KEY, START_KEY, TRASH_PATH};
+use nexora_core::dock::geometry;
+use nexora_core::dock::items::{key_of, merge, package_family, Item, Pin};
+use nexora_core::dock::recents;
+use nexora_core::dock::layout::{hit, layout, Layout, Metrics, Slot};
+use nexora_core::dock::reorder;
+use nexora_core::dock::ring::next_in_ring;
+use nexora_core::visibility::policy::{should_hide, Inputs, Mode};
+use nexora_platform::icons;
+use nexora_platform::wins::overlap::{self, Overlap};
+use nexora_platform::wins::{enumerate, focus, tracker};
+use nexora_platform::{launch, log, sys};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassPanel, GlassParams, Tier};
+use nexora_ui::host::{Host, Surface};
 use preview::{Preview, PREVIEW_CLICK, PREVIEW_ENTER, PREVIEW_LEAVE};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::time::{Duration, Instant};
 use tooltip::Tooltip;
-use nacre_ui::features::dock::view::{spring, Appearance, Kind, View};
+use nexora_ui::features::dock::view::{spring, Appearance, Kind, View};
 use windows::core::w;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::{CreateRectRgn, SetWindowRgn};
@@ -98,7 +98,7 @@ const CMD_STACK: usize = 100;
 const DOWNLOADS_KEY: &str = "\u{0}downloads";
 
 fn downloads_key() -> String {
-    nacre_platform::downloads::folder()
+    nexora_platform::downloads::folder()
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_default()
 }
@@ -159,7 +159,7 @@ pub struct Dock {
     stack_files: Vec<String>,
     items: Vec<Item>,
     signature: Vec<(String, bool, usize, String)>,
-    icon_key: (nacre_core::settings::IconStyle, u8, bool, bool),
+    icon_key: (nexora_core::settings::IconStyle, u8, bool, bool),
     seen: Vec<String>,
 
     entries: Vec<Entry>,

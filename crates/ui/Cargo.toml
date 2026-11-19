@@ -1,12 +1,12 @@
 ﻿[package]
-name = "nacre-ui"
+name = "nexora-ui"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 license = "PolyForm-Noncommercial-1.0.0"
 
 [dependencies]
-nacre-core.workspace = true
+nexora-core.workspace = true
 windows-core.workspace = true
 windows-numerics.workspace = true
 

@@ -77,13 +77,13 @@ impl Bar {
     pub(super) fn draw_glyph(&mut self, glyph: &str, cx: f32, size: f32, op: f32) {
         let px = (size * self.dpi).round() as i32;
         let rgb = self.fg();
-        if let Some(sym) = nacre_core::symbols::for_glyph(glyph) {
+        if let Some(sym) = nexora_core::symbols::for_glyph(glyph) {
             let n = (size * 1.25 * self.dpi).round().max(8.0) as u32;
             let key = format!("sym|{sym:?}|{n}|{rgb:?}");
             let (surf, w, h) = match self.cache.get(&key).cloned() {
                 Some(v) => v,
                 None => {
-                    let data = nacre_core::symbols::render(sym, n, rgb);
+                    let data = nexora_core::symbols::render(sym, n, rgb);
                     let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else {
                         return;
                     };
@@ -178,7 +178,7 @@ impl Bar {
             None => {
                 let (bw, bh, data) = match crate::finder::logo::bitmap(size, rgb).filter(|_| custom) {
                     Some(b) => (b.w, b.h, b.bgra),
-                    None => (size, size, nacre_core::logo::render_badge(size, rgb)),
+                    None => (size, size, nexora_core::logo::render_badge(size, rgb)),
                 };
                 let Ok(s) = self.gfx.surface_from_bgra(bw, bh, &data) else {
                     return;
@@ -262,13 +262,13 @@ impl Bar {
         let level = if self.wifi == Some(false) {
             0
         } else {
-            nacre_core::logo::wifi_level(self.wifi_bars)
+            nexora_core::logo::wifi_level(self.wifi_bars)
         };
         let key = format!("wifi|{n}|{level}|{rgb:?}");
         let (surf, sw, sh) = match self.cache.get(&key).cloned() {
             Some(v) => v,
             None => {
-                let data = nacre_core::logo::render_wifi(n, level, rgb, 0.32);
+                let data = nexora_core::logo::render_wifi(n, level, rgb, 0.32);
                 let Ok(s) = self.gfx.surface_from_bgra(n, n, &data) else {
                     return;
                 };
@@ -315,7 +315,7 @@ impl Bar {
             Some(v) => v,
             None => {
                 let mut data =
-                    nacre_core::logo::render_battery_pill(bw, bh, pct, rgb, fill, inside);
+                    nexora_core::logo::render_battery_pill(bw, bh, pct, rgb, fill, inside);
                 if inside {
                     let style = Style {
                         px: (9.5 * d).round() as i32,
@@ -694,7 +694,7 @@ impl Bar {
     }
 }
 
-pub(super) fn knock_out(data: &mut [u8], w: u32, h: u32, text: &nacre_platform::icons::Bitmap) {
+pub(super) fn knock_out(data: &mut [u8], w: u32, h: u32, text: &nexora_platform::icons::Bitmap) {
     let (tw, th) = (text.w as usize, text.h as usize);
     let (mut x0, mut y0, mut x1, mut y1) = (tw, th, 0usize, 0usize);
     for y in 0..th {

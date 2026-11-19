@@ -1,9 +1,9 @@
 use crate::prefs;
-use nacre_platform::wins::park::{self, Parked};
-use nacre_platform::wins::{enumerate, focus, snapshot, tracker};
-use nacre_platform::{log, sys};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::host::{attach, Host, Surface};
+use nexora_platform::wins::park::{self, Parked};
+use nexora_platform::wins::{enumerate, focus, snapshot, tracker};
+use nexora_platform::{log, sys};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::host::{attach, Host, Surface};
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicIsize, Ordering};
@@ -678,7 +678,7 @@ impl Fx {
         icon: (i32, i32, i32, i32),
         reverse: bool,
     ) -> windows_core::Result<()> {
-        use nacre_core::genie::{self, Rect as GRect};
+        use nexora_core::genie::{self, Rect as GRect};
         if let Some(old) = self.genie.take() {
             let _ = self.surface.root.Children()?.Remove(&old);
         }

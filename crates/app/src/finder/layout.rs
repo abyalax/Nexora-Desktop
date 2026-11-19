@@ -13,8 +13,8 @@ impl Bar {
         }
         let mut changed = false;
         self.check_fullscreen();
-        let native = nacre_platform::menus::read(fg).unwrap_or_default();
-        let titles = |v: &Vec<nacre_platform::menus::Top>| {
+        let native = nexora_platform::menus::read(fg).unwrap_or_default();
+        let titles = |v: &Vec<nexora_platform::menus::Top>| {
             v.iter().map(|t| t.title.clone()).collect::<Vec<_>>()
         };
         if titles(&native) != titles(&self.native) {
@@ -30,7 +30,7 @@ impl Bar {
                 if !w.name.is_empty() {
                     w.name.clone()
                 } else {
-                    nacre_core::dock::items::name_from_path(&w.path)
+                    nexora_core::dock::items::name_from_path(&w.path)
                 }
             })
             .filter(|n| !n.is_empty());
@@ -157,13 +157,13 @@ impl Bar {
 
     pub(super) fn clock_text(&self) -> String {
         let n = time::local_now();
-        let when = nacre_core::finder::clock::When {
+        let when = nexora_core::finder::clock::When {
             year: n.year,
             month: n.month,
             day: n.day,
             hour: n.hour,
             minute: n.minute,
         };
-        nacre_core::finder::clock::format(when, prefs::get().lang, prefs::get().clock_24h)
+        nexora_core::finder::clock::format(when, prefs::get().lang, prefs::get().clock_24h)
     }
 }

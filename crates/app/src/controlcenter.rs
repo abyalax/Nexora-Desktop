@@ -1,15 +1,15 @@
 use crate::menu::{Item as MItem, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{motion, paths, prefs, services};
-use nacre_core::controls::{self, Category, Kind, Placed, Size};
-use nacre_core::symbols::{self, Sym};
-use nacre_platform::icons::Bitmap;
-use nacre_platform::media::{self, ArtUpdate, Command};
-use nacre_platform::radio::{self, Cmd as RadioCmd, Kind as RK};
-use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
-use nacre_platform::{audio, brightness, keys, launch, wifi};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassPanel, GlassParams, Tier};
+use nexora_core::controls::{self, Category, Kind, Placed, Size};
+use nexora_core::symbols::{self, Sym};
+use nexora_platform::icons::Bitmap;
+use nexora_platform::media::{self, ArtUpdate, Command};
+use nexora_platform::radio::{self, Cmd as RadioCmd, Kind as RK};
+use nexora_platform::text::{measure, render, render_face, Style, ICON_FACE};
+use nexora_platform::{audio, brightness, keys, launch, wifi};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassPanel, GlassParams, Tier};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
@@ -372,7 +372,7 @@ impl Cc {
         if self.closing || self.panel.is_none() {
             return;
         }
-        nacre_platform::input::end_dismiss();
+        nexora_platform::input::end_dismiss();
         unsafe {
             let _ = KillTimer(Some(self.ctl), T_INTRO);
         }
@@ -421,7 +421,7 @@ impl Cc {
                 let _ = DestroyWindow(h);
             }
             self.cache.clear();
-            nacre_platform::sys::trim_later(5000);
+            nexora_platform::sys::trim_later(5000);
         }
     }
 
@@ -648,7 +648,7 @@ impl Cc {
             Kind::Stage => prefs::get().stage,
             Kind::DarkMode => {
                 prefs::look(prefs::Role::Dark).dark
-                    && prefs::get().theme == nacre_core::settings::Theme::Dark
+                    && prefs::get().theme == nexora_core::settings::Theme::Dark
             }
             _ => false,
         }
@@ -670,7 +670,7 @@ impl Cc {
                 _ => "-".to_string(),
             },
             Kind::Hotspot | Kind::Share => prefs::tr("Buka Pengaturan").to_string(),
-            Kind::Battery => match nacre_platform::sys::battery() {
+            Kind::Battery => match nexora_platform::sys::battery() {
                 Some((p, ch)) => format!("{p}%{}", if ch { " \u{26A1}" } else { "" }),
                 None => "-".to_string(),
             },
@@ -722,11 +722,11 @@ impl Cc {
         let inuse = if self.edit {
             Vec::new()
         } else {
-            nacre_platform::privacy::active()
+            nexora_platform::privacy::active()
         };
         let top = if inuse.is_empty() { 0.0 } else { 36.0 * dpi };
         let (pw, ph) = (gw, top + gh + 14.0 * dpi + btn_h + 4.0 * dpi);
-        let (sw, _) = nacre_platform::sys::screen_size();
+        let (sw, _) = nexora_platform::sys::screen_size();
         let x = (sw as f32 - pw - 10.0 * dpi) as i32;
         let y = self.top + (6.0 * dpi) as i32;
         let m = (8.0 * dpi).round();
@@ -883,9 +883,9 @@ impl Cc {
             ghost: None,
         });
         if self.edit {
-            nacre_platform::input::end_dismiss();
+            nexora_platform::input::end_dismiss();
         } else {
-            nacre_platform::input::begin_dismiss(
+            nexora_platform::input::begin_dismiss(
                 (rect.0, rect.1, rect.0 + rect.2, rect.1 + rect.3),
                 hwnd.0 as isize,
                 WM_CLOSE_CC,
@@ -896,7 +896,7 @@ impl Cc {
     fn draw_chip(
         &mut self,
         content: &ContainerVisual,
-        inuse: &[nacre_platform::privacy::InUse],
+        inuse: &[nexora_platform::privacy::InUse],
         pw: f32,
         dpi: f32,
         groups: &mut Vec<(ContainerVisual, Rect)>,
@@ -1569,7 +1569,7 @@ impl Cc {
                 },
             );
             let (bw, bh) = (grip_box.2.ceil() as u32, grip_box.3.ceil() as u32);
-            let data = nacre_core::logo::render_grip(bw, bh, (gt, gt), grc, gt, 14.0, 76.0);
+            let data = nexora_core::logo::render_grip(bw, bh, (gt, gt), grc, gt, 14.0, 76.0);
             if let Some(Ok(sf)) = self
                 .gfx
                 .as_ref()
@@ -1583,7 +1583,7 @@ impl Cc {
 
     fn glass_ring(&self, c: &ContainerVisual, b: Rect, dpi: f32) {
         let n = b.2.round().max(4.0) as u32;
-        let data = nacre_core::widgets::ring(n, 1.4 * dpi, 1.0, [255, 255, 255], [0, 0, 0, 0]);
+        let data = nexora_core::widgets::ring(n, 1.4 * dpi, 1.0, [255, 255, 255], [0, 0, 0, 0]);
         if let Some(Ok(sf)) = self.gfx.as_ref().map(|g| g.surface_from_bgra(n, n, &data)) {
             self.put(c, &sf, b.0, b.1, n as f32, n as f32, 0.6);
         }
@@ -1861,7 +1861,7 @@ impl Cc {
                 &self.comp,
                 hwnd,
                 dpi,
-                nacre_platform::sys::screen_size(),
+                nexora_platform::sys::screen_size(),
                 Tier::Full,
             ) {
                 Ok(m) => self.menu = Some(m),
@@ -2185,10 +2185,10 @@ impl Cc {
             }
             Kind::DarkMode => {
                 prefs::update(|s| {
-                    s.theme = if s.theme == nacre_core::settings::Theme::Dark {
-                        nacre_core::settings::Theme::Light
+                    s.theme = if s.theme == nexora_core::settings::Theme::Dark {
+                        nexora_core::settings::Theme::Light
                     } else {
-                        nacre_core::settings::Theme::Dark
+                        nexora_core::settings::Theme::Dark
                     }
                 });
                 self.build();

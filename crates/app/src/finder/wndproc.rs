@@ -116,7 +116,7 @@ pub(super) unsafe extern "system" fn bar_proc(hwnd: HWND, msg: u32, wp: WPARAM, 
         }
         WM_TIMER if wp.0 == T_SIG => {
             with_bar(|b| {
-                let v = nacre_platform::wifi::link().map(|l| l.1);
+                let v = nexora_platform::wifi::link().map(|l| l.1);
                 if v != b.wifi_bars {
                     b.wifi_bars = v;
                     b.render();

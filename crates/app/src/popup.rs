@@ -1,5 +1,5 @@
-use nacre_ui::glass::{GlassPanel, GlassParams};
-use nacre_ui::host::{attach, Surface};
+use nexora_ui::glass::{GlassPanel, GlassParams};
+use nexora_ui::host::{attach, Surface};
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::{HINSTANCE, HWND};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;

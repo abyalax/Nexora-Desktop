@@ -1,7 +1,7 @@
 use crate::popup::Popup;
-use nacre_platform::text::{measure, render, Style};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassParams, Tier};
+use nexora_platform::text::{measure, render, Style};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassParams, Tier};
 use std::cell::RefCell;
 use std::sync::atomic::{AtomicIsize, Ordering};
 use windows::core::w;
@@ -26,12 +26,12 @@ pub struct Item {
     pub enabled: bool,
     pub separator: bool,
     pub accel: String,
-    pub sym: Option<nacre_core::symbols::Sym>,
+    pub sym: Option<nexora_core::symbols::Sym>,
     pub toggle: Option<bool>,
     pub heading: bool,
     pub title: bool,
-    pub lead: Option<(nacre_core::symbols::Sym, bool)>,
-    pub trail: Vec<nacre_core::symbols::Sym>,
+    pub lead: Option<(nexora_core::symbols::Sym, bool)>,
+    pub trail: Vec<nexora_core::symbols::Sym>,
     pub keep_open: bool,
 }
 
@@ -72,11 +72,11 @@ impl Item {
             ..Item::action(id, label, true)
         }
     }
-    pub fn with_lead(mut self, s: nacre_core::symbols::Sym, on: bool) -> Item {
+    pub fn with_lead(mut self, s: nexora_core::symbols::Sym, on: bool) -> Item {
         self.lead = Some((s, on));
         self
     }
-    pub fn with_trail(mut self, s: Vec<nacre_core::symbols::Sym>) -> Item {
+    pub fn with_trail(mut self, s: Vec<nexora_core::symbols::Sym>) -> Item {
         self.trail = s;
         self
     }
@@ -84,7 +84,7 @@ impl Item {
         self.keep_open = true;
         self
     }
-    pub fn with_sym(mut self, s: Option<nacre_core::symbols::Sym>) -> Item {
+    pub fn with_sym(mut self, s: Option<nexora_core::symbols::Sym>) -> Item {
         self.sym = s;
         self
     }
@@ -287,7 +287,7 @@ unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT
             });
             if let Some((id, keep)) = picked {
                 if !keep {
-                    nacre_platform::input::end_dismiss();
+                    nexora_platform::input::end_dismiss();
                     let _ = ShowWindow(h, SW_HIDE);
                 }
                 let _ = PostMessageW(Some(target), MENU_PICK, WPARAM(id), LPARAM(0));
@@ -380,7 +380,7 @@ impl Menu {
         if !self.popup.is_visible() || self.closing {
             return;
         }
-        nacre_platform::input::end_dismiss();
+        nexora_platform::input::end_dismiss();
         LIVE.with(|c| *c.borrow_mut() = None);
         if crate::motion::pop_out(
             comp,
@@ -558,8 +558,8 @@ impl Menu {
             Ok(Some((s, tw as f32, th as f32)))
         };
         let symbol =
-            |sym: nacre_core::symbols::Sym, n: u32, rgb: [u8; 3]| -> Result<SpriteVisual> {
-                let data = nacre_core::symbols::render(sym, n, rgb);
+            |sym: nexora_core::symbols::Sym, n: u32, rgb: [u8; 3]| -> Result<SpriteVisual> {
+                let data = nexora_core::symbols::render(sym, n, rgb);
                 let surface = gfx.surface_from_bgra(n, n, &data)?;
                 let brush = comp.CreateSurfaceBrushWithSurface(&surface)?;
                 brush.SetStretch(CompositionStretch::None)?;
@@ -788,7 +788,7 @@ impl Menu {
             self.popup.show();
             self.popup.fade_in(comp, !above);
         }
-        nacre_platform::input::begin_dismiss(
+        nexora_platform::input::begin_dismiss(
             (px, py, px + wi, py + hi),
             self.target.0 as isize,
             MENU_CLOSE,
@@ -811,7 +811,7 @@ impl Menu {
     }
 
     pub fn hide(&self) {
-        nacre_platform::input::end_dismiss();
+        nexora_platform::input::end_dismiss();
         unsafe {
             let _ = KillTimer(Some(self.popup.hwnd), T_HIDE);
         }

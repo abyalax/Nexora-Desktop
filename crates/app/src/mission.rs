@@ -1,11 +1,11 @@
 use crate::popup::Popup;
 use crate::prefs;
-use nacre_core::mission::{grid, Rect};
-use nacre_platform::icons::Bitmap;
-use nacre_platform::text::{measure, render, Style};
-use nacre_platform::wins::{enumerate, focus, snapshot, thumbnail};
-use nacre_platform::{log, sys};
-use nacre_ui::gfx::Gfx;
+use nexora_core::mission::{grid, Rect};
+use nexora_platform::icons::Bitmap;
+use nexora_platform::text::{measure, render, Style};
+use nexora_platform::wins::{enumerate, focus, snapshot, thumbnail};
+use nexora_platform::{log, sys};
+use nexora_ui::gfx::Gfx;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Instant;
@@ -175,7 +175,7 @@ pub fn close() {
         unsafe {
             let _ = DestroyWindow(h);
         }
-        nacre_platform::sys::trim_later(5000);
+        nexora_platform::sys::trim_later(5000);
     }
 }
 
@@ -184,7 +184,7 @@ fn create(comp: &Compositor) -> windows_core::Result<Option<Box<Mc>>> {
     let mut look = prefs::look(prefs::Role::Dark);
     look.blur_sigma = look.blur_sigma.max(20.0);
     look.tint = [120, 12, 14, 18];
-    let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
+    let base = nexora_ui::glass::GlassParams::dark((10.0, 10.0), 0.0);
     let mut popup = Popup::new_with(
         comp,
         w!("NexoraMission"),
@@ -374,7 +374,7 @@ impl Mc {
 
     fn draw_desktops(&mut self) {
         let d = self.dpi;
-        let (names, cur) = nacre_platform::vdesk::list();
+        let (names, cur) = nexora_platform::vdesk::list();
         self.cur_desk = cur;
         let (cw, ch, gap) = (180.0 * d, 100.0 * d, 18.0 * d);
         let n = names.len() as f32;
@@ -573,16 +573,16 @@ unsafe extern "system" fn mc_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
             if let Some(act) = desk {
                 close();
                 match act {
-                    Err(()) => nacre_platform::keys::chord(&[
-                        nacre_platform::keys::WIN,
-                        nacre_platform::keys::CTRL,
+                    Err(()) => nexora_platform::keys::chord(&[
+                        nexora_platform::keys::WIN,
+                        nexora_platform::keys::CTRL,
                         0x44,
                     ]),
                     Ok(delta) => {
                         for _ in 0..delta.abs() {
-                            nacre_platform::keys::chord(&[
-                                nacre_platform::keys::WIN,
-                                nacre_platform::keys::CTRL,
+                            nexora_platform::keys::chord(&[
+                                nexora_platform::keys::WIN,
+                                nexora_platform::keys::CTRL,
                                 if delta > 0 { 0x27 } else { 0x25 },
                             ]);
                         }

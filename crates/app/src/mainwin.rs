@@ -1,5 +1,5 @@
 use crate::{paths, single_instance};
-use nacre_platform::shell::taskbar;
+use nexora_platform::shell::taskbar;
 use std::sync::atomic::{AtomicU32, Ordering};
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
@@ -98,7 +98,7 @@ pub static TAKEOVER_ALLOWED: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
 pub fn apply_autostart() {
-    use nacre_platform::startup;
+    use nexora_platform::startup;
     let want = crate::prefs::get().autostart;
     let Ok(exe) = std::env::current_exe() else {
         return;
@@ -109,13 +109,13 @@ pub fn apply_autostart() {
         (false, None) => return,
         _ => startup::set(want, &exe),
     };
-    nacre_platform::log::line("startup", &format!("autostart={want} hasil={ok:?}"));
+    nexora_platform::log::line("startup", &format!("autostart={want} hasil={ok:?}"));
 }
 
 pub fn set_taskbar_hidden(on: bool) {
     if on {
         if let Err(e) = taskbar::hide(&paths::marker(), &paths::guard_exe()) {
-            nacre_platform::log::line("taskbar", &format!("hide gagal: {e}"));
+            nexora_platform::log::line("taskbar", &format!("hide gagal: {e}"));
         }
     } else {
         taskbar::restore();
@@ -162,7 +162,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         add_tray(hwnd);
         taskbar::reassert();
         crate::dock::request_appbar_resync();
-        nacre_platform::log::line("shell", "TaskbarCreated");
+        nexora_platform::log::line("shell", "TaskbarCreated");
         return LRESULT(0);
     }
     match msg {
@@ -172,7 +172,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 let p = crate::prefs::get();
                 let want = p.takeover && p.dock_enabled;
                 if want != taskbar::is_hidden() {
-                    nacre_platform::log::line(
+                    nexora_platform::log::line(
                         "taskbar",
                         &format!("pengaturan mode penuh → {want}"),
                     );
@@ -198,7 +198,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
             LRESULT(0)
         }
         single_instance::WM_WAKE => {
-            nacre_platform::log::line("instance", "peluncuran kedua terdeteksi");
+            nexora_platform::log::line("instance", "peluncuran kedua terdeteksi");
             LRESULT(0)
         }
         WM_TIMER if wp.0 == TIMER_EXIT => {

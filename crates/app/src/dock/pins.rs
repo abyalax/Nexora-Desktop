@@ -1,10 +1,10 @@
-use nacre_core::dock::items::{name_from_path, Pin};
-use nacre_core::dock::pins;
+use nexora_core::dock::items::{name_from_path, Pin};
+use nexora_core::dock::pins;
 use std::io::Write;
 use std::path::Path;
 
 pub fn name_for(path: &str) -> String {
-    let n = nacre_platform::wins::names::friendly(path);
+    let n = nexora_platform::wins::names::friendly(path);
     if n.is_empty() {
         name_from_path(path)
     } else {

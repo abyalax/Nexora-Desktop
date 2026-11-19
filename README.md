@@ -420,8 +420,8 @@ Useful flags: `--keep-taskbar`, `--no-dock`, `--no-island`, `--no-hud`, `--open-
 | `crates/guard`                    | `nexora-guard`, the watchdog that restores the taskbar and moved windows                                   |
 | `docs/` · `installer/` · `tools/` | Indonesian user guide, installer and release script, taskbar safety test                                   |
 
-Internal crates are named `nacre-*` (the former codename), and some internal names (settings keys, window classes, flags such
-as `--no-dock`) keep their original words so existing settings keep working.
+Internal crates are named `nexora-*`. Some runtime identifiers (settings keys, window classes, `NACRE_*` environment
+variables, flags such as `--no-dock`) keep their former-codename words so existing settings and scripts keep working.
 
 ---
 

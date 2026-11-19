@@ -179,7 +179,7 @@ impl Dock {
     pub(super) fn open_stack(&mut self) {
         self.menu_open = true;
         self.hide_popups();
-        let files = nacre_platform::downloads::latest(10);
+        let files = nexora_platform::downloads::latest(10);
         let mut items = Vec::new();
         self.stack_files.clear();
         for (name, path) in files.iter().rev() {
@@ -249,7 +249,7 @@ impl Dock {
     pub(super) fn run_command(&mut self, cmd: usize, info: MenuInfo) {
         match cmd {
             CMD_STACK_FOLDER => {
-                if let Some(d) = nacre_platform::downloads::folder() {
+                if let Some(d) = nexora_platform::downloads::folder() {
                     launch::open(&d.to_string_lossy());
                 }
             }
@@ -314,7 +314,7 @@ impl Dock {
                 timer(self.hwnd, TIMER_TRASH, 300);
             },
             CMD_ADD => {
-                let picked = nacre_platform::pick::open_file(
+                let picked = nexora_platform::pick::open_file(
                     crate::prefs::tr("Pilih aplikasi"),
                     &[
                         (crate::prefs::tr("Aplikasi"), "*.exe;*.lnk"),
@@ -327,7 +327,7 @@ impl Dock {
             }
             CMD_ICON if info.special.is_some() => {
                 let key = info.special.unwrap_or(START_KEY);
-                let picked = nacre_platform::pick::open_file(
+                let picked = nexora_platform::pick::open_file(
                     crate::prefs::tr("Pilih gambar ikon"),
                     &[(
                         crate::prefs::tr("Gambar"),
@@ -353,7 +353,7 @@ impl Dock {
             }
             CMD_ICON => {
                 if let Some(it) = &info.item {
-                    let picked = nacre_platform::pick::open_file(
+                    let picked = nexora_platform::pick::open_file(
                         crate::prefs::tr("Pilih gambar ikon"),
                         &[(
                             crate::prefs::tr("Gambar"),

@@ -1,4 +1,4 @@
-use nacre_core::marker::{Marker, Rect};
+use nexora_core::marker::{Marker, Rect};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};

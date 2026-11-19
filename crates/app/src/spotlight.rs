@@ -1,16 +1,16 @@
 use crate::popup::Popup;
 use crate::{motion, paths, prefs};
-use nacre_core::appcat::{self, Cat};
-use nacre_core::search;
-use nacre_core::spotlight::{self as model, Mode, ACTIONS};
-use nacre_core::symbols::{self, Sym};
-use nacre_platform::apps::{self, App};
-use nacre_platform::filesearch::{self, Hit};
-use nacre_platform::icons::{self, Bitmap};
-use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
-use nacre_platform::{clipboard, keys, launch, log, sys, time};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::{GlassPanel, GlassParams};
+use nexora_core::appcat::{self, Cat};
+use nexora_core::search;
+use nexora_core::spotlight::{self as model, Mode, ACTIONS};
+use nexora_core::symbols::{self, Sym};
+use nexora_platform::apps::{self, App};
+use nexora_platform::filesearch::{self, Hit};
+use nexora_platform::icons::{self, Bitmap};
+use nexora_platform::text::{measure, render, render_face, Style, ICON_FACE};
+use nexora_platform::{clipboard, keys, launch, log, sys, time};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::{GlassPanel, GlassParams};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -457,7 +457,7 @@ fn finish_closing() {
         unsafe {
             let _ = DestroyWindow(h);
         }
-        nacre_platform::sys::trim_later(5000);
+        nexora_platform::sys::trim_later(5000);
     }
 }
 
@@ -476,9 +476,9 @@ fn create(comp: &Compositor, mode: Mode) -> windows_core::Result<Box<Spot>> {
     let tier = {
         let c = sys::conditions();
         if !c.transparency || c.battery_saver || c.remote_session {
-            nacre_ui::glass::Tier::Solid
+            nexora_ui::glass::Tier::Solid
         } else {
-            nacre_ui::glass::Tier::Full
+            nexora_ui::glass::Tier::Full
         }
     };
     let _ = popup.panel.set_tier(tier);
@@ -555,7 +555,7 @@ fn create(comp: &Compositor, mode: Mode) -> windows_core::Result<Box<Spot>> {
 }
 
 impl Spot {
-    fn look(&self) -> nacre_core::settings::Look {
+    fn look(&self) -> nexora_core::settings::Look {
         prefs::look(prefs::Role::Dock)
     }
 
@@ -744,7 +744,7 @@ impl Spot {
                 CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED,
             };
             let com = CoInitializeEx(None, COINIT_APARTMENTTHREADED).is_ok();
-            let list = nacre_platform::recent::list(15);
+            let list = nexora_platform::recent::list(15);
             *rec.lock().unwrap() = list.clone();
             let _ = PostMessageW(Some(HWND(h as *mut _)), WM_THUMBS, WPARAM(0), LPARAM(0));
             for (_, p) in list {
@@ -1151,10 +1151,10 @@ impl Spot {
         let s = icons::load(path, px).and_then(|mut b| {
             if !icons::is_themed(path) {
                 if plates && b.w == b.h {
-                    b.bgra = nacre_core::iconplate::plate(&b.bgra, b.w);
+                    b.bgra = nexora_core::iconplate::plate(&b.bgra, b.w);
                 }
                 let p = prefs::get();
-                b.bgra = nacre_core::iconplate::style_icon_v(
+                b.bgra = nexora_core::iconplate::style_icon_v(
                     &b.bgra,
                     p.icon_style,
                     p.icon_tint,
@@ -2351,10 +2351,10 @@ fn run_action(id: &str) {
         "lock" => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
         "desktop" => keys::chord(&[keys::WIN, 0x44]),
         "dark" => prefs::update(|s| {
-            s.theme = if s.theme == nacre_core::settings::Theme::Dark {
-                nacre_core::settings::Theme::Light
+            s.theme = if s.theme == nexora_core::settings::Theme::Dark {
+                nexora_core::settings::Theme::Light
             } else {
-                nacre_core::settings::Theme::Dark
+                nexora_core::settings::Theme::Dark
             }
         }),
         "stage" => prefs::update(|s| s.stage = !s.stage),

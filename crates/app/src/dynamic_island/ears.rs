@@ -1,4 +1,4 @@
-use nacre_platform::icons::Bitmap;
+use nexora_platform::icons::Bitmap;
 
 pub fn bitmap(e: u32, rgb: (u8, u8, u8), alpha: u8, left: bool) -> Bitmap {
     let n = e as usize;

@@ -9,13 +9,13 @@ mod wndproc;
 use crate::menu::{Item, Menu, MENU_CLOSE, MENU_PICK};
 use crate::popup::Popup;
 use crate::{prefs, services};
-use nacre_core::finder::layout::{self as lay, Gap, Item as LItem, Placed};
-use nacre_platform::icons::Bitmap;
-use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
-use nacre_platform::wins::{enumerate, focus, tracker};
-use nacre_platform::{keys, launch, log, radio, shell, sys, time};
-use nacre_ui::gfx::Gfx;
-use nacre_ui::glass::Tier;
+use nexora_core::finder::layout::{self as lay, Gap, Item as LItem, Placed};
+use nexora_platform::icons::Bitmap;
+use nexora_platform::text::{measure, render, render_face, Style, ICON_FACE};
+use nexora_platform::wins::{enumerate, focus, tracker};
+use nexora_platform::{keys, launch, log, radio, shell, sys, time};
+use nexora_ui::gfx::Gfx;
+use nexora_ui::glass::Tier;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
@@ -87,7 +87,7 @@ struct Bar {
     radios: Option<radio::Radios>,
     dark_text: bool,
     shadow: bool,
-    native: Vec<nacre_platform::menus::Top>,
+    native: Vec<nexora_platform::menus::Top>,
     native_hwnd: isize,
     fullscreen: bool,
 }
@@ -275,7 +275,7 @@ fn apply_prefs() {
 fn create(comp: &Compositor) -> windows_core::Result<Box<Bar>> {
     let screen = sys::screen_size();
     let glass = prefs::apply(
-        nacre_ui::glass::GlassParams::dark((10.0, 10.0), 0.0),
+        nexora_ui::glass::GlassParams::dark((10.0, 10.0), 0.0),
         &prefs::bar_look(),
     );
     let mut popup = Popup::new(
@@ -381,7 +381,7 @@ fn create(comp: &Compositor) -> windows_core::Result<Box<Bar>> {
         hover: None,
         tracking: false,
         wifi: None,
-        wifi_bars: nacre_platform::wifi::link().map(|l| l.1),
+        wifi_bars: nexora_platform::wifi::link().map(|l| l.1),
         bt: None,
         radios: Some(radios),
         dark_text: false,

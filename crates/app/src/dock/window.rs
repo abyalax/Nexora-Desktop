@@ -57,7 +57,7 @@ impl Dock {
             });
 
             custom_icons::install();
-            nacre_platform::iconpack::configure(
+            nexora_platform::iconpack::configure(
                 &paths::config_dir().join("iconpack"),
                 crate::prefs::get().icon_pack,
             );
@@ -133,7 +133,7 @@ impl Dock {
                 },
                 surfaces: HashMap::new(),
                 requested: HashSet::new(),
-                trash_full: nacre_platform::recycle::is_full(),
+                trash_full: nexora_platform::recycle::is_full(),
                 worker,
                 plates: crate::prefs::get().dock_plates,
                 tracking: false,
@@ -319,7 +319,7 @@ impl Dock {
         }
         let d = self.dpi;
         let strip = (self.margin + self.card_h + 4.0 * d).ceil() as i32;
-        let r = nacre_platform::shell::appbar::reserve_bottom(
+        let r = nexora_platform::shell::appbar::reserve_bottom(
             self.hwnd,
             self.screen.0,
             self.screen.1,

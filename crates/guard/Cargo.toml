@@ -9,8 +9,8 @@ name = "nexora-guard"
 path = "src/main.rs"
 
 [dependencies]
-nacre-core.workspace = true
-nacre-platform.workspace = true
+nexora-core.workspace = true
+nexora-platform.workspace = true
 
 [dependencies.windows]
 workspace = true

@@ -1,12 +1,12 @@
 use crate::popup::Popup;
 use crate::prefs::{self, Role, WM_PREFS};
-use nacre_core::hud::slider;
-use nacre_core::i18n::Lang;
-use nacre_core::settings::{Behavior, Material, Theme};
-use nacre_platform::icons::Bitmap;
-use nacre_platform::text::{measure, render, render_face, Style, ICON_FACE};
-use nacre_platform::{log, sys};
-use nacre_ui::gfx::Gfx;
+use nexora_core::hud::slider;
+use nexora_core::i18n::Lang;
+use nexora_core::settings::{Behavior, Material, Theme};
+use nexora_platform::icons::Bitmap;
+use nexora_platform::text::{measure, render, render_face, Style, ICON_FACE};
+use nexora_platform::{log, sys};
+use nexora_ui::gfx::Gfx;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use windows::core::w;
@@ -33,7 +33,7 @@ const VIEW_TOP: f32 = 56.0;
 const SIDE_INSET: f32 = 8.0;
 const SIDE_RADIUS: f32 = 18.0;
 
-fn side_glass(mut g: nacre_ui::glass::GlassParams) -> nacre_ui::glass::GlassParams {
+fn side_glass(mut g: nexora_ui::glass::GlassParams) -> nexora_ui::glass::GlassParams {
     g.blur_sigma = g.blur_sigma.max(16.0);
     g
 }
@@ -184,7 +184,7 @@ enum RowDef {
 #[derive(Clone, Copy)]
 enum Thumb {
     Appear(u8),
-    Icon(nacre_core::settings::IconStyle),
+    Icon(nexora_core::settings::IconStyle),
 }
 
 const ACCENT_NAMES: [&str; 9] = [
@@ -291,9 +291,9 @@ fn create(comp: &Compositor) -> windows_core::Result<()> {
     let tier = {
         let c = sys::conditions();
         if !c.transparency || c.battery_saver || c.remote_session {
-            nacre_ui::glass::Tier::Solid
+            nexora_ui::glass::Tier::Solid
         } else {
-            nacre_ui::glass::Tier::Full
+            nexora_ui::glass::Tier::Full
         }
     };
     let _ = popup.panel.set_tier(tier);
@@ -521,7 +521,7 @@ impl Win {
                     return;
                 };
                 let Some((cd, cw, ch)) =
-                    nacre_core::symbols::crop_ink(&recolor(&bmp, rgb), bmp.w, bmp.h)
+                    nexora_core::symbols::crop_ink(&recolor(&bmp, rgb), bmp.w, bmp.h)
                 else {
                     return;
                 };
@@ -676,7 +676,7 @@ impl Win {
 
     fn commit_edit(&mut self) {
         let Some(f) = self.edit.take() else { return };
-        let t = nacre_core::settings::ShortText::new(&self.edit_buf);
+        let t = nexora_core::settings::ShortText::new(&self.edit_buf);
         prefs::update(|s| {
             if f == 0 {
                 s.greet_name = t;
@@ -702,7 +702,7 @@ impl Win {
         c: &ContainerVisual,
         y0: f32,
         rows: &[RowDef],
-        look: &nacre_core::settings::Look,
+        look: &nexora_core::settings::Look,
     ) -> f32 {
         let d = self.dpi;
         let (x0, cw) = (CONTENT_X * d, CONTENT_W * d);
@@ -964,7 +964,7 @@ impl Win {
                 RowDef::Swatches(label, sel) => {
                     self.text(c, label, lx, y + 13.0 * d, 13.5, 400, look.fg, 0.95, 0);
                     let (dia, gap) = (19.0 * d, 10.0 * d);
-                    let n = nacre_core::settings::ACCENTS.len() + 1;
+                    let n = nexora_core::settings::ACCENTS.len() + 1;
                     let total_w = n as f32 * (dia + gap) - gap;
                     let mut sx = rx - total_w;
                     let cy = y + 12.0 * d;
@@ -973,7 +973,7 @@ impl Win {
                             let key = format!("multi|{}", dia.round());
                             let px = dia.round() as u32;
                             if let Some(s) = self
-                                .thumb_surface(key, px, px, || nacre_core::preview::multicolor(px))
+                                .thumb_surface(key, px, px, || nexora_core::preview::multicolor(px))
                             {
                                 self.sprite(c, &s, sx, cy, dia, dia);
                             }
@@ -985,7 +985,7 @@ impl Win {
                                 dia,
                                 dia,
                                 dia / 2.0,
-                                col(nacre_core::settings::ACCENTS[i - 1], 255),
+                                col(nexora_core::settings::ACCENTS[i - 1], 255),
                             );
                         }
                         if i == *sel {
@@ -1016,7 +1016,7 @@ impl Win {
                             );
                         }
                         let v = if i == 0 {
-                            nacre_core::settings::ACCENT_MULTI
+                            nexora_core::settings::ACCENT_MULTI
                         } else {
                             (i - 1) as u8
                         };
@@ -1072,7 +1072,7 @@ impl Win {
                         let surf = match *kind {
                             Thumb::Appear(k) => {
                                 self.thumb_surface(format!("appear|{k}|{pw}x{ph}"), pw, ph, || {
-                                    nacre_core::preview::appearance(k, pw, ph)
+                                    nexora_core::preview::appearance(k, pw, ph)
                                 })
                             }
                             Thumb::Icon(st) => {
@@ -1081,7 +1081,7 @@ impl Win {
                                     format!("icon|{st:?}|{tint}|{dark_icons}|{pw}"),
                                     pw,
                                     pw,
-                                    || nacre_core::preview::icon_tile(st, tint, dark_icons, pw),
+                                    || nexora_core::preview::icon_tile(st, tint, dark_icons, pw),
                                 )
                             }
                         };
@@ -1444,8 +1444,8 @@ impl Win {
                     } else {
                         s.greet_name.as_str().to_string()
                     };
-                    let hour = nacre_platform::time::local_now().hour;
-                    let auto = nacre_core::dynamic_island::glance::greeting_text("", &name, hour, s.lang);
+                    let hour = nexora_platform::time::local_now().hour;
+                    let auto = nexora_core::dynamic_island::glance::greeting_text("", &name, hour, s.lang);
                     vec![
                         RowDef::Seg(
                             prefs::tr("Tampilkan"),
@@ -1517,8 +1517,8 @@ impl Win {
                     0
                 } else {
                     match s.menubar_style {
-                        nacre_core::settings::BarStyle::Light => 1,
-                        nacre_core::settings::BarStyle::Dark => 2,
+                        nexora_core::settings::BarStyle::Light => 1,
+                        nexora_core::settings::BarStyle::Dark => 2,
                     }
                 };
                 vec![
@@ -1580,7 +1580,7 @@ impl Win {
                 ]
             }
             4 => {
-                use nacre_core::settings::IconStyle;
+                use nexora_core::settings::IconStyle;
                 let theme_idx = match s.theme {
                     Theme::Auto => 0,
                     Theme::Light => 1,
@@ -1606,7 +1606,7 @@ impl Win {
                     IconStyle::Clear => 2,
                     IconStyle::Tinted => 3,
                 };
-                let accent_idx = if s.accent == nacre_core::settings::ACCENT_MULTI {
+                let accent_idx = if s.accent == nexora_core::settings::ACCENT_MULTI {
                     0
                 } else {
                     s.accent as usize + 1
@@ -2291,7 +2291,7 @@ impl Win {
         body: &ContainerVisual,
         y: f32,
         rows: &[RowDef],
-        look: &nacre_core::settings::Look,
+        look: &nexora_core::settings::Look,
         vt: f32,
     ) -> f32 {
         let before = self.regions.len();
@@ -2342,8 +2342,8 @@ impl Win {
     }
 }
 
-fn hot_label(a: nacre_core::settings::HotAction) -> &'static str {
-    use nacre_core::settings::HotAction::*;
+fn hot_label(a: nexora_core::settings::HotAction) -> &'static str {
+    use nexora_core::settings::HotAction::*;
     match a {
         None => "Tidak ada",
         Mission => "Overview",
@@ -2612,7 +2612,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 }
                 Some(Action::NotchSend) => prefs::update(|s| s.notch_send = !s.notch_send),
                 Some(Action::LyricsOnline) => prefs::update(|s| s.lyrics_online = !s.lyrics_online),
-                Some(Action::Donate) => nacre_platform::launch::open(DONATE_URL),
+                Some(Action::Donate) => nexora_platform::launch::open(DONATE_URL),
                 Some(Action::MenuLogoPick) => {
                     let _ = SetWindowPos(
                         hwnd,
@@ -2623,7 +2623,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                         0,
                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
                     );
-                    let picked = nacre_platform::pick::open_file(
+                    let picked = nexora_platform::pick::open_file(
                         prefs::tr("Pilih gambar"),
                         &[(
                             prefs::tr("Gambar logo"),
@@ -2657,7 +2657,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 Some(Action::LyricsDir) => {
                     let dir = crate::paths::config_dir().join("lyrics");
                     let _ = std::fs::create_dir_all(&dir);
-                    nacre_platform::launch::open(&dir.to_string_lossy());
+                    nexora_platform::launch::open(&dir.to_string_lossy());
                 }
                 Some(Action::Search) => {
                     with_win(|w| {
@@ -2714,10 +2714,10 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 Some(Action::Accent(i)) => prefs::update(|s| s.accent = i),
                 Some(Action::IconStyle(m)) => prefs::update(|s| {
                     s.icon_style = match m {
-                        0 => nacre_core::settings::IconStyle::Default,
-                        1 => nacre_core::settings::IconStyle::Dark,
-                        2 => nacre_core::settings::IconStyle::Clear,
-                        _ => nacre_core::settings::IconStyle::Tinted,
+                        0 => nexora_core::settings::IconStyle::Default,
+                        1 => nexora_core::settings::IconStyle::Dark,
+                        2 => nexora_core::settings::IconStyle::Clear,
+                        _ => nexora_core::settings::IconStyle::Tinted,
                     }
                 }),
                 Some(Action::IconTint(i)) => prefs::update(|s| s.icon_tint = i),
@@ -2748,12 +2748,12 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                     1 => {
                         s.menubar_material = false;
                         s.menubar_glass = true;
-                        s.menubar_style = nacre_core::settings::BarStyle::Light;
+                        s.menubar_style = nexora_core::settings::BarStyle::Light;
                     }
                     _ => {
                         s.menubar_material = false;
                         s.menubar_glass = true;
-                        s.menubar_style = nacre_core::settings::BarStyle::Dark;
+                        s.menubar_style = nexora_core::settings::BarStyle::Dark;
                     }
                 }),
                 Some(Action::Clock24) => prefs::update(|s| s.clock_24h = !s.clock_24h),
@@ -2775,7 +2775,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
             with_win(|w| w.render());
             let (themed, _) = (prefs::look(Role::Themed), ());
             with_win(|w| {
-                let base = nacre_ui::glass::GlassParams::dark((10.0, 10.0), 24.0 * w.dpi);
+                let base = nexora_ui::glass::GlassParams::dark((10.0, 10.0), 24.0 * w.dpi);
                 let _ = w
                     .popup
                     .panel
@@ -2788,7 +2788,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
             let win = WIN.with(|s| s.borrow_mut().take());
             drop(win);
             let _ = DestroyWindow(hwnd);
-            nacre_platform::sys::trim_later(5000);
+            nexora_platform::sys::trim_later(5000);
             log::line("settings", "ditutup");
             LRESULT(0)
         }

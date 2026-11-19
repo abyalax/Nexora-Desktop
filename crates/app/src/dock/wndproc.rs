@@ -130,7 +130,7 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
             DefWindowProcW(hwnd, msg, wp, lp)
         }
         WM_DESTROY => {
-            nacre_platform::shell::appbar::release();
+            nexora_platform::shell::appbar::release();
             DOCK_HWND.store(0, Ordering::Relaxed);
             LRESULT(0)
         }

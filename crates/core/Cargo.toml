@@ -1,5 +1,5 @@
 ﻿[package]
-name = "nacre-core"
+name = "nexora-core"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
