@@ -1,7 +1,7 @@
 //! Finder bar clock text, e.g. `Thu Nov 19  9:05 AM` (English) or `Kam 19 Nov  09.05` (Indonesian).
 
-use crate::shared::i18n::{self, Lang};
 use crate::panels::calendar;
+use crate::shared::i18n::{self, Lang};
 
 /// Calendar and clock fields needed to format the bar clock.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

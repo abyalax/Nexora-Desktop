@@ -1,5 +1,5 @@
-use crate::shared::iconplate;
 use crate::settings::IconStyle;
+use crate::shared::iconplate;
 
 type P = (f32, f32);
 

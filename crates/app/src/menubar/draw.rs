@@ -310,11 +310,7 @@ impl Bar {
         v
       }
     };
-    let text_w = if mode == 2 {
-      self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d
-    } else {
-      0.0
-    };
+    let text_w = items::battery_label_extra(pct, mode == 2, d, &layout::BarMetrics(self));
     let bx = (x + text_w + (w - text_w - sw as f32) / 2.0).round();
     let by = ((self.h as f32 - sh as f32) / 2.0).round();
     let layer = self.layer.clone();

@@ -4,7 +4,11 @@ use nexora_core::settings::Settings;
 
 fn round_trips(text: &str) {
   let parsed = Settings::parse(text);
-  assert_eq!(parsed.serialize(), text, "serialize(parse(file)) must equal the original file");
+  assert_eq!(
+    parsed.serialize(),
+    text,
+    "serialize(parse(file)) must equal the original file"
+  );
   assert_eq!(Settings::parse(&parsed.serialize()), parsed);
 }
 

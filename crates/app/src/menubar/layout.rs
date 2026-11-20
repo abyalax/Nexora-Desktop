@@ -2,6 +2,19 @@
 
 use super::*;
 
+/// Measures bar text with the OS font stack for the core item builder.
+pub(super) struct BarMetrics<'a>(pub(super) &'a Bar);
+
+impl TextMetrics for BarMetrics<'_> {
+  fn text(&self, text: &str, emphasized: bool) -> f32 {
+    self.0.text_w(text, if emphasized { APP_W } else { BAR_W })
+  }
+
+  fn small(&self, text: &str) -> f32 {
+    self.0.small_w(text, 12.0, BAR_W)
+  }
+}
+
 impl Bar {
   pub(super) fn refresh_app(&mut self) -> bool {
     self.refresh_app_for(focus::foreground())
@@ -47,90 +60,38 @@ impl Bar {
 
   pub(super) fn relayout(&mut self) {
     let d = self.dpi;
-    let pad = 11.0 * d;
-    let t = |s: &str, wgt: i32| self.text_w(s, wgt) + 2.0 * pad;
-    let mut left = vec![
-      LItem {
-        id: LOGO,
-        width: self.h as f32 * 1.05,
-      },
-      LItem {
-        id: APP,
-        width: t(&self.app_label(), APP_W),
-      },
+    let static_labels = [
+      mt("Berkas"),
+      mt("Edit"),
+      mt("Menu:Tampilan"),
+      mt("Menu:Jendela"),
+      mt("Bantuan"),
     ];
-    if self.native.is_empty() {
-      left.push(LItem {
-        id: M_FILE,
-        width: t(&mt("Berkas"), BAR_W),
-      });
-      left.push(LItem {
-        id: M_EDIT,
-        width: t(&mt("Edit"), BAR_W),
-      });
-      left.push(LItem {
-        id: M_VIEW,
-        width: t(&mt("Menu:Tampilan"), BAR_W),
-      });
-      left.push(LItem {
-        id: M_WIN,
-        width: t(&mt("Menu:Jendela"), BAR_W),
-      });
-      left.push(LItem {
-        id: M_HELP,
-        width: t(&mt("Bantuan"), BAR_W),
-      });
-    } else {
-      for (i, top) in self.native.iter().enumerate().take(20) {
-        left.push(LItem {
-          id: NATIVE0 + i as u32,
-          width: t(&top.title, BAR_W),
-        });
-      }
-    }
-    let icon_w = 30.0 * d;
-    let mut right = vec![
-      LItem {
-        id: CLOCK,
-        width: t(&self.clock_text(), BAR_W),
-      },
-      LItem {
-        id: CTRL,
-        width: icon_w,
-      },
-      LItem {
-        id: SEARCH,
-        width: icon_w,
-      },
-    ];
-    if prefs::get().stage {
-      right.push(LItem {
-        id: STAGEI,
-        width: icon_w,
-      });
-    }
-    if self.wifi.is_some() {
-      right.push(LItem {
-        id: WIFI,
-        width: icon_w,
-      });
-    }
-    if let Some((pct, _)) = sys::battery() {
-      let extra = if prefs::get().battery_pct == 2 {
-        self.small_w(&format!("{pct}%"), 12.0, BAR_W) + 5.0 * d
+    let native_titles: Vec<String> = self.native.iter().map(|t| t.title.clone()).collect();
+    let app_label = self.app_label();
+    let clock = self.clock_text();
+    let battery = sys::battery().map(|(pct, _)| pct);
+    let inputs = BarInputs {
+      dpi: d,
+      bar_height: self.h as f32,
+      app_label: &app_label,
+      menus: if native_titles.is_empty() {
+        Menus::Static(&static_labels)
       } else {
-        0.0
-      };
-      right.push(LItem {
-        id: BATT,
-        width: 40.0 * d + extra,
-      });
-    }
+        Menus::Native(&native_titles)
+      },
+      clock: &clock,
+      show_stage: prefs::get().stage,
+      has_wifi: self.wifi.is_some(),
+      battery,
+      battery_beside: prefs::get().battery_pct == 2,
+    };
+    let (left, right) = items::build(&inputs, &BarMetrics(self));
     let gap = services::notch().map(|(l, r, _)| Gap {
       left: l as f32,
       right: r as f32,
     });
-    let (l, r) = lay::layout(self.screen.0 as f32, 6.0 * d, &left, &right, gap);
+    let (l, r) = lay::layout(self.screen.0 as f32, ITEM_MARGIN * d, &left, &right, gap);
     self.left = l;
     self.right = r;
     let want_h = services::notch()

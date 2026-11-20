@@ -9,7 +9,11 @@ mod wndproc;
 use crate::menu::{Item, MENU_CLOSE, MENU_PICK, Menu};
 use crate::popup::Popup;
 use crate::{prefs, services};
-use nexora_core::menubar::layout::{self as lay, Gap, Item as LItem, Placed};
+use nexora_core::menubar::items::{
+  self, APP, BATT, BarInputs, CLOCK, CTRL, ITEM_MARGIN, LOGO, M_EDIT, M_FILE, M_HELP, M_VIEW, M_WIN, Menus, NATIVE0,
+  SEARCH, STAGEI, TextMetrics, WIFI,
+};
+use nexora_core::menubar::layout::{self as lay, Gap, Placed};
 use nexora_platform::icons::Bitmap;
 use nexora_platform::text::{ICON_FACE, Style, measure, render, render_face};
 use nexora_platform::wins::{enumerate, focus, tracker};
@@ -44,21 +48,6 @@ const T_FS: usize = 4;
 const T_SIG: usize = 5;
 const BAR_W: i32 = 600;
 const APP_W: i32 = 800;
-
-const LOGO: u32 = 1;
-const APP: u32 = 2;
-const M_FILE: u32 = 3;
-const M_EDIT: u32 = 4;
-const M_VIEW: u32 = 5;
-const M_WIN: u32 = 6;
-const M_HELP: u32 = 7;
-const CLOCK: u32 = 10;
-const CTRL: u32 = 11;
-const SEARCH: u32 = 12;
-const WIFI: u32 = 13;
-const BATT: u32 = 14;
-const STAGEI: u32 = 15;
-const NATIVE0: u32 = 50;
 const NATIVE_CMD: usize = 100_000;
 
 struct Bar {

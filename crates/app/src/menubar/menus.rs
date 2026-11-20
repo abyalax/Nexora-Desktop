@@ -9,7 +9,7 @@ impl Bar {
   }
 
   pub(super) fn has_menu(id: u32) -> bool {
-    matches!(id, LOGO | APP | M_FILE | M_EDIT | M_VIEW | M_WIN | M_HELP) || (NATIVE0..NATIVE0 + 20).contains(&id)
+    items::is_menu(id)
   }
 
   pub(super) fn open_menu(&mut self, id: u32) {
@@ -38,7 +38,7 @@ impl Bar {
 
   pub(super) fn menu_items(&self, id: u32) -> Vec<Item> {
     let items = self.menu_items_raw(id);
-    if (NATIVE0..NATIVE0 + 20).contains(&id) {
+    if items::native_index(id).is_some() {
       return items;
     }
     items
@@ -52,7 +52,7 @@ impl Bar {
 
   pub(super) fn menu_items_raw(&self, id: u32) -> Vec<Item> {
     let a = |id: usize, label: &str| Item::action(id, label, true);
-    if (NATIVE0..NATIVE0 + 20).contains(&id) {
+    if items::native_index(id).is_some() {
       let tops = nexora_platform::menus::read(self.native_hwnd).unwrap_or_else(|| self.native.clone());
       let Some(top) = tops.get((id - NATIVE0) as usize) else {
         return vec![];
