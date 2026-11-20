@@ -153,18 +153,18 @@ impl Bar {
   pub(super) fn draw_logo(&mut self, x: f32, w: f32) {
     let size = (self.h as f32 * 0.54).round() as u32;
     let rgb = self.fg();
-    let custom = crate::finder::logo::path().is_some();
+    let custom = crate::menubar::logo::path().is_some();
     let size = if custom {
       (self.h as f32 * 0.5).round() as u32
     } else {
       size
     };
-    let key = format!("logo|{size}|{rgb:?}|{}|{custom}", crate::finder::logo::generation());
+    let key = format!("logo|{size}|{rgb:?}|{}|{custom}", crate::menubar::logo::generation());
     let hit = self.cache.get(&key).cloned();
     let (surf, lw, lh) = match hit {
       Some(v) => v,
       None => {
-        let (bw, bh, data) = match crate::finder::logo::bitmap(size, rgb).filter(|_| custom) {
+        let (bw, bh, data) = match crate::menubar::logo::bitmap(size, rgb).filter(|_| custom) {
           Some(b) => (b.w, b.h, b.bgra),
           None => (size, size, nexora_core::logo::render_badge(size, rgb)),
         };

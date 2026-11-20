@@ -1293,9 +1293,9 @@ impl Win {
           (
             None,
             vec![
-              RowDef::Toggle(prefs::tr("Aktifkan Rail"), s.menubar, Action::MenuBarOn),
+              RowDef::Toggle(prefs::tr("Aktifkan Menu Bar"), s.menubar, Action::MenuBarOn),
               RowDef::Seg(
-                prefs::tr("Latar Rail"),
+                prefs::tr("Latar Menu Bar"),
                 vec![
                   (prefs::tr("Transparan"), Action::BarStyle(0)),
                   (prefs::tr("Terang"), Action::BarStyle(1)),
@@ -1320,10 +1320,10 @@ impl Win {
               ),
             ],
           ),
-          (Some(prefs::tr("Logo Rail")), {
-            let custom = crate::finder::logo::path().is_some();
+          (Some(prefs::tr("Logo Menu Bar")), {
+            let custom = crate::menubar::logo::path().is_some();
             let mut rows = vec![RowDef::Pick(
-              prefs::tr("Logo Rail"),
+              prefs::tr("Logo Menu Bar"),
               prefs::tr(if custom { "Gambar sendiri" } else { "Lingkaran bawaan" }).to_string(),
               Action::MenuLogoPick,
             )];
@@ -1427,7 +1427,7 @@ impl Win {
           (
             None,
             vec![RowDef::Seg(
-              prefs::tr("Skala Deck, Visor, Rail & Quick Panel"),
+              prefs::tr("Skala Deck, Visor, Menu Bar & Quick Panel"),
               vec![
                 ("100%", Action::UiScale(100)),
                 ("125%", Action::UiScale(125)),
@@ -1659,7 +1659,7 @@ impl Win {
       (prefs::tr("Umum"), "\u{E713}", [142, 142, 147], 0),
       (prefs::tr("Deck"), "\u{E7C4}", [10, 132, 255], 1),
       (prefs::tr("Visor"), "\u{E7F4}", [58, 58, 60], 2),
-      (prefs::tr("Rail"), "\u{E700}", [90, 200, 250], 3),
+      (prefs::tr("Menu Bar"), "\u{E700}", [90, 200, 250], 3),
       (prefs::tr("Tampilan"), "\u{E790}", [88, 86, 214], 4),
       (prefs::tr("Scene"), "\u{E8A0}", [48, 209, 88], 5),
       (prefs::tr("Screen Corners"), "\u{E73F}", [175, 82, 222], 6),
@@ -2292,7 +2292,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
           );
           if let Some(p) = picked {
-            if crate::finder::logo::set(&p) {
+            if crate::menubar::logo::set(&p) {
               prefs::broadcast();
             }
           }
@@ -2303,7 +2303,7 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::WidgetGallery) => crate::widgets::open_gallery(),
         Some(Action::NotchShape(b)) => prefs::update(|s| s.notch_island = b),
         Some(Action::MenuLogoReset) => {
-          crate::finder::logo::reset();
+          crate::menubar::logo::reset();
           prefs::broadcast();
         }
         Some(Action::LyricsDir) => {

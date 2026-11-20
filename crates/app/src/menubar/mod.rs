@@ -9,7 +9,7 @@ mod wndproc;
 use crate::menu::{Item, MENU_CLOSE, MENU_PICK, Menu};
 use crate::popup::Popup;
 use crate::{prefs, services};
-use nexora_core::finder::layout::{self as lay, Gap, Item as LItem, Placed};
+use nexora_core::menubar::layout::{self as lay, Gap, Item as LItem, Placed};
 use nexora_platform::icons::Bitmap;
 use nexora_platform::text::{ICON_FACE, Style, measure, render, render_face};
 use nexora_platform::wins::{enumerate, focus, tracker};

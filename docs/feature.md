@@ -1,36 +1,59 @@
-Sidebar Items (on left section)
+# Nexora Desktop — Feature Overview
 
-Ungrouping (On Top of list items)
+Product-level specification of the three headline features and the shared Settings window. This file lists **what the
+user can configure**; implementation status per capability lives in [`feature_checkpoint.md`](feature_checkpoint.md)
+and the crate mapping in [`architecture.md`](architecture.md).
+
+| #   | Feature (code name) | UI name  | Settings sidebar group | Capability IDs |
+| --- | ------------------- | -------- | ---------------------- | -------------- |
+| 1   | Dock                | Deck     | Dock                   | D-1 … D-17     |
+| 2   | Finder              | Menu Bar | Finder                 | F-1 … F-18     |
+| 3   | Dynamic Island      | Visor    | Dynamic Island         | I-1 … I-14     |
+
+Rules for this file:
+
+- Code, docs and modules use *Dock / Finder / Dynamic Island*; user-visible strings use *Deck / Menu Bar / Visor*.
+- Every setting below must map to a field of `DockSettings`, `FinderSettings`, `IslandSettings` or a shared section
+  in `core::settings`; settings are persistent configuration, never runtime state.
+- A setting is added here first, then to `core`, then to the Settings UI.
+
+---
+
+## 1. Sidebar (left section)
+
+### 1.1 Ungrouped pages (top of list)
 
 - General
-- Appereance
+- Appearance
 - System Icon Tray
 - Screen
 - Stage Manager
 - Window Animation
 
-Grouping
+### 1.2 Grouped pages
 
 - Dock
   - Look & Behavior
   - Launchpad
   - Advanced
   - Minimize Effects
-  - Window Previous
+  - Window Previews
 
-Finder
+- Finder
+  - Look & Behavior
+  - Notifications
+  - Time & Date
+  - Audio
+  - Display
+  - Hardware Status
+  - Battery
+- Dynamic Island
+  - Look & Behavior
+  - Activities
 
-- Look & Behavior
-- Notifications
-- Time & Date
-- Audio
-- Display
-- Hardware Status
-- Battery
+## 2. Page contents (right section)
 
-Detail Of Per Items on Sidebar (on right section)
-
-UnGrouped
+### 2.1 Ungrouped pages
 
 - General
   - Toggle
@@ -41,11 +64,11 @@ UnGrouped
     - Global Interface Scale
     - Global Interface Blur Intensity
   - Radio
-    - Appereance (light, dark, system)
-    - Accennt Color
+    - Appearance (light, dark, system)
+    - Accent Color
   - Select Option
     - Start On Boot Method
-      - Dont Start on Boot
+      - Don't Start on Boot
       - Registry Value
       - Scheduled Task
       - Start As a Service
@@ -59,7 +82,7 @@ UnGrouped
       - Segoe UI
       - ...etc
       - (Slider) Modify The global font scaling
-- Appereance
+- Appearance
   - (Check Input) Make Dock use custom blur and transparency values
     - (Slider) Blur Intensity
     - (Slider) Transparency
@@ -76,13 +99,12 @@ UnGrouped
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
-  - (Check Input) Make the folder contents grid use custom blur and
-    - (Slider) transparency values
+  - (Check Input) Make the folder contents grid use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
-    - (Slider) Folder interface uses custom icon size
-  - (Check Input) Make MyDockFinder menus use custom blur and transparency values
+    - (Slider) Folder grid icon size
+  - (Check Input) Make Nexora menus use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
@@ -97,11 +119,11 @@ UnGrouped
 - System Icon Tray
   - (Check Input) Always display all tray icons in Finder
   - (Check Input) Always display all tray icons in Dock
-  - (Check Input) Displays the system's own tray icon in MyFinder
+  - (Check Input) Displays the system's own tray icon in Finder
   - (Slider) The newly run tray icon shows the time
 - Stage Manager
   - Check Input
-    - Show Stage Manager icon in MyFinder
+    - Show Stage Manager icon in Finder
     - Show window title on mouseover
     - Blur background window icons
     - Click on the desktop to hide all windows
@@ -133,12 +155,11 @@ UnGrouped
   - (Toggle) Window opening animation
   - (Radio) Window opening animation effect
   - Adjust animation speed
-  - Add Excluded Programs window
+  - Add excluded programs
   - Manage running program blacklist
   - Remove windows for excluded programs
-  - Manage running program blacklist
 
-Dock (Grouped)
+### 2.2 Dock
 
 - Look and Behavior
   - (Slider) Icon size
@@ -146,7 +167,7 @@ Dock (Grouped)
     - None
     - Scaling
     - Select
-    - illumination
+    - Illumination
     - Scaling and light
     - Select and light
   - (Slider) Icon magnification
@@ -201,7 +222,7 @@ Dock (Grouped)
     - Auto-hide
     - Smart auto-hide
     - Always show
-    - Only display with
+    - Only display with…
     - Always force visibility
     - Display only on the desktop
   - Select how the Dock shows and hides the detection window
@@ -219,7 +240,7 @@ Dock (Grouped)
   - (Slider) Activation bar distance from screen edge
   - (Slider) Mouse delay activates dock time
 - Minimize Effects
-  - (Check Input) Use MyDockFinder minimize effect
+  - (Check Input) Use Nexora minimize effect
   - (Check Input) Don't animate minimizing windows
   - (Check Input) Hold down 'Shift' to slow down an animation
   - (Check Input) Minimize windows into their Dock icon
@@ -234,8 +255,8 @@ Dock (Grouped)
     - Suck
   - Minimize animation speed
   - Minimize animation blacklist
-- Windows Previews
-  - (Check Input) Enable windo(w previews
+- Window Previews
+  - (Check Input) Enable window previews
   - (Slider) Window preview size
   - (Slider) Preview delay on hover
   - Show preview elements
@@ -243,10 +264,10 @@ Dock (Grouped)
     - (Check Input) Window control buttons
     - (Check Input) Show native window preview on hover
 
-Finder (Grouped)
+### 2.3 Finder
 
 - Look and Behavior
-  - MyFinder menu icon
+  - Finder menu icon
   - Auto-Hide Finder
   - Shut down confirmation box
   - Maximized windows affect Finder appearance
@@ -267,3 +288,25 @@ Finder (Grouped)
   - Automatically switch power plans
   - Power plans when using power
   - Power plans when using batteries
+
+### 2.4 Dynamic Island
+
+- Look & Behavior
+  - (Toggle) Enable Dynamic Island
+  - (Select Option) Shape
+    - Attached to the top edge
+    - Floating capsule
+  - (Select Option) Display mode
+    - Fixed
+    - Smart
+    - On demand
+  - (Check Input) Open on hover
+  - (Select Option) Idle style
+  - Greeting name and text
+  - Material and rounding
+- Activities
+  - (Check Input) Media and lyrics (compact lyrics, online lyrics lookup)
+  - (Check Input) Downloads
+  - (Check Input) File shelf
+  - (Check Input) Send to phone
+  - (Check Input) Timer and calendar strip

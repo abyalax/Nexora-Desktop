@@ -543,7 +543,7 @@ unsafe extern "system" fn proc(h: HWND, m: u32, wp: WPARAM, lp: LPARAM) -> LRESU
       })
       .unwrap_or(false);
       if notify {
-        crate::finder::refresh_radios();
+        crate::menubar::refresh_radios();
         crate::controlcenter::refresh_radios();
       }
       LRESULT(0)

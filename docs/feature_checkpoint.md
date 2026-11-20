@@ -6,10 +6,10 @@ defined in [`architecture.md`](architecture.md) and [`../AGENTS.md`](../AGENTS.m
 | #   | Feature            | Product name in the UI | One-line description                                                                  |
 | --- | ------------------ | ---------------------- | ------------------------------------------------------------------------------------- |
 | 1   | **Dock**           | Deck                   | Magnifying app strip: pinned and running apps, previews, minimize effects, Trash.     |
-| 2   | **Finder**         | Rail                   | Top bar: logo menu, active-app menus, tray status (Wi-Fi, battery, clock), search.    |
+| 2   | **Finder**         | Menu Bar               | Top bar: logo menu, active-app menus, tray status (Wi-Fi, battery, clock), search.    |
 | 3   | **Dynamic Island** | Visor                  | Glass pill at the top: media and lyrics, downloads, timer, file shelf, send-to-phone. |
 
-> Naming: code, docs and crate modules use *Dock / Finder / Dynamic Island*. User-visible strings use *Deck / Rail /
+> Naming: code, docs and crate modules use *Dock / Finder / Dynamic Island*. User-visible strings use *Deck / Menu Bar /
 > Visor* (see the disclaimer in the README). Do not rename modules to match the UI names.
 
 Status legend used below: ✅ implemented · 🟡 partial · ⬜ planned (not in the settings model or UI yet).
@@ -113,7 +113,7 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 
 ---
 
-## 3. Feature: Finder
+## 3. Feature: Menubar
 
 ### 3.1 Goal
 
@@ -143,15 +143,15 @@ in one place, replacing the need for the Windows taskbar's notification area.
 | F-17 | Media playback icon and lyrics in the bar (plain or colored)                                                               | ⬜                                              |
 | F-18 | Input-method menu, search icon and account icon toggles                                                                    | ⬜                                              |
 
-### 3.3 Settings (sidebar group **Finder**)
+### 3.3 Settings (sidebar group **Menubar**)
 
-* **Look & Behavior**: Finder menu icon · auto-hide · shut-down confirmation · maximized windows affect appearance ·
+* **Look & Behavior**: Menubar menu icon · auto-hide · shut-down confirmation · maximized windows affect appearance ·
   top-right corner closes maximized window · lock tray-icon dragging · show window options · colored tray icons ·
   input-method menu · search icon · account icon · media playback icon · lyrics menu · colored lyrics.
 * **Notifications**, **Time & Date**, **Audio**, **Display**, **Hardware Status**: per-item visibility and format.
 * **Battery**: show battery menu · show percentage · remaining time · auto-switch power plan · plan on power · plan on
   battery.
-* **System Icon Tray** (ungrouped page): always show all tray icons in Finder / Dock · show system tray in Finder ·
+* **System Icon Tray** (ungrouped page): always show all tray icons in Menubar / Dock · show system tray in Menubar ·
   newly started tray icon shows time.
 
 ### 3.4 Architecture mapping
@@ -168,8 +168,8 @@ in one place, replacing the need for the Windows taskbar's notification area.
 ### 3.5 Acceptance criteria
 
 * Clock text, item layout and truncation are unit-tested in `core` for English and Indonesian locales.
-* The Finder never draws over a full-screen app unless *above full-screen* is enabled.
-* Turning Finder off leaves Dock and Dynamic Island unaffected and releases the work area it reserved.
+* The Menubar never draws over a full-screen app unless *above full-screen* is enabled.
+* Turning Menubar off leaves Dock and Dynamic Island unaffected and releases the work area it reserved.
 * Wi-Fi and Bluetooth state changes are reflected without polling faster than once per second while idle.
 
 ---
@@ -207,13 +207,13 @@ name and text · material and rounding · lyrics compact · online lyrics · dow
 
 ### 4.4 Architecture mapping
 
-| Concern                                                | Target                                                           | Today                                                                                       |
-| ------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| State machine, events                                  | `core/dynamic_island/{state,events,interactions}.rs`             | ✅ `state.rs` (pure `step()`); events are inside it                                          |
-| Timer, shelf, glance, download, send, lyrics, bands    | `core/dynamic_island/*`                                          | ✅ in place                                                                                  |
-| Layout                                                 | `core/dynamic_island/layout.rs`                                  | ⬜ pill geometry in `app/dynamic_island/{ears,body}.rs`                                      |
-| Media, loopback, calendar, download watch, send server | `platform/media/*`, `platform/system/*`, `platform/filesystem/*` | ✅ implemented, flat layout until the platform regrouping lands                              |
-| Rendering and animation                                | `ui/features/dynamic_island/{view,animations}.rs`                | ⬜ `app/dynamic_island/{views,draw,body,shadow}.rs` (≈2 900 lines)                           |
+| Concern                                                | Target                                                           | Today                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| State machine, events                                  | `core/dynamic_island/{state,events,interactions}.rs`             | ✅ `state.rs` (pure `step()`); events are inside it                                                                                                                                                                                                              |
+| Timer, shelf, glance, download, send, lyrics, bands    | `core/dynamic_island/*`                                          | ✅ in place                                                                                                                                                                                                                                                      |
+| Layout                                                 | `core/dynamic_island/layout.rs`                                  | ⬜ pill geometry in `app/dynamic_island/{ears,body}.rs`                                                                                                                                                                                                          |
+| Media, loopback, calendar, download watch, send server | `platform/media/*`, `platform/system/*`, `platform/filesystem/*` | ✅ implemented, flat layout until the platform regrouping lands                                                                                                                                                                                                  |
+| Rendering and animation                                | `ui/features/dynamic_island/{view,animations}.rs`                | ⬜ `app/dynamic_island/{views,draw,body,shadow}.rs` (≈2 900 lines)                                                                                                                                                                                               |
 | Window host, wndproc, timers                           | `app/dynamic_island/*`                                           | 🟡 `Notch` is split by responsibility into `mod.rs` (struct, `create`, `dispatch`) + `wndproc, pointer, timers, present, placement, reconfigure, playback, lyric_sync, activity, shelf, send`; the type still mixes host, platform and domain state until step 7 |
 
 ### 4.5 Acceptance criteria

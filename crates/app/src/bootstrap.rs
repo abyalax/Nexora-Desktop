@@ -5,7 +5,7 @@
 use crate::application::Application;
 use crate::startup::{args::Args, demo, recovery, single_instance};
 use crate::{
-  controlcenter, dock, dynamic_island, finder, fx, hotcorners, hud, launchpad, lifecycle, macshortcuts, mainwin,
+  controlcenter, dock, dynamic_island, fx, hotcorners, hud, launchpad, lifecycle, macshortcuts, mainwin, menubar,
   mission, paths, prefs, services, settings_win, spotlight, stage, switcher, topmost, widgets,
 };
 use nexora_core::settings::Settings;
@@ -146,7 +146,7 @@ fn start_desktop_features(host: &Host, args: &Args) {
   report("stage", stage::init(&host.compositor));
   report("controlcenter", controlcenter::init(&host.compositor));
   report("switcher", switcher::init(&host.compositor));
-  report("menubar", finder::init(&host.compositor));
+  report("menubar", menubar::init(&host.compositor));
   report("topmost", topmost::init());
   report("hotcorner", hotcorners::init());
   report("fx", fx::init(host));

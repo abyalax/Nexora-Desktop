@@ -1,23 +1,23 @@
 //! Persistent user preferences (the on-disk `settings.cfg` model).
 //!
 //! Layout: `enums` (option types), `text` (fixed-size text field), `codec` (parse/serialize),
-//! `look` (settings -> glass look), `dock` / `finder` / `island` (per-feature sections). Public paths are unchanged: everything is re-exported here.
+//! `look` (settings -> glass look), `dock` / `menubar` / `island` (per-feature sections). Public paths are unchanged: everything is re-exported here.
 
 use crate::i18n::Lang;
 
 mod codec;
 mod dock;
 mod enums;
-mod finder;
 mod island;
 mod look;
+mod menubar;
 mod text;
 
 pub use dock::DockSettings;
 pub use enums::*;
-pub use finder::FinderSettings;
 pub use island::IslandSettings;
 pub use look::{Look, bar_look, look};
+pub use menubar::MenubarSettings;
 pub use text::ShortText;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

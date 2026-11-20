@@ -1,7 +1,7 @@
-//! Finder menu model and popup handling.
+//! Menubar menu model and popup handling.
 
 use super::*;
-use nexora_core::finder::menus::{self, Entry, MenuKind};
+use nexora_core::menubar::menus::{Entry, MenuKind, entries};
 
 impl Bar {
   pub(super) fn id_at(&self, x: f32) -> Option<u32> {

@@ -6,14 +6,14 @@
 
 > [!IMPORTANT]
 > **Disclaimer.** nexora is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
-> Apple Inc.** in any way. nexora uses its own names (Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Crystal and so on).
+> Apple Inc.** in any way. nexora uses its own names (Deck, Visor, Menu Bar, Scene, Quick Search, Quick Panel, Crystal and so on).
 > “Apple”, “macOS”, “Tahoe”, “Liquid Glass”, “Dynamic Island”, “Stage Manager”, “Mission Control”, “Spotlight”,
 > “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. nexora ships no Apple code, icons,
 > fonts or other assets.
 
 <p align="center">
   <b>A modern glass desktop for Windows 11.</b><br>
-  Deck · Visor · Rail · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust, about 15 MB of RAM.
+  Deck · Visor · Menu Bar · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust, about 15 MB of RAM.
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@ nexora turns Windows 11 into a clean, modern desktop:
 
 - a magnifying **Deck** for your apps,
 - a **Visor** at the top of the screen that shows what is going on (music with live lyrics, downloads, timers, files),
-- a **Rail** with real app menus, Wi‑Fi and battery,
+- a **Menu Bar** with real app menus, Wi‑Fi and battery,
 - a **Quick Panel** for toggles and sliders, **Quick Search**, **Scene**, **Overview** and desktop **Widgets**,
 
 all drawn with a frosted glass material and springy animations.
@@ -51,7 +51,7 @@ It is one small native program: no Electron, no web view, no background services
 **15 MB** of private memory.
 
 <p align="center">
-  <img src="assets/screenshots/desktop.png" alt="nexora desktop: Deck, Rail, Visor and widgets" width="900">
+  <img src="assets/screenshots/desktop.png" alt="nexora desktop: Deck, Menu Bar, Visor and widgets" width="900">
 </p>
 
 ### 🆕 New in 0.4.0
@@ -59,15 +59,15 @@ It is one small native program: no Electron, no web view, no background services
 - **Desktop widgets**: Clock, World Clock, Today, Month, Digital Clock, Battery and System Monitor, in the **Original** or
   **Crystal** material. Add them from a widget gallery; they snap to a tidy grid with a placeholder while you drag.
 - **Capsule**: an optional floating, pill‑shaped Visor.
-- **Global scale** (100 · 125 · 150%) for the Deck, Visor, Rail and Quick Panel.
+- **Global scale** (100 · 125 · 150%) for the Deck, Visor, Menu Bar and Quick Panel.
 - **Quick Panel editing**: drag controls to rearrange them (neighbours slide out of the way) and drag the glass corner
   handle to resize any control — Wi‑Fi down to a single circle, sliders vertical or wide, Playing from a play button up
   to a large card.
 - **Wi‑Fi**: connect to your saved networks without location access, live signal strength, and new Wi‑Fi and battery icons
-  in the Rail with the battery percentage inside, outside or hidden.
+  in the Menu Bar with the battery percentage inside, outside or hidden.
 - **Windows** open and close with an animation; Scene cards fly in from where they sit.
-- **Settings** redesigned with a floating glass sidebar, and your own image as the Rail logo.
-- **Own names** for every part: Deck, Visor, Rail, Scene, Quick Search, Quick Panel, Overview and App Grid.
+- **Settings** redesigned with a floating glass sidebar, and your own image as the Menu Bar logo.
+- **Own names** for every part: Deck, Visor, Menu Bar, Scene, Quick Search, Quick Panel, Overview and App Grid.
 - **Fixes**: Deck pins survive app updates (Microsoft Store and auto‑updating apps), closed apps can be removed from the
   Deck, opening apps no longer freezes nexora, the Visor and Deck always stay above other windows, and text can no longer be
   garbled by third‑party fonts.
@@ -91,7 +91,7 @@ Every part of nexora is independent. Keep only the pieces you like:
 | ----------------------- | ------------------------------------------------------------------------------- |
 | Deck                    | _Settings → Deck → Enable Deck_                                                 |
 | Visor                   | _Settings → Visor → Enable Visor_                                               |
-| Rail                    | _Settings → Rail → Enable Rail_                                                 |
+| Menu Bar                | _Settings → Menu Bar → Enable Menu Bar_                                         |
 | Widgets                 | Right‑click a widget → _Remove Widget_                                          |
 | Scene                   | _Settings → Scene_, or the Quick Panel control                                  |
 | Screen Corners          | _Settings → Screen Corners_ (set each corner to “None”)                         |
@@ -99,7 +99,7 @@ Every part of nexora is independent. Keep only the pieces you like:
 | Window animations       | _Settings → General → Window animations_                                        |
 | Recent apps in the Deck | _Settings → Deck → Recent apps_                                                 |
 
-Use only the Deck with your normal taskbar, only the Visor, only the Rail — any mix works.
+Use only the Deck with your normal taskbar, only the Visor, only the Menu Bar — any mix works.
 
 ---
 
@@ -128,7 +128,7 @@ Download from the **[Releases](https://github.com/abyalax/Nexora-Desktop/release
 ### First run
 
 - The Windows taskbar hides and the Deck appears (turn this off in _Settings → General_ if you prefer your taskbar).
-- Open **Settings**: right‑click the Deck → **nexora Settings…**, or click the logo in the Rail.
+- Open **Settings**: right‑click the Deck → **nexora Settings…**, or click the logo in the Menu Bar.
 - Language: _Settings → General → Language_ (**English** or **Indonesia**).
 
 ### Updating from 0.3.0
@@ -202,13 +202,13 @@ _Settings → Visor → Shape_.
 </details>
 
 <details open>
-<summary><b>📋 Rail</b></summary>
+<summary><b>📋 Menu Bar</b></summary>
 
 - **Logo menu**: About this PC, System Settings, Microsoft Store, nexora Settings, App Grid, Overview, Force Quit, Sleep,
-  Restart, Shut Down, Lock Screen. Use your own image as the logo in _Settings → Rail → Rail logo_.
+  Restart, Shut Down, Lock Screen. Use your own image as the logo in _Settings → Menu Bar → Menu Bar logo_.
 - **App name and menus**: the active app’s real menus (File, Edit…) when it has classic menus.
 - **Right side**: battery, **Wi‑Fi**, Quick Search, Quick Panel and the clock. The Wi‑Fi icon shows live signal strength;
-  the battery percentage can sit inside the icon, next to it, or be hidden (_Settings → Rail_).
+  the battery percentage can sit inside the icon, next to it, or be hidden (_Settings → Menu Bar_).
 - **Background**: transparent (with a soft shade), light, dark or the glass material.
 
 - **Wi‑Fi menu**: a switch, your **saved networks** (click one to connect) and live signal strength for the current one.
@@ -220,7 +220,7 @@ _Settings → Visor → Shape_.
 <details open>
 <summary><b>🎚 Quick Panel</b></summary>
 
-- Click the two‑switch icon in the Rail.
+- Click the two‑switch icon in the Menu Bar.
 - **Wi‑Fi / Bluetooth**: click the round icon to switch on/off; click the rest to open the network / device picker.
   Bluetooth **headphones and speakers connect with one click**.
 - **Display / Sound sliders**, a **sound output** button, Playing, Dark Mode, Scene, Overview, Screenshot and more.
@@ -294,7 +294,7 @@ _Settings → Visor → Shape_.
 
 - _Settings → Appearance_: Auto · Light · Dark, accent color, icon style (Default · Dark · Clear · Tinted), the glass
   material (**Blur**, **Crystal** or **Black**), a separate Visor material, blur, transparency, the **scale** of the Deck,
-  Visor, Rail and Quick Panel, and an optional **icon pack** (`%APPDATA%\nexora\iconpack`, nothing is bundled).
+  Visor, Menu Bar and Quick Panel, and an optional **icon pack** (`%APPDATA%\nexora\iconpack`, nothing is bundled).
 - Settings has a floating glass sidebar with search, back / forward buttons, English and Indonesian.
 - **Quick shortcuts**: `` Alt+` `` cycles windows of the same app, `Ctrl+Alt+H` hides, `Ctrl+Alt+M` minimizes,
   `Ctrl+Alt+Q` quits the active app (_Settings → General_).
@@ -416,7 +416,7 @@ Useful flags: `--keep-taskbar`, `--no-dock`, `--no-island`, `--no-hud`, `--open-
 | `crates/core`                     | Pure, unit‑tested logic: Visor state, lyrics, QR codes, Deck layout, widgets, settings, i18n, icons        |
 | `crates/platform`                 | Win32 / WinRT wrappers: windows, media, audio, Wi‑Fi, Bluetooth, downloads, icons, text, local send server |
 | `crates/ui`                       | The glass materials on `Windows.UI.Composition`, the shared graphics device and live window capture        |
-| `crates/app`                      | The `nexora` app: Deck, Visor, Rail, Quick Panel, Quick Search, Scene, Widgets, Settings                   |
+| `crates/app`                      | The `nexora` app: Deck, Visor, Menu Bar, Quick Panel, Quick Search, Scene, Widgets, Settings               |
 | `crates/guard`                    | `nexora-guard`, the watchdog that restores the taskbar and moved windows                                   |
 | `docs/` · `installer/` · `tools/` | Indonesian user guide, installer and release script, taskbar safety test                                   |
 

@@ -1,6 +1,6 @@
 # nexora User Guide
 
-nexora transforms the Windows 11 taskbar into a modern desktop experience featuring **Deck**, **Visor (Capsule)**, **Rail**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
+nexora transforms the Windows 11 taskbar into a modern desktop experience featuring **Deck**, **Visor (Capsule)**, **MenuBar**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
 
 > This guide is available in English. For the project overview, build instructions, and development information, see the [README](../README.md).
 
@@ -9,7 +9,7 @@ nexora transforms the Windows 11 taskbar into a modern desktop experience featur
 1. [Installation and Getting Started](#1-installation-and-getting-started)
 2. [Deck](#2-deck)
 3. [Visor](#3-visor)
-4. [Rail](#4-rail)
+4. [MenuBar](#4-menubar)
 5. [Quick Panel](#5-quick-panel)
 6. [Quick Search](#6-quick-search)
 7. [Apps](#7-apps)
@@ -51,7 +51,7 @@ Once `nexora.exe` starts, the native Windows taskbar is hidden and Deck appears 
 
 - **Exit nexora:** Right-click an icon on Deck or the nexora tray icon, then select **Exit nexora**. The Windows taskbar is automatically restored.
 - **Unexpected shutdown:** `nexora-guard.exe` automatically restores the Windows taskbar and any windows parked by Scene. If recovery does not occur, launch `nexora.exe` again and exit normally.
-- **Open Settings:** Right-click Deck and select **nexora Settings...**. You can also use the Settings gear icon on Deck or the circular nexora logo on Rail.
+- **Open Settings:** Right-click Deck and select **nexora Settings...**. You can also use the Settings gear icon on Deck or the circular nexora logo on MenuBar.
 - **Launch at startup:** Go to Settings → General → **Launch at Windows startup**.
 
 Only one nexora instance can run at a time. Launching it again simply brings the existing instance back to the foreground.
@@ -345,11 +345,11 @@ Lyrics without timestamps are displayed only in the Lyrics card.
 
 To hide lyrics from the collapsed Visor, disable **Show Lyrics in Visor**.
 
-## 4. Rail
+## 4. Menubar
 
-Enable Rail under Settings → General → **Enable Rail**.
+Enable Menubar under Settings → General → **Enable Menubar**.
 
-Rail provides a menu bar across the top of the screen.
+Menubar provides a menu bar across the top of the screen.
 
 ### Left Side
 
@@ -387,7 +387,7 @@ Click it to access:
 
 **Application Menus**
 
-When the active application exposes a classic Win32 menu (File, Edit, and others), Rail displays the original menu and allows direct interaction.
+When the active application exposes a classic Win32 menu (File, Edit, and others), Menubar displays the original menu and allows direct interaction.
 
 Applications without classic menus, including browsers, Electron applications, and the modern Notepad, use a standard menu containing:
 
@@ -403,7 +403,7 @@ Once a menu is open, move the pointer over another menu title to switch menus wi
 
 ### Right Side
 
-From right to left, Rail displays:
+From right to left, Menubar displays:
 
 - Clock — clicking it opens Windows Notification Center.
 - Quick Panel.
@@ -437,9 +437,9 @@ For a newly discovered password-protected network, Windows opens its network sel
 >
 > nexora does not read or store your location.
 
-### Rail Appearance
+### Menubar Appearance
 
-Configure Rail's background under Settings → Rail.
+Configure Menubar's background under Settings → Menubar.
 
 Available styles:
 
@@ -450,7 +450,7 @@ Available styles:
 
 Text colors automatically adapt to the wallpaper or background color.
 
-The global light/dark theme does not affect Rail.
+The global light/dark theme does not affect Menubar.
 
 ### Active Application Tracking
 
@@ -460,7 +460,7 @@ It also updates when focus changes through keyboard navigation or Scene.
 
 ### Always-on-Top Behavior
 
-By default, Deck, Rail, and Visor remain **above all windows, including fullscreen applications**.
+By default, Deck, Menubar, and Visor remain **above all windows, including fullscreen applications**.
 
 If you prefer them to disappear when a fullscreen application is active (videos, games, or F11 fullscreen mode), disable:
 
@@ -468,7 +468,7 @@ Settings → General → **Always on Top of Fullscreen Windows**.
 
 ## 5. Quick Panel
 
-Click the two-toggle icon on Rail to open Quick Panel.
+Click the two-toggle icon on Menubar to open Quick Panel.
 
 Quick Panel provides floating glass-style controls for common system functions.
 
@@ -553,7 +553,7 @@ Focus, Hotspot, Nearby Sharing, and Airplane Mode open their corresponding Windo
 
 ### Volume and Brightness HUD
 
-When you press a volume or brightness key, a glass-style HUD appears in the upper-right corner, beneath Rail.
+When you press a volume or brightness key, a glass-style HUD appears in the upper-right corner, beneath MenuBar.
 
 It displays:
 
@@ -565,7 +565,7 @@ The slider can be dragged directly. The HUD automatically disappears after a sho
 
 ## 6. Quick Search
 
-Open Quick Search using `Ctrl+Space` or the magnifying glass icon on Rail.
+Open Quick Search using `Ctrl+Space` or the magnifying glass icon on MenuBar.
 
 Quick Search initially appears as a compact, fading capsule labeled "Quick Search".
 
@@ -807,7 +807,7 @@ The **◀ / ▶** buttons in the title bar navigate backward and forward through
 | **General**        | Language (Indonesian/English), launch at startup, hide Windows taskbar, hide desktop icons, always on top of fullscreen windows, window animations, active window shadows.                                                                      |
 | **Deck**           | Enable Deck, display behavior, uniform icons, icon size, spacing, zoom, screen-edge distance, corner radius.                                                                                                                                    |
 | **Visor**          | Enable Visor, display behavior, corner radius, automatically open when hovering over Visor.                                                                                                                                                     |
-| **Rail**           | Enable Rail, background style (Transparent, Light, Dark, Material), 24-hour clock.                                                                                                                                                              |
+| **MenuBar**        | Enable MenuBar, background style (Transparent, Light, Dark, Material), 24-hour clock.                                                                                                                                                           |
 | **Appearance**     | Automatic, Light, and Dark previews; theme and accent colors; icon and widget styles; light/dark/automatic appearance; tint colors; icon packs; global glass material; Visor material; blur intensity; transparency; and glass-edge refraction. |
 | **Scene**          | All Scene configuration options.                                                                                                                                                                                                                |
 | **Screen Corners** | Actions assigned to the four screen corners.                                                                                                                                                                                                    |
@@ -1018,8 +1018,8 @@ The following table covers common issues and their recommended solutions.
 | Windows taskbar remains hidden after nexora exits unexpectedly. | Launch `nexora.exe` and exit normally, or allow `nexora-guard.exe` to restore the taskbar. Ensure both executables are located in the same folder.                                  |
 | A window appears to be missing.                                 | It may have been parked by Scene. Restart nexora to restore parked windows, or disable Scene.                                                                                       |
 | Keyboard shortcuts do not work.                                 | Another application may already be using the same shortcut. Check `nexora.log`.                                                                                                     |
-| Application menus do not appear in Rail.                        | The application may not expose a classic Win32 menu. nexora uses its standard menu implementation instead.                                                                          |
-| Rail or Deck is not visible in fullscreen mode.                 | Enable Settings → General → **Always on Top of Fullscreen Windows**. This option is enabled by default. Exclusive fullscreen applications cannot be overlaid.                       |
+| Application menus do not appear in MenuBar.                     | The application may not expose a classic Win32 menu. nexora uses its standard menu implementation instead.                                                                          |
+| MenuBar or Deck is not visible in fullscreen mode.              | Enable Settings → General → **Always on Top of Fullscreen Windows**. This option is enabled by default. Exclusive fullscreen applications cannot be overlaid.                       |
 | Desktop icons are missing.                                      | Go to Settings → General and disable **Hide Desktop Icons While nexora Is Running**. Desktop icons are restored when nexora exits.                                                  |
 | Deck icons look different from their original appearance.       | Disable **Uniform Icons** under the Deck settings and set **Icon Style** to Default.                                                                                                |
 | The mouse cursor remains circular after nexora exits.           | Restart nexora and exit normally, or allow `nexora-guard.exe` to restore the cursor. You can also change it through Windows Settings → Bluetooth & devices → Mouse → Mouse pointer. |
@@ -1033,7 +1033,7 @@ The following limitations currently apply:
 - Live Scene cards use Windows.Graphics.Capture and require Windows 10 version 1903 or later. Windows 11 already meets this requirement.
 - Applications running with Administrator privileges cannot be managed by Scene.
 - Focus, Hotspot, and Airplane Mode controls in Quick Panel currently open their corresponding Windows Settings pages instead of providing direct toggles.
-- Dynamically populated classic application menus, such as recent-file lists, are not displayed in Rail.
+- Dynamically populated classic application menus, such as recent-file lists, are not displayed in MenuBar.
 - **Force Quit** opens Windows Task Manager rather than terminating an application directly.
 - Testing has been performed on Windows 11 with a single primary display.
 

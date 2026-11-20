@@ -1,6 +1,6 @@
 //! The on-disk `settings.cfg` stays readable while the code regroups it into per-feature sections.
 
-use nexora_core::settings::{Behavior, DockSettings, FinderSettings, IslandSettings, Settings};
+use nexora_core::settings::{Behavior, DockSettings, IslandSettings, MenubarSettings, Settings};
 
 const LEGACY: &str = include_str!("fixtures/settings_v0_4.cfg");
 
@@ -22,9 +22,9 @@ fn legacy_file_maps_into_sections() {
   assert_eq!(island.idle, 2);
   assert_eq!(island.greet_name.as_str(), "Aby");
 
-  let finder = s.finder_settings();
-  assert!(finder.enabled && !finder.clock_24h);
-  assert_eq!(finder.battery_pct, 2);
+  let menubar = s.menubar_settings();
+  assert!(menubar.enabled && !menubar.clock_24h);
+  assert_eq!(menubar.battery_pct, 2);
 }
 
 #[test]
@@ -33,7 +33,7 @@ fn sections_round_trip_through_the_flat_file() {
   let again = Settings::parse(&s.serialize());
   assert_eq!(s, again);
   assert_eq!(s.dock_settings(), again.dock_settings());
-  assert_eq!(s.finder_settings(), again.finder_settings());
+  assert_eq!(s.menubar_settings(), again.menubar_settings());
   assert_eq!(s.island_settings(), again.island_settings());
 }
 
@@ -47,13 +47,13 @@ fn applying_one_section_leaves_the_others_untouched() {
   let mut s = base;
   dock.apply(&mut s);
   assert_eq!(s.dock_size, 64);
-  assert_eq!(s.finder_settings(), base.finder_settings());
+  assert_eq!(s.menubar_settings(), base.menubar_settings());
   assert_eq!(s.island_settings(), base.island_settings());
 
-  let mut finder: FinderSettings = base.finder_settings();
-  finder.clock_24h = true;
+  let mut menubar: MenubarSettings = base.menubar_settings();
+  menubar.clock_24h = true;
   let mut s = base;
-  finder.apply(&mut s);
+  menubar.apply(&mut s);
   assert!(s.clock_24h);
   assert_eq!(s.dock_settings(), base.dock_settings());
   assert_eq!(s.island_settings(), base.island_settings());
@@ -64,7 +64,7 @@ fn applying_one_section_leaves_the_others_untouched() {
   island.apply(&mut s);
   assert!(s.notch_enabled);
   assert_eq!(s.dock_settings(), base.dock_settings());
-  assert_eq!(s.finder_settings(), base.finder_settings());
+  assert_eq!(s.menubar_settings(), base.menubar_settings());
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn unmodified_sections_apply_as_identity() {
   let base = Settings::parse(LEGACY);
   let mut s = base;
   base.dock_settings().apply(&mut s);
-  base.finder_settings().apply(&mut s);
+  base.menubar_settings().apply(&mut s);
   base.island_settings().apply(&mut s);
   assert_eq!(s, base);
 }

@@ -155,13 +155,13 @@ impl Bar {
 
   pub(super) fn clock_text(&self) -> String {
     let n = time::local_now();
-    let when = nexora_core::finder::clock::When {
+    let when = nexora_core::menubar::clock::When {
       year: n.year,
       month: n.month,
       day: n.day,
       hour: n.hour,
       minute: n.minute,
     };
-    nexora_core::finder::clock::format(when, prefs::get().lang, prefs::get().clock_24h)
+    nexora_core::menubar::clock::format(when, prefs::get().lang, prefs::get().clock_24h)
   }
 }
