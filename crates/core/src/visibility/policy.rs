@@ -43,6 +43,23 @@ pub fn should_hide(mode: Mode, i: &Inputs) -> bool {
   }
 }
 
+/// What a window host has to do to reach the desired visibility.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Transition {
+  Hide,
+  Show,
+  Keep,
+}
+
+/// The step needed to go from the `shown` state to the desired one (`hide == true` means hidden is desired).
+pub fn transition_to(hide: bool, shown: bool) -> Transition {
+  match (hide, shown) {
+    (true, true) => Transition::Hide,
+    (false, false) => Transition::Show,
+    _ => Transition::Keep,
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -162,5 +179,13 @@ mod tests {
     assert_eq!(Mode::parse("smart"), Some(Mode::AutoHide));
     assert_eq!(Mode::parse("peek"), Some(Mode::OnDemand));
     assert_eq!(Mode::parse("???"), None);
+  }
+
+  #[test]
+  fn transition_only_changes_when_state_and_goal_differ() {
+    assert_eq!(transition_to(true, true), Transition::Hide);
+    assert_eq!(transition_to(false, false), Transition::Show);
+    assert_eq!(transition_to(true, false), Transition::Keep);
+    assert_eq!(transition_to(false, true), Transition::Keep);
   }
 }

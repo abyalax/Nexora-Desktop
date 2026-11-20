@@ -5,15 +5,13 @@ use super::*;
 impl Notch {
   pub(super) fn pill_screen_rect(&self) -> (i32, i32, i32, i32) {
     let base = state::size(state::look(Mode::Rest, None), self.dpi);
-    let l = ((sys::screen_size().0 as f32 - base.w) / 2.0) as i32;
-    (l, 0, l + base.w as i32, (base.h + 4.0 * self.dpi) as i32)
+    layout::pill_screen_rect(sys::screen_size().0, base, self.dpi)
   }
 
   pub(super) fn place_strip(&self) {
     if let Some(s) = &self.strip {
-      let (l, _, r, _) = self.pill_screen_rect();
-      let pad = (60.0 * self.dpi) as i32;
-      s.place(l - pad, 0, r - l + 2 * pad, 2);
+      let (x, y, w, h) = layout::activation_strip(self.pill_screen_rect(), self.dpi);
+      s.place(x, y, w, h);
       s.set_visible(!self.overlap.fullscreen && !self.off);
     }
   }
@@ -32,24 +30,26 @@ impl Notch {
     }
   }
 
-  pub(super) fn interacting(&self) -> bool {
-    self.tracking || matches!(self.mode, Mode::Open(_) | Mode::Drop) || self.grace
+  /// Snapshot of the host state that drives the visibility decision in `nexora_core::dynamic_island::visibility`.
+  fn visibility_signals(&self) -> visibility::Signals {
+    visibility::Signals {
+      overlapped: self.overlap.overlapped,
+      fullscreen: self.overlap.fullscreen,
+      tracking: self.tracking,
+      grace: self.grace,
+      edge_armed: self.edge_armed,
+      starting: self.starting,
+      off: self.off,
+      panel: self.mode,
+    }
   }
 
   pub(super) fn update_visibility(&mut self) {
-    let inputs = Inputs {
-      overlapped: self.overlap.overlapped,
-      interacting: self.interacting(),
-      edge_armed: self.edge_armed,
-      starting: self.starting,
-      fullscreen: self.overlap.fullscreen,
-      revealing: false,
-    };
-    let hide = self.off || should_hide(self.vis, &inputs);
+    let transition = visibility::transition(self.vis, &self.visibility_signals(), self.shown);
     if let Some(s) = &self.strip {
       s.set_visible(!self.overlap.fullscreen && !self.off);
     }
-    if hide && self.shown {
+    if transition == Transition::Hide {
       self.shown = false;
       let y = -(self.size.h + self.body.top_over + 8.0 * self.dpi);
       self.body.stage_y(y, 0.95, 90);
@@ -58,7 +58,7 @@ impl Notch {
       }
       timer(self.hwnd, T_HIDEWIN, 550);
       log::line("notch", "sembunyi");
-    } else if !hide && !self.shown {
+    } else if transition == Transition::Show {
       self.shown = true;
       kill(self.hwnd, T_HIDEWIN);
       unsafe {
@@ -79,14 +79,14 @@ impl Notch {
       crate::services::set_notch(0, 0, 0);
       return;
     }
-    let (l, _, r, h) = self.pill_screen_rect();
-    crate::services::set_notch(l, r, h - (4.0 * self.dpi) as i32);
+    let (l, r, h) = layout::published_extent(self.pill_screen_rect(), self.dpi);
+    crate::services::set_notch(l, r, h);
   }
 
   pub(super) fn set_reserved(&mut self, on: bool) {
     self.reserved = on;
     if on {
-      let strip = (34.0 * self.dpi).ceil() as i32;
+      let strip = layout::reserve_height(self.dpi);
       let r = nexora_platform::shell::appbar::reserve_top(self.hwnd, self.screen_w, strip);
       log::line("appbar", &format!("atas strip={strip} hasil={r:?}"));
     } else {

@@ -3,7 +3,7 @@
 //! The window host (`app`) gathers [`Signals`] from the OS and its own state, asks for a [`Transition`], and performs the
 //! side effects (animation, `ShowWindow`, timers). No OS access happens here.
 
-use crate::visibility::policy::{Inputs, Mode, should_hide};
+use crate::visibility::policy::{Inputs, Mode, should_hide, transition_to};
 
 /// Everything the Dock needs to know to decide whether it is shown.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -50,13 +50,7 @@ impl Signals {
   }
 }
 
-/// What the host has to do to reach the desired visibility.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Transition {
-  Hide,
-  Show,
-  Keep,
-}
+pub use crate::visibility::policy::Transition;
 
 /// Whether the Dock should currently be hidden.
 pub fn wants_hidden(mode: Mode, signals: &Signals) -> bool {
@@ -65,11 +59,7 @@ pub fn wants_hidden(mode: Mode, signals: &Signals) -> bool {
 
 /// The change needed given whether the Dock is `shown` right now.
 pub fn transition(mode: Mode, signals: &Signals, shown: bool) -> Transition {
-  match (wants_hidden(mode, signals), shown) {
-    (true, true) => Transition::Hide,
-    (false, false) => Transition::Show,
-    _ => Transition::Keep,
-  }
+  transition_to(wants_hidden(mode, signals), shown)
 }
 
 /// Entering the strip starts the reveal dwell timer unless the Dock is always visible.
