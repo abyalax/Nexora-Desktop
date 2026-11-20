@@ -284,9 +284,14 @@ Follows `architecture.md` §9. Items marked ✅ are done on this branch; the res
 3. ✅ Dynamic Island host: `Notch` implementation split by responsibility inside `app/dynamic_island/` (mechanical move,
    no behavior change; `mod.rs` 2 347 → 567 lines). See `decisions/0001-split-island-host-by-responsibility.md`.
    Still open here: `views.rs` (≈1 900 lines) moves to `ui/features/dynamic_island` in step 7.
-4. ⬜ `core` regrouping into feature folders (`settings/`, `launchpad/`, `window_management/`, `panels/`, `shared/`).
+4. ✅ `core` regrouping into feature folders (`settings/`, `launchpad/`, `window_management/`, `panels/`, `shared/`).
+   Old top-level paths (`nexora_core::genie`, `::i18n`, `::controls`, ...) stay as re-exports in `core/src/lib.rs`, so
+   `app`, `ui` and `platform` are unchanged. `shared::geometry` (`Rect`, `Edge`, `Inset`) replaces the duplicate `Rect`
+   in `genie` and `mission`; `shared::monitors::pick` is the tested multi-monitor choice needed by D-12.
+   See `decisions/0002-regroup-core-by-feature.md`.
 5. ⬜ `platform` regrouping into `windows/`, `system/`, `media/`, `filesystem/`, `input/`.
-6. ⬜ Settings schema split (section 5.4) with a compatibility test over a real `settings.cfg`.
+6. ✅ Settings schema split (section 5.4); `core/tests/settings_golden.rs` round-trips real 0.4.0 `settings.cfg` files
+   byte for byte (`tests/fixtures/settings_0_4_0_*.cfg`).
 7. ⬜ Move presentation into `ui/features/{dock,finder,dynamic_island}` by injecting a theme/settings snapshot instead of
    reading the global `app::prefs` from drawing code.
 8. ⬜ New capabilities marked ⬜ above, one feature at a time, each with `core` unit tests first.

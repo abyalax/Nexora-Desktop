@@ -11,6 +11,7 @@ mod enums;
 mod island;
 mod look;
 mod menubar;
+pub mod preview;
 mod text;
 
 pub use dock::DockSettings;

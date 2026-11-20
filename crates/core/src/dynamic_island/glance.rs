@@ -1,4 +1,4 @@
-use crate::i18n::Lang;
+use crate::shared::i18n::Lang;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Item {

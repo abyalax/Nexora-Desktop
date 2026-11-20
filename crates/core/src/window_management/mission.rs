@@ -1,10 +1,4 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Rect {
-  pub x: f32,
-  pub y: f32,
-  pub w: f32,
-  pub h: f32,
-}
+pub use crate::shared::geometry::Rect;
 
 pub fn grid(sizes: &[(f32, f32)], area: Rect, gap: f32, label_h: f32) -> Vec<Rect> {
   let n = sizes.len();

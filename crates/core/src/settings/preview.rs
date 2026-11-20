@@ -1,4 +1,4 @@
-use crate::iconplate;
+use crate::shared::iconplate;
 use crate::settings::IconStyle;
 
 type P = (f32, f32);

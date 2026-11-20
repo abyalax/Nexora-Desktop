@@ -6,6 +6,7 @@ pub mod glance;
 pub mod json;
 pub mod lrclib;
 pub mod lyrics;
+pub mod qr;
 pub mod send;
 pub mod shade;
 pub mod shelf;

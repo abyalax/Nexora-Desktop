@@ -1,10 +1,4 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Rect {
-  pub x: f32,
-  pub y: f32,
-  pub w: f32,
-  pub h: f32,
-}
+pub use crate::shared::geometry::Rect;
 
 const LAG: f32 = 0.72;
 const NECK: f32 = 1.55;
