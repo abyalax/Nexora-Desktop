@@ -22,6 +22,7 @@ use nexora_core::dock::layout::{Layout, Metrics, Slot, hit, layout};
 use nexora_core::dock::recents;
 use nexora_core::dock::reorder;
 use nexora_core::dock::ring::next_in_ring;
+use nexora_core::dock::state::DockState;
 use nexora_core::visibility::policy::Mode;
 use nexora_platform::icons;
 use nexora_platform::wins::overlap::{self, Overlap};
@@ -144,12 +145,12 @@ pub struct Dock {
   card_y: f32,
   card_h: f32,
   margin: f32,
-  off: bool,
   icon_px: i32,
   icon_y: f32,
   dot_y: f32,
   pad_side: f32,
   opts: Options,
+  state: DockState,
 
   pins: Vec<Pin>,
   pins_path: PathBuf,
@@ -172,7 +173,6 @@ pub struct Dock {
   worker: icons::Worker,
   plates: bool,
 
-  tracking: bool,
   region_full: bool,
   cursor: Option<f32>,
   last_apply: Instant,
@@ -182,14 +182,7 @@ pub struct Dock {
   press: Option<Press>,
   dragging: Option<usize>,
 
-  shown: bool,
-  starting: bool,
-  revealing: bool,
   overlap: Overlap,
-  grace: bool,
-  edge_armed: bool,
-  menu_open: bool,
-  preview_hover: bool,
   tier: Tier,
   strip: Option<Strip>,
   tooltip: Option<Tooltip>,
@@ -243,7 +236,7 @@ fn on_windows_changed() {
 pub fn reveal_for(ms: u32) {
   let h = HWND(DOCK_HWND.load(Ordering::Relaxed) as *mut _);
   with_dock(h, |d| {
-    d.revealing = true;
+    d.state.revealing = true;
     d.update_visibility();
     timer(d.hwnd, TIMER_REVEAL, ms);
   });

@@ -17,8 +17,8 @@ impl Dock {
       kill(self.hwnd, TIMER_REGION);
       self.set_region(true);
     }
-    if self.grace {
-      self.grace = false;
+    if self.state.grace {
+      self.state.grace = false;
       kill(self.hwnd, TIMER_GRACE);
     }
     let slot = self.entry_at(x).map(|(i, _)| i);
@@ -60,7 +60,7 @@ impl Dock {
   }
 
   pub(super) fn on_leave(&mut self) {
-    self.tracking = false;
+    self.state.tracking = false;
     if self.dragging.is_some() {
       return;
     }

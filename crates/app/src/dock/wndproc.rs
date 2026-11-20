@@ -12,7 +12,7 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
     WM_MOUSEMOVE => {
       let (x, y) = xy(lp);
       with_dock(hwnd, |d| {
-        if !d.tracking {
+        if !d.state.tracking {
           let mut t = TRACKMOUSEEVENT {
             cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
             dwFlags: TME_LEAVE,
@@ -20,7 +20,7 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
             dwHoverTime: 0,
           };
           if TrackMouseEvent(&mut t).is_ok() {
-            d.tracking = true;
+            d.state.tracking = true;
             d.update_visibility();
           }
         }
@@ -104,14 +104,14 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
     }
     PREVIEW_ENTER => {
       with_dock(hwnd, |d| {
-        d.preview_hover = true;
+        d.state.preview_hover = true;
         kill(hwnd, TIMER_PCLOSE);
       });
       LRESULT(0)
     }
     PREVIEW_LEAVE => {
       with_dock(hwnd, |d| {
-        d.preview_hover = false;
+        d.state.preview_hover = false;
         timer(hwnd, TIMER_PCLOSE, 200);
       });
       LRESULT(0)

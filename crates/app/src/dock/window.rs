@@ -95,12 +95,12 @@ impl Dock {
         card_y: 0.0,
         card_h: 0.0,
         margin: 8.0 * dpi,
-        off: !crate::prefs::get().dock_enabled,
         icon_px: px,
         icon_y: 0.0,
         dot_y: 0.0,
         pad_side: 10.0 * dpi,
         opts,
+        state: DockState::new(crate::prefs::get().dock_enabled),
         pins,
         pins_path,
         recents,
@@ -125,7 +125,6 @@ impl Dock {
         trash_full: nexora_platform::recycle::is_full(),
         worker,
         plates: crate::prefs::get().dock_plates,
-        tracking: false,
         region_full: false,
         cursor: None,
         last_apply: Instant::now(),
@@ -134,14 +133,7 @@ impl Dock {
         hover: None,
         press: None,
         dragging: None,
-        shown: true,
-        starting: true,
-        revealing: false,
         overlap: Overlap::default(),
-        grace: false,
-        edge_armed: false,
-        menu_open: false,
-        preview_hover: false,
         tier,
         strip: if mode == Mode::Always {
           None
@@ -302,7 +294,7 @@ impl Dock {
   }
 
   pub(super) fn reserve_strip(&mut self) {
-    if self.off {
+    if self.state.off {
       return;
     }
     let d = self.dpi;
@@ -348,7 +340,7 @@ impl Dock {
   }
 
   pub(super) fn sync_strip(&self) {
-    if self.off {
+    if self.state.off {
       if let Some(s) = &self.strip {
         s.set_visible(false);
       }

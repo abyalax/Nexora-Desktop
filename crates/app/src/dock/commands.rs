@@ -39,7 +39,7 @@ impl Dock {
   }
 
   pub(super) fn open_menu(&mut self, x: f32) {
-    self.menu_open = true;
+    self.state.menu_open = true;
     self.hide_popups();
     let info = self.menu_info(x);
     let mut items = Vec::new();
@@ -164,7 +164,7 @@ impl Dock {
   }
 
   pub(super) fn open_stack(&mut self) {
-    self.menu_open = true;
+    self.state.menu_open = true;
     self.hide_popups();
     let files = nexora_platform::downloads::latest(10);
     let mut items = Vec::new();
@@ -214,7 +214,7 @@ impl Dock {
 
   pub(super) fn on_menu_pick(&mut self, id: usize) {
     log::line("dock", &format!("menu: pilih {id}"));
-    self.menu_open = false;
+    self.state.menu_open = false;
     self.start_grace();
     if let Some(info) = self.pending_menu.take() {
       self.run_command(id, info);
@@ -227,7 +227,7 @@ impl Dock {
     if let Some(m) = &self.menu {
       m.hide();
     }
-    self.menu_open = false;
+    self.state.menu_open = false;
     self.pending_menu = None;
     self.start_grace();
     self.update_visibility();

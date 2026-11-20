@@ -143,7 +143,7 @@ impl Dock {
     self.resize_window();
     self.apply(None, false);
     self.bind_expressions();
-    self.set_region(self.tracking);
+    self.set_region(self.state.tracking);
   }
 
   pub(super) fn bind_expressions(&mut self) {
@@ -344,14 +344,14 @@ impl Dock {
       self.signature.clear();
       self.refresh_windows();
     }
-    if self.off == s.dock_enabled {
-      self.off = !s.dock_enabled;
-      if self.off {
+    if self.state.off == s.dock_enabled {
+      self.state.off = !s.dock_enabled;
+      if self.state.off {
         nexora_platform::shell::appbar::release_bottom();
       } else if self.opts.appbar {
         self.reserve_strip();
       }
-      log::line("dock", if self.off { "dinonaktifkan" } else { "diaktifkan" });
+      log::line("dock", if self.state.off { "dinonaktifkan" } else { "diaktifkan" });
       self.update_visibility();
     }
     let (mode, appbar) = (s.dock.mode(), s.dock.reserves());
@@ -361,7 +361,7 @@ impl Dock {
       self.opts.appbar = appbar;
       if mode == Mode::Always {
         self.strip = None;
-        self.edge_armed = false;
+        self.state.edge_armed = false;
       } else if self.strip.is_none() {
         self.strip = Strip::new(self.hwnd, STRIP_ENTER, STRIP_LEAVE).ok();
         self.place_strip();

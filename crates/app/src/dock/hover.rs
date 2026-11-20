@@ -12,7 +12,7 @@ impl Dock {
     if let Some(p) = self.preview.as_mut() {
       p.hide();
     }
-    self.preview_hover = false;
+    self.state.preview_hover = false;
   }
 
   pub(super) fn icon_anchor(&self, slot: usize) -> Option<(i32, i32)> {

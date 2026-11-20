@@ -15,15 +15,15 @@ impl Dock {
       TIMER_TIP => self.show_tooltip(),
       TIMER_PREVIEW => self.show_preview(),
       TIMER_GRACE => {
-        self.grace = false;
+        self.state.grace = false;
         self.update_visibility();
       }
       TIMER_DWELL => {
-        self.edge_armed = true;
+        self.state.edge_armed = true;
         self.update_visibility();
       }
       TIMER_PCLOSE => {
-        if !self.preview_hover && !self.tracking {
+        if !self.state.preview_hover && !self.state.tracking {
           if let Some(p) = self.preview.as_mut() {
             p.hide();
           }
@@ -31,22 +31,22 @@ impl Dock {
         self.update_visibility();
       }
       TIMER_HIDEWIN => {
-        if !self.shown {
+        if !self.state.shown {
           unsafe {
             let _ = ShowWindow(self.hwnd, SW_HIDE);
           }
         }
       }
       TIMER_START => {
-        self.starting = false;
+        self.state.starting = false;
         self.update_visibility();
       }
       TIMER_REVEAL => {
-        self.revealing = false;
+        self.state.revealing = false;
         self.update_visibility();
       }
       TIMER_REGION => {
-        if !self.tracking {
+        if !self.state.tracking {
           self.set_region(false);
         }
       }

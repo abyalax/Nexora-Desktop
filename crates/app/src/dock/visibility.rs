@@ -1,39 +1,31 @@
 //! Auto-hide policy: when the Dock is shown, hidden or kept alive.
 
 use super::*;
-use nexora_core::dock::visibility::{self, Signals, Transition};
+use nexora_core::dock::state::Surroundings;
+use nexora_core::dock::visibility::{self, Transition};
 
 impl Dock {
-  /// Snapshot of the host state that drives the visibility decision in `nexora_core::dock::visibility`.
-  fn signals(&self) -> Signals {
-    Signals {
+  /// What the host observes from the desktop; everything else lives in `DockState`.
+  fn surroundings(&self) -> Surroundings {
+    Surroundings {
       overlapped: self.overlap.overlapped,
       fullscreen: self.overlap.fullscreen,
-      tracking: self.tracking,
-      preview_hover: self.preview_hover,
-      menu_open: self.menu_open,
       dragging: self.dragging.is_some(),
-      grace: self.grace,
-      edge_armed: self.edge_armed,
-      starting: self.starting,
-      revealing: self.revealing,
-      off: self.off,
     }
   }
 
   pub(super) fn update_visibility(&mut self) {
-    let transition = visibility::transition(self.opts.mode, &self.signals(), self.shown);
+    let around = self.surroundings();
+    let transition = self.state.next_transition(self.opts.mode, around);
     self.sync_strip();
     match transition {
       Transition::Hide => {
-        self.shown = false;
         self.hide_popups();
         self.animate_stage(self.win.1 as f32 + 8.0);
         timer(self.hwnd, TIMER_HIDEWIN, 500);
         log::line("dock", "sembunyi");
       }
       Transition::Show => {
-        self.shown = true;
         kill(self.hwnd, TIMER_HIDEWIN);
         unsafe {
           let _ = ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
@@ -47,7 +39,7 @@ impl Dock {
   }
 
   pub(super) fn start_grace(&mut self) {
-    self.grace = true;
+    self.state.grace = true;
     timer(self.hwnd, TIMER_GRACE, 800);
   }
 
@@ -59,8 +51,8 @@ impl Dock {
 
   pub(super) fn on_strip_leave(&mut self) {
     kill(self.hwnd, TIMER_DWELL);
-    if self.edge_armed {
-      self.edge_armed = false;
+    if self.state.edge_armed {
+      self.state.edge_armed = false;
       self.start_grace();
       self.update_visibility();
     }
