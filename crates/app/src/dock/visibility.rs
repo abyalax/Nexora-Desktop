@@ -1,38 +1,48 @@
 //! Auto-hide policy: when the Dock is shown, hidden or kept alive.
 
 use super::*;
+use nexora_core::dock::visibility::{self, Signals, Transition};
 
 impl Dock {
-  pub(super) fn interacting(&self) -> bool {
-    self.tracking || self.preview_hover || self.menu_open || self.dragging.is_some() || self.grace
+  /// Snapshot of the host state that drives the visibility decision in `nexora_core::dock::visibility`.
+  fn signals(&self) -> Signals {
+    Signals {
+      overlapped: self.overlap.overlapped,
+      fullscreen: self.overlap.fullscreen,
+      tracking: self.tracking,
+      preview_hover: self.preview_hover,
+      menu_open: self.menu_open,
+      dragging: self.dragging.is_some(),
+      grace: self.grace,
+      edge_armed: self.edge_armed,
+      starting: self.starting,
+      revealing: self.revealing,
+      off: self.off,
+    }
   }
 
   pub(super) fn update_visibility(&mut self) {
-    let inputs = Inputs {
-      overlapped: self.overlap.overlapped,
-      interacting: self.interacting(),
-      edge_armed: self.edge_armed,
-      starting: self.starting,
-      fullscreen: self.overlap.fullscreen,
-      revealing: self.revealing,
-    };
-    let hide = self.off || should_hide(self.opts.mode, &inputs);
+    let transition = visibility::transition(self.opts.mode, &self.signals(), self.shown);
     self.sync_strip();
-    if hide && self.shown {
-      self.shown = false;
-      self.hide_popups();
-      self.animate_stage(self.win.1 as f32 + 8.0);
-      timer(self.hwnd, TIMER_HIDEWIN, 500);
-      log::line("dock", "sembunyi");
-    } else if !hide && !self.shown {
-      self.shown = true;
-      kill(self.hwnd, TIMER_HIDEWIN);
-      unsafe {
-        let _ = ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
+    match transition {
+      Transition::Hide => {
+        self.shown = false;
+        self.hide_popups();
+        self.animate_stage(self.win.1 as f32 + 8.0);
+        timer(self.hwnd, TIMER_HIDEWIN, 500);
+        log::line("dock", "sembunyi");
       }
-      crate::topmost::request_raise();
-      self.animate_stage(0.0);
-      log::line("dock", "tampil");
+      Transition::Show => {
+        self.shown = true;
+        kill(self.hwnd, TIMER_HIDEWIN);
+        unsafe {
+          let _ = ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
+        }
+        crate::topmost::request_raise();
+        self.animate_stage(0.0);
+        log::line("dock", "tampil");
+      }
+      Transition::Keep => {}
     }
   }
 
@@ -42,7 +52,7 @@ impl Dock {
   }
 
   pub(super) fn on_strip_enter(&mut self) {
-    if self.opts.mode != Mode::Always {
+    if visibility::arms_dwell_on_enter(self.opts.mode) {
       timer(self.hwnd, TIMER_DWELL, 200);
     }
   }

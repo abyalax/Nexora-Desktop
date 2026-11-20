@@ -22,7 +22,7 @@ use nexora_core::dock::layout::{Layout, Metrics, Slot, hit, layout};
 use nexora_core::dock::recents;
 use nexora_core::dock::reorder;
 use nexora_core::dock::ring::next_in_ring;
-use nexora_core::visibility::policy::{Inputs, Mode, should_hide};
+use nexora_core::visibility::policy::Mode;
 use nexora_platform::icons;
 use nexora_platform::wins::overlap::{self, Overlap};
 use nexora_platform::wins::{enumerate, focus, tracker};

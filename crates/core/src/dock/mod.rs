@@ -6,3 +6,4 @@ pub mod pins;
 pub mod recents;
 pub mod reorder;
 pub mod ring;
+pub mod visibility;
