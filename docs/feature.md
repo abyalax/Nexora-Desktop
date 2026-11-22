@@ -7,13 +7,13 @@ and the crate mapping in [`architecture.md`](architecture.md).
 | #   | Feature (code name) | UI name  | Settings sidebar group | Capability IDs |
 | --- | ------------------- | -------- | ---------------------- | -------------- |
 | 1   | Dock                | Deck     | Dock                   | D-1 … D-17     |
-| 2   | Finder              | Menu Bar | Finder                 | F-1 … F-18     |
+| 2   | Menu Bar            | Menu Bar | Menu Bar               | F-1 … F-18     |
 | 3   | Dynamic Island      | Visor    | Dynamic Island         | I-1 … I-14     |
 
 Rules for this file:
 
-- Code, docs and modules use *Dock / Finder / Dynamic Island*; user-visible strings use *Deck / Menu Bar / Visor*.
-- Every setting below must map to a field of `DockSettings`, `FinderSettings`, `IslandSettings` or a shared section
+- Code, docs and modules use *Dock / Menu Bar / Dynamic Island*; user-visible strings use *Deck / Menu Bar / Visor*.
+- Every setting below must map to a field of `DockSettings`, `Menu BarSettings`, `IslandSettings` or a shared section
   in `core::settings`; settings are persistent configuration, never runtime state.
 - A setting is added here first, then to `core`, then to the Settings UI.
 
@@ -39,7 +39,7 @@ Rules for this file:
   - Minimize Effects
   - Window Previews
 
-- Finder
+- Menu Bar
   - Look & Behavior
   - Notifications
   - Time & Date
@@ -57,7 +57,7 @@ Rules for this file:
 
 - General
   - Toggle
-    - Enable Finder
+    - Enable Menu Bar
     - Enable Dock
     - Automatically Exit When Playing On Full Screen
   - Slider
@@ -72,7 +72,7 @@ Rules for this file:
       - Registry Value
       - Scheduled Task
       - Start As a Service
-    - (Check Input) Automatically Hide the taskbar on boot
+    - (Toggle On/Off) Automatically Hide the taskbar on boot
       - Hide Taskbar on All Display
       - Hide Taskbar on Dock Display
     - Display Language
@@ -83,47 +83,47 @@ Rules for this file:
       - ...etc
       - (Slider) Modify The global font scaling
 - Appearance
-  - (Check Input) Make Dock use custom blur and transparency values
+  - (Toggle On/Off) Make Dock use custom blur and transparency values
     - (Slider) Blur Intensity
     - (Slider) Transparency
-  - (Check Input) Make pinned icons reflect from the Dock
+  - (Toggle On/Off) Make pinned icons reflect from the Dock
     - (Slider) Reflection Blur Strength
     - (Slider) Reflection Transparency
     - (Slider) Adjust the icon reflection distance
     - (Slider) Adjust the gradient distance of the icon reflection
-  - (Check Input) Make Dock icon labels use custom blur and transparency values
+  - (Toggle On/Off) Make Dock icon labels use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
-  - (Check Input) Make context menus use custom blur and transparency values
+  - (Toggle On/Off) Make context menus use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
-  - (Check Input) Make the folder contents grid use custom blur and transparency values
+  - (Toggle On/Off) Make the folder contents grid use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
     - (Slider) Folder grid icon size
-  - (Check Input) Make Nexora menus use custom blur and transparency values
+  - (Toggle On/Off) Make Nexora menus use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Border transparency
-  - (Check Input) Make Finder use custom blur and transparency values
+  - (Toggle On/Off) Make Menu Bar use custom blur and transparency values
     - (Slider) Blur intensity
     - (Slider) Transparency
     - (Slider) Wallpaper tint intensity
-  - (Check Input) Launchpad uses custom background blur
-  - (Check Input) Display Launchpad above windows instead of hiding them
-  - (Check Input) Launchpad blurs the background instead of pre-rendering it
+  - (Toggle On/Off) Launchpad uses custom background blur
+  - (Toggle On/Off) Display Launchpad above windows instead of hiding them
+  - (Toggle On/Off) Launchpad blurs the background instead of pre-rendering it
     - (Slider) Blur intensity
 - System Icon Tray
-  - (Check Input) Always display all tray icons in Finder
-  - (Check Input) Always display all tray icons in Dock
-  - (Check Input) Displays the system's own tray icon in Finder
+  - (Toggle On/Off) Always display all tray icons in Menu Bar
+  - (Toggle On/Off) Always display all tray icons in Dock
+  - (Toggle On/Off) Displays the system's own tray icon in Menu Bar
   - (Slider) The newly run tray icon shows the time
 - Stage Manager
   - Check Input
-    - Show Stage Manager icon in Finder
+    - Show Stage Manager icon in Menu Bar
     - Show window title on mouseover
     - Blur background window icons
     - Click on the desktop to hide all windows
@@ -146,7 +146,7 @@ Rules for this file:
     - Default
     - Always show
     - Always hide
-  - (Check Input) Keep Window Border
+  - (Toggle On/Off) Keep Window Border
   - Slider
     - Window list icon size
     - Window list icon spacing
@@ -195,16 +195,16 @@ Rules for this file:
   - Select the screen to display Launchpad
   - Follow Dock
 - Advanced
-  - (Check Input) Scale all icons to macOS standards
-  - (Check Input) Double-click the folder icon to open in Finder
-  - (Check Input) Hide the open folder button
-  - (Check Input) Lock icon dragging
-  - (Check Input) Show icon labels
-  - (Check Input) Animate opening applications
-  - (Check Input) Turn on window borders to prevent windows from hiding Dock and Finder
-  - (Check Input) Show indicators under running programs
-  - (Check Input) Show icons of unpinned running programs
-  - (Check Input) Separate unpinned running programs
+  - (Toggle On/Off) Scale all icons to macOS standards
+  - (Toggle On/Off) Double-click the folder icon to open in Menu Bar
+  - (Toggle On/Off) Hide the open folder button
+  - (Toggle On/Off) Lock icon dragging
+  - (Toggle On/Off) Show icon labels
+  - (Toggle On/Off) Animate opening applications
+  - (Toggle On/Off) Turn on window borders to prevent windows from hiding Dock and Menu Bar
+  - (Toggle On/Off) Show indicators under running programs
+  - (Toggle On/Off) Show icons of unpinned running programs
+  - (Toggle On/Off) Separate unpinned running programs
   - (Select Option) Bottom left hot-corner function
     - Do nothing
     - Show all windows
@@ -240,11 +240,11 @@ Rules for this file:
   - (Slider) Activation bar distance from screen edge
   - (Slider) Mouse delay activates dock time
 - Minimize Effects
-  - (Check Input) Use Nexora minimize effect
-  - (Check Input) Don't animate minimizing windows
-  - (Check Input) Hold down 'Shift' to slow down an animation
-  - (Check Input) Minimize windows into their Dock icon
-  - (Check Input) Dynamically display window content when minimized
+  - (Toggle On/Off) Use Nexora minimize effect
+  - (Toggle On/Off) Don't animate minimizing windows
+  - (Toggle On/Off) Hold down 'Shift' to slow down an animation
+  - (Toggle On/Off) Minimize windows into their Dock icon
+  - (Toggle On/Off) Dynamically display window content when minimized
   - Minimize window icon position
     - Next to the icon on the right
     - Independently displayed on the right
@@ -256,24 +256,24 @@ Rules for this file:
   - Minimize animation speed
   - Minimize animation blacklist
 - Window Previews
-  - (Check Input) Enable window previews
+  - (Toggle On/Off) Enable window previews
   - (Slider) Window preview size
   - (Slider) Preview delay on hover
   - Show preview elements
-    - (Check Input) Application name
-    - (Check Input) Window control buttons
-    - (Check Input) Show native window preview on hover
+    - (Toggle On/Off) Application name
+    - (Toggle On/Off) Window control buttons
+    - (Toggle On/Off) Show native window preview on hover
 
-### 2.3 Finder
+### 2.3 Menu Bar
 
 - Look and Behavior
-  - Finder menu icon
-  - Auto-Hide Finder
+  - Menu Bar menu icon
+  - Auto-Hide Menu Bar
   - Shut down confirmation box
-  - Maximized windows affect Finder appearance
+  - Maximized windows affect Menu Bar appearance
   - Click the upper right corner to close the current maximized window
   - Lock dragging tray icons
-  - Show window options in Finder
+  - Show window options in Menu Bar
   - Show colored tray icons
   - Show input method menu
   - Show search icon
@@ -282,8 +282,8 @@ Rules for this file:
   - Show music player lyrics menu
   - Show Color Player Lyrics
 - Battery
-  - Show Battery Status menu in Finder
-  - Show Battery percentage in Finder status menu
+  - Show Battery Status menu in Menu Bar
+  - Show Battery percentage in Menu Bar status menu
   - Displays the remaining battery time
   - Automatically switch power plans
   - Power plans when using power
@@ -300,13 +300,13 @@ Rules for this file:
     - Fixed
     - Smart
     - On demand
-  - (Check Input) Open on hover
+  - (Toggle On/Off) Open on hover
   - (Select Option) Idle style
   - Greeting name and text
   - Material and rounding
 - Activities
-  - (Check Input) Media and lyrics (compact lyrics, online lyrics lookup)
-  - (Check Input) Downloads
-  - (Check Input) File shelf
-  - (Check Input) Send to phone
-  - (Check Input) Timer and calendar strip
+  - (Toggle On/Off) Media and lyrics (compact lyrics, online lyrics lookup)
+  - (Toggle On/Off) Downloads
+  - (Toggle On/Off) File shelf
+  - (Toggle On/Off) Send to phone
+  - (Toggle On/Off) Timer and calendar strip

@@ -1,3 +1,27 @@
+
+- [Architecture and Project Structure](#architecture-and-project-structure)
+  - [1. Architecture](#1-architecture)
+    - [Modular Cargo workspace](#modular-cargo-workspace)
+    - [Dependency boundaries](#dependency-boundaries)
+  - [2. Repository structure](#2-repository-structure)
+  - [3. Crate responsibilities](#3-crate-responsibilities)
+    - [3.1 `app` — Application orchestration](#31-app--application-orchestration)
+    - [3.2 `core` — Domain and application logic](#32-core--domain-and-application-logic)
+    - [3.3 `platform` — Windows and system integration](#33-platform--windows-and-system-integration)
+    - [3.4 `ui` — Rendering and visual system](#34-ui--rendering-and-visual-system)
+  - [4. Mapping Windhawk references to the new architecture](#4-mapping-windhawk-references-to-the-new-architecture)
+    - [4.1 Deterministic Windhawk remodularization](#41-deterministic-windhawk-remodularization)
+  - [5. Cargo workspace configuration](#5-cargo-workspace-configuration)
+  - [6. Rust development practices](#6-rust-development-practices)
+    - [6.1 Use a consistent module convention](#61-use-a-consistent-module-convention)
+    - [6.2 Avoid monolithic source files](#62-avoid-monolithic-source-files)
+    - [6.3 Separate error handling](#63-separate-error-handling)
+    - [6.4 Use Cargo features deliberately](#64-use-cargo-features-deliberately)
+    - [6.5 Separate configuration from runtime state](#65-separate-configuration-from-runtime-state)
+  - [7. Potential crates for future growth](#7-potential-crates-for-future-growth)
+  - [8. Development conventions](#8-development-conventions)
+  - [9. Implementation Order](#9-implementation-order)
+
 # Architecture and Project Structure
 
 This document defines the architecture, repository layout, crate boundaries, Rust conventions, and implementation sequence for **Nexora Desktop**.
