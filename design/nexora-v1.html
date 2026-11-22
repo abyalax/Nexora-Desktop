@@ -9,6 +9,10 @@
   <style>
     :root {
       --blur-intensity: 26px;
+      --accent: var(--accent);
+      --island-bg1: color-mix(in srgb, var(--accent) 26%, #101216);
+      --island-bg2: color-mix(in srgb, var(--accent) 9%, #101216);
+      --island-border: color-mix(in srgb, var(--accent) 35%, transparent);
       --ui-scale: 1;
     }
 
@@ -143,11 +147,11 @@
     /* Expanded State on Hover or Toggle */
     #dynamic-island-wrapper:hover #dynamic-island,
     #dynamic-island.expanded {
-      width: 382px;
-      height: 174px;
+      width: 470px;
+      height: 218px;
       border-radius: 34px;
-      background: linear-gradient(145deg, rgba(22, 32, 37, 0.94) 0%, rgba(20, 22, 24, 0.96) 100%);
-      border-color: rgba(103, 211, 232, 0.14);
+      background: linear-gradient(145deg, var(--island-bg1) 0%, var(--island-bg2) 100%);
+      border-color: var(--island-border);
       box-shadow: 0 24px 55px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.08);
       cursor: default;
     }
@@ -181,7 +185,7 @@
     .eq-bar {
       width: 2.2px;
       border-radius: 2px;
-      background-color: #63c7dc;
+      background-color: var(--accent);
       animation: eqPulse 1.1s ease-in-out infinite alternate;
     }
 
@@ -237,6 +241,33 @@
     }
 
     /* Glass Panels & Flyouts */
+    @keyframes marq {
+      from {
+        transform: translateX(0)
+      }
+
+      to {
+        transform: translateX(-50%)
+      }
+    }
+
+    .marq {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marq 9s linear infinite;
+    }
+
+    #notif-toast {
+      transform: translateX(-50%);
+      transition: opacity .3s, transform .35s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    #notif-toast.off {
+      opacity: 0;
+      transform: translate(-50%, -14px);
+      pointer-events: none;
+    }
+
     .glass-panel {
       background: rgba(16, 17, 20, 0.90);
       backdrop-filter: blur(var(--blur-intensity));
@@ -395,6 +426,197 @@
     .bouncing {
       animation: dockBounce 0.55s ease-in-out 2;
     }
+
+    /* Visor Toothless eye component */
+    #top-eyes-notch {
+      width: 78px;
+      height: 27px;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
+
+    .nx-eye-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      height: 100%;
+      transition: transform .25s ease;
+    }
+
+    .nx-eye {
+      width: 19px;
+      height: 24px;
+      overflow: visible;
+      flex: none;
+    }
+
+    .nx-eye-defs {
+      position: absolute;
+    }
+
+    .nx-glint {
+      animation: nxGlintShift 3s infinite ease-in-out;
+    }
+
+    @keyframes nxGlintShift {
+
+      0%,
+      100% {
+        transform: translate(0, 0)
+      }
+
+      50% {
+        transform: translate(.8px, -.8px)
+      }
+    }
+
+    @keyframes nxToothlessExcited {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1)
+      }
+
+      25% {
+        transform: translateY(-2px) scale(1.12, .9)
+      }
+
+      75% {
+        transform: translateY(-1px) scale(.95, 1.05)
+      }
+    }
+
+    .nx-bubbly-eyes {
+      animation: nxToothlessExcited .35s infinite ease-in-out;
+    }
+
+    #top-eyes-notch.nx-eye-disabled .nx-eye-wrapper {
+      opacity: 0;
+    }
+
+    #pref-content .pref-card {
+      background: rgba(255, 255, 255, .035);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    #pref-content .pref-row {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .055);
+      padding: 9px 2px;
+    }
+
+    #pref-content .pref-row:last-child {
+      border-bottom: 0;
+    }
+
+    #pref-content .pref-label {
+      color: #e5e7eb;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    #pref-content .pref-desc {
+      color: #737b88;
+      font-size: 10px;
+      margin-top: 3px;
+    }
+
+    #pref-content input[type=checkbox] {
+      accent-color: #d1d5db;
+      width: 15px;
+      height: 15px;
+      flex: none;
+    }
+
+    #pref-content input[type=range] {
+      width: 180px;
+      max-width: 42%;
+      accent-color: #d1d5db;
+    }
+
+    #pref-content select,
+    #pref-content input[type=text],
+    #pref-content input[type=color] {
+      background: #292b30;
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 7px;
+      padding: 7px 9px;
+      font-size: 11px;
+      max-width: 220px;
+    }
+
+    #pref-content input[type=color] {
+      width: 42px;
+      height: 30px;
+      padding: 2px;
+    }
+
+    #pref-content .pref-value {
+      color: #9ca3af;
+      font-size: 10px;
+      min-width: 30px;
+      text-align: right;
+    }
+
+    #pref-content .pref-section-title {
+      color: #f3f4f6;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    #pref-sidebar .pref-nav-item {
+      width: 100%;
+      display: flex;
+      text-align: left;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 9px;
+      border-radius: 8px;
+      color: #b7bdc7;
+    }
+
+    #pref-sidebar .pref-nav-item:hover {
+      background: rgba(255, 255, 255, .07);
+      color: white;
+    }
+
+    #pref-sidebar .pref-nav-item.active {
+      background: rgba(255, 255, 255, .14);
+      color: white;
+      font-weight: 600;
+    }
+
+    #pref-sidebar .pref-nav-group {
+      color: #737b88;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 9px;
+      padding: 13px 9px 4px;
+    }
+
+    @media (max-width:650px) {
+      #preferences-window aside {
+        width: 150px;
+      }
+
+      #pref-content {
+        padding: 14px;
+      }
+
+      #pref-content input[type=range] {
+        max-width: 35%;
+      }
+    }
   </style>
 </head>
 
@@ -486,9 +708,7 @@
     </svg>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP MENU BAR (MyFinder Left + Dynamic Island + Tray Right) -->
-  <!-- ========================================================= -->
   <header class="fixed top-0 left-0 right-0 h-[28px] z-50 flex items-center justify-between pointer-events-none">
 
     <!-- Left Top Bar Segment -->
@@ -497,7 +717,8 @@
       <button onclick="toggleDesktopPopover('mini-media-popover', event)"
         class="topbar-btn px-1.5 py-0.5 flex items-center gap-1.5" title="Media Controls & Mixer">
         <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-        <div class="w-4 h-4 rounded-[4px] overflow-hidden bg-sky-200 flex-shrink-0 border border-white/20">
+        <div id="topbar-art"
+          class="w-4 h-4 rounded-[4px] overflow-hidden bg-sky-200 flex-shrink-0 border border-white/20">
           <svg viewBox="0 0 40 40" class="w-full h-full">
             <rect width="40" height="40" fill="#5bc0de" />
             <rect x="6" y="7" width="28" height="26" fill="#f5f5f5" />
@@ -711,12 +932,51 @@
     </div>
   </header>
 
-  <!-- ========================================================= -->
   <!-- CENTER DYNAMIC ISLAND MEDIA WIDGET (HOVER TO EXPAND)      -->
-  <!-- ========================================================= -->
   <div id="dynamic-island-wrapper" onmouseenter="expandIsland()" onmouseleave="collapseIsland()">
     <!-- Top Center Eyes Notch -->
-    <div id="top-eyes-notch" onclick="toggleIsland()" title="Toggle Dynamic Island">👀</div>
+    <div id="top-eyes-notch" onclick="toggleIsland()" title="Toggle Visor" aria-label="Visor">
+      <div id="nx-eye-wrapper" class="nx-eye-wrapper" aria-hidden="true">
+        <svg class="nx-eye-defs" width="0" height="0" aria-hidden="true">
+          <defs>
+            <radialGradient id="nx-toothless-iris" cx="50%" cy="40%" r="60%" fx="35%" fy="25%">
+              <stop id="nx-grad-0" offset="0%" stop-color="#b5ff36" />
+              <stop id="nx-grad-1" offset="45%" stop-color="#10b981" />
+              <stop id="nx-grad-2" offset="85%" stop-color="#047857" />
+              <stop id="nx-grad-3" offset="100%" stop-color="#022c22" />
+            </radialGradient>
+            <filter id="nx-iris-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="1" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+        </svg>
+        <svg id="nx-left-eye" class="nx-eye" viewBox="0 0 50 50">
+          <ellipse class="nx-eye-socket" cx="25" cy="25" rx="16" ry="22" fill="#020617" />
+          <ellipse class="nx-eye-iris" cx="25" cy="25" rx="16" ry="22" fill="url(#nx-toothless-iris)"
+            filter="url(#nx-iris-glow)" />
+          <g id="nx-left-pupil-group">
+            <ellipse id="nx-left-pupil" cx="25" cy="25" rx="3.5" ry="14" fill="#020617" />
+            <circle class="nx-glint" cx="20" cy="17" r="3.5" fill="#fff" opacity=".95" />
+            <circle class="nx-glint" cx="28" cy="30" r="1.8" fill="#fff" opacity=".75" />
+          </g>
+          <ellipse class="nx-blink" cx="25" cy="25" rx="16" ry="22" fill="#05070a" opacity="0"
+            style="transform-box:fill-box;transform-origin:center top;transform:scaleY(.001)" />
+        </svg>
+        <svg id="nx-right-eye" class="nx-eye" viewBox="0 0 50 50">
+          <ellipse class="nx-eye-socket" cx="25" cy="25" rx="16" ry="22" fill="#020617" />
+          <ellipse class="nx-eye-iris" cx="25" cy="25" rx="16" ry="22" fill="url(#nx-toothless-iris)"
+            filter="url(#nx-iris-glow)" />
+          <g id="nx-right-pupil-group">
+            <ellipse id="nx-right-pupil" cx="25" cy="25" rx="3.5" ry="14" fill="#020617" />
+            <circle class="nx-glint" cx="20" cy="17" r="3.5" fill="#fff" opacity=".95" />
+            <circle class="nx-glint" cx="28" cy="30" r="1.8" fill="#fff" opacity=".75" />
+          </g>
+          <ellipse class="nx-blink" cx="25" cy="25" rx="16" ry="22" fill="#05070a" opacity="0"
+            style="transform-box:fill-box;transform-origin:center top;transform:scaleY(.001)" />
+        </svg>
+      </div>
+    </div>
 
     <!-- Main Dynamic Island Surface -->
     <div id="dynamic-island" onclick="toggleIsland()">
@@ -746,7 +1006,7 @@
       <div id="island-expanded" class="absolute inset-0 p-4 flex flex-col justify-between"
         onclick="event.stopPropagation()">
         <!-- Top Row: Album Art + Brave Badge + Track Metadata + Cyan Equalizer -->
-        <div class="flex items-center justify-between gap-3">
+        <div id="island-info-row" class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3.5 min-w-0">
             <!-- Album Cover with Brave Icon Badge -->
             <div
@@ -799,12 +1059,25 @@
           </div>
         </div>
 
+        <div id="island-lyrics-row" class="flex-col gap-2 pr-4" style="display:none">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-7 h-7 rounded-full flex-shrink-0" style="background:var(--accent)"></div>
+            <span id="island-lyrics-head" class="text-[13px] text-gray-100 truncate"></span>
+          </div>
+          <div class="text-center leading-tight space-y-1.5 px-4">
+            <div id="ly-prev" class="text-[12.5px] text-white/40 truncate min-h-[16px]"></div>
+            <div id="ly-cur" class="text-[17px] font-bold text-white truncate min-h-[22px]"></div>
+            <div id="ly-next" class="text-[12.5px] text-white/40 truncate min-h-[16px]"></div>
+          </div>
+        </div>
+
         <!-- Middle Row: Progress Bar with Cyan Fill & White Knob -->
         <div class="flex items-center gap-2.5 mt-1">
           <span id="island-time-elapsed" class="text-[10.5px] text-gray-400 tabular-nums w-8 text-right">3:12</span>
           <div id="island-progress-track" class="flex-1 h-1.5 bg-white/15 rounded-full relative cursor-pointer group"
             onclick="seekTrack(event)">
-            <div id="island-progress-fill" class="h-full bg-[#63c7dc] rounded-full relative" style="width: 65%;">
+            <div id="island-progress-fill" class="h-full bg-[color:var(--accent)] rounded-full relative"
+              style="width: 65%;">
               <span
                 class="w-3 h-3 rounded-full bg-white shadow-md absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></span>
             </div>
@@ -815,14 +1088,14 @@
         <!-- Bottom Row: Transport Buttons (Cyan Icons) & Lyrics Bubble -->
         <div class="relative flex items-center justify-center gap-4">
           <button onclick="prevTrack()"
-            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[color:var(--accent)] transition active:scale-90"
             title="Previous">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
             </svg>
           </button>
           <button onclick="togglePlayPause()"
-            class="w-11 h-11 rounded-full bg-white/[0.09] hover:bg-white/[0.18] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            class="w-11 h-11 rounded-full bg-white/[0.09] hover:bg-white/[0.18] flex items-center justify-center text-[color:var(--accent)] transition active:scale-90"
             title="Play / Pause">
             <svg id="island-play-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <rect x="6" y="5" width="4" height="14" rx="1" />
@@ -830,14 +1103,14 @@
             </svg>
           </button>
           <button onclick="nextTrack()"
-            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[color:var(--accent)] transition active:scale-90"
             title="Next">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
             </svg>
           </button>
-          <button onclick="showToast('Lyrics: Esok — Alkateri (Kontemplasi)')"
-            class="absolute right-2 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+          <button onclick="toggleLyrics()"
+            class="absolute right-2 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[color:var(--accent)] transition active:scale-90"
             title="Lyrics">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -857,9 +1130,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 1: MINI MEDIA PLAYER & PILL SETTINGS     -->
-  <!-- ========================================================= -->
   <div id="mini-media-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] left-2.5 w-[310px] rounded-[20px] p-4 z-50"
     onclick="event.stopPropagation()">
@@ -977,9 +1248,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 2: NOTIFICATIONS CENTER                  -->
-  <!-- ========================================================= -->
   <div id="notifications-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[195px] w-[345px] rounded-[20px] p-4 z-50"
     onclick="event.stopPropagation()">
@@ -1000,7 +1269,8 @@
     </div>
 
     <div id="notifications-list" class="space-y-2.5">
-      <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
+      <div data-notif="1"
+        class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
         <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
           <div class="flex items-center gap-1.5">
             <span
@@ -1013,7 +1283,8 @@
         <div class="text-[11.5px] text-gray-400 mt-0.5">Automatically saved to screenshots folder.</div>
       </div>
 
-      <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
+      <div data-notif="1"
+        class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
         <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
           <div class="flex items-center gap-1.5">
             <span
@@ -1027,7 +1298,8 @@
         </div>
       </div>
 
-      <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
+      <div data-notif="1"
+        class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
         <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
           <div class="flex items-center gap-1.5">
             <span class="w-4 h-4 rounded bg-gradient-to-tr from-blue-500 via-amber-400 to-red-500 inline-block"></span>
@@ -1046,9 +1318,7 @@
       notification center</button>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 3: VIRTUAL DESKTOP SWITCHER              -->
-  <!-- ========================================================= -->
   <div id="desktops-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[295px] w-[225px] rounded-[18px] p-2 z-50"
     onclick="event.stopPropagation()">
@@ -1100,9 +1370,7 @@
     </button>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 1: CONTROL CENTER                       -->
-  <!-- ========================================================= -->
   <div id="control-center-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[315px] rounded-[22px] p-3.5 z-50 space-y-2.5"
     onclick="event.stopPropagation()">
@@ -1276,9 +1544,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 2: CALENDAR & AGENDAS (NOV 2026)        -->
-  <!-- ========================================================= -->
   <div id="calendar-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[530px] max-w-[95vw] rounded-[22px] p-4 z-50"
     onclick="event.stopPropagation()">
@@ -1338,9 +1604,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 3: STANDALONE SOUND & BATTERY FLYOUTS   -->
-  <!-- ========================================================= -->
   <div id="sound-popover"
     class="glass-panel popover-anim popover-hidden fixed top-[36px] right-[140px] w-[290px] rounded-[20px] p-3.5 z-50"
     onclick="event.stopPropagation()">
@@ -1390,238 +1654,71 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- WINDOW 1: FINDER FILE EXPLORER                            -->
-  <!-- ========================================================= -->
   <div id="finder-window"
-    class="os-window glass-panel hidden top-[42px] left-[16px] w-[620px] max-w-[94vw] h-[540px] max-h-[82vh] z-40 flex flex-col"
+    class="os-window glass-panel hidden top-[42px] left-[16px] w-[1000px] max-w-[96vw] h-[640px] max-h-[88vh] z-40 flex flex-col rounded-[28px]"
     onclick="focusWindow('finder-window')">
-    <div class="h-11 px-3.5 border-b border-white/10 flex items-center gap-3 bg-white/[0.02]"
-      onmousedown="startDrag(event, 'finder-window')">
+    <div class="h-14 px-4 flex items-center gap-4" onmousedown="startDrag(event, 'finder-window')">
       <button onclick="finderBack()"
-        class="flex items-center gap-1.5 text-[12px] text-gray-300 hover:text-white transition">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 18 9 12 15 6" />
+        class="flex items-center gap-1.5 text-[13px] text-gray-300 hover:text-white transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
         </svg>
         <span>Back</span>
       </button>
-      <div class="flex-1 flex items-center bg-black/50 border border-white/15 rounded-full px-3 py-1">
-        <svg class="w-3.5 h-3.5 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+      <div class="flex-1 flex items-center rounded-[12px] border border-white/80 px-3 py-1.5">
         <input id="finder-search" type="text" placeholder="Search here (a name or *.pdf)" oninput="renderFinderFiles()"
-          class="bg-transparent text-[12px] text-gray-100 placeholder-gray-500 outline-none w-full">
+          class="bg-transparent text-[13px] text-gray-100 placeholder-gray-500 outline-none w-full">
       </div>
       <button onclick="closeWindow('finder-window')"
         class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-500 transition" title="Close Finder"></button>
     </div>
-
-    <div class="flex-1 flex overflow-hidden">
-      <div class="w-[185px] border-r border-white/10 p-2 space-y-0.5 text-[12px] overflow-y-auto bg-black/20">
-        <button onclick="selectSidebarFolder('This PC')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="This PC">
-          <span class="text-gray-400">🖥</span><span>This PC</span>
-        </button>
-        <button onclick="selectSidebarFolder('Desktop')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Desktop">
-          <span class="text-gray-400">🖵</span><span>Desktop</span>
-        </button>
-        <button onclick="selectSidebarFolder('Documents')"
-          class="finder-side-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] bg-white/15 text-white font-medium transition text-left"
-          data-folder="Documents">
-          <span class="flex items-center gap-2.5"><span class="text-gray-200">📁</span><span>Documents</span></span>
-          <span class="text-gray-400">›</span>
-        </button>
-        <button onclick="selectSidebarFolder('Downloads')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Downloads">
-          <span class="text-gray-400">⬇</span><span>Downloads</span>
-        </button>
-        <button onclick="selectSidebarFolder('Music')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Music">
-          <span class="text-gray-400">🎵</span><span>Music</span>
-        </button>
-        <button onclick="selectSidebarFolder('Videos')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Videos">
-          <span class="text-gray-400">🎬</span><span>Videos</span>
-        </button>
-        <button onclick="selectSidebarFolder('Pictures')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Pictures">
-          <span class="text-gray-400">🖼</span><span>Pictures</span>
-        </button>
-        <button onclick="selectSidebarFolder('abya')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="abya">
-          <span class="text-gray-400">👤</span><span>abya</span>
-        </button>
-        <button onclick="selectSidebarFolder('Powerpoints')"
-          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-folder="Powerpoints">
-          <span class="text-gray-400">📊</span><span>Powerpoints</span>
-        </button>
-        <div class="pt-1">
-          <button onclick="showToast('Add folder shortcut')"
-            class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
-            <span>+</span><span>Add a folder</span>
-          </button>
-          <button onclick="showToast('Windows places: Quick Access')"
-            class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
-            <span class="flex items-center gap-2.5"><span>🏠</span><span>Windows places</span></span>
-            <span>›</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="flex-1 flex flex-col overflow-hidden bg-black/30">
-        <div class="h-8 px-3 border-b border-white/10 flex items-center justify-between text-[11px] text-gray-400">
-          <button onclick="showToast('Opened C:\\Users\\abya\\' + currentFinderFolder + ' in Explorer')"
-            class="hover:text-white flex items-center gap-1.5 transition">
-            <span>↗</span><span>Open in Explorer</span>
-          </button>
-          <div class="flex items-center gap-1.5">
-            <button onclick="toggleFinderSort()"
-              class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-gray-200 transition">⇅ Name</button>
-            <span class="px-1.5 py-0.5 rounded bg-white/10">↓</span>
-          </div>
-        </div>
-        <div id="finder-files-list" class="flex-1 overflow-y-auto p-1.5 space-y-0.5 text-[12px]"></div>
-      </div>
+    <div class="flex-1 flex overflow-hidden border-t border-white/10">
+      <div id="finder-places"
+        class="w-[230px] flex-shrink-0 p-2 space-y-0.5 text-[13px] overflow-y-auto border-r border-white/10"></div>
+      <div id="finder-col-a" class="flex-1 min-w-0 flex flex-col border-r border-white/10"></div>
+      <div id="finder-col-b" class="flex-1 min-w-0 flex flex-col"></div>
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- WINDOW 2: Nexora DockFINDER PREFERENCES                        -->
-  <!-- ========================================================= -->
+  <!-- NEXORA SETTINGS — persistent Dock / Finder / Island config -->
   <div id="preferences-window"
-    class="os-window glass-panel hidden top-[95px] left-1/2 -translate-x-1/2 w-[540px] max-w-[94vw] h-[420px] z-40 flex"
+    class="os-window glass-panel hidden top-[50px] left-1/2 -translate-x-1/2 w-[900px] max-w-[96vw] h-[650px] max-h-[90vh] z-40 flex rounded-[20px]"
     onclick="focusWindow('preferences-window')">
-    <div class="w-[175px] border-r border-white/10 p-3 flex flex-col bg-black/30">
-      <div class="flex items-center gap-1.5 mb-3">
-        <button onclick="closeWindow('preferences-window')"
-          class="w-3 h-3 rounded-full bg-[#ff5f56] hover:brightness-110"></button>
-        <button onclick="closeWindow('preferences-window')"
-          class="w-3 h-3 rounded-full bg-[#ffbd2e] hover:brightness-110"></button>
-        <button onclick="showToast('Maximized')"
-          class="w-3 h-3 rounded-full bg-[#27c93f] hover:brightness-110"></button>
+    <aside class="w-[225px] flex-shrink-0 border-r border-white/10 p-3 flex flex-col bg-black/35">
+      <div class="flex items-center gap-1.5 mb-3 px-1" onmousedown="startDrag(event, 'preferences-window')">
+        <button onclick="closeWindow('preferences-window')" class="w-3 h-3 rounded-full bg-[#ff5f56]"></button>
+        <button onclick="closeWindow('preferences-window')" class="w-3 h-3 rounded-full bg-[#ffbd2e]"></button>
+        <button onclick="closeWindow('preferences-window')" class="w-3 h-3 rounded-full bg-[#27c93f]"></button>
+        <span class="ml-2 text-[11px] text-gray-400">Nexora Settings</span>
       </div>
-      <div class="bg-white/10 rounded-[7px] px-2.5 py-1 flex items-center gap-1.5 text-[11.5px] text-gray-400 mb-3">
-        <span>🔍</span><span>Search</span>
+      <div class="bg-white/[0.07] rounded-lg px-2.5 py-2 flex items-center gap-2 text-[11px] text-gray-400 mb-3">
+        <span>⌕</span><input id="pref-search"
+          class="bg-transparent outline-none w-full text-gray-200 placeholder-gray-500" placeholder="Search settings…"
+          oninput="filterPrefSidebar(this.value)">
       </div>
-      <div class="flex-1 overflow-y-auto space-y-0.5 text-[11.5px]" id="pref-sidebar">
-        <button onclick="selectPrefTab('Steam ID')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Steam ID">
-          <span
-            class="w-4 h-4 rounded bg-sky-600 inline-flex items-center justify-center text-[9px] text-white">S</span><span>Steam
-            ID</span>
-        </button>
-        <button onclick="selectPrefTab('General')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] bg-white/15 text-white font-medium transition text-left"
-          data-tab="General">
-          <span
-            class="w-4 h-4 rounded bg-gray-600 inline-flex items-center justify-center text-[9px] text-white">⚙</span><span>General</span>
-        </button>
-        <button onclick="selectPrefTab('Appearance')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Appearance">
-          <span
-            class="w-4 h-4 rounded bg-blue-500 inline-flex items-center justify-center text-[9px] text-white">👕</span><span>Appearance</span>
-        </button>
-        <button onclick="selectPrefTab('System Icon Tray')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="System Icon Tray">
-          <span
-            class="w-4 h-4 rounded bg-amber-600 inline-flex items-center justify-center text-[9px] text-white">⊞</span><span>System
-            Icon Tray</span>
-        </button>
-        <button onclick="selectPrefTab('Screen')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Screen">
-          <span
-            class="w-4 h-4 rounded bg-purple-600 inline-flex items-center justify-center text-[9px] text-white">🖥</span><span>Screen</span>
-        </button>
-        <button onclick="selectPrefTab('Stage Manager')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Stage Manager">
-          <span
-            class="w-4 h-4 rounded bg-sky-500 inline-flex items-center justify-center text-[9px] text-white">❐</span><span>Stage
-            Manager</span>
-        </button>
-        <div class="text-[10px] text-gray-500 px-2 pt-2 pb-0.5">Dock</div>
-        <button onclick="selectPrefTab('Look & Behaviour')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Look & Behaviour">
-          <span class="w-4 h-4 rounded bg-slate-600 inline-flex items-center justify-center text-[9px] text-white">
-            dock</span><span>Look & Behaviour</span>
-        </button>
-        <button onclick="selectPrefTab('Launchpad')"
-          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
-          data-tab="Launchpad">
-          <span
-            class="w-4 h-4 rounded bg-indigo-500 inline-flex items-center justify-center text-[9px] text-white">🚀</span><span>Launchpad</span>
-        </button>
+      <nav id="pref-sidebar" class="flex-1 overflow-y-auto space-y-1 text-[11.5px]"></nav>
+      <div class="pt-2 mt-2 border-t border-white/10 text-[10px] text-gray-500 flex justify-between">
+        <span>Nexora Desktop</span><span id="settings-save-state">Saved</span>
       </div>
-    </div>
-
-    <div class="flex-1 p-4 overflow-y-auto bg-[#1c1d20]/90" onmousedown="startDrag(event, 'preferences-window')">
-      <div id="pref-title" class="text-[13px] font-semibold text-gray-100 mb-3">General</div>
-
-      <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] divide-y divide-white/[0.06] text-[12px]">
-        <div class="px-3.5 py-2.5 flex items-center justify-between">
-          <span class="text-gray-200">Enable myFinder</span>
-          <input type="checkbox" checked onchange="showToast('myFinder toggled')"
-            class="accent-white w-4 h-4 cursor-pointer">
+    </aside>
+    <main class="flex-1 min-w-0 flex flex-col bg-[#191a1e]/95">
+      <header class="px-6 pt-5 pb-4 border-b border-white/[0.08]" onmousedown="startDrag(event, 'preferences-window')">
+        <div class="flex items-center justify-between">
+          <div>
+            <div id="pref-group" class="text-[10px] uppercase tracking-[.16em] text-gray-500 mb-1">System</div>
+            <h2 id="pref-title" class="text-[18px] font-semibold text-gray-100">General</h2>
+          </div>
+          <button onclick="closeWindow('preferences-window')"
+            class="text-gray-500 hover:text-white text-xl px-2">×</button>
         </div>
-        <div class="px-3.5 py-2.5 flex items-center justify-between">
-          <span class="text-gray-200">Enable myDock</span>
-          <input type="checkbox" checked onchange="toggleDockVisibility(this.checked)"
-            class="accent-white w-4 h-4 cursor-pointer">
-        </div>
-        <div class="px-3.5 py-2.5 flex items-center justify-between">
-          <span class="text-gray-200">Automatically exit when playing in full screen</span>
-          <input type="checkbox" class="accent-white w-4 h-4 cursor-pointer">
-        </div>
-      </div>
-
-      <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] p-3.5 mt-3 space-y-3.5 text-[12px]">
-        <div>
-          <div class="text-gray-200 mb-2">Global interface scale</div>
-          <input type="range" min="0.85" max="1.15" step="0.02" value="1" oninput="setGlobalScale(this.value)"
-            class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
-        </div>
-        <div>
-          <div class="text-gray-200 mb-2">Global interface blur intensity</div>
-          <input type="range" min="4" max="42" step="1" value="26" oninput="setGlobalBlur(this.value)"
-            class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
-        </div>
-      </div>
-
-      <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] p-3.5 mt-3 text-[12px]">
-        <div class="text-gray-200 mb-2.5">Appearance</div>
-        <div class="grid grid-cols-4 gap-2">
-          <button onclick="showToast('Theme: macOS Dark')"
-            class="h-12 rounded-[7px] border-2 border-white bg-gradient-to-br from-zinc-700 to-zinc-900"></button>
-          <button onclick="showToast('Theme: Frosted Slate')"
-            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-slate-600 to-slate-900"></button>
-          <button onclick="showToast('Theme: Obsidian Glass')"
-            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-neutral-800 to-black"></button>
-          <button onclick="showToast('Theme: Auto System')"
-            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-r from-zinc-800 to-zinc-300"></button>
-        </div>
-      </div>
-    </div>
+      </header>
+      <section id="pref-content" class="flex-1 overflow-y-auto p-6 space-y-4"></section>
+    </main>
   </div>
 
-  <!-- ========================================================= -->
   <!-- QUICKLOOK FILE PREVIEW MODAL                              -->
-  <!-- ========================================================= -->
   <div id="quicklook-modal"
     class="glass-panel fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[92vw] rounded-[18px] p-4 z-50 hidden">
     <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
@@ -1633,9 +1730,7 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
   <!-- DOCK RIGHT-CLICK CONTEXT MENU                             -->
-  <!-- ========================================================= -->
   <div id="dock-context-menu"
     class="glass-panel fixed bottom-[64px] left-[27%] w-[265px] rounded-[14px] p-1.5 z-50 hidden text-[12px] text-gray-200"
     onclick="event.stopPropagation()">
@@ -1667,9 +1762,7 @@
       Dock</button>
   </div>
 
-  <!-- ========================================================= -->
   <!-- BOTTOM FLOATING Nexora Dock (Exact 17 Icons from Screenshot)   -->
-  <!-- ========================================================= -->
   <nav id="dock-container" onmousemove="handleDockMagnify(event)" onmouseleave="resetDockMagnify()">
     <!-- 1. Finder -->
     <div class="dock-item" onclick="bounceAndOpen(this, () => openFinder('Documents'))">
@@ -1801,6 +1894,25 @@
   </nav>
 
   <!-- Subtle Toast Notification Pill -->
+  <div id="notif-toast" class="off" style="position:fixed;top:30px;left:50%;z-index:60;display:flex;gap:14px;">
+    <div class="glass-panel rounded-[24px] flex items-center gap-3 px-3.5 py-3 w-[430px] overflow-hidden cursor-pointer"
+      onclick="toggleDesktopPopover('notifications-popover', event)">
+      <div class="w-11 h-11 rounded-[12px] bg-white/10 flex items-center justify-center text-lg flex-shrink-0 relative">
+        ✂<span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500"></span></div>
+      <div class="min-w-0 flex-1">
+        <div id="nt-app" class="text-[12px] text-gray-400"></div>
+        <div id="nt-text" class="overflow-hidden text-[13px] text-gray-100"></div>
+      </div>
+    </div>
+    <div class="glass-panel rounded-[24px] flex items-center justify-between gap-3 px-3 py-3 w-[180px] cursor-pointer"
+      onclick="toggleIsland()">
+      <div class="w-10 h-10 rounded-full" style="background:var(--accent)"></div>
+      <div id="nt-eq" class="flex items-center gap-[2.5px]"><span class="eq-bar"></span><span
+          class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span
+          class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></div>
+    </div>
+  </div>
+
   <div id="os-toast"
     class="fixed bottom-[66px] left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full glass-panel text-[12px] text-gray-100 opacity-0 pointer-events-none transition-opacity duration-200 z-[999]">
     Action completed
@@ -1810,11 +1922,47 @@
     // ==========================================
     // 1. MEDIA & DYNAMIC ISLAND STATE
     // ==========================================
+    const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const playlist = [
-      { title: "Esok", artist: "Alkateri", album: "Kontemplasi", source: "Playing from Brave", badge: "brave", duration: 295, current: 192 },
-      { title: "Lebih Dari", artist: "Alkateri", album: "Kontemplasi", source: "Playing from Brave", badge: "brave", duration: 290, current: 171 },
-      { title: "Zaman", artist: "Alkateri", album: "Kontemplasi", source: "Spotify", badge: "spotify", duration: 351, current: 40 }
+      {
+        title: "Apa Kabar Opus", artist: "Fstvlst", album: "Apa Kabar", source: "Playing from Brave", badge: "brave", duration: 185, current: 31, accent: "#e11ddb", art: false,
+        lyrics: [{ t: 22, text: "Apa kabar" }, { t: 28, text: "Satu kawan yang harus mengubah langkah" }, { t: 40, text: "Satu masa yang kita perjuangkan" }]
+      },
+      { title: "Esok", artist: "Alkateri", album: "Kontemplasi", source: "Playing from Brave", badge: "brave", duration: 295, current: 192, accent: "#63c7dc" },
+      { title: "Lebih Dari", artist: "Alkateri", album: "Kontemplasi", source: "Playing from Brave", badge: "brave", duration: 290, current: 171, accent: "#63c7dc" },
+      { title: "Zaman", artist: "Alkateri", album: "Kontemplasi", source: "Spotify", badge: "spotify", duration: 351, current: 40, accent: "#1db954" }
     ];
+    let lyricsMode = true, lastTrackIdx = -1;
+
+    function applyTrackTheme(t) {
+      if (lastTrackIdx !== currentTrackIdx) { lastTrackIdx = currentTrackIdx; lyricsMode = !!t.lyrics; }
+      document.documentElement.style.setProperty("--accent", t.accent);
+      const solid = t.art === false;
+      const badge = document.getElementById("island-source-badge");
+      [document.getElementById("island-compact-cover"), document.getElementById("topbar-art"), badge.parentElement].forEach(c => {
+        c.querySelector("svg").style.display = solid ? "none" : "block";
+        c.style.backgroundColor = solid ? t.accent : "";
+      });
+      badge.style.display = solid ? "none" : "flex";
+      badge.style.backgroundColor = t.badge === "spotify" ? "#1db954" : "#fb542b";
+      const show = lyricsMode && !!t.lyrics;
+      document.getElementById("island-info-row").style.display = show ? "none" : "flex";
+      document.getElementById("island-lyrics-row").style.display = show ? "flex" : "none";
+      if (!show) return;
+      let idx = -1;
+      t.lyrics.forEach((l, i) => { if (t.current >= l.t) idx = i; });
+      document.getElementById("island-lyrics-head").textContent = `${t.title} · ${t.artist}`;
+      document.getElementById("ly-prev").textContent = t.lyrics[idx - 1]?.text || "";
+      document.getElementById("ly-cur").textContent = idx >= 0 ? t.lyrics[idx].text : "♪";
+      document.getElementById("ly-next").textContent = t.lyrics[idx + 1]?.text || "";
+    }
+
+    function toggleLyrics() {
+      if (!playlist[currentTrackIdx].lyrics) return showToast("No lyrics available for this track");
+      lyricsMode = !lyricsMode;
+      updateMediaUI();
+    }
+
     let currentTrackIdx = 0;
     let isPlaying = true;
     let islandPinned = false;
@@ -1831,6 +1979,7 @@
       const pct = Math.min(100, (t.current / t.duration) * 100);
 
       document.getElementById("topbar-track-label").textContent = `${t.title} · ${t.artist}`;
+      applyTrackTheme(t);
       document.getElementById("island-compact-title").textContent = t.title;
       document.getElementById("island-exp-title").textContent = t.title;
       document.getElementById("island-exp-artist").textContent = t.artist;
@@ -1862,7 +2011,8 @@
       const eqEls = [
         document.getElementById("topbar-eq"),
         document.getElementById("island-compact-eq"),
-        document.getElementById("island-exp-eq")
+        document.getElementById("island-exp-eq"),
+        document.getElementById("nt-eq")
       ];
       eqEls.forEach(el => {
         if (!el) return;
@@ -2041,6 +2191,7 @@
 
     function toggleMic() {
       micMuted = !micMuted;
+      document.getElementById("topbar-mic-icon").style.opacity = micMuted ? "0.55" : "1";
       showToast(micMuted ? "Microphone muted" : "Microphone active");
     }
 
@@ -2049,6 +2200,39 @@
       document.getElementById("cc-power-plan").textContent = powerPlans[powerIdx];
       document.getElementById("pop-power-plan").textContent = powerPlans[powerIdx];
     }
+
+    let notifToastTimer = null;
+    function showNotifToast(app, title, body) {
+      const el = document.getElementById("notif-toast");
+      const txt = esc(`${title} — ${body}`);
+      document.getElementById("nt-app").textContent = app;
+      document.getElementById("nt-text").innerHTML = `<span class="marq"><span class="pr-10">${txt}</span><span class="pr-10">${txt}</span></span>`;
+      el.classList.remove("off");
+      clearTimeout(notifToastTimer);
+      notifToastTimer = setTimeout(() => el.classList.add("off"), 5200);
+    }
+
+    function pushNotification(app, title, body) {
+      const list = document.getElementById("notifications-list");
+      if (!list.querySelector("[data-notif]")) list.innerHTML = "";
+      const card = document.createElement("div");
+      card.dataset.notif = "1";
+      card.className = "bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]";
+      card.innerHTML = `<div class="flex items-center justify-between text-[11px] text-gray-400 mb-1"><span>${esc(app)}</span><span>now</span></div>
+        <div class="text-[12.5px] font-semibold text-gray-100">${esc(title)}</div><div class="text-[11.5px] text-gray-400 mt-0.5">${esc(body)}</div>`;
+      list.prepend(card);
+      document.getElementById("notif-total-count").textContent = `· ${list.querySelectorAll("[data-notif]").length}`;
+      ["notif-badge-1", "notif-badge-2", "notif-badge-3"].forEach(id => { const b = document.getElementById(id); if (b) b.style.display = ""; });
+      if (!quickState.dnd) showNotifToast(app, title, body);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "PrintScreen" || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s")) {
+        e.preventDefault();
+        pushNotification("Snipping Tool", "Screenshot copied to clipboard", "Automatically saved to screenshots folder.");
+      }
+      if (e.key === "Escape") { closeAllPopovers(); hideDockContext(); }
+    });
 
     function clearNotifications() {
       document.getElementById("notifications-list").innerHTML = `<div class="text-center py-6 text-[12px] text-gray-500">No new notifications</div>`;
@@ -2074,7 +2258,7 @@
       const month = months[now.getMonth()];
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById('topbar-datetime').textContent = `${dayName} ${day} ${month} &nbsp;${hours}:${minutes}`;
+      document.getElementById('topbar-datetime').innerHTML = `${dayName} ${day} ${month} &nbsp;${hours}:${minutes}`;
     }
 
     setInterval(updateClock, 1000);
@@ -2103,7 +2287,8 @@
       const btn = document.createElement("button");
       btn.className = "desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-gray-300 hover:bg-white/10 transition text-left";
       btn.dataset.desk = desktopCount;
-      btn.onclick = () => switchVirtualDesktop(desktopCount);
+      const n = desktopCount;
+      btn.onclick = () => switchVirtualDesktop(n);
       btn.innerHTML = `<svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Desktop ${desktopCount}</span>`;
       list.appendChild(btn);
       switchVirtualDesktop(desktopCount);
@@ -2160,126 +2345,137 @@
       ]
     };
 
-    let currentFinderFolder = "Documents";
-    let finderHistory = ["Documents"];
-    let finderSortAsc = true;
+    finderData.Documents.find(i => i.name === "College").children = [
+      { name: "Berkas Skripsi.zip", type: "zip", preview: "Archive: Berkas Skripsi.zip" },
+      ...["Skripsi", "Semester 7", "Semester 6", "Semester 5", "Semester 4", "Semester 3", "Semester 2", "Semester 1", "Research", "PKM-K 2025", "IOT NPK Sensor", "Documents"].map(n => ({ name: n, type: "folder" }))
+    ];
+    finderData["This PC"] = [{ name: "Local Disk (C:)", type: "folder" }, { name: "Data (D:)", type: "folder" }];
+    ["Music", "Videos", "abya", "Powerpoints"].forEach(p => { finderData[p] = finderData[p] || [{ name: "README.md", type: "md", preview: `# ${p}` }]; });
 
-    function openFinder(folder = "Documents") {
-      const win = document.getElementById("finder-window");
-      win.classList.remove("hidden");
-      focusWindow("finder-window");
-      selectSidebarFolder(folder);
+    const finderPlaces = [["This PC", "🖥"], ["Desktop", "🖵"], ["Documents", "📁"], ["Downloads", "⬇"], ["Music", "🎵"], ["Videos", "🎬"], ["Pictures", "🖼"], ["abya", "👤"], ["Powerpoints", "📊"]];
+    let finderPath = ["Documents", "College"];
+    let finderSortAsc = false;
+    let finderView = [[], []];
+
+    function childrenOf(item) {
+      if (!item.children) item.children = item.type === "folder" ? [
+        { name: "README.md", type: "md", preview: `# ${item.name}\nFolder contents synced locally.` },
+        { name: "Project_Notes.docx", type: "docx", preview: `Working notes inside ${item.name}.` }] : [];
+      return item.children;
+    }
+    function nodeChildren(path) {
+      let list = finderData[path[0]] || [];
+      for (let i = 1; i < path.length; i++) {
+        const it = list.find(x => x.name === path[i]);
+        if (!it) return [];
+        list = childrenOf(it);
+      }
+      return list;
     }
 
-    function selectSidebarFolder(folder) {
-      currentFinderFolder = folder;
-      if (finderHistory[finderHistory.length - 1] !== folder) {
-        finderHistory.push(folder);
-      }
-      document.querySelectorAll(".finder-side-btn").forEach(btn => {
-        if (btn.dataset.folder === folder) {
-          btn.classList.add("bg-white/15", "text-white", "font-medium");
-          btn.classList.remove("text-gray-300");
-        } else {
-          btn.classList.remove("bg-white/15", "text-white", "font-medium");
-          btn.classList.add("text-gray-300");
-        }
-      });
+    function openFinder(folder) {
+      document.getElementById("finder-window").classList.remove("hidden");
+      focusWindow("finder-window");
+      if (folder && folder !== finderPath[0]) {
+        if (finderData[folder] && finderPlaces.some(p => p[0] === folder)) selectSidebarFolder(folder);
+        else if (finderData.Documents.some(i => i.name === folder)) { finderPath = ["Documents", folder]; renderFinderFiles(); }
+        else selectSidebarFolder("Documents");
+      } else renderFinderFiles();
+    }
+
+    function selectSidebarFolder(place) {
+      finderPath = [place];
+      document.getElementById("finder-search").value = "";
       renderFinderFiles();
     }
 
     function finderBack() {
-      if (finderHistory.length > 1) {
-        finderHistory.pop();
-        selectSidebarFolder(finderHistory[finderHistory.length - 1]);
-      } else {
-        selectSidebarFolder("Documents");
-      }
+      if (finderPath.length > 1) finderPath = finderPath.slice(0, -1);
+      else if (finderPath[0] !== "This PC") finderPath = ["This PC"];
+      renderFinderFiles();
     }
 
-    function toggleFinderSort() {
-      finderSortAsc = !finderSortAsc;
+    function toggleFinderSort() { finderSortAsc = !finderSortAsc; renderFinderFiles(); }
+    function openInExplorer() { showToast("Opened C:\\Users\\abya\\" + finderPath.join("\\") + " in Explorer"); }
+    function addFinderFolder() {
+      const name = finderPath[finderPath.length - 1];
+      if (!finderPlaces.some(p => p[0] === name)) { finderData[name] = nodeChildren(finderPath); finderPlaces.push([name, "📁"]); }
+      showToast(`Added "${name}" to places`);
       renderFinderFiles();
     }
 
     function getFileIconSvg(type) {
-      if (type === "folder") {
-        return `<svg class="w-4 h-4 text-[#28a7ea] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
-      }
-      if (type === "docx") {
-        return `<span class="w-4 h-4 rounded-[3px] bg-blue-600 text-white text-[9px] font-bold inline-flex items-center justify-center flex-shrink-0">W</span>`;
-      }
-      if (type === "xlsx") {
-        return `<span class="w-4 h-4 rounded-[3px] bg-emerald-600 text-white text-[9px] font-bold inline-flex items-center justify-center flex-shrink-0">X</span>`;
-      }
-      if (type === "base") {
-        return `<span class="w-4 h-4 rounded-[3px] bg-gray-200 text-gray-900 text-[9px] font-bold inline-flex items-center justify-center flex-shrink-0">▤</span>`;
-      }
-      return `<span class="w-4 h-4 rounded-[3px] bg-slate-500 text-white text-[9px] font-bold inline-flex items-center justify-center flex-shrink-0">📄</span>`;
+      const box = (c, t) => `<span class="w-4 h-4 rounded-[3px] ${c} text-white text-[9px] font-bold inline-flex items-center justify-center flex-shrink-0">${t}</span>`;
+      if (type === "folder") return `<svg class="w-4 h-4 text-gray-300 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
+      if (type === "docx") return box("bg-blue-600", "W");
+      if (type === "xlsx") return box("bg-emerald-600", "X");
+      if (type === "zip") return box("bg-lime-500", "▤");
+      if (type === "base") return box("bg-gray-200 !text-gray-900", "▤");
+      return box("bg-slate-500", "📄");
+    }
+
+    function finderMatch(name, q) {
+      if (!q) return true;
+      name = name.toLowerCase();
+      return q.startsWith("*") ? name.endsWith(q.slice(1)) : name.includes(q);
+    }
+    function sortItems(list) {
+      const dir = finderSortAsc ? 1 : -1;
+      return [...list].sort((a, b) => {
+        const fa = a.type === "folder", fb = b.type === "folder";
+        if (fa !== fb) return fa ? 1 : -1;
+        return dir * a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+      });
+    }
+    function colHtml(col, items, selected) {
+      const rows = items.map((it, i) => `
+        <button onclick="finderClick(${col},${i})" class="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-[10px] transition text-left ${it.name === selected ? "bg-white/15 text-white" : "text-gray-200 hover:bg-white/10"}">
+          <span class="flex items-center gap-3 truncate">${getFileIconSvg(it.type)}<span class="truncate">${esc(it.name)}</span></span>
+          ${it.type === "folder" ? '<span class="text-gray-500">›</span>' : ""}
+        </button>`).join("") || `<div class="text-center text-[12px] text-gray-500 py-6">No items</div>`;
+      return `<div class="h-10 px-3 flex items-center justify-between text-[12.5px] text-gray-300">
+          <button onclick="openInExplorer()" class="hover:text-white flex items-center gap-2">↗ <span>Open in Explorer</span></button>
+          <div class="flex gap-1.5"><button onclick="toggleFinderSort()" class="px-2.5 py-1 rounded-[8px] bg-white/10 hover:bg-white/15">⇅ Name</button>
+          <button onclick="toggleFinderSort()" class="px-2 py-1 rounded-[8px] bg-white/10 hover:bg-white/15">${finderSortAsc ? "↑" : "↓"}</button></div>
+        </div><div class="flex-1 overflow-y-auto p-2 space-y-0.5 text-[13px]">${rows}</div>`;
     }
 
     function renderFinderFiles() {
-      const container = document.getElementById("finder-files-list");
-      const query = document.getElementById("finder-search").value.toLowerCase().trim();
-      let items = finderData[currentFinderFolder] || finderData["Documents"];
-
-      if (query) {
-        items = items.filter(i => i.name.toLowerCase().includes(query));
-      }
-      if (!finderSortAsc) {
-        items = [...items].reverse();
-      }
-
-      container.innerHTML = items.map(item => `
-        <button onclick="handleFileClick('${item.name}', '${item.type}')" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[7px] hover:bg-white/10 text-gray-200 transition text-left group">
-          <span class="flex items-center gap-2.5 truncate">
-            ${getFileIconSvg(item.type)}
-            <span class="truncate">${item.name}</span>
-          </span>
-          ${item.type === "folder" ? `<span class="text-gray-500 group-hover:text-gray-300">›</span>` : ""}
-        </button>
-      `).join("");
+      const q = document.getElementById("finder-search").value.toLowerCase().trim();
+      const n = finderPath.length;
+      const listA = nodeChildren(n >= 2 ? finderPath.slice(0, n - 1) : finderPath);
+      const listB = n >= 2 ? nodeChildren(finderPath) : null;
+      finderView[0] = sortItems(listA.filter(i => finderMatch(i.name, q)));
+      finderView[1] = listB ? sortItems(listB.filter(i => finderMatch(i.name, q))) : [];
+      document.getElementById("finder-col-a").innerHTML = colHtml(0, finderView[0], n >= 2 ? finderPath[n - 1] : null);
+      document.getElementById("finder-col-b").innerHTML = listB ? colHtml(1, finderView[1], null)
+        : `<div class="m-auto text-[12px] text-gray-500">Select a folder to browse</div>`;
+      document.getElementById("finder-places").innerHTML = finderPlaces.map(([name, icon]) => `
+        <button onclick="selectSidebarFolder('${name}')" class="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-[10px] transition text-left ${name === finderPath[0] ? "bg-white/15 text-white" : "text-gray-300 hover:bg-white/10"}">
+          <span class="flex items-center gap-3"><span>${icon}</span><span>${esc(name)}</span></span>${name === finderPath[0] ? '<span class="text-gray-400">›</span>' : ""}
+        </button>`).join("") + `
+        <button onclick="addFinderFolder()" class="w-full flex items-center gap-3 px-3 py-2 rounded-[10px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left"><span>＋</span><span>Add a folder</span></button>
+        <button onclick="showToast('Windows places: Quick Access')" class="w-full flex items-center justify-between px-3 py-2 rounded-[10px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left"><span class="flex items-center gap-3"><span>🏠</span><span>Windows places</span></span><span>›</span></button>`;
     }
 
-    function handleFileClick(name, type) {
-      if (type === "folder") {
-        finderData[name] = [
-          { name: "README.md", type: "md", preview: `# ${name}\nFolder contents synced locally on C:\\Users\\abya\\Documents\\${name}.` },
-          { name: "Project_Notes.docx", type: "docx", preview: `Working notes inside ${name}.` }
-        ];
-        selectSidebarFolder(name);
+    function finderClick(col, i) {
+      const item = finderView[col][i];
+      if (!item) return;
+      if (item.type === "folder") {
+        const n = finderPath.length;
+        const base = col === 0 ? (n >= 2 ? finderPath.slice(0, n - 1) : finderPath) : finderPath;
+        finderPath = base.concat(item.name);
+        renderFinderFiles();
       } else {
-        const items = finderData[currentFinderFolder] || [];
-        const found = items.find(i => i.name === name);
-        document.getElementById("ql-filename").textContent = name;
-        document.getElementById("ql-content").textContent = found?.preview || "File preview ready.";
+        document.getElementById("ql-filename").textContent = item.name;
+        document.getElementById("ql-content").textContent = item.preview || "File preview ready.";
         document.getElementById("quicklook-modal").classList.remove("hidden");
       }
     }
 
     // ==========================================
-    // 6. PREFERENCES WINDOW & WINDOW DRAGGING
+    // 6. WINDOW DRAGGING & GLOBAL DISPLAY HELPERS
     // ==========================================
-    function openPreferences(tab = "General") {
-      const win = document.getElementById("preferences-window");
-      win.classList.remove("hidden");
-      focusWindow("preferences-window");
-      selectPrefTab(tab);
-    }
-
-    function selectPrefTab(tab) {
-      document.getElementById("pref-title").textContent = tab;
-      document.querySelectorAll(".pref-tab").forEach(btn => {
-        if (btn.dataset.tab === tab) {
-          btn.classList.add("bg-white/15", "text-white", "font-medium");
-          btn.classList.remove("text-gray-300");
-        } else {
-          btn.classList.remove("bg-white/15", "text-white", "font-medium");
-          btn.classList.add("text-gray-300");
-        }
-      });
-    }
-
     function setGlobalScale(val) {
       document.documentElement.style.setProperty("--ui-scale", val);
     }
@@ -2303,7 +2499,7 @@
     }
 
     function startDrag(e, winId) {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+      if (["INPUT", "BUTTON", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
       const win = document.getElementById(winId);
       focusWindow(winId);
       const rect = win.getBoundingClientRect();
@@ -2390,9 +2586,434 @@
       closeAllPopovers();
     });
 
+
+    // PERSISTENT SETTINGS MODEL — Dock / Finder / Dynamic Island
+    const NEXORA_SETTINGS_KEY = "nexora.desktop.settings.v1";
+    const defaultSettings = {
+      shared: {
+        enableFinder: true, enableDock: true, exitOnFullscreen: true, globalScale: 1, globalBlur: 26,
+        appearance: "dark", accentColor: "#63c7dc", startOnBoot: "disabled", hideTaskbarOnBoot: "none",
+        displayLanguage: "English", displayFont: "Segoe UI", globalFontScale: 1,
+        customDockBlur: false, dockBlur: 22, dockTransparency: 62, pinnedReflections: false,
+        reflectionBlur: 5, reflectionTransparency: 35, reflectionDistance: 3, reflectionGradientDistance: 8,
+        customIconLabels: false, labelBlur: 18, labelTransparency: 70, labelBorderTransparency: 12,
+        customContextMenus: false, contextBlur: 22, contextTransparency: 85, contextBorder: 12,
+        customFolderGrid: false, folderBlur: 22, folderTransparency: 85, folderBorder: 12, folderIconSize: 48,
+        customNexoraMenus: false, menuBlur: 26, menuTransparency: 90, menuBorder: 10,
+        customFinderBlur: false, finderBlur: 26, finderTransparency: 88, wallpaperTint: 0,
+        screenBrightness: 100, nightLight: false, nightLightIntensity: 25, screenTarget: "Primary display",
+        launchpadCustomBlur: false, launchpadAboveWindows: false, launchpadBlurBackground: true, launchpadBlur: 24,
+        trayAllFinder: false, trayAllDock: false, traySystemFinder: true, newTrayIconSeconds: 5,
+        showNotifications: true, notificationSounds: true, notificationDuration: 5,
+        showTime: true, showDate: true, timeFormat: "24-hour", dateFormat: "Short",
+        showVolume: true, showAudioOutput: true, showMediaControls: true, showBrightness: true, showScreenMirroring: true,
+        showWifi: true, showBluetooth: true, showHardwareIcons: true,
+        stageIcon: true, stageWindowTitle: true, stageBlurIcons: true, stageClickDesktopHide: false,
+        stageAutoPauseMedia: true, stageNativePreview: true, stageDesktopIcons: "Auto Show Hide", stageAnimationSpeed: "1.0x",
+        stageEnabled: false, stagePosition: "left", stageHiddenMode: "default", stageKeepBorder: false,
+        stageIconSize: 36, stageIconSpacing: 8, stageIconCount: 8,
+        windowAnimation: true, windowAnimationEffect: "scale", windowAnimationSpeed: "1.0x",
+        excludedPrograms: "", programBlacklist: "", minimizeExcludedWindows: true
+      },
+      dock: {
+        iconSize: 48, iconEffect: "Scaling", iconMagnification: 1.4, iconLightIntensity: 35,
+        iconBackgroundLight: 25, iconBackgroundColor: "#63c7dc", iconSpacing: 8, edgeDistance: 8,
+        position: "bottom", display: "Primary display", launchpadIconSize: 52, launchpadHorizontalSpacing: 22,
+        launchpadVerticalSpacing: 24, launchpadSources: "added", deletedStartMenuPrograms: "",
+        launchpadDisplay: "Primary display", launchpadFollowDock: true, scaleMacIcons: true, doubleClickFolderFinder: true,
+        hideOpenFolderButton: false, lockIconDragging: false, showIconLabels: false, animateAppLaunch: true,
+        preventWindowsCoverDock: true, showRunningIndicators: true, showUnpinnedRunning: true, separateUnpinned: false,
+        bottomLeftHotCorner: "Do nothing", displayMode: "default", detectionWindow: "All Program Windows", hiddenEffect: "Move",
+        activationTrigger: "The edge of the screen", activationBarWidth: 4, activationBarHeight: 2, activationBarDistance: 0,
+        mouseActivationDelay: 150, useNexoraMinimize: true, disableMinimizeAnimation: false, shiftSlowAnimation: true,
+        minimizeIntoIcon: true, dynamicMinimizeContent: true, minimizedIconPosition: "Next to the icon on the right",
+        minimizeAnimation: "Genie", minimizeAnimationSpeed: "1.0x", minimizeBlacklist: "",
+        windowPreviews: true, previewSize: 260, previewDelay: 450, previewAppName: true, previewControls: true,
+        previewNative: true
+      },
+      finder: {
+        menuIcon: true, autoHide: false, shutdownConfirmation: true, maximizedAffectsAppearance: true,
+        closeMaximizedOnCorner: false, lockTrayDragging: false, windowOptions: true, coloredTrayIcons: true,
+        inputMethodMenu: true, searchIcon: true, accountIcon: true, mediaPlaybackIcon: true, lyricsMenu: true,
+        colorPlayerLyrics: true, showBatteryMenu: true, batteryPercentage: true, remainingBatteryTime: true,
+        showNotifications: true, notificationSounds: true, notificationDuration: 5,
+        showTime: true, showDate: true, timeFormat: "24-hour", dateFormat: "Short",
+        showVolume: true, showAudioOutput: true, showMediaControls: true, showBrightness: true, showScreenMirroring: true,
+        showWifi: true, showBluetooth: true, showHardwareIcons: true,
+        autoPowerPlans: false, powerPlanPlugged: "balanced", powerPlanBattery: "balanced"
+      },
+      island: {
+        enabled: true, shape: "attached", displayMode: "Smart", openOnHover: true, idleStyle: "Toothless eyes",
+        greetingName: "", greetingText: "Hello!", material: "Glass", rounding: 28,
+        mediaLyrics: true, compactLyrics: true, onlineLyrics: false, downloads: true, fileShelf: true,
+        sendToPhone: false, timerCalendar: true, eyeEnabled: true, eyeTheme: "toothless", eyeShape: "toothless",
+        eyeRadius: 280, eyeAutonomous: true, eyeGlanceChance: 78, eyeMinInterval: 5500, eyeMaxInterval: 11000
+      }
+    };
+    function mergeSettings(base, saved) {
+      const out = structuredClone(base);
+      if (!saved || typeof saved !== "object") return out;
+      Object.keys(out).forEach(section => {
+        if (saved[section] && typeof saved[section] === "object") Object.assign(out[section], saved[section]);
+      });
+      return out;
+    }
+    let NexoraSettings = (() => {
+      try { return mergeSettings(defaultSettings, JSON.parse(localStorage.getItem(NEXORA_SETTINGS_KEY) || "null")); }
+      catch { return structuredClone(defaultSettings); }
+    })();
+    window.NexoraSettings = NexoraSettings;
+    window.DockSettings = NexoraSettings.dock;
+    window.FinderSettings = NexoraSettings.finder;
+    window.IslandSettings = NexoraSettings.island;
+    let settingsSaveTimer;
+    function saveNexoraSettings() {
+      clearTimeout(settingsSaveTimer);
+      const status = document.getElementById("settings-save-state");
+      if (status) status.textContent = "Saving…";
+      settingsSaveTimer = setTimeout(() => {
+        try { localStorage.setItem(NEXORA_SETTINGS_KEY, JSON.stringify(NexoraSettings)); if (status) status.textContent = "Saved"; }
+        catch { if (status) status.textContent = "Storage unavailable"; }
+      }, 180);
+    }
+
+    // Each descriptor maps to a persisted field in shared / dock / finder / island.
+    const prefPages = [
+      {
+        group: "System", name: "General", section: "shared", fields: [
+          ["toggle", "Enable Finder", "enableFinder"], ["toggle", "Enable Dock", "enableDock"], ["toggle", "Automatically Exit When Playing On Full Screen", "exitOnFullscreen"],
+          ["range", "Global Interface Scale", "globalScale", .75, 1.5, .01], ["range", "Global Interface Blur Intensity", "globalBlur", 0, 48, 1],
+          ["select", "Appearance", "appearance", ["light", "dark", "system"]], ["color", "Accent Color", "accentColor"],
+          ["select", "Start On Boot Method", "startOnBoot", ["Don't Start On Boot", "Registry Value", "Scheduled Task", "Start as a Service"]],
+          ["select", "Automatically hide the taskbar on boot", "hideTaskbarOnBoot", ["none", "allDisplays", "dockDisplay"]],
+          ["select", "Display Language", "displayLanguage", ["English", "Indonesian"]],
+          ["select", "Display Font", "displayFont", ["Segoe UI", "Arial", "Inter", "Roboto", " system-ui"]],
+          ["range", "Global Font Scaling", "globalFontScale", .75, 1.5, .01]
+        ]
+      },
+      {
+        group: "System", name: "Appearance", section: "shared", fields: [
+          ["toggle", "Make Dock use custom blur and transparency values", "customDockBlur"], ["range", "Dock blur intensity", "dockBlur", 0, 50, 1], ["range", "Dock transparency", "dockTransparency", 0, 100, 1],
+          ["toggle", "Make pinned icons reflect from the Dock", "pinnedReflections"], ["range", "Reflection blur strength", "reflectionBlur", 0, 30, 1], ["range", "Reflection transparency", "reflectionTransparency", 0, 100, 1], ["range", "Icon reflection distance", "reflectionDistance", 0, 20, 1], ["range", "Gradient distance of icon reflection", "reflectionGradientDistance", 0, 30, 1],
+          ["toggle", "Make Dock icon labels use custom blur and transparency values", "customIconLabels"], ["range", "Label blur intensity", "labelBlur", 0, 40, 1], ["range", "Label transparency", "labelTransparency", 0, 100, 1], ["range", "Label border transparency", "labelBorderTransparency", 0, 100, 1],
+          ["toggle", "Make context menus use custom blur and transparency values", "customContextMenus"], ["range", "Context menu blur intensity", "contextBlur", 0, 50, 1], ["range", "Context menu transparency", "contextTransparency", 0, 100, 1], ["range", "Context menu border transparency", "contextBorder", 0, 100, 1],
+          ["toggle", "Make folder contents grid use custom blur and transparency values", "customFolderGrid"], ["range", "Folder grid blur intensity", "folderBlur", 0, 50, 1], ["range", "Folder grid transparency", "folderTransparency", 0, 100, 1], ["range", "Folder grid border transparency", "folderBorder", 0, 100, 1], ["range", "Folder grid icon size", "folderIconSize", 24, 96, 1],
+          ["toggle", "Make Nexora menus use custom blur and transparency values", "customNexoraMenus"], ["range", "Nexora menu blur intensity", "menuBlur", 0, 50, 1], ["range", "Nexora menu transparency", "menuTransparency", 0, 100, 1], ["range", "Nexora menu border transparency", "menuBorder", 0, 100, 1],
+          ["toggle", "Make Finder use custom blur and transparency values", "customFinderBlur"], ["range", "Finder blur intensity", "finderBlur", 0, 50, 1], ["range", "Finder transparency", "finderTransparency", 0, 100, 1], ["range", "Wallpaper tint intensity", "wallpaperTint", 0, 100, 1],
+          ["toggle", "Launchpad uses custom background blur", "launchpadCustomBlur"], ["toggle", "Display Launchpad above windows instead of hiding them", "launchpadAboveWindows"], ["toggle", "Launchpad blurs the background instead of pre-rendering it", "launchpadBlurBackground"], ["range", "Launchpad background blur intensity", "launchpadBlur", 0, 50, 1]
+        ]
+      },
+      {
+        group: "System", name: "System Icon Tray", section: "shared", fields: [
+          ["toggle", "Always display all tray icons in Finder", "trayAllFinder"], ["toggle", "Always display all tray icons in Dock", "trayAllDock"], ["toggle", "Display the system's own tray icon in Finder", "traySystemFinder"], ["range", "Newly run tray icon display time (seconds)", "newTrayIconSeconds", 0, 30, 1]
+        ]
+      },
+      {
+        group: "System", name: "Screen", section: "shared", fields: [
+          ["range", "Display brightness overlay", "screenBrightness", 0, 100, 1], ["toggle", "Enable night light", "nightLight"], ["range", "Night light intensity", "nightLightIntensity", 0, 100, 1],
+          ["select", "Display target", "screenTarget", ["All displays", "Primary display", "Active display"]]
+        ]
+      },
+      {
+        group: "System", name: "Stage Manager", section: "shared", fields: [
+          ["toggle", "Show Stage Manager icon in Finder", "stageIcon"], ["toggle", "Show window title on mouseover", "stageWindowTitle"], ["toggle", "Blur background window icons", "stageBlurIcons"], ["toggle", "Click on the desktop to hide all windows", "stageClickDesktopHide"], ["toggle", "Automatically pause and play background window media", "stageAutoPauseMedia"], ["toggle", "Show native window preview on hover", "stageNativePreview"],
+          ["select", "Show Desktop Icons", "stageDesktopIcons", ["Always Hide Icon", "Auto Show Hide", "Always Show"]], ["select", "Adjust Animation Speed", "stageAnimationSpeed", ["0.5x", "0.75x", "1.0x", "1.25x", "1.5x"]],
+          ["toggle", "Open Stage Manager", "stageEnabled"], ["select", "Window list screen position", "stagePosition", ["left", "right"]], ["select", "Window List Show Hidden Mode", "stageHiddenMode", ["default", "alwaysShow", "alwaysHide"]], ["toggle", "Keep Window Border", "stageKeepBorder"],
+          ["range", "Window list icon size", "stageIconSize", 16, 80, 1], ["range", "Window list icon spacing", "stageIconSpacing", 0, 30, 1], ["range", "Number of window list icons", "stageIconCount", 1, 20, 1]
+        ]
+      },
+      {
+        group: "System", name: "Window Animation", section: "shared", fields: [
+          ["toggle", "Window opening animation", "windowAnimation"], ["select", "Window opening animation effect", "windowAnimationEffect", ["scale", "fade", "slide", "zoom"]],
+          ["select", "Adjust animation speed", "windowAnimationSpeed", ["0.5x", "0.75x", "1.0x", "1.25x", "1.5x"]],
+          ["text", "Add excluded programs (semicolon separated)", "excludedPrograms"], ["text", "Manage running program blacklist", "programBlacklist"], ["toggle", "Remove windows for excluded programs", "minimizeExcludedWindows"]
+        ]
+      },
+      {
+        group: "Dock", name: "Look & Behavior", section: "dock", fields: [
+          ["range", "Icon size", "iconSize", 24, 96, 1], ["select", "Icon effect", "iconEffect", ["None", "Scaling", "Select", "Illumination", "Scaling and light", "Select and light"]],
+          ["range", "Icon magnification", "iconMagnification", 1, 2.5, .05], ["range", "Icon light intensity", "iconLightIntensity", 0, 100, 1], ["range", "Icon background light intensity", "iconBackgroundLight", 0, 100, 1], ["color", "Icon background light color", "iconBackgroundColor"],
+          ["range", "Distance between icons", "iconSpacing", 0, 30, 1], ["range", "Dock distance from screen edge", "edgeDistance", 0, 80, 1], ["select", "Position on screen", "position", ["left", "bottom", "right", "top"]], ["select", "Display on screen", "display", ["Primary display", "All displays", "Display 1", "Display 2"]]
+        ]
+      },
+      {
+        group: "Dock", name: "Launchpad", section: "dock", fields: [
+          ["range", "Launchpad icon size", "launchpadIconSize", 24, 100, 1], ["range", "Icon horizontal spacing", "launchpadHorizontalSpacing", 0, 60, 1], ["range", "Icon vertical spacing", "launchpadVerticalSpacing", 0, 60, 1],
+          ["select", "Choose which icons will be displayed by Launchpad", "launchpadSources", ["added", "addedStartMenu", "addedDesktop", "all"]],
+          ["text", "Edit deleted Start Menu programs", "deletedStartMenuPrograms"], ["select", "Select the screen to display Launchpad", "launchpadDisplay", ["Primary display", "All displays", "Display 1", "Display 2"]], ["toggle", "Follow Dock", "launchpadFollowDock"]
+        ]
+      },
+      {
+        group: "Dock", name: "Advanced", section: "dock", fields: [
+          ["toggle", "Scale all icons to macOS standards", "scaleMacIcons"], ["toggle", "Double-click the folder icon to open in Finder", "doubleClickFolderFinder"], ["toggle", "Hide the open folder button", "hideOpenFolderButton"], ["toggle", "Lock icon dragging", "lockIconDragging"], ["toggle", "Show icon labels", "showIconLabels"], ["toggle", "Animate opening applications", "animateAppLaunch"], ["toggle", "Turn on window borders to prevent windows from hiding Dock and Finder", "preventWindowsCoverDock"], ["toggle", "Show indicators under running programs", "showRunningIndicators"], ["toggle", "Show icons of unpinned running programs", "showUnpinnedRunning"], ["toggle", "Separate unpinned running programs", "separateUnpinned"],
+          ["select", "Bottom left hot-corner function", "bottomLeftHotCorner", ["Do nothing", "Show all windows", "Open Launchpad", "Put display to sleep", "Open Start Menu", "Show Desktop", "Open Mission Control", "Lock Screen", "Windows widget", "Advanced"]],
+          ["select", "Dock display mode", "displayMode", ["default", "overlay", "autoHide", "smartAutoHide", "alwaysShow", "onlyWith", "forceVisible", "desktopOnly"]],
+          ["select", "Detection window", "detectionWindow", ["All Program Windows", "The Current Program Window"]], ["select", "Dock hidden effect", "hiddenEffect", ["Move", "Fade Away"]], ["select", "Dock activation trigger", "activationTrigger", ["The edge of the screen", "Activation bar", "The edge of the screen & Activation bar"]],
+          ["range", "Activation bar width", "activationBarWidth", 1, 100, 1], ["range", "Activation bar height", "activationBarHeight", 1, 30, 1], ["range", "Activation bar distance from screen edge", "activationBarDistance", 0, 40, 1], ["range", "Mouse delay activates dock time (ms)", "mouseActivationDelay", 0, 1500, 10]
+        ]
+      },
+      {
+        group: "Dock", name: "Minimize Effects", section: "dock", fields: [
+          ["toggle", "Use Nexora minimize effect", "useNexoraMinimize"], ["toggle", "Don't animate minimizing windows", "disableMinimizeAnimation"], ["toggle", "Hold down Shift to slow down an animation", "shiftSlowAnimation"], ["toggle", "Minimize windows into their Dock icon", "minimizeIntoIcon"], ["toggle", "Dynamically display window content when minimized", "dynamicMinimizeContent"],
+          ["select", "Minimize window icon position", "minimizedIconPosition", ["Next to the icon on the right", "Independently displayed on the right", "Right side displayed independently using a separator"]],
+          ["select", "Minimize animation", "minimizeAnimation", ["Genie", "Scale", "Suck"]], ["select", "Minimize animation speed", "minimizeAnimationSpeed", ["0.5x", "0.75x", "1.0x", "1.25x", "1.5x"]], ["text", "Minimize animation blacklist", "minimizeBlacklist"]
+        ]
+      },
+      {
+        group: "Dock", name: "Window Previews", section: "dock", fields: [
+          ["toggle", "Enable window previews", "windowPreviews"], ["range", "Window preview size", "previewSize", 120, 520, 10], ["range", "Preview delay on hover (ms)", "previewDelay", 0, 1500, 25],
+          ["toggle", "Application name", "previewAppName"], ["toggle", "Window control buttons", "previewControls"], ["toggle", "Show native window preview on hover", "previewNative"]
+        ]
+      },
+      {
+        group: "Finder", name: "Look & Behavior", section: "finder", fields: [
+          ["toggle", "Finder menu icon", "menuIcon"], ["toggle", "Auto-Hide Finder", "autoHide"], ["toggle", "Shut down confirmation box", "shutdownConfirmation"], ["toggle", "Maximized windows affect Finder appearance", "maximizedAffectsAppearance"], ["toggle", "Click the upper right corner to close the current maximized window", "closeMaximizedOnCorner"], ["toggle", "Lock dragging tray icons", "lockTrayDragging"], ["toggle", "Show window options in Finder", "windowOptions"], ["toggle", "Show colored tray icons", "coloredTrayIcons"], ["toggle", "Show input method menu", "inputMethodMenu"], ["toggle", "Show search icon", "searchIcon"], ["toggle", "The account icon is displayed", "accountIcon"], ["toggle", "Displays the media playback icon", "mediaPlaybackIcon"], ["toggle", "Show music player lyrics menu", "lyricsMenu"], ["toggle", "Show Color Player Lyrics", "colorPlayerLyrics"]
+        ]
+      },
+      {
+        group: "Finder", name: "Notifications", section: "finder", fields: [
+          ["toggle", "Show desktop notifications", "showNotifications"], ["toggle", "Notification sounds", "notificationSounds"], ["range", "Notification display duration (seconds)", "notificationDuration", 1, 15, 1]
+        ]
+      },
+      {
+        group: "Finder", name: "Time & Date", section: "finder", fields: [
+          ["toggle", "Show time in Menu Bar", "showTime"], ["toggle", "Show date in Menu Bar", "showDate"], ["select", "Time format", "timeFormat", ["12-hour", "24-hour"]], ["select", "Date format", "dateFormat", ["Short", "Long", "ISO"]]
+        ]
+      },
+      {
+        group: "Finder", name: "Audio", section: "finder", fields: [
+          ["toggle", "Show volume control", "showVolume"], ["toggle", "Show audio output selector", "showAudioOutput"], ["toggle", "Show media playback controls", "showMediaControls"]
+        ]
+      },
+      {
+        group: "Finder", name: "Display", section: "finder", fields: [
+          ["toggle", "Show display brightness control", "showBrightness"], ["toggle", "Show screen mirroring control", "showScreenMirroring"]
+        ]
+      },
+      {
+        group: "Finder", name: "Hardware Status", section: "finder", fields: [
+          ["toggle", "Show Wi-Fi status", "showWifi"], ["toggle", "Show Bluetooth status", "showBluetooth"], ["toggle", "Show device status icons", "showHardwareIcons"]
+        ]
+      },
+      {
+        group: "Finder", name: "Battery", section: "finder", fields: [
+          ["toggle", "Show Battery Status menu in Finder", "showBatteryMenu"], ["toggle", "Show Battery percentage in Finder status menu", "batteryPercentage"], ["toggle", "Display the remaining battery time", "remainingBatteryTime"], ["toggle", "Automatically switch power plans", "autoPowerPlans"],
+          ["select", "Power plan when plugged in", "powerPlanPlugged", ["balanced", "bestPerformance", "bestPowerEfficiency"]], ["select", "Power plan when using batteries", "powerPlanBattery", ["balanced", "bestPerformance", "bestPowerEfficiency"]]
+        ]
+      },
+      {
+        group: "Dynamic Island", name: "Look & Behavior", section: "island", fields: [
+          ["toggle", "Enable Dynamic Island", "enabled"], ["select", "Shape", "shape", ["attached", "floating capsule"]], ["select", "Display mode", "displayMode", ["Fixed", "Smart", "On demand"]], ["toggle", "Open on hover", "openOnHover"],
+          ["select", "Idle style", "idleStyle", ["Minimal", "Toothless eyes", "Media", "Clock"]], ["text", "Greeting name", "greetingName"], ["text", "Greeting text", "greetingText"], ["select", "Material", "material", ["Glass", "Opaque", "Translucent"]], ["range", "Material rounding", "rounding", 0, 48, 1],
+          ["toggle", "Show Toothless eye companion", "eyeEnabled"], ["select", "Eye color theme", "eyeTheme", ["toothless", "ocean", "sunset", "violet", "crimson", "ice"]], ["select", "Eye shape", "eyeShape", ["toothless", "round", "wide", "almond", "softTriangle"]],
+          ["range", "Eye perception radius (px)", "eyeRadius", 120, 500, 10], ["toggle", "Autonomous eye glances", "eyeAutonomous"], ["range", "Autonomous glance chance (%)", "eyeGlanceChance", 0, 100, 1], ["range", "Minimum glance interval (ms)", "eyeMinInterval", 1000, 20000, 250], ["range", "Maximum glance interval (ms)", "eyeMaxInterval", 2000, 30000, 250]
+        ]
+      },
+      {
+        group: "Dynamic Island", name: "Activities", section: "island", fields: [
+          ["toggle", "Media and lyrics", "mediaLyrics"], ["toggle", "Compact lyrics", "compactLyrics"], ["toggle", "Online lyrics lookup", "onlineLyrics"], ["toggle", "Downloads", "downloads"], ["toggle", "File shelf", "fileShelf"], ["toggle", "Send to phone", "sendToPhone"], ["toggle", "Timer and calendar strip", "timerCalendar"]
+        ]
+      }
+    ];
+
+    function prefControl(section, field) {
+      const [type, label, key, a, b, c] = field;
+      const value = NexoraSettings[section][key];
+      const id = `pref-${section}-${key}`;
+      if (type === "toggle") return `<label class="pref-row"><span class="pref-label">${label}</span><input id="${id}" type="checkbox" ${value ? "checked" : ""} onchange="updateSetting('${section}','${key}',this.checked)"></label>`;
+      if (type === "range") return `<label class="pref-row"><span class="pref-label">${label}</span><span class="flex items-center gap-2 min-w-[210px] justify-end"><input id="${id}" type="range" min="${a}" max="${b}" step="${c}" value="${value}" oninput="updateSetting('${section}','${key}',Number(this.value),true)"><output id="${id}-value" class="pref-value">${value}</output></span></label>`;
+      if (type === "select") return `<label class="pref-row"><span class="pref-label">${label}</span><select id="${id}" onchange="updateSetting('${section}','${key}',this.value)">${a.map(opt => `<option value="${opt}" ${String(value) === String(opt) ? "selected" : ""}>${opt}</option>`).join("")}</select></label>`;
+      if (type === "color") return `<label class="pref-row"><span class="pref-label">${label}</span><input id="${id}" type="color" value="${value}" onchange="updateSetting('${section}','${key}',this.value)"></label>`;
+      return `<label class="pref-row"><span class="pref-label">${label}</span><input id="${id}" type="text" value="${String(value ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}" onchange="updateSetting('${section}','${key}',this.value)"></label>`;
+    }
+    function renderPrefSidebar(filter = "") {
+      const nav = document.getElementById("pref-sidebar");
+      const q = filter.trim().toLowerCase();
+      let currentGroup = "";
+      nav.innerHTML = prefPages.filter(p => !q || `${p.group} ${p.name} ${p.fields.map(f => f[1]).join(" ")}`.toLowerCase().includes(q))
+        .map(p => {
+          const group = p.group !== currentGroup ? `<div class="pref-nav-group">${p.group}</div>` : "";
+          currentGroup = p.group;
+          return `${group}<button class="pref-nav-item ${activePrefPage === p.name ? "active" : ""}" data-pref-name="${p.name}" onclick="selectPrefTab('${p.name.replace(/'/g, "\\'")}')"><span class="w-5 text-center opacity-80">${({ System: "⚙", Dock: "▣", Finder: "⌕", "Dynamic Island": "◉" })[p.group]}</span><span>${p.name}</span></button>`;
+        }).join("");
+    }
+    let activePrefPage = "General";
+    function renderPrefPage(name) {
+      const page = prefPages.find(p => p.name === name) || prefPages[0];
+      activePrefPage = page.name;
+      document.getElementById("pref-title").textContent = page.name;
+      document.getElementById("pref-group").textContent = page.group;
+      const sections = [];
+      for (let i = 0; i < page.fields.length; i += 6) sections.push(page.fields.slice(i, i + 6));
+      document.getElementById("pref-content").innerHTML = sections.map((items, i) => `<div class="pref-card"><div class="pref-section-title">${i === 0 ? page.name : "More options"}</div>${items.map(f => prefControl(page.section, f)).join("")}</div>`).join("");
+      renderPrefSidebar(document.getElementById("pref-search")?.value || "");
+    }
+    function filterPrefSidebar(value) { renderPrefSidebar(value); }
+    function selectPrefTab(name) {
+      const aliases = { "Look & Behaviour": "Look & Behavior" };
+      renderPrefPage(aliases[name] || name);
+    }
+    function updateSetting(section, key, value, live = false) {
+      NexoraSettings[section][key] = value;
+      if (key === "globalScale") setGlobalScale(value);
+      if (key === "globalBlur") setGlobalBlur(value);
+      if (key === "enableDock") toggleDockVisibility(value);
+      if (key === "enableFinder") {
+        const finderSegment = document.querySelector("header.fixed .top-segment");
+        if (finderSegment) finderSegment.style.display = value ? "flex" : "none";
+      }
+      if (section === "island") {
+        applyIslandSettings();
+        if (key === "eyeAutonomous" && value) scheduleNexoraEyeGlance();
+      }
+      if (section === "shared" && key === "accentColor") document.documentElement.style.setProperty("--accent", value);
+      if (section === "shared" && key === "appearance") document.documentElement.dataset.theme = value;
+      const output = document.getElementById(`pref-${section}-${key}-value`);
+      if (output) output.textContent = value;
+      saveNexoraSettings();
+    }
+    function applyIslandSettings() {
+      const s = NexoraSettings.island;
+      const wrapper = document.getElementById("dynamic-island-wrapper");
+      const notch = document.getElementById("top-eyes-notch");
+      if (!wrapper || !notch) return;
+      wrapper.style.display = s.enabled ? "flex" : "none";
+      notch.classList.toggle("nx-eye-disabled", !s.eyeEnabled);
+      wrapper.style.pointerEvents = s.enabled ? "auto" : "none";
+      wrapper.onmouseenter = s.openOnHover ? expandIsland : null;
+      wrapper.onmouseleave = s.openOnHover ? collapseIsland : null;
+      if (s.shape === "floating capsule") {
+        notch.style.borderRadius = "999px"; notch.style.marginTop = "5px";
+      } else {
+        notch.style.borderRadius = "0 0 14px 14px"; notch.style.marginTop = "0";
+      }
+      applyNexoraEyeTheme(s.eyeTheme);
+      applyNexoraEyeShape(s.eyeShape);
+      activeEyeRadius = Number(s.eyeRadius);
+      eyeAutonomous.enabled = !!s.eyeAutonomous;
+      eyeAutonomous.glanceChance = Number(s.eyeGlanceChance) / 100;
+      eyeAutonomous.minIntervalMs = Number(s.eyeMinInterval);
+      eyeAutonomous.maxIntervalMs = Math.max(eyeAutonomous.minIntervalMs, Number(s.eyeMaxInterval));
+    }
+    function openPreferences(tab = "General") {
+      const win = document.getElementById("preferences-window");
+      win.classList.remove("hidden"); focusWindow("preferences-window"); selectPrefTab(tab);
+    }
+
+    // TOOTHLESS EYE RUNTIME — isolated namespace, no demo UI
+    const nxEye = {
+      notch: document.getElementById("top-eyes-notch"),
+      left: document.getElementById("nx-left-eye"), right: document.getElementById("nx-right-eye"),
+      leftPupil: document.getElementById("nx-left-pupil"), rightPupil: document.getElementById("nx-right-pupil"),
+      leftGroup: document.getElementById("nx-left-pupil-group"), rightGroup: document.getElementById("nx-right-pupil-group"),
+      blinks: [...document.querySelectorAll("#nx-eye-wrapper .nx-blink")]
+    };
+    const nxThemes = {
+      toothless: { stops: ["#b5ff36", "#10b981", "#047857", "#022c22"], socket: "#020617", pupil: "#020617", blink: "#05070a", glow: "#10b981" },
+      ocean: { stops: ["#d8fbff", "#38bdf8", "#0369a1", "#082f49"], socket: "#020617", pupil: "#020617", blink: "#061827", glow: "#38bdf8" },
+      sunset: { stops: ["#fff1a8", "#f59e0b", "#c2410c", "#431407"], socket: "#1c1008", pupil: "#160b05", blink: "#160b05", glow: "#f59e0b" },
+      violet: { stops: ["#f5d0fe", "#c084fc", "#7e22ce", "#2e1065"], socket: "#10051d", pupil: "#090313", blink: "#090313", glow: "#c084fc" },
+      crimson: { stops: ["#fecaca", "#ef4444", "#991b1b", "#450a0a"], socket: "#180606", pupil: "#100303", blink: "#100303", glow: "#ef4444" },
+      ice: { stops: ["#ffffff", "#a5f3fc", "#0891b2", "#164e63"], socket: "#03151b", pupil: "#020b10", blink: "#020b10", glow: "#67e8f9" }
+    };
+    const nxShapes = { toothless: { rx: 16, ry: 22 }, round: { rx: 20, ry: 20 }, wide: { rx: 22, ry: 14 }, almond: { rx: 23, ry: 12 }, softTriangle: { rx: 22, ry: 19, softTriangle: true } };
+    let activeEyeRadius = 280, eyeBlinking = false, eyeMouse = { x: 0, y: 0 };
+    let eyeLeftOffset = { x: 0, y: 0 }, eyeRightOffset = { x: 0, y: 0 }, eyeTargetLeft = { x: 0, y: 0 }, eyeTargetRight = { x: 0, y: 0 };
+    let eyePupil = { w: 3.5, h: 14 }, eyePupilTarget = { w: 3.5, h: 14 }, eyeAutonomous = { enabled: true, minIntervalMs: 5500, maxIntervalMs: 11000, glanceChance: .78, minFocusDurationMs: 900, maxFocusDurationMs: 1700, minDisplacement: 4.5, maxDisplacement: 8, diagonalBias: .34 };
+    let eyeAutonomousFocusing = false, eyeCursorFocused = false, eyeRelaxTimer = null, eyeGlanceTimer = null;
+    function applyNexoraEyeTheme(name) {
+      const theme = nxThemes[name] || nxThemes.toothless;
+      ["nx-grad-0", "nx-grad-1", "nx-grad-2", "nx-grad-3"].forEach((id, i) => document.getElementById(id)?.setAttribute("stop-color", theme.stops[i]));
+      document.querySelectorAll("#nx-eye-wrapper .nx-eye-socket").forEach(el => el.setAttribute("fill", theme.socket));
+      [nxEye.leftPupil, nxEye.rightPupil].forEach(el => el.setAttribute("fill", theme.pupil));
+      nxEye.blinks.forEach(el => el.setAttribute("fill", theme.blink));
+      nxEye.notch.style.boxShadow = `0 4px 12px rgba(0,0,0,.5),0 0 15px ${theme.glow}30`;
+    }
+    function nxTrianglePath(cx, cy, rx, ry) {
+      return [`M ${cx} ${cy - ry}`, `C ${cx + rx * .30} ${cy - ry * 1.02},${cx + rx * .72} ${cy - ry * .48},${cx + rx * .91} ${cy + ry * .30}`, `C ${cx + rx * 1.04} ${cy + ry * .76},${cx + rx * .60} ${cy + ry * 1.02},${cx} ${cy + ry * .94}`, `C ${cx - rx * .60} ${cy + ry * 1.02},${cx - rx * 1.04} ${cy + ry * .76},${cx - rx * .91} ${cy + ry * .30}`, `C ${cx - rx * .72} ${cy - ry * .48},${cx - rx * .30} ${cy - ry * 1.02},${cx} ${cy - ry}`, "Z"].join(" ");
+    }
+    function applyNexoraEyeShape(name) {
+      const shape = nxShapes[name] || nxShapes.toothless;
+      document.querySelectorAll("#nx-eye-wrapper .nx-eye-socket,#nx-eye-wrapper .nx-eye-iris,#nx-eye-wrapper .nx-blink").forEach(el => {
+        const isBlink = el.classList.contains("nx-blink"), rx = shape.rx + (isBlink ? 1.5 : 0), ry = shape.ry + (isBlink ? 1.5 : 0);
+        if (shape.softTriangle) {
+          const path = nxTrianglePath(25, 25, rx, ry);
+          if (el.tagName.toLowerCase() === "path") el.setAttribute("d", path);
+          else { const p = document.createElementNS("http://www.w3.org/2000/svg", "path");[...el.attributes].forEach(a => { if (!["cx", "cy", "rx", "ry"].includes(a.name)) p.setAttribute(a.name, a.value) }); p.setAttribute("d", path); p.classList.add(...el.classList); el.replaceWith(p); }
+        } else {
+          if (el.tagName.toLowerCase() === "path") { const e = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");[...el.attributes].forEach(a => { if (a.name !== "d") e.setAttribute(a.name, a.value) }); e.setAttribute("cx", "25"); e.setAttribute("cy", "25"); el.replaceWith(e); el = e; }
+          el.setAttribute("rx", rx); el.setAttribute("ry", ry);
+        }
+      });
+    }
+    function scheduleEyeRelax() {
+      clearTimeout(eyeRelaxTimer);
+      eyeRelaxTimer = setTimeout(() => { if (!eyeAutonomousFocusing && !eyeCursorFocused) { eyePupilTarget = { w: 3.5, h: 14 } } }, 2000);
+    }
+    function triggerNexoraBlink() {
+      if (eyeBlinking || !NexoraSettings.island.eyeEnabled) return;
+      eyeBlinking = true;
+      const blink = (closeMs, holdMs, openMs, done) => {
+        nxEye.blinks.forEach(el => { el.style.transformBox = "fill-box"; el.style.transformOrigin = "center top"; el.style.transition = `transform ${closeMs}ms cubic-bezier(.35,0,.65,1)`; el.setAttribute("opacity", "1"); el.style.transform = "scaleY(1)" });
+        setTimeout(() => { nxEye.blinks.forEach(el => { el.style.transition = `transform ${openMs}ms cubic-bezier(.2,.7,.2,1)`; el.style.transform = "scaleY(.001)" }); setTimeout(() => { nxEye.blinks.forEach(el => { el.style.transition = ""; el.setAttribute("opacity", "0") }); done() }, openMs) }, closeMs + holdMs);
+      };
+      blink(80, 50, 120, () => setTimeout(() => blink(70, 50, 100, () => eyeBlinking = false), 170));
+    }
+    nxEye.notch.addEventListener("click", e => { if (e.target.closest("button")) return; triggerNexoraBlink() });
+    window.addEventListener("mousemove", e => { eyeMouse = { x: e.clientX, y: e.clientY } });
+    function scheduleNexoraEyeGlance() {
+      if (!eyeAutonomous.enabled) return;
+      const cfg = eyeAutonomous, delay = cfg.minIntervalMs + Math.random() * Math.max(0, cfg.maxIntervalMs - cfg.minIntervalMs);
+      eyeGlanceTimer = setTimeout(() => {
+        if (!cfg.enabled) return;
+        const r = nxEye.notch.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        if (Math.hypot(eyeMouse.x - cx, eyeMouse.y - cy) > activeEyeRadius && !eyeAutonomousFocusing && Math.random() < cfg.glanceChance) {
+          let dx, dy, m;
+          do { dx = Math.random() * 2 - 1; dy = Math.random() * 2 - 1; m = Math.hypot(dx, dy) } while (m < .15 || Math.abs(dx / m) < cfg.diagonalBias || Math.abs(dy / m) < cfg.diagonalBias);
+          dx /= m; dy /= m; const d = cfg.minDisplacement + Math.random() * (cfg.maxDisplacement - cfg.minDisplacement);
+          eyeTargetLeft = { x: dx * d, y: dy * d }; eyeTargetRight = { x: dx * d * .98, y: dy * d * .98 }; eyeAutonomousFocusing = true; eyePupilTarget = { w: 8, h: 12 };
+          setTimeout(() => { eyeAutonomousFocusing = false; if (!eyeCursorFocused) { eyeTargetLeft = { x: 0, y: 0 }; eyeTargetRight = { x: 0, y: 0 }; scheduleEyeRelax() } }, cfg.minFocusDurationMs + Math.random() * (cfg.maxFocusDurationMs - cfg.minFocusDurationMs));
+        }
+        scheduleNexoraEyeGlance();
+      }, delay);
+    }
+    function animateNexoraEyes() {
+      if (!nxEye.notch.isConnected) return;
+      const r = nxEye.notch.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, dx = eyeMouse.x - cx, dy = eyeMouse.y - cy, dist = Math.hypot(dx, dy);
+      const focused = dist <= activeEyeRadius && !eyeBlinking;
+      if (focused) {
+        eyeCursorFocused = true; clearTimeout(eyeRelaxTimer);
+        const l = nxEye.left.getBoundingClientRect(), rr = nxEye.right.getBoundingClientRect();
+        const la = Math.atan2(eyeMouse.y - (l.top + l.height / 2), eyeMouse.x - (l.left + l.width / 2));
+        const ra = Math.atan2(eyeMouse.y - (rr.top + rr.height / 2), eyeMouse.x - (rr.left + rr.width / 2));
+        const disp = Math.min(dist / 16, 9), factor = 1 - dist / Math.max(1, activeEyeRadius);
+        eyeTargetLeft = { x: Math.cos(la) * disp, y: Math.sin(la) * disp }; eyeTargetRight = { x: Math.cos(ra) * disp, y: Math.sin(ra) * disp };
+        eyePupilTarget = { w: 3.5 + factor * 4.5, h: 14 - factor * 2 };
+      } else if (eyeCursorFocused) {
+        eyeCursorFocused = false;
+        if (!eyeAutonomousFocusing) { eyeTargetLeft = { x: 0, y: 0 }; eyeTargetRight = { x: 0, y: 0 }; scheduleEyeRelax() }
+      } else if (!eyeAutonomousFocusing) { eyeTargetLeft = { x: 0, y: 0 }; eyeTargetRight = { x: 0, y: 0 } }
+      const lerp = (a, b, k) => a + (b - a) * k;
+      eyeLeftOffset = { x: lerp(eyeLeftOffset.x, eyeTargetLeft.x, .14), y: lerp(eyeLeftOffset.y, eyeTargetLeft.y, .14) };
+      eyeRightOffset = { x: lerp(eyeRightOffset.x, eyeTargetRight.x, .14), y: lerp(eyeRightOffset.y, eyeTargetRight.y, .14) };
+      eyePupil = { w: lerp(eyePupil.w, eyePupilTarget.w, .12), h: lerp(eyePupil.h, eyePupilTarget.h, .12) };
+      nxEye.leftGroup.setAttribute("transform", `translate(${eyeLeftOffset.x},${eyeLeftOffset.y})`);
+      nxEye.rightGroup.setAttribute("transform", `translate(${eyeRightOffset.x},${eyeRightOffset.y})`);
+      [nxEye.leftPupil, nxEye.rightPupil].forEach(el => { el.setAttribute("rx", eyePupil.w); el.setAttribute("ry", eyePupil.h) });
+      requestAnimationFrame(animateNexoraEyes);
+    }
+    renderPrefSidebar();
+    renderPrefPage("General");
+    applyIslandSettings();
+    scheduleNexoraEyeGlance();
+    animateNexoraEyes();
+    setInterval(() => { if (Math.random() > .72) triggerNexoraBlink() }, 4200);
+
+
     window.addEventListener("load", () => {
       updateMediaUI();
       renderFinderFiles();
+      setTimeout(() => showNotifToast("Snipping Tool", "Screenshot copied to clipboard", "Automatically saved to screenshots folder."), 700);
     });
   </script>
 </body>
