@@ -13,7 +13,8 @@ defined in [`architecture.md`](architecture.md) and [`../AGENTS.md`](../AGENTS.m
 > Visor* (see the disclaimer in the README). Do not rename modules to match the UI names.
 
 Status legend used below: ✅ implemented · 🟡 partial · ⬜ planned (not in the settings model or UI yet).
-Statuses were derived from the README and the `Settings` struct at commit `1e95f83`; re-verify when you start an item.
+Statuses were derived from the README and the `Settings` struct at commit `1e95f83`; re-verified against the code at
+`281a75c` (SPEC-04, see "Corrections" below); re-verify again when you start an item.
 
 ---
 
@@ -51,18 +52,18 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 | ---- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | D-1  | Show pinned apps and running apps; running apps get an indicator                       | ✅                                                             |
 | D-2  | Click to launch or focus; group a running app's windows, sorted by recent focus        | ✅                                                             |
-| D-3  | Pin / unpin, drag to reorder, lock reorder                                             | ✅ / ⬜ lock                                                    |
+| D-3  | Pin / unpin, drag to reorder, lock reorder                                             | ✅ / ⬜ lock (drafted in `core/dock/behavior.rs`, not compiled) |
 | D-4  | Recently used apps stay after they quit (toggle)                                       | ✅                                                             |
 | D-5  | Magnification on hover, icon size, gap, edge margin                                    | ✅                                                             |
 | D-6  | Live window previews on hover for running apps                                         | ✅                                                             |
-| D-7  | Minimize-into-Dock animation (Funnel, Scale)                                           | 🟡 Genie / Suck / per-app blacklist ⬜                          |
+| D-7  | Minimize-into-Dock animation (Genie, Scale, Suck)                                      | 🟡 Genie is implemented as *Funnel* (`window_management/genie.rs`) and Scale; Suck and per-app blacklist ⬜ |
 | D-8  | App Grid (Launchpad) button, Downloads stack, Trash with *Empty Trash*                 | ✅                                                             |
 | D-9  | Custom icons per app and icon packs                                                    | ✅                                                             |
 | D-10 | Display behavior: Fixed, Overlay, Smart auto-hide; above full-screen toggle            | 🟡 *Always visible*, *desktop only*, hide effect (move/fade) ⬜ |
 | D-11 | Position on any screen edge (bottom, left, right, top)                                 | ⬜                                                             |
 | D-12 | Choose the display that hosts the Dock (multi-monitor)                                 | ⬜                                                             |
 | D-13 | Activation bar / edge reveal with configurable width, height, offset and delay         | ⬜                                                             |
-| D-14 | Icon effects: scaling, selection, illumination (light intensity and color)             | 🟡 scaling only                                                |
+| D-14 | Icon effects: scaling, selection, illumination (light intensity and color)             | 🟡 scaling only; the rest is drafted in `core/dock/behavior.rs`, not compiled |
 | D-15 | Icon reflection and per-surface blur/transparency (labels, context menus, folder grid) | ⬜                                                             |
 | D-16 | Hot corners (including bottom-left) mapped to actions                                  | ✅ (4 corners)                                                 |
 | D-17 | Folder icons open a grid; *double-click opens in Explorer*; hide *open folder* button  | ⬜                                                             |
@@ -93,7 +94,7 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 | ---------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Items, pins, order, recents  | `core/dock/{items,pins,reorder,recents}.rs`               | ✅ in place                                                                                                    |
 | Layout and geometry          | `core/dock/{layout,geometry,entries,ring}.rs`             | ✅ in place                                                                                                    |
-| Behavior and visibility      | `core/dock/{behavior,visibility}.rs`                      | ⬜ policy lives in shared `core/visibility/policy.rs`; Dock-specific rules are inside `app/dock/visibility.rs` |
+| Behavior and visibility      | `core/dock/{behavior,visibility}.rs`                      | ⬜ `behavior.rs` exists (331 lines) but is not declared in `core/dock/mod.rs`, so it is not compiled (BASE-02); policy lives in shared `core/visibility/policy.rs`; Dock-specific rules are inside `app/dock/visibility.rs` |
 | Settings vs. state           | `core/settings/dock.rs`, `core/dock/state.rs`             | ⬜ one flat `Settings` struct (`dock_*` fields)                                                                |
 | Running apps, focus, launch  | `platform/windows/*`, `platform/filesystem/icons.rs`      | ✅ implemented, flat layout until the platform regrouping lands                                                |
 | Rendering                    | `ui/features/dock/{view,item,preview}.rs`                 | 🟡 `ui/features/dock/view.rs`; render orchestration in `app/dock/render.rs`                                    |
@@ -113,7 +114,7 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 
 ---
 
-## 3. Feature: Menubar
+## 3. Feature: Finder (UI name: Menu Bar)
 
 ### 3.1 Goal
 
@@ -143,7 +144,7 @@ in one place, replacing the need for the Windows taskbar's notification area.
 | F-17 | Media playback icon and lyrics in the bar (plain or colored)                                                               | ⬜                                              |
 | F-18 | Input-method menu, search icon and account icon toggles                                                                    | ⬜                                              |
 
-### 3.3 Settings (sidebar group **Menubar**)
+### 3.3 Settings (sidebar group **Menu Bar**)
 
 * **Look & Behavior**: Menubar menu icon · auto-hide · shut-down confirmation · maximized windows affect appearance ·
   top-right corner closes maximized window · lock tray-icon dragging · show window options · colored tray icons ·
@@ -290,8 +291,10 @@ Follows `architecture.md` §9. Items marked ✅ are done on this branch; the res
    in `genie` and `mission`; `shared::monitors::pick` is the tested multi-monitor choice needed by D-12.
    See `decisions/0002-regroup-core-by-feature.md`.
 5. ⬜ `platform` regrouping into `windows/`, `system/`, `media/`, `filesystem/`, `input/`.
-6. ✅ Settings schema split (section 5.4); `core/tests/settings_golden.rs` round-trips real 0.4.0 `settings.cfg` files
-   byte for byte (`tests/fixtures/settings_0_4_0_*.cfg`).
+6. 🟡 Settings schema split (section 5.4): only `DockSettings`, `MenubarSettings` and `IslandSettings` exist;
+   `GeneralSettings`, `AppearanceSettings`, `StageSettings` and `InputSettings` do not (ENG-03…06).
+   `core/tests/settings_golden.rs` round-trips real 0.4.0 `settings.cfg` files byte for byte
+   (`tests/fixtures/settings_0_4_0_*.cfg`); this stays true for every new setting (ADR-0004).
 7. ⬜ Move presentation into `ui/features/{dock,finder,dynamic_island}` by injecting a theme/settings snapshot instead of
    reading the global `app::prefs` from drawing code.
 8. ⬜ New capabilities marked ⬜ above, one feature at a time, each with `core` unit tests first.
@@ -304,3 +307,20 @@ cargo clippy --workspace --all-targets
 cargo test --workspace
 cargo check --workspace
 ```
+
+---
+
+## 7. Corrections (SPEC-04, verified at `281a75c`)
+
+| Item | Was | Now | Evidence |
+| ---- | --- | --- | -------- |
+| Step 6, settings schema split | ✅ | 🟡 | Only 3 of 7 section types exist in `core/settings/`. |
+| D-3 lock reorder | ⬜ | ⬜, drafted | `DockConfig.lock_drag` is in `core/dock/behavior.rs`, which is not declared in `core/dock/mod.rs`. |
+| D-7 Genie | ⬜ | ✅ as *Funnel* | `core/window_management/genie.rs` slices a window into a funnel; `min_effect` 0 = Funnel, 1 = Scale. Suck and blacklist stay ⬜. |
+| D-14 icon effects | 🟡 scaling only | 🟡, rest drafted | `IconEffect`, light intensity and colour are in the uncompiled `behavior.rs`. |
+| Dock `behavior` row (§2.4) | ⬜ | ⬜, file exists | See BASE-02. |
+| Finder rows (§3.4) | paths `core/finder/…`, `app/finder/…` | unchanged | Targets. The code is still `menubar` until the ADR-0003 rename (ENG-03). |
+| D-11, D-12, D-13, F-8, F-17 | ⬜ | ⬜ | No code found: Dock is bottom-only, no configurable activation bar (only a fixed activation strip in `app/dock/window.rs`), no Finder auto-hide, no lyrics item in the bar. |
+
+Other rows were not changed. A full row-by-row audit of ✅ items against Windows behavior needs a Windows build and is
+part of BASE-01 and BASE-12.

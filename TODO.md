@@ -108,23 +108,27 @@ ENG-01 → ENG-03…06 → WIN-01/02/03/05 → I-14 as the first full vertical s
 
 ---
 
-## 3. M0 — Decisions and spec
+## M0 — Decisions and spec
+
+**Status: done (documentation only; no Rust or HTML changed).** ADR-0003…0008 are in `docs/decisions/` (status
+*accepted*, following the recommendations below; the items marked "Maintainer to confirm" in ADR-0007 are proposals).
+SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is in M1 (ENG-03 does the Finder rename).
 
 ### Decisions (each becomes `docs/decisions/000x-*.md`)
 
-- [ ] **ADR-0003 Finder vs Menubar in code.** Options: (a) follow `feature.md`: rename `core/menubar`, `MenubarSettings`,
+- [x] **ADR-0003 Finder vs Menubar in code.** Options: (a) follow `feature.md`: rename `core/menubar`, `MenubarSettings`,
   `app/menubar` to `finder` using `pub use` aliases like ADR-0002; (b) change the rule in `feature.md` to *Menubar*.
   Recommendation: (a), before any `FinderSettings` field is added. UI strings stay *Menu Bar*. Blocks: ENG-03…, M5.
-- [ ] **ADR-0004 Settings persistence.** Keep flat `key=value`. Serialize new keys only when ≠ default (0.4.0 golden files
+- [x] **ADR-0004 Settings persistence.** Keep flat `key=value`. Serialize new keys only when ≠ default (0.4.0 golden files
   stay byte-identical). Replace the 64-key `format!` and the giant `match` with a table-driven registry
   (key, type, range, default, owner). Add an optional `settings_version` line. Blocks: every Co box.
-- [ ] **ADR-0005 List-valued settings.** Options: (a) drop `Copy` from `Settings` (touches every `prefs::get()` call);
+- [x] **ADR-0005 List-valued settings.** Options: (a) drop `Copy` from `Settings` (touches every `prefs::get()` call);
   (b) keep `Settings: Copy`, put lists in a separate `lists.cfg` behind a `ProgramLists` snapshot (`Arc`);
   (c) fixed arrays. Recommendation: (b). Blocks: WAN-04/05, DLP-05, DMN-09.
-- [ ] **ADR-0006 Settings window information architecture.** Rebuild the sidebar to the spec (System / Dock / Finder /
+- [x] **ADR-0006 Settings window information architecture.** Rebuild the sidebar to the spec (System / Dock / Finder /
   Dynamic Island groups). Decide where the Rust-only pages live (Scene, Screen Corners, Quick Search, Widget). Update
   `feature.md` §1 to match. Blocks: WIN-05.
-- [ ] **ADR-0007 Scope of items outside the capability list.** Decide in/out for each; default recommendation in brackets.
+- [x] **ADR-0007 Scope of items outside the capability list.** Decide in/out for each; default recommendation in brackets.
   - Screen page: brightness overlay, night light, display target [add as capability `SCR`, or drop]
   - Toothless eye companion, 8 settings [decide; if in, add capability I-15 and a core timing model]
   - Screen mirroring toggle [drop]
@@ -136,35 +140,35 @@ ENG-01 → ENG-03…06 → WIN-01/02/03/05 → I-14 as the first full vertical s
   - Battery "power plans": the design options (Best power efficiency / Balanced / Best performance) look like Windows 11
     power *modes*, not classic power *plans* [decide which API]
   - Feasibility spikes: tray icons (F-11) and notifications (F-12), see slices
-- [ ] **ADR-0008 Role of the HTML design.** Keep as visual/interaction reference. Schema in `design/settings-schema.js` is
+- [x] **ADR-0008 Role of the HTML design.** Keep as visual/interaction reference. Schema in `design/settings-schema.js` is
   the single catalogue the HTML reads. H boxes are non-blocking. H effect only for visual/behavior capabilities.
 
 ### Spec work
 
-- [ ] **SPEC-01** Write the missing pages into `docs/feature.md` per ADR-0007: Screen, Notifications, Time & Date, Audio,
+- [x] **SPEC-01** Write the missing pages into `docs/feature.md` per ADR-0007: Screen, Notifications, Time & Date, Audio,
   Display, Hardware Status, Island Activities (27 settings have no spec row).
-- [ ] **SPEC-02** Create `docs/settings_catalog.md` from the tables in §5 (id, label, key, type, range, default, owner
+- [x] **SPEC-02** Create `docs/settings_catalog.md` (generated from §5; 175 in scope, 8 deferred, 1 dropped) from the tables in §5 (id, label, key, type, range, default, owner
   section, capability). Link it from `feature.md`.
-- [ ] **SPEC-03** Reconcile design vs core. Proposed rule: for an **existing** setting, core's range/default wins and the
+- [x] **SPEC-03** Reconcile design vs core, recorded in `docs/spec_reconciliation.md` (the design-side edits are applied by HTM-01…). Proposed rule: for an **existing** setting, core's range/default wins and the
   design changes; for a **new** setting, the design wins. One commit per row:
-  - [ ] `dock_size` 32–72 vs 24–96 · [ ] `dock_gap` 0–24 vs 0–30 · [ ] `dock_margin` 0–60 vs 0–80
-  - [ ] `notch_round` 0–100 vs 0–48 · [ ] `blur` 0–100 vs 0–48 · [ ] `ui_scale` 100/125/150 vs 0.75–1.5 slider
-  - [ ] `accent` palette index vs hex · [ ] `autostart` bool vs 4 methods · [ ] `takeover` bool vs 3 states
-  - [ ] `hide_desktop_icons` bool vs 3 states · [ ] `stage_speed` percent vs 5 steps · [ ] `stage_size` card size vs icon size
-  - [ ] `above_fullscreen` ("always above full-screen") vs spec "automatically exit when playing full screen" (looks opposite)
-  - [ ] `notch_idle` 3 styles vs 4 · [ ] `Behavior` Fixed/Overlay/Smart vs spec Fixed/Smart/On demand
-  - [ ] `Material` Blur/Glass/Black vs Glass/Opaque/Translucent · [ ] `HotAction` 7 values vs 10
-  - [ ] defaults: `menubar` false vs `enableFinder` true · `Lang::Id` vs English · `lyrics_online` true vs false ·
+  - [x] `dock_size` 32–72 vs 24–96 · [ ] `dock_gap` 0–24 vs 0–30 · [ ] `dock_margin` 0–60 vs 0–80
+  - [x] `notch_round` 0–100 vs 0–48 · [ ] `blur` 0–100 vs 0–48 · [ ] `ui_scale` 100/125/150 vs 0.75–1.5 slider
+  - [x] `accent` palette index vs hex · [ ] `autostart` bool vs 4 methods · [ ] `takeover` bool vs 3 states
+  - [x] `hide_desktop_icons` bool vs 3 states · [ ] `stage_speed` percent vs 5 steps · [ ] `stage_size` card size vs icon size
+  - [x] `above_fullscreen` ("always above full-screen") vs spec "automatically exit when playing full screen" (looks opposite)
+  - [x] `notch_idle` 3 styles vs 4 · [ ] `Behavior` Fixed/Overlay/Smart vs spec Fixed/Smart/On demand
+  - [x] `Material` Blur/Glass/Black vs Glass/Opaque/Translucent · [ ] `HotAction` 7 values vs 10
+  - [x] defaults: `menubar` false vs `enableFinder` true · `Lang::Id` vs English · `lyrics_online` true vs false ·
     `notch_send` true vs false · `DockConfig` defaults (labels, separate, light intensity, delay) vs design
-- [ ] **SPEC-04** Re-verify every ✅/🟡/⬜ in `feature_checkpoint.md` (derived at commit `1e95f83`). Known stale: step 6;
+- [x] **SPEC-04** Re-verify every ✅/🟡/⬜ in `feature_checkpoint.md` (stale rows fixed and ⬜ rows spot-checked; the full ✅ audit needs Windows: BASE-01, BASE-12) (derived at commit `1e95f83`). Known stale: step 6;
   D-7 says Genie is ⬜ but `core/window_management/genie.rs` exists (is Funnel = Genie?); D-3 lock and D-14 effects are
   drafted in `behavior.rs`.
-- [ ] **SPEC-05** Fix doc drift: README "Modular" table paths vs the spec's sidebar, edition statement in `AGENTS.md`,
+- [x] **SPEC-05** Fix doc drift: README "Modular" table paths vs the spec's sidebar, edition statement in `AGENTS.md`,
   `architecture.md` targets that do not exist (`taskbar/`, `thiserror`, `tracing`, CI).
 
 ---
 
-## 4. M1 — Foundations
+## M1 — Foundations
 
 ### Baseline and CI
 
@@ -227,7 +231,7 @@ ENG-01 → ENG-03…06 → WIN-01/02/03/05 → I-14 as the first full vertical s
 
 ---
 
-## 5. Settings catalogue (the atomic unit)
+## M2 — Settings catalogue (the atomic unit)
 
 Generated from the design schema (`prefPages` + `defaultSettings`), then mapped by hand to the Rust code. Boxes are
 **Sp Co UI Fx H**. Pre-ticked: Sp where the row is in `feature.md`, Co where the field exists, H where the HTML already
@@ -549,12 +553,12 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 
 ---
 
-## 6. Capability slices (behavior)
+#### Capability slices (behavior)
 
 The catalogue covers settings plumbing. These slices cover the behavior behind them. Core logic and its test come first;
 OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` and must be re-verified (SPEC-04).
 
-### M3 — Dynamic Island
+## M3 — Dynamic Island
 
 **I-14 Per-activity switches** (smallest slice; do it first, end to end, as the pattern for the rest)
 - [ ] I-14.1 core: `Activities { media, downloads, shelf, send, timer }` + `visible_tabs(flags)` and activity priority as pure
@@ -578,7 +582,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 
 **I-13 Notification surfacing**: after F-12.0 spike. Core queue model shared with F-12.
 
-### M4 — Dock
+## M4 — Dock
 
 **D-1 Running/pinned display options**
 - [ ] D-1.1 core: `show_indicators` toggles the indicator flag in `dock::entries`. Test.
@@ -679,7 +683,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-17.2 platform: list folder contents (entry cap, lazy icons).
 - [ ] D-17.3 app: popup grid; double-click → Explorer; hide open-folder button. · [ ] D-17.4 H.
 
-### M5 — Finder (after ADR-0003)
+## M5 — Finder (after ADR-0003)
 
 - [ ] F-1/F-3 core: menu item list omits hidden items (menu icon, window options). Layout tests.
 - [ ] **F-4 Time & Date**
@@ -724,7 +728,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] **F-18 Input method, search, account**: platform keyboard layout list + switch; account name/avatar; layout tests for
   the three toggles.
 
-### M6 — Shared pages
+## M6 — Shared pages
 
 - [ ] **GEN Start on boot**: core enum with migration (`autostart=true` → Registry); platform Registry (exists in `platform/startup.rs`)
   and Scheduled Task; "Service" per ADR-0007. Tests: migration (core); create/delete entries (`#[ignore]`); QA: the
@@ -741,7 +745,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] **SCR Screen** (only if ADR-0007 accepts): core intensity → alpha/colour curves (tests); overlay window (layered,
   click-through) or gamma ramp; gamma needs a guaranteed restore (REC-01).
 
-### M7 — Hardening
+## M7 — Hardening
 
 - [ ] **REC-01** Every change to a system surface has a restore path in `nexora-guard`: taskbar per display, work-area
   reserve, parked windows, cursors, gamma ramp (if used). Manual test: normal exit, panic, Ctrl-C, kill.
@@ -753,7 +757,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] **QA-04** i18n completeness (ENG-10) green for every page.
 - [ ] **QA-05** Update `feature_checkpoint.md`, `guides.md`, README modular table (SPEC-05).
 
-### M8 — HTML parity (optional)
+## M8 — HTML parity (optional)
 
 - [ ] **HTM-07** Script that diffs the Rust catalogue (`docs/settings_catalog.md`) against `design/settings-schema.js` and
   prints keys missing on either side. Run in CI as a warning, not a failure.

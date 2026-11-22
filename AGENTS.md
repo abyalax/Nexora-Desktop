@@ -71,7 +71,7 @@ Organize by presentation responsibility:
 
 ## 4. Rust Conventions
 
-- Use Rust 2024 edition.
+- Use the Rust edition set in the workspace `Cargo.toml` (currently 2021). Moving to 2024 is decided in BASE-06 (`TODO.md`).
 - Follow standard Rust naming conventions: `snake_case` for modules/functions, `PascalCase` for types.
 - Prefer small, cohesive modules over monolithic files.
 - Use `mod.rs` consistently for directory-based modules.

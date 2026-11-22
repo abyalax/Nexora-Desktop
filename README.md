@@ -101,6 +101,10 @@ Every part of nexora is independent. Keep only the pieces you like:
 
 Use only the Deck with your normal taskbar, only the Visor, only the Menu Bar — any mix works.
 
+_The paths above describe the current Settings window. It is being reorganised into the sidebar described in
+`docs/feature.md` (see `docs/decisions/0006-settings-window-information-architecture.md`); this table is updated when
+that lands._
+
 ---
 
 ## 🚀 Install

@@ -1,4 +1,12 @@
 
+
+> **Status of this document (SPEC-05).** Parts of this file describe a target, not the current tree. Not present yet:
+> `core/taskbar/` and `ui/features/` taskbar views (taskbar hiding lives in `app` and `platform` today); `thiserror` and
+> `tracing` (no crate depends on them; `platform/src/log.rs` is a small file logger); `.github/` CI (BASE-04);
+> `rust-toolchain.toml` (BASE-05); edition 2024 (BASE-06); the `platform/{windows,system,media,filesystem,input}`
+> regrouping. Feature code is named *Finder*; the directory is still `menubar/` until ADR-0003 is implemented.
+> Current status per capability is in [`feature_checkpoint.md`](feature_checkpoint.md).
+
 - [Architecture and Project Structure](#architecture-and-project-structure)
   - [1. Architecture](#1-architecture)
     - [Modular Cargo workspace](#modular-cargo-workspace)
@@ -489,7 +497,7 @@ members = [
 
 [workspace.package]
 version = "0.1.0"
-edition = "2024"
+edition = "2024" # target; the workspace is on 2021 today (BASE-06)
 license = "MIT"
 
 [workspace.dependencies]

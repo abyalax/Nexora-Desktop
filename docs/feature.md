@@ -2,18 +2,21 @@
 
 Product-level specification of the three headline features and the shared Settings window. This file lists **what the
 user can configure**; implementation status per capability lives in [`feature_checkpoint.md`](feature_checkpoint.md)
-and the crate mapping in [`architecture.md`](architecture.md).
+and the crate mapping in [`architecture.md`](architecture.md). Every setting with its key, range and default is in
+[`settings_catalog.md`](settings_catalog.md); decisions behind this file are in [`decisions/`](decisions/) (ADR-0003…0008).
 
 | #   | Feature (code name) | UI name  | Settings sidebar group | Capability IDs |
 | --- | ------------------- | -------- | ---------------------- | -------------- |
 | 1   | Dock                | Deck     | Dock                   | D-1 … D-17     |
-| 2   | Menu Bar            | Menu Bar | Menu Bar               | F-1 … F-18     |
+| 2   | Finder              | Menu Bar | Menu Bar               | F-1 … F-18     |
 | 3   | Dynamic Island      | Visor    | Dynamic Island         | I-1 … I-14     |
+| 4   | Screen              | Screen   | (ungrouped)            | SCR            |
 
 Rules for this file:
 
-- Code, docs and modules use *Dock / Menu Bar / Dynamic Island*; user-visible strings use *Deck / Menu Bar / Visor*.
-- Every setting below must map to a field of `DockSettings`, `Menu BarSettings`, `IslandSettings` or a shared section
+- Code, docs and modules use *Dock / Finder / Dynamic Island*; user-visible strings use *Deck / Menu Bar / Visor*
+  (ADR-0003).
+- Every setting below must map to a field of `DockSettings`, `FinderSettings`, `IslandSettings` or a shared section
   in `core::settings`; settings are persistent configuration, never runtime state.
 - A setting is added here first, then to `core`, then to the Settings UI.
 
@@ -50,6 +53,10 @@ Rules for this file:
 - Dynamic Island
   - Look & Behavior
   - Activities
+- Extras (pages that exist only in the Rust app, ADR-0006)
+  - Hot Corners
+  - Quick Search
+  - Widgets
 
 ## 2. Page contents (right section)
 
@@ -59,7 +66,7 @@ Rules for this file:
   - Toggle
     - Enable Menu Bar
     - Enable Dock
-    - Automatically Exit When Playing On Full Screen
+    - Stay Above Full-Screen Windows
   - Slider
     - Global Interface Scale
     - Global Interface Blur Intensity
@@ -71,7 +78,6 @@ Rules for this file:
       - Don't Start on Boot
       - Registry Value
       - Scheduled Task
-      - Start As a Service
     - (Toggle On/Off) Automatically Hide the taskbar on boot
       - Hide Taskbar on All Display
       - Hide Taskbar on Dock Display
@@ -121,6 +127,14 @@ Rules for this file:
   - (Toggle On/Off) Always display all tray icons in Dock
   - (Toggle On/Off) Displays the system's own tray icon in Menu Bar
   - (Slider) The newly run tray icon shows the time
+- Screen
+  - (Slider, 0–100) Display brightness overlay
+  - (Toggle On/Off) Enable night light
+    - (Slider, 0–100) Night light intensity
+  - (Select Option) Display target
+    - All displays
+    - Primary display
+    - Active display
 - Stage Manager
   - Check Input
     - Show Stage Manager icon in Menu Bar
@@ -181,7 +195,7 @@ Rules for this file:
     - Bottom
     - Right
     - Top
-  - Select the screen to display Dock (list detected display)
+  - Select the screen to display Dock (Primary display or a detected display)
 - Launchpad
   - (Slider) Launchpad icon size
   - (Slider) Icon horizontal spacing
@@ -207,22 +221,21 @@ Rules for this file:
   - (Toggle On/Off) Separate unpinned running programs
   - (Select Option) Bottom left hot-corner function
     - Do nothing
-    - Show all windows
+    - Mission Control (show all windows)
     - Open Launchpad
+    - Show Desktop
+    - Stage Manager
+    - Notifications
+    - Lock Screen
     - Put display to sleep
     - Open Start Menu
-    - Show Desktop
-    - Open Mission Control
-    - Lock Screen
     - Windows widget
-    - Advanced
   - (Select Option) Dock display mode
     - Default
     - Overlay
     - Auto-hide
     - Smart auto-hide
     - Always show
-    - Only display with…
     - Always force visibility
     - Display only on the desktop
   - Select how the Dock shows and hides the detection window
@@ -281,13 +294,32 @@ Rules for this file:
   - Displays the media playback icon
   - Show music player lyrics menu
   - Show Color Player Lyrics
+- Notifications
+  - (Toggle On/Off) Show desktop notifications
+  - (Toggle On/Off) Notification sounds
+  - (Slider, 1–15 s) Notification display duration
+- Time & Date
+  - (Toggle On/Off) Show time in Menu Bar
+  - (Toggle On/Off) Show date in Menu Bar
+  - (Select Option) Time format (12-hour, 24-hour)
+  - (Select Option) Date format (Short, Long, ...)
+- Audio
+  - (Toggle On/Off) Show volume control
+  - (Toggle On/Off) Show audio output selector
+  - (Toggle On/Off) Show media playback controls
+- Display
+  - (Toggle On/Off) Show display brightness control
+- Hardware Status
+  - (Toggle On/Off) Show Wi-Fi status
+  - (Toggle On/Off) Show Bluetooth status
+  - (Toggle On/Off) Show device status icons
 - Battery
   - Show Battery Status menu in Menu Bar
   - Show Battery percentage in Menu Bar status menu
   - Displays the remaining battery time
-  - Automatically switch power plans
-  - Power plans when using power
-  - Power plans when using batteries
+  - Automatically switch power modes
+  - Power mode when using power (Best power efficiency, Balanced, Best performance)
+  - Power mode when using batteries (same options)
 
 ### 2.4 Dynamic Island
 
@@ -298,15 +330,26 @@ Rules for this file:
     - Floating capsule
   - (Select Option) Display mode
     - Fixed
+    - Overlay
     - Smart
     - On demand
   - (Toggle On/Off) Open on hover
-  - (Select Option) Idle style
+  - (Select Option) Idle style (3 styles)
   - Greeting name and text
-  - Material and rounding
+  - Material (Blur, Glass, Black) and rounding (0–100)
 - Activities
   - (Toggle On/Off) Media and lyrics (compact lyrics, online lyrics lookup)
   - (Toggle On/Off) Downloads
   - (Toggle On/Off) File shelf
   - (Toggle On/Off) Send to phone
   - (Toggle On/Off) Timer and calendar strip
+
+## 3. Scope decisions (ADR-0007)
+
+- Added: **Screen** page and its capability `SCR`; the Menu Bar pages Notifications, Time & Date, Audio, Display and
+  Hardware Status.
+- Dropped: screen mirroring, boot method *Start as a Service*, Dock display *All displays*, Dock mode *Only display
+  with…*, hot-corner action *Advanced*.
+- Deferred (design-only): the Toothless eye companion settings of the Dynamic Island.
+- Spike first: tray icons (F-11) and notifications (F-12).
+- Battery *power plans* are Windows 11 power *modes*; the exact API is confirmed in the F-16 spike.
