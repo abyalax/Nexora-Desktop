@@ -13,6 +13,9 @@
 Thumbs.db
 desktop.ini
 
+# assets icons
+assets/icons/*
+
 # data lokal hasil uji
 *.log
 parked.txt
