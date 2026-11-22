@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyDockFinder Desktop OS — Alkateri</title>
+  <title>NexoraMenuBar Desktop OS — Alkateri</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -17,7 +18,8 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    body, html {
+    body,
+    html {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -34,7 +36,7 @@
       inset: 0;
       z-index: 0;
       background:
-        radial-gradient(circle at 60% 35%, rgba(255,255,255,0.22) 0%, rgba(160,160,160,0.08) 45%, rgba(0,0,0,0.82) 100%),
+        radial-gradient(circle at 60% 35%, rgba(255, 255, 255, 0.22) 0%, rgba(160, 160, 160, 0.08) 45%, rgba(0, 0, 0, 0.82) 100%),
         linear-gradient(135deg, #2b2b2b 0%, #525252 38%, #343434 72%, #181818 100%);
       transition: filter 0.3s ease;
     }
@@ -45,8 +47,8 @@
       position: absolute;
       inset: 0;
       opacity: 0.28;
-      background-image: radial-gradient(rgba(255,255,255,0.14) 1px, transparent 0),
-                        radial-gradient(rgba(0,0,0,0.25) 1px, transparent 0);
+      background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 0),
+        radial-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 0);
       background-size: 3px 3px;
       background-position: 0 0, 1.5px 1.5px;
       pointer-events: none;
@@ -75,9 +77,11 @@
       transition: background-color 0.15s ease, transform 0.1s ease;
       border-radius: 6px;
     }
+
     .topbar-btn:hover {
       background-color: rgba(255, 255, 255, 0.12);
     }
+
     .topbar-btn:active {
       transform: scale(0.95);
     }
@@ -107,7 +111,7 @@
       justify-content: center;
       font-size: 13px;
       letter-spacing: -1px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       cursor: pointer;
       position: relative;
       z-index: 2;
@@ -180,13 +184,41 @@
       background-color: #63c7dc;
       animation: eqPulse 1.1s ease-in-out infinite alternate;
     }
-    .eq-bar:nth-child(1) { height: 7px; animation-delay: 0.0s; }
-    .eq-bar:nth-child(2) { height: 13px; animation-delay: 0.2s; }
-    .eq-bar:nth-child(3) { height: 16px; animation-delay: 0.4s; }
-    .eq-bar:nth-child(4) { height: 10px; animation-delay: 0.1s; }
-    .eq-bar:nth-child(5) { height: 15px; animation-delay: 0.35s; }
-    .eq-bar:nth-child(6) { height: 12px; animation-delay: 0.15s; }
-    .eq-bar:nth-child(7) { height: 8px; animation-delay: 0.45s; }
+
+    .eq-bar:nth-child(1) {
+      height: 7px;
+      animation-delay: 0.0s;
+    }
+
+    .eq-bar:nth-child(2) {
+      height: 13px;
+      animation-delay: 0.2s;
+    }
+
+    .eq-bar:nth-child(3) {
+      height: 16px;
+      animation-delay: 0.4s;
+    }
+
+    .eq-bar:nth-child(4) {
+      height: 10px;
+      animation-delay: 0.1s;
+    }
+
+    .eq-bar:nth-child(5) {
+      height: 15px;
+      animation-delay: 0.35s;
+    }
+
+    .eq-bar:nth-child(6) {
+      height: 12px;
+      animation-delay: 0.15s;
+    }
+
+    .eq-bar:nth-child(7) {
+      height: 8px;
+      animation-delay: 0.45s;
+    }
 
     .paused .eq-bar {
       animation-play-state: paused;
@@ -195,8 +227,13 @@
     }
 
     @keyframes eqPulse {
-      0% { transform: scaleY(0.45); }
-      100% { transform: scaleY(1.12); }
+      0% {
+        transform: scaleY(0.45);
+      }
+
+      100% {
+        transform: scaleY(1.12);
+      }
     }
 
     /* Glass Panels & Flyouts */
@@ -212,11 +249,13 @@
       transform-origin: top center;
       transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     .popover-hidden {
       opacity: 0;
       transform: translateY(-8px) scale(0.96);
       pointer-events: none;
     }
+
     .popover-visible {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -235,6 +274,7 @@
       overflow: hidden;
       cursor: pointer;
     }
+
     input[type="range"].macos-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -242,11 +282,11 @@
       height: 24px;
       border-radius: 50%;
       background: #ffffff;
-      box-shadow: -407px 0 0 395px rgba(255, 255, 255, 0.85), 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: -407px 0 0 395px rgba(255, 255, 255, 0.85), 0 2px 6px rgba(0, 0, 0, 0.4);
       cursor: pointer;
     }
 
-    /* MyDock Container & Magnification */
+    /* Dock Container & Magnification */
     #dock-container {
       position: fixed;
       bottom: 8px;
@@ -300,7 +340,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s ease, transform 0.15s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
     }
 
     .dock-dot {
@@ -326,26 +366,38 @@
       width: 6px;
       height: 6px;
     }
+
     ::-webkit-scrollbar-track {
       background: transparent;
     }
+
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.18);
       border-radius: 9999px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(255, 255, 255, 0.3);
     }
 
     @keyframes dockBounce {
-      0%, 100% { transform: translateY(0) scale(1.25); }
-      50% { transform: translateY(-16px) scale(1.25); }
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1.25);
+      }
+
+      50% {
+        transform: translateY(-16px) scale(1.25);
+      }
     }
+
     .bouncing {
       animation: dockBounce 0.55s ease-in-out 2;
     }
   </style>
 </head>
+
 <body>
 
   <!-- Night Light / Brightness Screen Overlay -->
@@ -356,69 +408,80 @@
     <svg class="w-full h-full object-cover opacity-85" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
       <defs>
         <filter id="paperShadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="-8" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.55"/>
+          <feDropShadow dx="-8" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.55" />
         </filter>
         <linearGradient id="sheetGrad1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#c9c9c9" stop-opacity="0.88"/>
-          <stop offset="55%" stop-color="#9e9e9e" stop-opacity="0.82"/>
-          <stop offset="100%" stop-color="#6b6b6b" stop-opacity="0.86"/>
+          <stop offset="0%" stop-color="#c9c9c9" stop-opacity="0.88" />
+          <stop offset="55%" stop-color="#9e9e9e" stop-opacity="0.82" />
+          <stop offset="100%" stop-color="#6b6b6b" stop-opacity="0.86" />
         </linearGradient>
         <linearGradient id="sheetGrad2" x1="0" y1="0" x2="0.8" y2="1">
-          <stop offset="0%" stop-color="#dcdcdc" stop-opacity="0.92"/>
-          <stop offset="60%" stop-color="#adadad" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#7a7a7a" stop-opacity="0.88"/>
+          <stop offset="0%" stop-color="#dcdcdc" stop-opacity="0.92" />
+          <stop offset="60%" stop-color="#adadad" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="#7a7a7a" stop-opacity="0.88" />
         </linearGradient>
       </defs>
 
       <!-- Background Stencil Text "INSIDE" -->
-      <text x="255" y="355" fill="#141414" opacity="0.82" font-family="Impact, 'Arial Black', sans-serif" font-size="185" letter-spacing="14" transform="scale(0.88, 1.12)">INSIDE</text>
+      <text x="255" y="355" fill="#141414" opacity="0.82" font-family="Impact, 'Arial Black', sans-serif"
+        font-size="185" letter-spacing="14" transform="scale(0.88, 1.12)">INSIDE</text>
 
       <!-- Top Right Blueprint Sheet -->
       <g filter="url(#paperShadow)" transform="translate(845, -20)">
-        <rect x="0" y="0" width="780" height="305" fill="url(#sheetGrad2)"/>
-        <line x1="0" y1="298" x2="780" y2="298" stroke="#222" stroke-width="2" opacity="0.5"/>
-        <circle cx="465" cy="145" r="44" fill="none" stroke="#1e1e1e" stroke-width="3" opacity="0.65"/>
-        <circle cx="465" cy="145" r="36" fill="none" stroke="#1e1e1e" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.65"/>
-        <circle cx="465" cy="145" r="18" fill="none" stroke="#1e1e1e" stroke-width="2" opacity="0.65"/>
-        <text x="465" y="92" text-anchor="middle" fill="#181818" font-family="monospace" font-size="9" font-weight="bold" opacity="0.7">OFFICE OF THE DIRECTOR</text>
+        <rect x="0" y="0" width="780" height="305" fill="url(#sheetGrad2)" />
+        <line x1="0" y1="298" x2="780" y2="298" stroke="#222" stroke-width="2" opacity="0.5" />
+        <circle cx="465" cy="145" r="44" fill="none" stroke="#1e1e1e" stroke-width="3" opacity="0.65" />
+        <circle cx="465" cy="145" r="36" fill="none" stroke="#1e1e1e" stroke-width="1.5" stroke-dasharray="4 3"
+          opacity="0.65" />
+        <circle cx="465" cy="145" r="18" fill="none" stroke="#1e1e1e" stroke-width="2" opacity="0.65" />
+        <text x="465" y="92" text-anchor="middle" fill="#181818" font-family="monospace" font-size="9"
+          font-weight="bold" opacity="0.7">OFFICE OF THE DIRECTOR</text>
       </g>
 
       <!-- Main Center Lockheed Aircraft Corporation Engineering Document -->
       <g filter="url(#paperShadow)" transform="translate(245, 425) rotate(-0.8)">
-        <rect x="0" y="0" width="915" height="495" fill="url(#sheetGrad1)"/>
-        <circle cx="48" cy="145" r="11" fill="#2a2a2a" opacity="0.75"/>
-        <text x="445" y="135" fill="#161616" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="bold" font-size="33" opacity="0.85">Lockheed Aircraft Corporation</text>
-        <text x="568" y="162" fill="#1c1c1c" font-family="monospace" font-size="13" letter-spacing="4" opacity="0.78">CALIFORNIA DIVISION</text>
+        <rect x="0" y="0" width="915" height="495" fill="url(#sheetGrad1)" />
+        <circle cx="48" cy="145" r="11" fill="#2a2a2a" opacity="0.75" />
+        <text x="445" y="135" fill="#161616" font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+          font-weight="bold" font-size="33" opacity="0.85">Lockheed Aircraft Corporation</text>
+        <text x="568" y="162" fill="#1c1c1c" font-family="monospace" font-size="13" letter-spacing="4"
+          opacity="0.78">CALIFORNIA DIVISION</text>
 
         <g transform="translate(475, 205)" fill="#181818" font-family="monospace" font-size="11" opacity="0.78">
           <text x="0" y="0" font-weight="bold">REPORT NO.</text>
           <text x="115" y="0" font-size="14" font-family="Courier New, monospace">SP114 - Appendix</text>
-          <line x1="110" y1="4" x2="365" y2="4" stroke="#222" stroke-width="1"/>
+          <line x1="110" y1="4" x2="365" y2="4" stroke="#222" stroke-width="1" />
           <text x="0" y="24" font-weight="bold">DATE</text>
           <text x="115" y="24" font-size="14" font-family="Courier New, monospace">March 24, 1959</text>
-          <line x1="110" y1="28" x2="365" y2="28" stroke="#222" stroke-width="1"/>
+          <line x1="110" y1="28" x2="365" y2="28" stroke="#222" stroke-width="1" />
           <text x="0" y="48" font-weight="bold">COPY NO.</text>
           <text x="115" y="48" font-size="14" font-family="Courier New, monospace">Copy 35</text>
-          <line x1="110" y1="52" x2="365" y2="52" stroke="#222" stroke-width="1"/>
+          <line x1="110" y1="52" x2="365" y2="52" stroke="#222" stroke-width="1" />
         </g>
 
-        <line x1="165" y1="220" x2="165" y2="465" stroke="#141414" stroke-width="6" opacity="0.82"/>
-        <line x1="95" y1="305" x2="860" y2="305" stroke="#181818" stroke-width="2" opacity="0.72"/>
-        <line x1="95" y1="382" x2="860" y2="382" stroke="#181818" stroke-width="2" opacity="0.72"/>
-        <text x="195" y="294" fill="#141414" font-family="monospace" font-weight="bold" font-size="14" letter-spacing="2" opacity="0.82">MODEL</text>
-        <text x="305" y="294" fill="#141414" font-family="Courier New, monospace" font-weight="bold" font-size="15" opacity="0.82">A-12A</text>
-        <text x="195" y="372" fill="#141414" font-family="monospace" font-weight="bold" font-size="14" letter-spacing="2" opacity="0.82">TITLE</text>
-        <text x="305" y="372" fill="#141414" font-family="Courier New, monospace" font-size="14" opacity="0.75">PERFORMANCE DATA — APPENDIX</text>
+        <line x1="165" y1="220" x2="165" y2="465" stroke="#141414" stroke-width="6" opacity="0.82" />
+        <line x1="95" y1="305" x2="860" y2="305" stroke="#181818" stroke-width="2" opacity="0.72" />
+        <line x1="95" y1="382" x2="860" y2="382" stroke="#181818" stroke-width="2" opacity="0.72" />
+        <text x="195" y="294" fill="#141414" font-family="monospace" font-weight="bold" font-size="14"
+          letter-spacing="2" opacity="0.82">MODEL</text>
+        <text x="305" y="294" fill="#141414" font-family="Courier New, monospace" font-weight="bold" font-size="15"
+          opacity="0.82">A-12A</text>
+        <text x="195" y="372" fill="#141414" font-family="monospace" font-weight="bold" font-size="14"
+          letter-spacing="2" opacity="0.82">TITLE</text>
+        <text x="305" y="372" fill="#141414" font-family="Courier New, monospace" font-size="14"
+          opacity="0.75">PERFORMANCE DATA — APPENDIX</text>
       </g>
 
       <!-- Bottom-Right Overlapping Diagram Sheet -->
       <g filter="url(#paperShadow)" transform="translate(1110, 480) rotate(-1.2)">
-        <rect x="0" y="0" width="520" height="440" fill="url(#sheetGrad1)"/>
+        <rect x="0" y="0" width="520" height="440" fill="url(#sheetGrad1)" />
         <text x="325" y="45" fill="#1b1b1b" font-family="monospace" font-size="13" opacity="0.75">Page VIII-4</text>
-        <text x="210" y="165" fill="#161616" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="24" opacity="0.82">Lockheed AIRCRAFT C</text>
-        <polygon points="230,245 365,245 385,430 215,430" fill="none" stroke="#181818" stroke-width="2.5" opacity="0.75"/>
-        <line x1="255" y1="245" x2="245" y2="430" stroke="#181818" stroke-width="1.2" opacity="0.6"/>
-        <line x1="340" y1="245" x2="355" y2="430" stroke="#181818" stroke-width="1.2" opacity="0.6"/>
+        <text x="210" y="165" fill="#161616" font-family="Georgia, serif" font-style="italic" font-weight="bold"
+          font-size="24" opacity="0.82">Lockheed AIRCRAFT C</text>
+        <polygon points="230,245 365,245 385,430 215,430" fill="none" stroke="#181818" stroke-width="2.5"
+          opacity="0.75" />
+        <line x1="255" y1="245" x2="245" y2="430" stroke="#181818" stroke-width="1.2" opacity="0.6" />
+        <line x1="340" y1="245" x2="355" y2="430" stroke="#181818" stroke-width="1.2" opacity="0.6" />
       </g>
     </svg>
   </div>
@@ -429,22 +492,26 @@
   <header class="fixed top-0 left-0 right-0 h-[28px] z-50 flex items-center justify-between pointer-events-none">
 
     <!-- Left Top Bar Segment -->
-    <div class="top-segment h-[28px] pl-2.5 pr-4 rounded-br-[14px] flex items-center gap-1.5 pointer-events-auto text-[12px] font-medium text-gray-200">
-      <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="topbar-btn px-1.5 py-0.5 flex items-center gap-1.5" title="Media Controls & Mixer">
+    <div
+      class="top-segment h-[28px] pl-2.5 pr-4 rounded-br-[14px] flex items-center gap-1.5 pointer-events-auto text-[12px] font-medium text-gray-200">
+      <button onclick="toggleDesktopPopover('mini-media-popover', event)"
+        class="topbar-btn px-1.5 py-0.5 flex items-center gap-1.5" title="Media Controls & Mixer">
         <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
         <div class="w-4 h-4 rounded-[4px] overflow-hidden bg-sky-200 flex-shrink-0 border border-white/20">
           <svg viewBox="0 0 40 40" class="w-full h-full">
-            <rect width="40" height="40" fill="#5bc0de"/>
-            <rect x="6" y="7" width="28" height="26" fill="#f5f5f5"/>
-            <rect x="10" y="4" width="16" height="20" fill="#e5e7eb"/>
-            <rect x="20" y="10" width="14" height="18" fill="#d1d5db"/>
+            <rect width="40" height="40" fill="#5bc0de" />
+            <rect x="6" y="7" width="28" height="26" fill="#f5f5f5" />
+            <rect x="10" y="4" width="16" height="20" fill="#e5e7eb" />
+            <rect x="20" y="10" width="14" height="18" fill="#d1d5db" />
           </svg>
         </div>
-        <span id="topbar-track-label" class="max-w-[140px] truncate text-[11.5px] font-medium text-gray-100">Esok · Alkateri</span>
+        <span id="topbar-track-label" class="max-w-[140px] truncate text-[11.5px] font-medium text-gray-100">Esok ·
+          Alkateri</span>
       </button>
 
       <!-- Equalizer Wave -->
-      <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="topbar-btn px-1.5 py-1 flex items-center gap-[2px]" title="Audio Equalizer">
+      <button onclick="toggleDesktopPopover('mini-media-popover', event)"
+        class="topbar-btn px-1.5 py-1 flex items-center gap-[2px]" title="Audio Equalizer">
         <div id="topbar-eq" class="flex items-center gap-[1.8px]">
           <span class="eq-bar"></span>
           <span class="eq-bar"></span>
@@ -457,72 +524,134 @@
       <!-- Transport Controls -->
       <div class="hidden sm:flex items-center gap-0.5 text-gray-300">
         <button onclick="prevTrack()" class="topbar-btn p-1" title="Previous Track">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="19 20 9 12 19 4 19 20" />
+            <line x1="5" y1="19" x2="5" y2="5" />
+          </svg>
         </button>
         <button onclick="togglePlayPause()" class="topbar-btn p-1" title="Play / Pause">
-          <svg id="topbar-play-icon" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="topbar-play-icon" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
         </button>
         <button onclick="nextTrack()" class="topbar-btn p-1" title="Next Track">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 4 15 12 5 20 5 4" />
+            <line x1="19" y1="5" x2="19" y2="19" />
+          </svg>
         </button>
       </div>
 
       <!-- Utility Icons -->
       <div class="hidden md:flex items-center gap-1 text-gray-400">
-        <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="topbar-btn p-1" title="Music Library">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="topbar-btn p-1"
+          title="Music Library">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
         </button>
-        <button onclick="showToast('Snipping Tool ready (Win + Shift + S)')" class="topbar-btn p-1" title="Screen Capture">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+        <button onclick="showToast('Snipping Tool ready (Win + Shift + S)')" class="topbar-btn p-1"
+          title="Screen Capture">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+          </svg>
         </button>
-        <button onclick="toggleDesktopPopover('calendar-popover', event)" class="topbar-btn p-1" title="Reminders & Agendas">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <button onclick="toggleDesktopPopover('calendar-popover', event)" class="topbar-btn p-1"
+          title="Reminders & Agendas">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
         </button>
         <button onclick="toggleDesktopPopover('calendar-popover', event)" class="topbar-btn p-1" title="Timer & Alarms">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="M22 6l-3-3"/></svg>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="13" r="8" />
+            <path d="M12 9v4l2 2" />
+            <path d="M5 3L2 6" />
+            <path d="M22 6l-3-3" />
+          </svg>
         </button>
         <button onclick="openFinder('Documents')" class="topbar-btn p-1" title="Quick Folders">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
         </button>
       </div>
 
       <!-- Notification Badge Tray Icons -->
-      <button onclick="toggleDesktopPopover('notifications-popover', event)" class="topbar-btn px-1.5 py-0.5 flex items-center gap-1.5" title="Notifications (3)">
+      <button onclick="toggleDesktopPopover('notifications-popover', event)"
+        class="topbar-btn px-1.5 py-0.5 flex items-center gap-1.5" title="Notifications (3)">
         <div class="relative flex items-center">
-          <span class="w-3.5 h-3.5 rounded-[3px] bg-gradient-to-tr from-blue-500 via-yellow-400 to-red-500 inline-block"></span>
-          <span id="notif-badge-1" class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">2</span>
+          <span
+            class="w-3.5 h-3.5 rounded-[3px] bg-gradient-to-tr from-blue-500 via-yellow-400 to-red-500 inline-block"></span>
+          <span id="notif-badge-1"
+            class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">2</span>
         </div>
         <div class="relative hidden sm:flex items-center">
-          <span class="w-3.5 h-3.5 rounded-full bg-sky-500 inline-flex items-center justify-center text-[8px] font-bold text-white">F</span>
-          <span id="notif-badge-2" class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">1</span>
+          <span
+            class="w-3.5 h-3.5 rounded-full bg-sky-500 inline-flex items-center justify-center text-[8px] font-bold text-white">F</span>
+          <span id="notif-badge-2"
+            class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">1</span>
         </div>
         <div class="relative hidden sm:flex items-center">
-          <span class="w-3.5 h-3.5 rounded-[3px] bg-amber-500 inline-flex items-center justify-center text-[8px] font-bold text-black">✂</span>
-          <span id="notif-badge-3" class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">1</span>
+          <span
+            class="w-3.5 h-3.5 rounded-[3px] bg-amber-500 inline-flex items-center justify-center text-[8px] font-bold text-black">✂</span>
+          <span id="notif-badge-3"
+            class=" -ml-1 -mt-2 px-1 text-[9px] font-bold bg-red-500 text-white rounded-full leading-tight">1</span>
         </div>
       </button>
 
       <!-- Virtual Desktop Switcher -->
-      <button onclick="toggleDesktopPopover('desktops-popover', event)" class="topbar-btn px-1.5 py-0.5 flex items-center gap-1 text-gray-200" title="Virtual Desktops">
-        <svg class="w-3.5 h-3.5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <button onclick="toggleDesktopPopover('desktops-popover', event)"
+        class="topbar-btn px-1.5 py-0.5 flex items-center gap-1 text-gray-200" title="Virtual Desktops">
+        <svg class="w-3.5 h-3.5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
         <span id="active-desktop-label" class="text-[11.5px] font-medium">Desktop</span>
       </button>
     </div>
 
     <!-- Right Top Bar Segment -->
-    <div class="top-segment h-[28px] pl-4 pr-3 rounded-bl-[14px] flex items-center gap-2 pointer-events-auto text-[11.5px] font-medium text-gray-200">
-      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-400" title="System Tray">
-        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    <div
+      class="top-segment h-[28px] pl-4 pr-3 rounded-bl-[14px] flex items-center gap-2 pointer-events-auto text-[11.5px] font-medium text-gray-200">
+      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-400"
+        title="System Tray">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </button>
 
       <!-- Volume Icon -->
-      <button onclick="toggleDesktopPopover('sound-popover', event)" class="topbar-btn p-1 text-gray-200" title="Sound: 36%">
-        <svg id="topbar-vol-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <button onclick="toggleDesktopPopover('sound-popover', event)" class="topbar-btn p-1 text-gray-200"
+        title="Sound: 36%">
+        <svg id="topbar-vol-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.9">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        </svg>
       </button>
 
       <!-- Mic Icon -->
       <button onclick="toggleMic()" class="topbar-btn p-1 text-gray-300" title="Toggle Microphone">
-        <svg id="topbar-mic-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <svg id="topbar-mic-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.9">
+          <line x1="1" y1="1" x2="23" y2="23" />
+          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
+          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
       </button>
 
       <!-- Hardware Telemetry -->
@@ -542,7 +671,8 @@
       </div>
 
       <!-- Battery Pill -->
-      <button onclick="toggleDesktopPopover('battery-popover', event)" class="topbar-btn px-1.5 py-0.5 flex items-center gap-1" title="Battery 80% Charging">
+      <button onclick="toggleDesktopPopover('battery-popover', event)"
+        class="topbar-btn px-1.5 py-0.5 flex items-center gap-1" title="Battery 80% Charging">
         <div class="w-5 h-2.5 rounded-[3px] border border-emerald-400/80 p-[1px] flex items-center relative">
           <div class="h-full w-[80%] bg-emerald-400 rounded-[1.5px]"></div>
           <span class="absolute inset-0 flex items-center justify-center text-[7px] text-black font-bold">⚡</span>
@@ -550,17 +680,32 @@
       </button>
 
       <!-- Wi-Fi Icon -->
-      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-200" title="Wi-Fi: Connected">
-        <svg id="topbar-wifi-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-200"
+        title="Wi-Fi: Connected">
+        <svg id="topbar-wifi-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+          <line x1="12" y1="20" x2="12.01" y2="20" />
+        </svg>
       </button>
 
       <!-- Control Center Toggle Icon -->
-      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-200" title="Control Center">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="9" cy="8" r="2.5" fill="#0c0d0f"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="15" cy="16" r="2.5" fill="#0c0d0f"/></svg>
+      <button onclick="toggleDesktopPopover('control-center-popover', event)" class="topbar-btn p-1 text-gray-200"
+        title="Control Center">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <line x1="4" y1="8" x2="20" y2="8" />
+          <circle cx="9" cy="8" r="2.5" fill="#0c0d0f" />
+          <line x1="4" y1="16" x2="20" y2="16" />
+          <circle cx="15" cy="16" r="2.5" fill="#0c0d0f" />
+        </svg>
       </button>
 
       <!-- Date & Clock -->
-      <button onclick="toggleDesktopPopover('calendar-popover', event)" class="topbar-btn px-1.5 py-0.5 text-[11.5px] font-semibold text-gray-100 tracking-tight whitespace-nowrap" title="Open Calendar & Agendas">
+      <button onclick="toggleDesktopPopover('calendar-popover', event)"
+        class="topbar-btn px-1.5 py-0.5 text-[11.5px] font-semibold text-gray-100 tracking-tight whitespace-nowrap"
+        title="Open Calendar & Agendas">
         <span id="topbar-datetime">Sun 22 Nov &nbsp;05:37</span>
       </button>
     </div>
@@ -577,12 +722,13 @@
     <div id="dynamic-island" onclick="toggleIsland()">
       <!-- Compact Pill View (When idle) -->
       <div id="island-compact" class="h-[34px] px-2.5 flex items-center justify-between w-full">
-        <div id="island-compact-cover" class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border border-white/15 relative bg-sky-200">
+        <div id="island-compact-cover"
+          class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border border-white/15 relative bg-sky-200">
           <svg viewBox="0 0 60 60" class="w-full h-full">
-            <rect width="60" height="60" fill="#4ab3c9"/>
-            <rect x="8" y="10" width="44" height="40" fill="#e5e7eb"/>
-            <rect x="14" y="6" width="26" height="32" fill="#f3f4f6"/>
-            <rect x="30" y="16" width="22" height="30" fill="#d1d5db"/>
+            <rect width="60" height="60" fill="#4ab3c9" />
+            <rect x="8" y="10" width="44" height="40" fill="#e5e7eb" />
+            <rect x="14" y="6" width="26" height="32" fill="#f3f4f6" />
+            <rect x="30" y="16" width="22" height="30" fill="#d1d5db" />
           </svg>
         </div>
         <span id="island-compact-title" class="text-[12px] font-medium text-gray-100 truncate px-2">Esok</span>
@@ -597,29 +743,38 @@
       </div>
 
       <!-- Expanded Card View (On Hover or Click) -->
-      <div id="island-expanded" class="absolute inset-0 p-4 flex flex-col justify-between" onclick="event.stopPropagation()">
+      <div id="island-expanded" class="absolute inset-0 p-4 flex flex-col justify-between"
+        onclick="event.stopPropagation()">
         <!-- Top Row: Album Art + Brave Badge + Track Metadata + Cyan Equalizer -->
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3.5 min-w-0">
             <!-- Album Cover with Brave Icon Badge -->
-            <div class="relative w-[56px] h-[56px] rounded-[14px] overflow-hidden shadow-lg flex-shrink-0 border border-white/15 bg-sky-300">
+            <div
+              class="relative w-[56px] h-[56px] rounded-[14px] overflow-hidden shadow-lg flex-shrink-0 border border-white/15 bg-sky-300">
               <svg viewBox="0 0 100 100" class="w-full h-full">
                 <defs>
                   <linearGradient id="seaGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#38bdf8"/>
-                    <stop offset="100%" stop-color="#0284c7"/>
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#0284c7" />
                   </linearGradient>
                 </defs>
-                <rect width="100" height="100" fill="url(#seaGrad)"/>
-                <rect x="14" y="16" width="72" height="68" fill="#e2e8f0" rx="1"/>
-                <rect x="24" y="10" width="42" height="52" fill="#f8fafc"/>
-                <rect x="46" y="24" width="38" height="48" fill="#cbd5e1"/>
-                <text x="16" y="21" font-size="6.5" fill="#1e293b" font-family="sans-serif" font-weight="600">alkateri</text>
-                <text x="54" y="92" font-size="6.5" fill="#ffffff" font-family="sans-serif" font-weight="600">kontemplasi</text>
+                <rect width="100" height="100" fill="url(#seaGrad)" />
+                <rect x="14" y="16" width="72" height="68" fill="#e2e8f0" rx="1" />
+                <rect x="24" y="10" width="42" height="52" fill="#f8fafc" />
+                <rect x="46" y="24" width="38" height="48" fill="#cbd5e1" />
+                <text x="16" y="21" font-size="6.5" fill="#1e293b" font-family="sans-serif"
+                  font-weight="600">alkateri</text>
+                <text x="54" y="92" font-size="6.5" fill="#ffffff" font-family="sans-serif"
+                  font-weight="600">kontemplasi</text>
               </svg>
               <!-- Brave Browser Badge (Bottom-Right) -->
-              <div id="island-source-badge" class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-[#fb542b] flex items-center justify-center shadow ring-1 ring-black/40" title="Playing from Brave">
-                <svg class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 4.5l3.5 2.5-1.2 4.5H9.7L8.5 9 12 6.5z"/></svg>
+              <div id="island-source-badge"
+                class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-[#fb542b] flex items-center justify-center shadow ring-1 ring-black/40"
+                title="Playing from Brave">
+                <svg class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 4.5l3.5 2.5-1.2 4.5H9.7L8.5 9 12 6.5z" />
+                </svg>
               </div>
             </div>
 
@@ -647,9 +802,11 @@
         <!-- Middle Row: Progress Bar with Cyan Fill & White Knob -->
         <div class="flex items-center gap-2.5 mt-1">
           <span id="island-time-elapsed" class="text-[10.5px] text-gray-400 tabular-nums w-8 text-right">3:12</span>
-          <div id="island-progress-track" class="flex-1 h-1.5 bg-white/15 rounded-full relative cursor-pointer group" onclick="seekTrack(event)">
+          <div id="island-progress-track" class="flex-1 h-1.5 bg-white/15 rounded-full relative cursor-pointer group"
+            onclick="seekTrack(event)">
             <div id="island-progress-fill" class="h-full bg-[#63c7dc] rounded-full relative" style="width: 65%;">
-              <span class="w-3 h-3 rounded-full bg-white shadow-md absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></span>
+              <span
+                class="w-3 h-3 rounded-full bg-white shadow-md absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 transition-transform group-hover:scale-125"></span>
             </div>
           </div>
           <span id="island-time-remaining" class="text-[10.5px] text-gray-400 tabular-nums w-9">-1:43</span>
@@ -657,17 +814,36 @@
 
         <!-- Bottom Row: Transport Buttons (Cyan Icons) & Lyrics Bubble -->
         <div class="relative flex items-center justify-center gap-4">
-          <button onclick="prevTrack()" class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90" title="Previous">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+          <button onclick="prevTrack()"
+            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            title="Previous">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
+            </svg>
           </button>
-          <button onclick="togglePlayPause()" class="w-11 h-11 rounded-full bg-white/[0.09] hover:bg-white/[0.18] flex items-center justify-center text-[#63c7dc] transition active:scale-90" title="Play / Pause">
-            <svg id="island-play-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <button onclick="togglePlayPause()"
+            class="w-11 h-11 rounded-full bg-white/[0.09] hover:bg-white/[0.18] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            title="Play / Pause">
+            <svg id="island-play-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
           </button>
-          <button onclick="nextTrack()" class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90" title="Next">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+          <button onclick="nextTrack()"
+            class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            title="Next">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+            </svg>
           </button>
-          <button onclick="showToast('Lyrics: Esok — Alkateri (Kontemplasi)')" class="absolute right-2 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90" title="Lyrics">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>
+          <button onclick="showToast('Lyrics: Esok — Alkateri (Kontemplasi)')"
+            class="absolute right-2 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[#63c7dc] transition active:scale-90"
+            title="Lyrics">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <line x1="8" y1="9" x2="16" y2="9" />
+              <line x1="8" y1="13" x2="13" y2="13" />
+            </svg>
           </button>
         </div>
 
@@ -684,23 +860,28 @@
   <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 1: MINI MEDIA PLAYER & PILL SETTINGS     -->
   <!-- ========================================================= -->
-  <div id="mini-media-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] left-2.5 w-[310px] rounded-[20px] p-4 z-50" onclick="event.stopPropagation()">
+  <div id="mini-media-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] left-2.5 w-[310px] rounded-[20px] p-4 z-50"
+    onclick="event.stopPropagation()">
     <div class="flex items-center gap-3.5">
-      <div class="w-[68px] h-[68px] rounded-[12px] overflow-hidden shadow-md border border-white/15 flex-shrink-0 bg-sky-300">
+      <div
+        class="w-[68px] h-[68px] rounded-[12px] overflow-hidden shadow-md border border-white/15 flex-shrink-0 bg-sky-300">
         <svg viewBox="0 0 100 100" class="w-full h-full">
-          <rect width="100" height="100" fill="#38bdf8"/>
-          <rect x="14" y="16" width="72" height="68" fill="#e2e8f0"/>
-          <rect x="24" y="10" width="42" height="52" fill="#f8fafc"/>
-          <rect x="46" y="24" width="38" height="48" fill="#cbd5e1"/>
+          <rect width="100" height="100" fill="#38bdf8" />
+          <rect x="14" y="16" width="72" height="68" fill="#e2e8f0" />
+          <rect x="24" y="10" width="42" height="52" fill="#f8fafc" />
+          <rect x="46" y="24" width="38" height="48" fill="#cbd5e1" />
           <text x="16" y="21" font-size="6.5" fill="#1e293b" font-family="sans-serif" font-weight="600">alkateri</text>
-          <text x="54" y="92" font-size="6.5" fill="#ffffff" font-family="sans-serif" font-weight="600">kontemplasi</text>
+          <text x="54" y="92" font-size="6.5" fill="#ffffff" font-family="sans-serif"
+            font-weight="600">kontemplasi</text>
         </svg>
       </div>
       <div class="min-w-0">
         <div id="mini-media-title" class="text-[14px] font-semibold text-white truncate">Esok</div>
         <div id="mini-media-artist" class="text-[12px] text-gray-400 truncate">Alkateri</div>
         <div class="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400">
-          <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-flex items-center justify-center text-[8px] text-black font-bold">●</span>
+          <span
+            class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-flex items-center justify-center text-[8px] text-black font-bold">●</span>
           <span id="mini-media-source">Brave</span>
         </div>
       </div>
@@ -709,7 +890,8 @@
     <div class="mt-4">
       <div class="h-1 bg-white/15 rounded-full relative cursor-pointer" onclick="seekTrackMini(event)">
         <div id="mini-progress-fill" class="h-full bg-gray-300 rounded-full relative" style="width: 65%;">
-          <span class="w-2.5 h-2.5 rounded-full bg-white absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2"></span>
+          <span
+            class="w-2.5 h-2.5 rounded-full bg-white absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2"></span>
         </div>
       </div>
       <div class="flex justify-between text-[10px] text-gray-400 mt-1 tabular-nums">
@@ -720,27 +902,46 @@
 
     <div class="flex items-center justify-center gap-8 my-2 text-gray-200">
       <button onclick="prevTrack()" class="hover:text-white transition active:scale-90">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="19 20 9 12 19 4 19 20" />
+          <line x1="5" y1="19" x2="5" y2="5" />
+        </svg>
       </button>
       <button onclick="togglePlayPause()" class="hover:text-white transition active:scale-90">
-        <svg id="mini-play-icon" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg>
+        <svg id="mini-play-icon" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.8">
+          <rect x="6" y="4" width="3.5" height="16" rx="1" />
+          <rect x="14.5" y="4" width="3.5" height="16" rx="1" />
+        </svg>
       </button>
       <button onclick="nextTrack()" class="hover:text-white transition active:scale-90">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="5 4 15 12 5 20 5 4" />
+          <line x1="19" y1="5" x2="19" y2="19" />
+        </svg>
       </button>
     </div>
 
     <div class="flex items-center gap-2.5 mt-3">
-      <svg class="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-      <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)" class="flex-1 accent-white h-1 bg-white/20 rounded-lg cursor-pointer" id="mini-vol-slider">
+      <svg class="w-4 h-4 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      </svg>
+      <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)"
+        class="flex-1 accent-white h-1 bg-white/20 rounded-lg cursor-pointer" id="mini-vol-slider">
       <span id="mini-vol-label" class="text-[11px] text-gray-400 w-8 text-right tabular-nums">36%</span>
     </div>
 
     <div class="mt-3 pt-2.5 border-t border-white/10 space-y-2.5 text-[11.5px]">
-      <button onclick="showToast('Windows Volume Mixer opened')" class="text-gray-400 hover:text-white transition block">Open Windows mixer</button>
+      <button onclick="showToast('Windows Volume Mixer opened')"
+        class="text-gray-400 hover:text-white transition block">Open Windows mixer</button>
       <details class="group">
         <summary class="flex items-center gap-1.5 text-gray-300 cursor-pointer list-none">
-          <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
           <span>Mixer</span>
         </summary>
         <div class="pl-4 pt-2 space-y-2 text-[11px] text-gray-400">
@@ -759,14 +960,18 @@
         <span class="text-gray-300">Buttons on the pill</span>
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" checked onchange="togglePillButtons(this.checked)" class="sr-only peer">
-          <div class="w-8 h-4.5 bg-white/20 peer-checked:bg-white rounded-full peer transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-900 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5"></div>
+          <div
+            class="w-8 h-4.5 bg-white/20 peer-checked:bg-white rounded-full peer transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-900 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5">
+          </div>
         </label>
       </div>
       <div class="flex items-center justify-between">
         <span class="text-gray-300">Cover and title on the pill</span>
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" checked onchange="togglePillCover(this.checked)" class="sr-only peer">
-          <div class="w-8 h-4.5 bg-white/20 peer-checked:bg-white rounded-full peer transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-900 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5"></div>
+          <div
+            class="w-8 h-4.5 bg-white/20 peer-checked:bg-white rounded-full peer transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-900 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5">
+          </div>
         </label>
       </div>
     </div>
@@ -775,23 +980,31 @@
   <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 2: NOTIFICATIONS CENTER                  -->
   <!-- ========================================================= -->
-  <div id="notifications-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[195px] w-[345px] rounded-[20px] p-4 z-50" onclick="event.stopPropagation()">
+  <div id="notifications-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[195px] w-[345px] rounded-[20px] p-4 z-50"
+    onclick="event.stopPropagation()">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
         <span class="text-[14px] font-semibold text-white">Notifications</span>
         <span id="notif-total-count" class="text-[12px] text-gray-400">· 3</span>
         <button onclick="openPreferences('System Icon Tray')" class="text-gray-400 hover:text-white">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
         </button>
       </div>
-      <button onclick="clearNotifications()" class="text-[11.5px] text-gray-400 hover:text-white transition">Clear all</button>
+      <button onclick="clearNotifications()" class="text-[11.5px] text-gray-400 hover:text-white transition">Clear
+        all</button>
     </div>
 
     <div id="notifications-list" class="space-y-2.5">
       <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
         <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
           <div class="flex items-center gap-1.5">
-            <span class="w-4 h-4 rounded bg-amber-500/20 text-amber-400 inline-flex items-center justify-center text-[10px]">✂</span>
+            <span
+              class="w-4 h-4 rounded bg-amber-500/20 text-amber-400 inline-flex items-center justify-center text-[10px]">✂</span>
             <span>Snipping Tool</span>
           </div>
           <span>now</span>
@@ -803,13 +1016,15 @@
       <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
         <div class="flex items-center justify-between text-[11px] text-gray-400 mb-1">
           <div class="flex items-center gap-1.5">
-            <span class="w-4 h-4 rounded-full bg-sky-500 text-white inline-flex items-center justify-center text-[9px] font-bold">F</span>
+            <span
+              class="w-4 h-4 rounded-full bg-sky-500 text-white inline-flex items-center justify-center text-[9px] font-bold">F</span>
             <span>Flow Launcher</span>
           </div>
           <span>yesterday</span>
         </div>
         <div class="text-[12.5px] font-semibold text-gray-100">Error</div>
-        <div class="text-[11.5px] text-gray-400 mt-0.5 truncate">Unable to run shell:AppsFolder\Rayen.RyTuneX_h37fyh...</div>
+        <div class="text-[11.5px] text-gray-400 mt-0.5 truncate">Unable to run shell:AppsFolder\Rayen.RyTuneX_h37fyh...
+        </div>
       </div>
 
       <div class="bg-white/[0.04] hover:bg-white/[0.07] transition rounded-[12px] p-3 border border-white/[0.05]">
@@ -821,38 +1036,66 @@
           <span>yesterday</span>
         </div>
         <div class="text-[12.5px] font-semibold text-gray-100">AlwaysOnTop</div>
-        <div class="text-[11.5px] text-gray-400 mt-0.5 truncate">We've detected an application running with administra...</div>
+        <div class="text-[11.5px] text-gray-400 mt-0.5 truncate">We've detected an application running with
+          administra...</div>
       </div>
     </div>
 
-    <button onclick="showToast('Windows Action Center opened')" class="w-full text-center text-[11.5px] text-gray-400 hover:text-gray-200 mt-3 pt-1 transition">Open the Windows notification center</button>
+    <button onclick="showToast('Windows Action Center opened')"
+      class="w-full text-center text-[11.5px] text-gray-400 hover:text-gray-200 mt-3 pt-1 transition">Open the Windows
+      notification center</button>
   </div>
 
   <!-- ========================================================= -->
   <!-- TOP-LEFT POPOVER 3: VIRTUAL DESKTOP SWITCHER              -->
   <!-- ========================================================= -->
-  <div id="desktops-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[295px] w-[225px] rounded-[18px] p-2 z-50" onclick="event.stopPropagation()">
+  <div id="desktops-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] left-[295px] w-[225px] rounded-[18px] p-2 z-50"
+    onclick="event.stopPropagation()">
     <div id="desktop-list" class="space-y-1 text-[12.5px]">
-      <button onclick="switchVirtualDesktop(1)" class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-gray-300 hover:bg-white/10 transition text-left" data-desk="1">
-        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <button onclick="switchVirtualDesktop(1)"
+        class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-gray-300 hover:bg-white/10 transition text-left"
+        data-desk="1">
+        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
         <span>Desktop 1</span>
       </button>
-      <button onclick="switchVirtualDesktop(2)" class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-gray-300 hover:bg-white/10 transition text-left" data-desk="2">
-        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <button onclick="switchVirtualDesktop(2)"
+        class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-gray-300 hover:bg-white/10 transition text-left"
+        data-desk="2">
+        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
         <span>Desktop 2</span>
       </button>
-      <button onclick="switchVirtualDesktop(3)" class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] bg-white/15 text-white font-medium transition text-left" data-desk="3">
-        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <button onclick="switchVirtualDesktop(3)"
+        class="desktop-opt w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] bg-white/15 text-white font-medium transition text-left"
+        data-desk="3">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
         <span>Desktop 3</span>
       </button>
     </div>
     <div class="my-1.5 border-t border-white/10"></div>
-    <button onclick="addNewVirtualDesktop()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[12.5px] text-gray-300 hover:bg-white/10 transition text-left">
+    <button onclick="addNewVirtualDesktop()"
+      class="w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[12.5px] text-gray-300 hover:bg-white/10 transition text-left">
       <span class="text-base leading-none text-gray-400">+</span>
       <span>New desktop</span>
     </button>
-    <button onclick="showToast('Task View (Win + Tab) activated')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[12.5px] text-gray-300 hover:bg-white/10 transition text-left">
-      <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="13" height="13" rx="2"/><path d="M8 21h11a2 2 0 0 0 2-2V8"/></svg>
+    <button onclick="showToast('Task View (Win + Tab) activated')"
+      class="w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[12.5px] text-gray-300 hover:bg-white/10 transition text-left">
+      <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="3" width="13" height="13" rx="2" />
+        <path d="M8 21h11a2 2 0 0 0 2-2V8" />
+      </svg>
       <span>Task view</span>
     </button>
   </div>
@@ -860,11 +1103,20 @@
   <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 1: CONTROL CENTER                       -->
   <!-- ========================================================= -->
-  <div id="control-center-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[315px] rounded-[22px] p-3.5 z-50 space-y-2.5" onclick="event.stopPropagation()">
+  <div id="control-center-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[315px] rounded-[22px] p-3.5 z-50 space-y-2.5"
+    onclick="event.stopPropagation()">
     <div class="grid grid-cols-2 gap-2.5">
-      <button id="cc-wifi-btn" onclick="toggleQuickTile('wifi')" class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
-        <div id="cc-wifi-icon" class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center flex-shrink-0 transition">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <button id="cc-wifi-btn" onclick="toggleQuickTile('wifi')"
+        class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
+        <div id="cc-wifi-icon"
+          class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center flex-shrink-0 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+            <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+            <line x1="12" y1="20" x2="12.01" y2="20" />
+          </svg>
         </div>
         <div class="min-w-0">
           <div class="text-[12px] font-semibold text-white">Wi-Fi</div>
@@ -872,9 +1124,13 @@
         </div>
       </button>
 
-      <button id="cc-bt-btn" onclick="toggleQuickTile('bt')" class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
-        <div id="cc-bt-icon" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+      <button id="cc-bt-btn" onclick="toggleQuickTile('bt')"
+        class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
+        <div id="cc-bt-icon"
+          class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5" />
+          </svg>
         </div>
         <div class="min-w-0">
           <div class="text-[12px] font-semibold text-white">Bluetooth</div>
@@ -882,9 +1138,13 @@
         </div>
       </button>
 
-      <button id="cc-dnd-btn" onclick="toggleQuickTile('dnd')" class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
-        <div id="cc-dnd-icon" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <button id="cc-dnd-btn" onclick="toggleQuickTile('dnd')"
+        class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
+        <div id="cc-dnd-icon"
+          class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
         </div>
         <div class="min-w-0">
           <div class="text-[12px] font-semibold text-white truncate">Do not disturb</div>
@@ -892,9 +1152,19 @@
         </div>
       </button>
 
-      <button id="cc-nl-btn" onclick="toggleQuickTile('nl')" class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
-        <div id="cc-nl-icon" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      <button id="cc-nl-btn" onclick="toggleQuickTile('nl')"
+        class="bg-white/[0.06] hover:bg-white/[0.11] rounded-[14px] p-2.5 flex items-center gap-2.5 text-left transition">
+        <div id="cc-nl-icon"
+          class="w-8 h-8 rounded-full bg-white/10 text-gray-300 flex items-center justify-center flex-shrink-0 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+          </svg>
         </div>
         <div class="min-w-0">
           <div class="text-[12px] font-semibold text-white">Night light</div>
@@ -904,15 +1174,22 @@
     </div>
 
     <div class="grid grid-cols-4 gap-2">
-      <button onclick="openFinder('Documents'); closeAllPopovers();" class="col-span-1 bg-white/[0.06] hover:bg-white/[0.12] rounded-[14px] p-2 flex flex-col items-center justify-center gap-1 transition">
+      <button onclick="openFinder('Documents'); closeAllPopovers();"
+        class="col-span-1 bg-white/[0.06] hover:bg-white/[0.12] rounded-[14px] p-2 flex flex-col items-center justify-center gap-1 transition">
         <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-gray-200">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
         </div>
         <span class="text-[9.5px] text-gray-300 truncate w-full text-center">Folders and p</span>
       </button>
-      <button onclick="toggleDesktopPopover('calendar-popover', event)" class="col-span-1 bg-white/[0.06] hover:bg-white/[0.12] rounded-[14px] p-2 flex flex-col items-center justify-center gap-1 transition">
+      <button onclick="toggleDesktopPopover('calendar-popover', event)"
+        class="col-span-1 bg-white/[0.06] hover:bg-white/[0.12] rounded-[14px] p-2 flex flex-col items-center justify-center gap-1 transition">
         <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-gray-200">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/></svg>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="13" r="8" />
+            <path d="M12 9v4l2 2" />
+          </svg>
         </div>
         <span class="text-[9.5px] text-gray-300 truncate w-full text-center">Alarms</span>
       </button>
@@ -925,7 +1202,12 @@
       </div>
       <div class="relative flex items-center">
         <input type="range" min="20" max="100" value="100" oninput="setBrightness(this.value)" class="macos-slider">
-        <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
       </div>
     </div>
 
@@ -935,18 +1217,25 @@
         <span id="cc-vol-val" class="text-gray-400 tabular-nums">36%</span>
       </div>
       <div class="relative flex items-center">
-        <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)" id="cc-vol-slider" class="macos-slider">
-        <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)" id="cc-vol-slider"
+          class="macos-slider">
+        <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        </svg>
       </div>
       <div class="flex items-center justify-between mt-2.5">
         <span class="text-[10.5px] text-gray-400 truncate">Speakers (Realtek(R) Audio) ›</span>
-        <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[10.5px] text-gray-200 transition">Mixer</button>
+        <button onclick="toggleDesktopPopover('mini-media-popover', event)"
+          class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[10.5px] text-gray-200 transition">Mixer</button>
       </div>
     </div>
 
     <div class="bg-white/[0.06] rounded-[14px] p-3">
       <div class="text-[11.5px] font-medium text-gray-200 mb-2">Power</div>
-      <button onclick="cyclePowerPlan()" class="w-full bg-white/[0.05] hover:bg-white/[0.1] rounded-[10px] px-3 py-2 flex items-center justify-between text-[11.5px] text-gray-300 transition">
+      <button onclick="cyclePowerPlan()"
+        class="w-full bg-white/[0.05] hover:bg-white/[0.1] rounded-[10px] px-3 py-2 flex items-center justify-between text-[11.5px] text-gray-300 transition">
         <span id="cc-power-plan">Plan: Low Performance Mode</span>
         <span>›</span>
       </button>
@@ -954,7 +1243,11 @@
 
     <div class="bg-white/[0.06] rounded-[14px] p-2.5 flex items-center gap-3">
       <div class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center flex-shrink-0">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><path d="M10 10l-2 2h3l-2 2"/></svg>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="16" height="10" rx="2" />
+          <line x1="22" y1="11" x2="22" y2="13" />
+          <path d="M10 10l-2 2h3l-2 2" />
+        </svg>
       </div>
       <div>
         <div class="text-[12px] font-semibold text-white">80%</div>
@@ -963,12 +1256,20 @@
     </div>
 
     <div class="flex items-center justify-between pt-1 px-1">
-      <button onclick="showToast('More Windows Quick Settings')" class="text-[11px] text-gray-400 hover:text-white transition">More Windows controls</button>
+      <button onclick="showToast('More Windows Quick Settings')"
+        class="text-[11px] text-gray-400 hover:text-white transition">More Windows controls</button>
       <div class="flex items-center gap-1.5">
-        <button onclick="openPreferences('General'); closeAllPopovers();" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition" title="Preferences">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <button onclick="openPreferences('General'); closeAllPopovers();"
+          class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition"
+          title="Preferences">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
         </button>
-        <button onclick="showToast('Edit Control Center modules')" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-gray-200 flex items-center gap-1 transition">
+        <button onclick="showToast('Edit Control Center modules')"
+          class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-gray-200 flex items-center gap-1 transition">
           <span>✎ Edit</span>
         </button>
       </div>
@@ -978,7 +1279,9 @@
   <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 2: CALENDAR & AGENDAS (NOV 2026)        -->
   <!-- ========================================================= -->
-  <div id="calendar-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[530px] max-w-[95vw] rounded-[22px] p-4 z-50" onclick="event.stopPropagation()">
+  <div id="calendar-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] right-2.5 w-[530px] max-w-[95vw] rounded-[22px] p-4 z-50"
+    onclick="event.stopPropagation()">
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-3 flex flex-col justify-between border-r border-white/10 pr-2 py-1">
         <div>
@@ -998,19 +1301,28 @@
           <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
           <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
           <span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span>
-          <span class="w-6 h-6 mx-auto rounded-full bg-red-500 text-white font-bold flex items-center justify-center shadow">22</span>
+          <span
+            class="w-6 h-6 mx-auto rounded-full bg-red-500 text-white font-bold flex items-center justify-center shadow">22</span>
           <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span>
           <span>29</span><span>30</span>
-          <span class="text-gray-600">1</span><span class="text-gray-600">2</span><span class="text-gray-600">3</span><span class="text-gray-600">4</span><span class="text-gray-600">5</span>
-          <span class="text-gray-600">6</span><span class="text-gray-600">7</span><span class="text-gray-600">8</span><span class="text-gray-600">9</span><span class="text-gray-600">10</span><span class="text-gray-600">11</span><span class="text-gray-600">12</span>
+          <span class="text-gray-600">1</span><span class="text-gray-600">2</span><span
+            class="text-gray-600">3</span><span class="text-gray-600">4</span><span class="text-gray-600">5</span>
+          <span class="text-gray-600">6</span><span class="text-gray-600">7</span><span
+            class="text-gray-600">8</span><span class="text-gray-600">9</span><span class="text-gray-600">10</span><span
+            class="text-gray-600">11</span><span class="text-gray-600">12</span>
         </div>
       </div>
 
       <div class="col-span-3 flex flex-col justify-between pl-1">
         <div class="space-y-2">
-          <button onclick="showToast('Alarm set for 06:00 AM')" class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 transition">Set an alarm</button>
-          <button onclick="showToast('25m Focus Timer started')" class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 transition">Set a timer</button>
-          <button onclick="showToast('No agendas scheduled for Nov 22')" class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 flex items-center justify-center gap-1.5 transition">
+          <button onclick="showToast('Alarm set for 06:00 AM')"
+            class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 transition">Set
+            an alarm</button>
+          <button onclick="showToast('25m Focus Timer started')"
+            class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 transition">Set
+            a timer</button>
+          <button onclick="showToast('No agendas scheduled for Nov 22')"
+            class="w-full py-1.5 px-2.5 rounded-[9px] bg-white/[0.07] hover:bg-white/[0.14] text-[11px] text-gray-200 flex items-center justify-center gap-1.5 transition">
             <span>⚙</span><span>Agendas</span>
           </button>
         </div>
@@ -1029,25 +1341,39 @@
   <!-- ========================================================= -->
   <!-- TOP-RIGHT POPOVER 3: STANDALONE SOUND & BATTERY FLYOUTS   -->
   <!-- ========================================================= -->
-  <div id="sound-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] right-[140px] w-[290px] rounded-[20px] p-3.5 z-50" onclick="event.stopPropagation()">
+  <div id="sound-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] right-[140px] w-[290px] rounded-[20px] p-3.5 z-50"
+    onclick="event.stopPropagation()">
     <div class="flex justify-between text-[12px] mb-2.5">
       <span class="font-medium text-gray-200">Sound</span>
       <span id="pop-vol-val" class="text-gray-400 tabular-nums">36%</span>
     </div>
     <div class="relative flex items-center">
-      <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)" id="pop-vol-slider" class="macos-slider">
-      <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <input type="range" min="0" max="100" value="36" oninput="setVolume(this.value)" id="pop-vol-slider"
+        class="macos-slider">
+      <svg class="w-3.5 h-3.5 text-gray-800 absolute left-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      </svg>
     </div>
     <div class="flex items-center justify-between mt-3">
       <span class="text-[11px] text-gray-400">Speakers (Realtek(R) Audio) ›</span>
-      <button onclick="toggleDesktopPopover('mini-media-popover', event)" class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-gray-200 transition">Mixer</button>
+      <button onclick="toggleDesktopPopover('mini-media-popover', event)"
+        class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-gray-200 transition">Mixer</button>
     </div>
   </div>
 
-  <div id="battery-popover" class="glass-panel popover-anim popover-hidden fixed top-[36px] right-[75px] w-[285px] rounded-[20px] p-3 z-50 space-y-2.5" onclick="event.stopPropagation()">
+  <div id="battery-popover"
+    class="glass-panel popover-anim popover-hidden fixed top-[36px] right-[75px] w-[285px] rounded-[20px] p-3 z-50 space-y-2.5"
+    onclick="event.stopPropagation()">
     <div class="bg-white/[0.06] rounded-[14px] p-3 flex items-center gap-3">
       <div class="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center flex-shrink-0">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><path d="M10 10l-2 2h3l-2 2"/></svg>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="16" height="10" rx="2" />
+          <line x1="22" y1="11" x2="22" y2="13" />
+          <path d="M10 10l-2 2h3l-2 2" />
+        </svg>
       </div>
       <div>
         <div class="text-[13px] font-semibold text-white">80%</div>
@@ -1056,7 +1382,8 @@
     </div>
     <div class="bg-white/[0.06] rounded-[14px] p-3">
       <div class="text-[12px] font-medium text-gray-200 mb-2">Power</div>
-      <button onclick="cyclePowerPlan()" class="w-full bg-white/[0.05] hover:bg-white/[0.1] rounded-[10px] px-3 py-2 flex items-center justify-between text-[11.5px] text-gray-300 transition">
+      <button onclick="cyclePowerPlan()"
+        class="w-full bg-white/[0.05] hover:bg-white/[0.1] rounded-[10px] px-3 py-2 flex items-center justify-between text-[11.5px] text-gray-300 transition">
         <span id="pop-power-plan">Plan: Low Performance Mode</span>
         <span>›</span>
       </button>
@@ -1066,54 +1393,86 @@
   <!-- ========================================================= -->
   <!-- WINDOW 1: FINDER FILE EXPLORER                            -->
   <!-- ========================================================= -->
-  <div id="finder-window" class="os-window glass-panel hidden top-[42px] left-[16px] w-[620px] max-w-[94vw] h-[540px] max-h-[82vh] z-40 flex flex-col" onclick="focusWindow('finder-window')">
-    <div class="h-11 px-3.5 border-b border-white/10 flex items-center gap-3 bg-white/[0.02]" onmousedown="startDrag(event, 'finder-window')">
-      <button onclick="finderBack()" class="flex items-center gap-1.5 text-[12px] text-gray-300 hover:text-white transition">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  <div id="finder-window"
+    class="os-window glass-panel hidden top-[42px] left-[16px] w-[620px] max-w-[94vw] h-[540px] max-h-[82vh] z-40 flex flex-col"
+    onclick="focusWindow('finder-window')">
+    <div class="h-11 px-3.5 border-b border-white/10 flex items-center gap-3 bg-white/[0.02]"
+      onmousedown="startDrag(event, 'finder-window')">
+      <button onclick="finderBack()"
+        class="flex items-center gap-1.5 text-[12px] text-gray-300 hover:text-white transition">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
         <span>Back</span>
       </button>
       <div class="flex-1 flex items-center bg-black/50 border border-white/15 rounded-full px-3 py-1">
-        <svg class="w-3.5 h-3.5 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="finder-search" type="text" placeholder="Search here (a name or *.pdf)" oninput="renderFinderFiles()" class="bg-transparent text-[12px] text-gray-100 placeholder-gray-500 outline-none w-full">
+        <svg class="w-3.5 h-3.5 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input id="finder-search" type="text" placeholder="Search here (a name or *.pdf)" oninput="renderFinderFiles()"
+          class="bg-transparent text-[12px] text-gray-100 placeholder-gray-500 outline-none w-full">
       </div>
-      <button onclick="closeWindow('finder-window')" class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-500 transition" title="Close Finder"></button>
+      <button onclick="closeWindow('finder-window')"
+        class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-500 transition" title="Close Finder"></button>
     </div>
 
     <div class="flex-1 flex overflow-hidden">
       <div class="w-[185px] border-r border-white/10 p-2 space-y-0.5 text-[12px] overflow-y-auto bg-black/20">
-        <button onclick="selectSidebarFolder('This PC')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="This PC">
+        <button onclick="selectSidebarFolder('This PC')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="This PC">
           <span class="text-gray-400">🖥</span><span>This PC</span>
         </button>
-        <button onclick="selectSidebarFolder('Desktop')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Desktop">
+        <button onclick="selectSidebarFolder('Desktop')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Desktop">
           <span class="text-gray-400">🖵</span><span>Desktop</span>
         </button>
-        <button onclick="selectSidebarFolder('Documents')" class="finder-side-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] bg-white/15 text-white font-medium transition text-left" data-folder="Documents">
+        <button onclick="selectSidebarFolder('Documents')"
+          class="finder-side-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] bg-white/15 text-white font-medium transition text-left"
+          data-folder="Documents">
           <span class="flex items-center gap-2.5"><span class="text-gray-200">📁</span><span>Documents</span></span>
           <span class="text-gray-400">›</span>
         </button>
-        <button onclick="selectSidebarFolder('Downloads')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Downloads">
+        <button onclick="selectSidebarFolder('Downloads')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Downloads">
           <span class="text-gray-400">⬇</span><span>Downloads</span>
         </button>
-        <button onclick="selectSidebarFolder('Music')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Music">
+        <button onclick="selectSidebarFolder('Music')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Music">
           <span class="text-gray-400">🎵</span><span>Music</span>
         </button>
-        <button onclick="selectSidebarFolder('Videos')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Videos">
+        <button onclick="selectSidebarFolder('Videos')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Videos">
           <span class="text-gray-400">🎬</span><span>Videos</span>
         </button>
-        <button onclick="selectSidebarFolder('Pictures')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Pictures">
+        <button onclick="selectSidebarFolder('Pictures')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Pictures">
           <span class="text-gray-400">🖼</span><span>Pictures</span>
         </button>
-        <button onclick="selectSidebarFolder('abya')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="abya">
+        <button onclick="selectSidebarFolder('abya')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="abya">
           <span class="text-gray-400">👤</span><span>abya</span>
         </button>
-        <button onclick="selectSidebarFolder('Powerpoints')" class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left" data-folder="Powerpoints">
+        <button onclick="selectSidebarFolder('Powerpoints')"
+          class="finder-side-btn w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-folder="Powerpoints">
           <span class="text-gray-400">📊</span><span>Powerpoints</span>
         </button>
         <div class="pt-1">
-          <button onclick="showToast('Add folder shortcut')" class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
+          <button onclick="showToast('Add folder shortcut')"
+            class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
             <span>+</span><span>Add a folder</span>
           </button>
-          <button onclick="showToast('Windows places: Quick Access')" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
+          <button onclick="showToast('Windows places: Quick Access')"
+            class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] text-gray-400 hover:text-white hover:bg-white/10 transition text-left">
             <span class="flex items-center gap-2.5"><span>🏠</span><span>Windows places</span></span>
             <span>›</span>
           </button>
@@ -1122,11 +1481,13 @@
 
       <div class="flex-1 flex flex-col overflow-hidden bg-black/30">
         <div class="h-8 px-3 border-b border-white/10 flex items-center justify-between text-[11px] text-gray-400">
-          <button onclick="showToast('Opened C:\\Users\\abya\\' + currentFinderFolder + ' in Explorer')" class="hover:text-white flex items-center gap-1.5 transition">
+          <button onclick="showToast('Opened C:\\Users\\abya\\' + currentFinderFolder + ' in Explorer')"
+            class="hover:text-white flex items-center gap-1.5 transition">
             <span>↗</span><span>Open in Explorer</span>
           </button>
           <div class="flex items-center gap-1.5">
-            <button onclick="toggleFinderSort()" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-gray-200 transition">⇅ Name</button>
+            <button onclick="toggleFinderSort()"
+              class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-gray-200 transition">⇅ Name</button>
             <span class="px-1.5 py-0.5 rounded bg-white/10">↓</span>
           </div>
         </div>
@@ -1136,43 +1497,75 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- WINDOW 2: MYDOCKFINDER PREFERENCES                        -->
+  <!-- WINDOW 2: Nexora DockFINDER PREFERENCES                        -->
   <!-- ========================================================= -->
-  <div id="preferences-window" class="os-window glass-panel hidden top-[95px] left-1/2 -translate-x-1/2 w-[540px] max-w-[94vw] h-[420px] z-40 flex" onclick="focusWindow('preferences-window')">
+  <div id="preferences-window"
+    class="os-window glass-panel hidden top-[95px] left-1/2 -translate-x-1/2 w-[540px] max-w-[94vw] h-[420px] z-40 flex"
+    onclick="focusWindow('preferences-window')">
     <div class="w-[175px] border-r border-white/10 p-3 flex flex-col bg-black/30">
       <div class="flex items-center gap-1.5 mb-3">
-        <button onclick="closeWindow('preferences-window')" class="w-3 h-3 rounded-full bg-[#ff5f56] hover:brightness-110"></button>
-        <button onclick="closeWindow('preferences-window')" class="w-3 h-3 rounded-full bg-[#ffbd2e] hover:brightness-110"></button>
-        <button onclick="showToast('Maximized')" class="w-3 h-3 rounded-full bg-[#27c93f] hover:brightness-110"></button>
+        <button onclick="closeWindow('preferences-window')"
+          class="w-3 h-3 rounded-full bg-[#ff5f56] hover:brightness-110"></button>
+        <button onclick="closeWindow('preferences-window')"
+          class="w-3 h-3 rounded-full bg-[#ffbd2e] hover:brightness-110"></button>
+        <button onclick="showToast('Maximized')"
+          class="w-3 h-3 rounded-full bg-[#27c93f] hover:brightness-110"></button>
       </div>
       <div class="bg-white/10 rounded-[7px] px-2.5 py-1 flex items-center gap-1.5 text-[11.5px] text-gray-400 mb-3">
         <span>🔍</span><span>Search</span>
       </div>
       <div class="flex-1 overflow-y-auto space-y-0.5 text-[11.5px]" id="pref-sidebar">
-        <button onclick="selectPrefTab('Steam ID')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Steam ID">
-          <span class="w-4 h-4 rounded bg-sky-600 inline-flex items-center justify-center text-[9px] text-white">S</span><span>Steam ID</span>
+        <button onclick="selectPrefTab('Steam ID')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Steam ID">
+          <span
+            class="w-4 h-4 rounded bg-sky-600 inline-flex items-center justify-center text-[9px] text-white">S</span><span>Steam
+            ID</span>
         </button>
-        <button onclick="selectPrefTab('General')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] bg-white/15 text-white font-medium transition text-left" data-tab="General">
-          <span class="w-4 h-4 rounded bg-gray-600 inline-flex items-center justify-center text-[9px] text-white">⚙</span><span>General</span>
+        <button onclick="selectPrefTab('General')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] bg-white/15 text-white font-medium transition text-left"
+          data-tab="General">
+          <span
+            class="w-4 h-4 rounded bg-gray-600 inline-flex items-center justify-center text-[9px] text-white">⚙</span><span>General</span>
         </button>
-        <button onclick="selectPrefTab('Appearance')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Appearance">
-          <span class="w-4 h-4 rounded bg-blue-500 inline-flex items-center justify-center text-[9px] text-white">👕</span><span>Appearance</span>
+        <button onclick="selectPrefTab('Appearance')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Appearance">
+          <span
+            class="w-4 h-4 rounded bg-blue-500 inline-flex items-center justify-center text-[9px] text-white">👕</span><span>Appearance</span>
         </button>
-        <button onclick="selectPrefTab('System Icon Tray')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="System Icon Tray">
-          <span class="w-4 h-4 rounded bg-amber-600 inline-flex items-center justify-center text-[9px] text-white">⊞</span><span>System Icon Tray</span>
+        <button onclick="selectPrefTab('System Icon Tray')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="System Icon Tray">
+          <span
+            class="w-4 h-4 rounded bg-amber-600 inline-flex items-center justify-center text-[9px] text-white">⊞</span><span>System
+            Icon Tray</span>
         </button>
-        <button onclick="selectPrefTab('Screen')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Screen">
-          <span class="w-4 h-4 rounded bg-purple-600 inline-flex items-center justify-center text-[9px] text-white">🖥</span><span>Screen</span>
+        <button onclick="selectPrefTab('Screen')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Screen">
+          <span
+            class="w-4 h-4 rounded bg-purple-600 inline-flex items-center justify-center text-[9px] text-white">🖥</span><span>Screen</span>
         </button>
-        <button onclick="selectPrefTab('Stage Manager')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Stage Manager">
-          <span class="w-4 h-4 rounded bg-sky-500 inline-flex items-center justify-center text-[9px] text-white">❐</span><span>Stage Manager</span>
+        <button onclick="selectPrefTab('Stage Manager')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Stage Manager">
+          <span
+            class="w-4 h-4 rounded bg-sky-500 inline-flex items-center justify-center text-[9px] text-white">❐</span><span>Stage
+            Manager</span>
         </button>
-        <div class="text-[10px] text-gray-500 px-2 pt-2 pb-0.5">MyDock</div>
-        <button onclick="selectPrefTab('Look & Behaviour')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Look & Behaviour">
-          <span class="w-4 h-4 rounded bg-slate-600 inline-flex items-center justify-center text-[9px] text-white"> dock</span><span>Look & Behaviour</span>
+        <div class="text-[10px] text-gray-500 px-2 pt-2 pb-0.5">Dock</div>
+        <button onclick="selectPrefTab('Look & Behaviour')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Look & Behaviour">
+          <span class="w-4 h-4 rounded bg-slate-600 inline-flex items-center justify-center text-[9px] text-white">
+            dock</span><span>Look & Behaviour</span>
         </button>
-        <button onclick="selectPrefTab('Launchpad')" class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left" data-tab="Launchpad">
-          <span class="w-4 h-4 rounded bg-indigo-500 inline-flex items-center justify-center text-[9px] text-white">🚀</span><span>Launchpad</span>
+        <button onclick="selectPrefTab('Launchpad')"
+          class="pref-tab w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-gray-300 hover:bg-white/10 transition text-left"
+          data-tab="Launchpad">
+          <span
+            class="w-4 h-4 rounded bg-indigo-500 inline-flex items-center justify-center text-[9px] text-white">🚀</span><span>Launchpad</span>
         </button>
       </div>
     </div>
@@ -1183,11 +1576,13 @@
       <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] divide-y divide-white/[0.06] text-[12px]">
         <div class="px-3.5 py-2.5 flex items-center justify-between">
           <span class="text-gray-200">Enable myFinder</span>
-          <input type="checkbox" checked onchange="showToast('myFinder toggled')" class="accent-white w-4 h-4 cursor-pointer">
+          <input type="checkbox" checked onchange="showToast('myFinder toggled')"
+            class="accent-white w-4 h-4 cursor-pointer">
         </div>
         <div class="px-3.5 py-2.5 flex items-center justify-between">
           <span class="text-gray-200">Enable myDock</span>
-          <input type="checkbox" checked onchange="toggleDockVisibility(this.checked)" class="accent-white w-4 h-4 cursor-pointer">
+          <input type="checkbox" checked onchange="toggleDockVisibility(this.checked)"
+            class="accent-white w-4 h-4 cursor-pointer">
         </div>
         <div class="px-3.5 py-2.5 flex items-center justify-between">
           <span class="text-gray-200">Automatically exit when playing in full screen</span>
@@ -1198,21 +1593,27 @@
       <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] p-3.5 mt-3 space-y-3.5 text-[12px]">
         <div>
           <div class="text-gray-200 mb-2">Global interface scale</div>
-          <input type="range" min="0.85" max="1.15" step="0.02" value="1" oninput="setGlobalScale(this.value)" class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
+          <input type="range" min="0.85" max="1.15" step="0.02" value="1" oninput="setGlobalScale(this.value)"
+            class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
         </div>
         <div>
           <div class="text-gray-200 mb-2">Global interface blur intensity</div>
-          <input type="range" min="4" max="42" step="1" value="26" oninput="setGlobalBlur(this.value)" class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
+          <input type="range" min="4" max="42" step="1" value="26" oninput="setGlobalBlur(this.value)"
+            class="w-full accent-gray-300 h-1 bg-white/20 rounded-lg cursor-pointer">
         </div>
       </div>
 
       <div class="bg-white/[0.04] rounded-[10px] border border-white/[0.06] p-3.5 mt-3 text-[12px]">
         <div class="text-gray-200 mb-2.5">Appearance</div>
         <div class="grid grid-cols-4 gap-2">
-          <button onclick="showToast('Theme: macOS Dark')" class="h-12 rounded-[7px] border-2 border-white bg-gradient-to-br from-zinc-700 to-zinc-900"></button>
-          <button onclick="showToast('Theme: Frosted Slate')" class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-slate-600 to-slate-900"></button>
-          <button onclick="showToast('Theme: Obsidian Glass')" class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-neutral-800 to-black"></button>
-          <button onclick="showToast('Theme: Auto System')" class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-r from-zinc-800 to-zinc-300"></button>
+          <button onclick="showToast('Theme: macOS Dark')"
+            class="h-12 rounded-[7px] border-2 border-white bg-gradient-to-br from-zinc-700 to-zinc-900"></button>
+          <button onclick="showToast('Theme: Frosted Slate')"
+            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-slate-600 to-slate-900"></button>
+          <button onclick="showToast('Theme: Obsidian Glass')"
+            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-br from-neutral-800 to-black"></button>
+          <button onclick="showToast('Theme: Auto System')"
+            class="h-12 rounded-[7px] border border-white/15 bg-gradient-to-r from-zinc-800 to-zinc-300"></button>
         </div>
       </div>
     </div>
@@ -1221,39 +1622,53 @@
   <!-- ========================================================= -->
   <!-- QUICKLOOK FILE PREVIEW MODAL                              -->
   <!-- ========================================================= -->
-  <div id="quicklook-modal" class="glass-panel fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[92vw] rounded-[18px] p-4 z-50 hidden">
+  <div id="quicklook-modal"
+    class="glass-panel fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[92vw] rounded-[18px] p-4 z-50 hidden">
     <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
       <span id="ql-filename" class="text-[13px] font-semibold text-white">Document.docx</span>
-      <button onclick="document.getElementById('quicklook-modal').classList.add('hidden')" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[11px] text-gray-200">Close</button>
+      <button onclick="document.getElementById('quicklook-modal').classList.add('hidden')"
+        class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[11px] text-gray-200">Close</button>
     </div>
-    <div id="ql-content" class="py-4 text-[12px] text-gray-300 leading-relaxed max-h-[260px] overflow-y-auto font-mono"></div>
+    <div id="ql-content" class="py-4 text-[12px] text-gray-300 leading-relaxed max-h-[260px] overflow-y-auto font-mono">
+    </div>
   </div>
 
   <!-- ========================================================= -->
   <!-- DOCK RIGHT-CLICK CONTEXT MENU                             -->
   <!-- ========================================================= -->
-  <div id="dock-context-menu" class="glass-panel fixed bottom-[64px] left-[27%] w-[265px] rounded-[14px] p-1.5 z-50 hidden text-[12px] text-gray-200" onclick="event.stopPropagation()">
-    <div class="px-2.5 py-1.5 text-gray-400 truncate border-b border-white/10 mb-1">C:\Users\abya\Pictures\Screenshots -...</div>
-    <button onclick="showToast('System context menu opened'); hideDockContext();" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
+  <div id="dock-context-menu"
+    class="glass-panel fixed bottom-[64px] left-[27%] w-[265px] rounded-[14px] p-1.5 z-50 hidden text-[12px] text-gray-200"
+    onclick="event.stopPropagation()">
+    <div class="px-2.5 py-1.5 text-gray-400 truncate border-b border-white/10 mb-1">C:\Users\abya\Pictures\Screenshots
+      -...</div>
+    <button onclick="showToast('System context menu opened'); hideDockContext();"
+      class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
       <span>System context menu</span><span>›</span>
     </button>
-    <button onclick="openFinder('Pictures'); hideDockContext();" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
+    <button onclick="openFinder('Pictures'); hideDockContext();"
+      class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
       <span>Home</span><span>›</span>
     </button>
     <div class="my-1 border-t border-white/10"></div>
-    <button onclick="openFinder('Documents'); hideDockContext();" class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">New Finder window</button>
-    <button onclick="openFinder('Desktop'); hideDockContext();" class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">Go to</button>
-    <button onclick="showToast('Remote connect to server...')" class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">Remote connect to</button>
+    <button onclick="openFinder('Documents'); hideDockContext();"
+      class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">New Finder window</button>
+    <button onclick="openFinder('Desktop'); hideDockContext();"
+      class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">Go to</button>
+    <button onclick="showToast('Remote connect to server...')"
+      class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">Remote connect to</button>
     <div class="my-1 border-t border-white/10"></div>
-    <button onclick="openPreferences('Look & Behaviour'); hideDockContext();" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
-      <span>Set MyDockFinder show/hide prefere...</span><span>›</span>
+    <button onclick="openPreferences('Look & Behaviour'); hideDockContext();"
+      class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[8px] hover:bg-white/15 transition">
+      <span>Set NexoraMenuBar show/hide prefere...</span><span>›</span>
     </button>
     <div class="my-1 border-t border-white/10"></div>
-    <button onclick="showToast('Removed shortcut from Dock'); hideDockContext();" class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-red-500/25 text-red-300 transition">Remove from Dock</button>
+    <button onclick="showToast('Removed shortcut from Dock'); hideDockContext();"
+      class="w-full text-left px-2.5 py-1.5 rounded-[8px] hover:bg-red-500/25 text-red-300 transition">Remove from
+      Dock</button>
   </div>
 
   <!-- ========================================================= -->
-  <!-- BOTTOM FLOATING MYDOCK (Exact 17 Icons from Screenshot)   -->
+  <!-- BOTTOM FLOATING Nexora Dock (Exact 17 Icons from Screenshot)   -->
   <!-- ========================================================= -->
   <nav id="dock-container" onmousemove="handleDockMagnify(event)" onmouseleave="resetDockMagnify()">
     <!-- 1. Finder -->
@@ -1270,7 +1685,8 @@
     </div>
 
     <!-- 3. Screenshots / Monitor Shortcut (Right-Click Menu Supported) -->
-    <div class="dock-item" onclick="bounceAndOpen(this, () => openFinder('Pictures'))" oncontextmenu="showDockContext(event)">
+    <div class="dock-item" onclick="bounceAndOpen(this, () => openFinder('Pictures'))"
+      oncontextmenu="showDockContext(event)">
       <span class="dock-tooltip">Screenshots (Right-click)</span>
       <img src="icons/Apple Photos icon Regular.png" class="w-full h-full rounded-[9px] shadow" alt="Screenshots">
     </div>
@@ -1294,7 +1710,8 @@
     </div>
 
     <!-- 7. Spotify -->
-    <div class="dock-item" onclick="bounceAndOpen(this, () => { currentTrackIdx = 2; updateMediaUI(); expandIsland(); })">
+    <div class="dock-item"
+      onclick="bounceAndOpen(this, () => { currentTrackIdx = 2; updateMediaUI(); expandIsland(); })">
       <span class="dock-tooltip">Spotify</span>
       <img src="icons/Big Sur Spotify Regular.png" class="w-full h-full rounded-[9px] shadow" alt="Spotify">
       <span class="dock-dot"></span>
@@ -1336,10 +1753,11 @@
       <img src="icons/Big Sur Steam Regular.png" class="w-full h-full rounded-[9px] shadow" alt="RyTuneX">
     </div>
 
-    <!-- 14. MyDockFinder Preferences -->
+    <!-- 14. NexoraMenuBar Preferences -->
     <div class="dock-item" onclick="bounceAndOpen(this, () => openPreferences('General'))">
-      <span class="dock-tooltip">MyDockFinder Preferences</span>
-      <img src="icons/BigSur System Preferences Regular.png" class="w-full h-full rounded-[9px] shadow" alt="MyDockFinder Preferences">
+      <span class="dock-tooltip">NexoraMenuBar Preferences</span>
+      <img src="icons/BigSur System Preferences Regular.png" class="w-full h-full rounded-[9px] shadow"
+        alt="NexoraMenuBar Preferences">
       <span class="dock-dot"></span>
     </div>
 
@@ -1352,7 +1770,8 @@
     <!-- 16. Visual Studio Code -->
     <div class="dock-item" onclick="bounceAndOpen(this, () => showToast('Visual Studio Code opened'))">
       <span class="dock-tooltip">Visual Studio Code</span>
-      <img src="icons/Visual Studio Code Regular.png" class="w-full h-full rounded-[9px] shadow" alt="Visual Studio Code">
+      <img src="icons/Visual Studio Code Regular.png" class="w-full h-full rounded-[9px] shadow"
+        alt="Visual Studio Code">
       <span class="dock-dot"></span>
     </div>
 
@@ -1367,19 +1786,23 @@
     <!-- Minimized Window Thumbnails -->
     <div class="dock-item" onclick="bounceAndOpen(this, () => openFinder('Documents'))">
       <span class="dock-tooltip">Documents — Finder</span>
-      <div class="w-full h-full rounded-[7px] bg-gradient-to-b from-sky-300 to-blue-600 border border-white/30 shadow overflow-hidden flex flex-col justify-end p-1">
+      <div
+        class="w-full h-full rounded-[7px] bg-gradient-to-b from-sky-300 to-blue-600 border border-white/30 shadow overflow-hidden flex flex-col justify-end p-1">
         <div class="w-full h-3 bg-white/80 rounded-[2px]"></div>
       </div>
     </div>
 
     <div class="dock-item" onclick="bounceAndOpen(this, () => showToast('Restored minimized window'))">
       <span class="dock-tooltip">Minimized Window</span>
-      <div class="w-full h-full rounded-[7px] bg-gradient-to-br from-cyan-400 to-teal-700 border border-white/30 shadow flex items-center justify-center text-[10px] font-bold text-white">fn</div>
+      <div
+        class="w-full h-full rounded-[7px] bg-gradient-to-br from-cyan-400 to-teal-700 border border-white/30 shadow flex items-center justify-center text-[10px] font-bold text-white">
+        fn</div>
     </div>
   </nav>
 
   <!-- Subtle Toast Notification Pill -->
-  <div id="os-toast" class="fixed bottom-[66px] left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full glass-panel text-[12px] text-gray-100 opacity-0 pointer-events-none transition-opacity duration-200 z-[999]">
+  <div id="os-toast"
+    class="fixed bottom-[66px] left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full glass-panel text-[12px] text-gray-100 opacity-0 pointer-events-none transition-opacity duration-200 z-[999]">
     Action completed
   </div>
 
@@ -1725,11 +2148,11 @@
       ],
       "Desktop": [
         { name: "Lockheed_A12A_Wallpaper.jpg", type: "img", preview: "Resolution: 3840x2160 Monochrome Archival Blueprint." },
-        { name: "MyDockFinder_Backup.ini", type: "md", preview: "[General]\nBlurIntensity=26\nScale=1.0" }
+        { name: "NexoraMenuBar_Backup.ini", type: "md", preview: "[General]\nBlurIntensity=26\nScale=1.0" }
       ],
       "Downloads": [
         { name: "Alkateri - Kontemplasi.flac", type: "md", preview: "Lossless 24-bit / 96kHz Audio Album." },
-        { name: "MyDockFinder_v1.10.zip", type: "folder" }
+        { name: "NexoraMenuBar_v1.10.zip", type: "folder" }
       ],
       "Pictures": [
         { name: "Screenshots", type: "folder" },
@@ -1973,4 +2396,5 @@
     });
   </script>
 </body>
+
 </html>
