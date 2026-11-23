@@ -1,25 +1,37 @@
 //! Persistent user preferences (the on-disk `settings.cfg` model).
 //!
 //! Layout: `enums` (option types), `text` (fixed-size text field), `codec` (parse/serialize),
-//! `look` (settings -> glass look), `dock` / `menubar` / `island` (per-feature sections). Public paths are unchanged: everything is re-exported here.
+//! `look` (settings -> glass look), and the per-feature sections `general`, `appearance`, `stage`, `input`, `dock`,
+//! `finder` and `island`. Public paths are unchanged: everything is re-exported here.
 
 use crate::i18n::Lang;
 
+mod appearance;
 mod codec;
 mod dock;
 mod enums;
+mod finder;
+mod general;
+mod input;
 mod island;
 mod look;
-mod menubar;
 pub mod preview;
+mod stage;
 mod text;
 
+pub use appearance::AppearanceSettings;
 pub use dock::DockSettings;
 pub use enums::*;
+pub use finder::FinderSettings;
+pub use general::GeneralSettings;
+pub use input::InputSettings;
 pub use island::IslandSettings;
 pub use look::{Look, bar_look, look};
-pub use menubar::MenubarSettings;
+pub use stage::StageSettings;
 pub use text::ShortText;
+
+/// Former name of [`FinderSettings`] (ADR-0003). Migrate callers, then delete this alias.
+pub type MenubarSettings = FinderSettings;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Settings {

@@ -1,9 +1,9 @@
-//! Persistent Menubar (top bar) preferences, projected from the flat on-disk [`Settings`].
+//! Persistent Finder (menu bar / top bar) preferences, projected from the flat on-disk [`Settings`].
 
 use super::{BarStyle, Settings};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct MenubarSettings {
+pub struct FinderSettings {
   pub enabled: bool,
   pub style: BarStyle,
   pub glass: bool,
@@ -12,7 +12,7 @@ pub struct MenubarSettings {
   pub battery_pct: u8,
 }
 
-impl MenubarSettings {
+impl FinderSettings {
   /// Write this section back into the flat settings; fields owned by other sections are untouched.
   pub fn apply(&self, s: &mut Settings) {
     s.menubar = self.enabled;
@@ -24,9 +24,9 @@ impl MenubarSettings {
   }
 }
 
-impl From<&Settings> for MenubarSettings {
+impl From<&Settings> for FinderSettings {
   fn from(s: &Settings) -> Self {
-    MenubarSettings {
+    FinderSettings {
       enabled: s.menubar,
       style: s.menubar_style,
       glass: s.menubar_glass,
@@ -38,7 +38,12 @@ impl From<&Settings> for MenubarSettings {
 }
 
 impl Settings {
-  pub fn menubar_settings(&self) -> MenubarSettings {
-    MenubarSettings::from(self)
+  pub fn finder_settings(&self) -> FinderSettings {
+    FinderSettings::from(self)
+  }
+
+  /// Former name of [`Settings::finder_settings`] (ADR-0003).
+  pub fn menubar_settings(&self) -> FinderSettings {
+    self.finder_settings()
   }
 }
