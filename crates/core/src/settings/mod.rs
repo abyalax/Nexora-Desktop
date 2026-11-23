@@ -20,6 +20,7 @@ mod stage;
 mod text;
 
 pub use appearance::AppearanceSettings;
+pub(crate) use codec::parse_bool;
 pub use dock::DockSettings;
 pub use enums::*;
 pub use finder::FinderSettings;

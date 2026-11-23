@@ -323,7 +323,7 @@ impl Settings {
   }
 }
 
-fn parse_bool(v: &str) -> Option<bool> {
+pub(crate) fn parse_bool(v: &str) -> Option<bool> {
   match v.to_ascii_lowercase().as_str() {
     "true" | "1" | "yes" | "on" => Some(true),
     "false" | "0" | "no" | "off" => Some(false),

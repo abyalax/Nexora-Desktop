@@ -1,5 +1,6 @@
 //! Dock domain logic: items, pins, recents, layout, geometry and reordering.
 
+pub mod behavior;
 pub mod entries;
 pub mod geometry;
 pub mod items;
