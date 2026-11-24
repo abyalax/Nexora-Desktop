@@ -11,14 +11,14 @@ covered by `cargo test -p nexora-core activities`; this checks the window behavi
 
 ## Steps and expected results
 
-| # | Do | Expect |
-| - | -- | ------ |
-| 1 | Turn **Media and lyrics** off | Compact island no longer shows the player, lyrics or music; the **Play** tab disappears from the open island; clicking the island opens the next enabled tab (Shelf). |
-| 2 | Turn it back on | Play tab and compact media return without restart. |
-| 3 | Turn **File shelf** off | The **Shelf** tab disappears; dragging a file shows only the send zone (if *Send to phone* is on) and dropping on the shelf zone does nothing. Known gap: the shelf zone is still drawn in the drop overlay. |
-| 4 | Turn **Timer and calendar strip** off with a timer running | No timer activity in the compact island, no Timer tab. The timer itself keeps counting (turn the switch on again: it shows the correct time). |
-| 5 | Turn all five activity switches off | Collapsed island shows only the idle style; clicking it does not open anything; mouse wheel on the island does nothing. |
-| 6 | Mouse wheel over the open island with one tab off | Cycles only through the enabled tabs. |
+| #   | Do                                                         | Expect                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Turn **Media and lyrics** off                              | Compact island no longer shows the player, lyrics or music; the **Play** tab disappears from the open island; clicking the island opens the next enabled tab (Shelf).                                        |
+| 2   | Turn it back on                                            | Play tab and compact media return without restart.                                                                                                                                                           |
+| 3   | Turn **File shelf** off                                    | The **Shelf** tab disappears; dragging a file shows only the send zone (if *Send to phone* is on) and dropping on the shelf zone does nothing. Known gap: the shelf zone is still drawn in the drop overlay. |
+| 4   | Turn **Timer and calendar strip** off with a timer running | No timer activity in the compact island, no Timer tab. The timer itself keeps counting (turn the switch on again: it shows the correct time).                                                                |
+| 5   | Turn all five activity switches off                        | Collapsed island shows only the idle style; clicking it does not open anything; mouse wheel on the island does nothing.                                                                                      |
+| 6   | Mouse wheel over the open island with one tab off          | Cycles only through the enabled tabs.                                                                                                                                                                        |
 
 ## Restore check
 

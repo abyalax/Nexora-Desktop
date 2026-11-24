@@ -142,7 +142,10 @@ mod tests {
 
   #[test]
   fn tabs_follow_their_switch_in_display_order() {
-    assert_eq!(Activities::ALL_ON.visible_tabs(), vec![Tab::Play, Tab::Shelf, Tab::Timer]);
+    assert_eq!(
+      Activities::ALL_ON.visible_tabs(),
+      vec![Tab::Play, Tab::Shelf, Tab::Timer]
+    );
     let a = Activities {
       shelf: false,
       ..Activities::ALL_ON
@@ -187,10 +190,7 @@ mod tests {
   fn all_off_leaves_only_idle_content() {
     let live = busy();
     assert_eq!(Activities::ALL_OFF.activity(&live), None);
-    let idle = Live {
-      glance: true,
-      ..live
-    };
+    let idle = Live { glance: true, ..live };
     assert_eq!(Activities::ALL_OFF.activity(&idle), Some(Activity::Glance));
     let charging = Live {
       charging_fresh: true,
@@ -215,7 +215,10 @@ mod tests {
   #[test]
   fn opening_a_disabled_tab_is_redirected() {
     use state::Mode;
-    assert_eq!(retarget(Mode::Open(Tab::Play), &Activities::ALL_ON), Mode::Open(Tab::Play));
+    assert_eq!(
+      retarget(Mode::Open(Tab::Play), &Activities::ALL_ON),
+      Mode::Open(Tab::Play)
+    );
     let no_media = Activities {
       media: false,
       ..Activities::ALL_ON
@@ -225,7 +228,11 @@ mod tests {
       shelf: false,
       ..Activities::ALL_ON
     };
-    assert_eq!(retarget(Mode::Open(Tab::Shelf), &no_shelf), Mode::Open(Tab::Play), "a drop never opens a hidden shelf");
+    assert_eq!(
+      retarget(Mode::Open(Tab::Shelf), &no_shelf),
+      Mode::Open(Tab::Play),
+      "a drop never opens a hidden shelf"
+    );
     assert_eq!(retarget(Mode::Open(Tab::Timer), &Activities::ALL_OFF), Mode::Rest);
     for m in [Mode::Rest, Mode::Peek, Mode::Drop] {
       assert_eq!(retarget(m, &Activities::ALL_OFF), m, "non-open modes pass through");

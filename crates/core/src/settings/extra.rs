@@ -14,9 +14,18 @@ use std::fmt::Write as _;
 /// What a row stores. Used by tests and by the settings window to build the matching row widget.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
-  Bool { default: bool },
-  Int { min: u16, max: u16, default: u16 },
-  Choice { names: &'static [&'static str], default: u8 },
+  Bool {
+    default: bool,
+  },
+  Int {
+    min: u16,
+    max: u16,
+    default: u16,
+  },
+  Choice {
+    names: &'static [&'static str],
+    default: u8,
+  },
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -264,8 +273,18 @@ mod tests {
         Kind::Int { min, max, default } => {
           assert_eq!(d.get(s.key), Some(default as i64), "{} default", s.key);
           assert!((min..=max).contains(&default), "{} default inside range", s.key);
-          assert_eq!(line(s.key, "-99999").get(s.key), Some(min as i64), "{} clamp low", s.key);
-          assert_eq!(line(s.key, "99999").get(s.key), Some(max as i64), "{} clamp high", s.key);
+          assert_eq!(
+            line(s.key, "-99999").get(s.key),
+            Some(min as i64),
+            "{} clamp low",
+            s.key
+          );
+          assert_eq!(
+            line(s.key, "99999").get(s.key),
+            Some(max as i64),
+            "{} clamp high",
+            s.key
+          );
           assert_eq!(line(s.key, "abc"), d, "{} garbage keeps default", s.key);
           let mut e = Extra::default();
           e.apply(s.key, &max.to_string());

@@ -19,9 +19,16 @@ fn a_default_settings_file_contains_no_extra_key() {
 #[test]
 fn extra_keys_do_not_collide_with_legacy_keys() {
   let legacy = Settings::default().serialize();
-  let legacy_keys: Vec<&str> = legacy.lines().filter_map(|l| l.split_once('=').map(|(k, _)| k)).collect();
+  let legacy_keys: Vec<&str> = legacy
+    .lines()
+    .filter_map(|l| l.split_once('=').map(|(k, _)| k))
+    .collect();
   for spec in Extra::SPECS {
-    assert!(!legacy_keys.contains(&spec.key), "{} collides with a legacy key", spec.key);
+    assert!(
+      !legacy_keys.contains(&spec.key),
+      "{} collides with a legacy key",
+      spec.key
+    );
   }
 }
 
@@ -43,13 +50,19 @@ fn the_0_5_0_fixture_parses_and_round_trips_stably() {
 fn legacy_values_are_untouched_by_extra_keys() {
   let with = Settings::parse(&format!("blur=33\n{FIXTURE}"));
   assert_eq!(with.blur, 33);
-  let legacy_part: String = with.serialize().lines().take_while(|l| !l.starts_with("notch_media")).collect::<Vec<_>>().join("\n");
+  let legacy_part: String = with
+    .serialize()
+    .lines()
+    .take_while(|l| !l.starts_with("notch_media"))
+    .collect::<Vec<_>>()
+    .join("\n");
   assert!(legacy_part.contains("blur=33"));
 }
 
 #[test]
 fn new_boot_taskbar_and_icon_keys_win_and_derive_the_legacy_bools() {
-  let s = Settings::parse("autostart=false\ntakeover=true\nstart_method=task\ntaskbar_scope=none\ndesktop_icons=auto\n");
+  let s =
+    Settings::parse("autostart=false\ntakeover=true\nstart_method=task\ntaskbar_scope=none\ndesktop_icons=auto\n");
   assert!(s.autostart, "task method means autostart");
   assert!(!s.takeover, "scope none means no takeover");
   assert!(s.hide_desktop_icons, "auto still hides while running");
@@ -61,10 +74,16 @@ fn new_boot_taskbar_and_icon_keys_win_and_derive_the_legacy_bools() {
 #[test]
 fn legacy_only_files_derive_the_new_values_and_do_not_write_them_back() {
   let s = Settings::parse("autostart=true\ntakeover=false\nhide_desktop_icons=false\n");
-  assert_eq!((s.extra.start_method, s.extra.taskbar_scope, s.extra.desktop_icons), (1, 0, 2));
+  assert_eq!(
+    (s.extra.start_method, s.extra.taskbar_scope, s.extra.desktop_icons),
+    (1, 0, 2)
+  );
   let text = s.serialize();
   for k in ["start_method=", "taskbar_scope=", "desktop_icons="] {
-    assert!(!text.lines().any(|l| l.starts_with(k)), "{k} is implied by the legacy bool");
+    assert!(
+      !text.lines().any(|l| l.starts_with(k)),
+      "{k} is implied by the legacy bool"
+    );
   }
   assert_eq!(Settings::parse(&text), s);
 }

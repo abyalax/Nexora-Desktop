@@ -204,7 +204,8 @@ impl Notch {
 
   pub(super) fn on_wheel(&mut self, delta: i16) {
     if let Mode::Open(cur) = self.mode {
-      let tabs = nexora_core::dynamic_island::activities::Activities::from_settings(&crate::prefs::get()).visible_tabs();
+      let tabs =
+        nexora_core::dynamic_island::activities::Activities::from_settings(&crate::prefs::get()).visible_tabs();
       if tabs.is_empty() {
         return;
       }

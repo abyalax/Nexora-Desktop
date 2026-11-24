@@ -1272,11 +1272,7 @@ impl Win {
         (
           Some(prefs::tr("Aktivitas")),
           vec![
-            RowDef::Toggle(
-              prefs::tr("Media dan lirik"),
-              s.extra.notch_media,
-              Action::NotchMedia,
-            ),
+            RowDef::Toggle(prefs::tr("Media dan lirik"), s.extra.notch_media, Action::NotchMedia),
             RowDef::Toggle(
               prefs::tr("Tampilkan unduhan (Store, Steam, peramban)"),
               s.notch_downloads,
