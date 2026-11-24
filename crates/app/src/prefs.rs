@@ -1,8 +1,8 @@
 use crate::paths;
-use nexora_core::settings::{self, Look, Settings};
+use nexora_core::settings::{self, ListKind, Look, ProgramLists, Settings};
 use nexora_platform::{log, sys};
 use nexora_ui::glass::GlassParams;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use windows::UI::Color;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
@@ -12,9 +12,14 @@ pub const WM_PREFS: u32 = WM_APP + 40;
 static CUR: Mutex<Option<Settings>> = Mutex::new(None);
 static DIRTY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static LISTENERS: Mutex<Vec<isize>> = Mutex::new(Vec::new());
+static LISTS: Mutex<Option<Arc<ProgramLists>>> = Mutex::new(None);
 
 fn file() -> std::path::PathBuf {
   paths::config_dir().join("settings.cfg")
+}
+
+fn lists_file() -> std::path::PathBuf {
+  paths::config_dir().join("lists.cfg")
 }
 
 pub fn init() {
@@ -23,11 +28,47 @@ pub fn init() {
     .unwrap_or_default();
   log::line("prefs", &format!("dimuat: {s:?}"));
   *CUR.lock().unwrap() = Some(s);
+
+  let lists = std::fs::read_to_string(lists_file())
+    .map(|t| ProgramLists::parse(&t))
+    .unwrap_or_default();
+  let total: usize = ListKind::ALL.iter().map(|k| lists.get(*k).len()).sum();
+  log::line("prefs", &format!("lists dimuat: {} entries", total));
+  *LISTS.lock().unwrap() = Some(Arc::new(lists));
 }
 
 pub fn get() -> Settings {
   let mut g = CUR.lock().unwrap();
   *g.get_or_insert_with(Settings::default)
+}
+
+pub fn lists() -> Arc<ProgramLists> {
+  let mut g = LISTS.lock().unwrap();
+  g.get_or_insert_with(|| Arc::new(ProgramLists::default())).clone()
+}
+
+pub fn update_lists(f: impl FnOnce(&mut ProgramLists)) {
+  let current = lists();
+  let mut lists = (*current).clone();
+  f(&mut lists);
+
+  let _ = std::fs::create_dir_all(paths::config_dir());
+  let text = lists.serialize();
+
+  let tmp_path = lists_file().with_extension("tmp");
+  if let Err(e) = std::fs::write(&tmp_path, text) {
+    log::line("prefs", &format!("lists simpan gagal: {e}"));
+    return;
+  }
+
+  if let Err(e) = std::fs::rename(&tmp_path, lists_file()) {
+    log::line("prefs", &format!("lists rename gagal: {e}"));
+    let _ = std::fs::remove_file(&tmp_path);
+    return;
+  }
+
+  *LISTS.lock().unwrap() = Some(Arc::new(lists));
+  log::line("prefs", "lists disimpan");
 }
 
 pub fn listen(h: HWND) {

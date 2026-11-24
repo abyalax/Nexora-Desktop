@@ -149,7 +149,7 @@
     }
 
     /* Expanded State on Hover or Toggle */
-    #dynamic-island-wrapper:hover #dynamic-island,
+    #dynamic-island-wrapper:not(.island-idle-only):hover #dynamic-island,
     #dynamic-island.expanded {
       width: 470px;
       height: 218px;
@@ -165,7 +165,7 @@
       transition: opacity 0.16s ease;
     }
 
-    #dynamic-island-wrapper:hover #island-compact,
+    #dynamic-island-wrapper:not(.island-idle-only):hover #island-compact,
     #dynamic-island.expanded #island-compact {
       opacity: 0;
       pointer-events: none;
@@ -178,12 +178,24 @@
       transition: opacity 0.22s ease 0.08s, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) 0.05s;
     }
 
-    #dynamic-island-wrapper:hover #island-expanded,
+    #dynamic-island-wrapper:not(.island-idle-only):hover #island-expanded,
     #dynamic-island.expanded #island-expanded {
       opacity: 1;
       pointer-events: auto;
       transform: scale(1);
     }
+
+    /* I-14.5: activity switches */
+    #island-expanded.media-off #island-info-row,
+    #island-expanded.media-off #island-lyrics-row,
+    #island-expanded.media-off #island-progress-row,
+    #island-expanded.media-off #island-transport-row { display: none !important; }
+    .island-pane { display: none; }
+    .island-pane.active { display: flex; }
+    #island-tabs { display: none; }
+    #island-tabs.has-tabs { display: flex; }
+    .island-tab { font-size: 10px; padding: 1px 8px; border-radius: 9999px; color: #9ca3af; background: rgba(255,255,255,.06); }
+    .island-tab.active { color: #fff; background: rgba(255,255,255,.16); }
 
     /* Equalizer Wave Bars */
     .eq-bar {
@@ -1096,6 +1108,7 @@
           </svg>
         </div>
         <span id="island-compact-title" class="text-[12px] font-medium text-gray-100 truncate px-2">Esok</span>
+        <span id="island-compact-idle" class="text-[12px] font-medium text-gray-100 w-full text-center" style="display:none">Nexora</span>
         <div id="island-compact-eq" class="flex items-center gap-[2px] pr-1">
           <span class="eq-bar"></span>
           <span class="eq-bar"></span>
@@ -1176,7 +1189,7 @@
         </div>
 
         <!-- Middle Row: Progress Bar with Cyan Fill & White Knob -->
-        <div class="flex items-center gap-2.5 mt-1">
+        <div id="island-progress-row" class="flex items-center gap-2.5 mt-1">
           <span id="island-time-elapsed" class="text-[10.5px] text-gray-400 tabular-nums w-8 text-right">3:12</span>
           <div id="island-progress-track" class="flex-1 h-1.5 bg-white/15 rounded-full relative cursor-pointer group"
             onclick="seekTrack(event)">
@@ -1190,7 +1203,7 @@
         </div>
 
         <!-- Bottom Row: Transport Buttons (Cyan Icons) & Lyrics Bubble -->
-        <div class="relative flex items-center justify-center gap-4">
+        <div id="island-transport-row" class="relative flex items-center justify-center gap-4">
           <button onclick="prevTrack()"
             class="w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.14] flex items-center justify-center text-[color:var(--accent)] transition active:scale-90"
             title="Previous">
@@ -1223,6 +1236,11 @@
             </svg>
           </button>
         </div>
+
+        <!-- I-14.5: Shelf / Timer panes and the tab strip (only enabled tabs are rendered) -->
+        <div id="island-pane-shelf" class="island-pane absolute inset-0 p-4 items-center justify-center text-[12px] text-gray-400">File shelf: drop files here</div>
+        <div id="island-pane-timer" class="island-pane absolute inset-0 p-4 items-center justify-center text-[22px] font-semibold text-white tabular-nums">00:00</div>
+        <div id="island-tabs" class="absolute left-1/2 -translate-x-1/2 bottom-1.5 gap-1.5"></div>
 
         <!-- Right-edge 3-dot Widget Page Indicator -->
         <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex flex-col gap-1">
@@ -2059,6 +2077,7 @@
   </div>
   <div id="power-overlay" class="hidden"><span id="power-msg"></span></div>
 
+  <script src="island-activities.js"></script>
   <script>
     // ==========================================
     // 1. MEDIA & DYNAMIC ISLAND STATE
@@ -2163,6 +2182,7 @@
     }
 
     function expandIsland() {
+      if (document.getElementById("dynamic-island-wrapper").classList.contains("island-idle-only")) return;
       closeAllPopovers();
       document.getElementById("dynamic-island").classList.add("expanded");
     }
@@ -2174,6 +2194,7 @@
     }
 
     function toggleIsland() {
+      if (document.getElementById("dynamic-island-wrapper").classList.contains("island-idle-only")) return;
       const island = document.getElementById("dynamic-island");
       islandPinned = !islandPinned;
       if (islandPinned) {
@@ -2970,6 +2991,7 @@
       } else {
         notch.style.borderRadius = "0 0 14px 14px"; notch.style.marginTop = "0";
       }
+      applyIslandActivities();
       applyNexoraEyeTheme(s.eyeTheme);
       applyNexoraEyeShape(s.eyeShape);
       activeEyeRadius = Number(s.eyeRadius);
@@ -2977,6 +2999,37 @@
       eyeAutonomous.glanceChance = Number(s.eyeGlanceChance) / 100;
       eyeAutonomous.minIntervalMs = Number(s.eyeMinInterval);
       eyeAutonomous.maxIntervalMs = Math.max(eyeAutonomous.minIntervalMs, Number(s.eyeMaxInterval));
+    }
+    // I-14.5: activity switches -> visible tabs (logic in island-activities.js, mirrors core)
+    let islandTab = null;
+    const ISLAND_TAB_LABEL = { play: "Play", shelf: "Shelf", timer: "Timer" };
+    function selectIslandTab(tab) {
+      islandTab = tab;
+      const ex = document.getElementById("island-expanded");
+      ex.classList.toggle("media-off", tab !== "play");
+      ["shelf", "timer"].forEach(t => document.getElementById("island-pane-" + t).classList.toggle("active", tab === t));
+      document.querySelectorAll("#island-tabs .island-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    }
+    function applyIslandActivities() {
+      const A = NexoraIslandActivities, a = A.fromSettings(NexoraSettings.island);
+      const tabs = A.visibleTabs(a);
+      const wrapper = document.getElementById("dynamic-island-wrapper");
+      const bar = document.getElementById("island-tabs");
+      // Collapsed pill: media content only while media is on; otherwise the idle label.
+      ["island-compact-cover", "island-compact-title", "island-compact-eq"].forEach(id => {
+        document.getElementById(id).style.display = a.media ? "" : "none";
+      });
+      document.getElementById("island-compact-idle").style.display = a.media ? "none" : "";
+      // All off: idle only, nothing opens (hover and click).
+      wrapper.classList.toggle("island-idle-only", tabs.length === 0);
+      if (tabs.length === 0) {
+        islandPinned = false;
+        document.getElementById("dynamic-island").classList.remove("expanded");
+      }
+      bar.innerHTML = tabs.map(t => `<button type="button" class="island-tab" data-tab="${t}">${ISLAND_TAB_LABEL[t]}</button>`).join("");
+      bar.classList.toggle("has-tabs", tabs.length > 1);
+      bar.querySelectorAll(".island-tab").forEach(b => b.onclick = e => { e.stopPropagation(); selectIslandTab(b.dataset.tab); });
+      selectIslandTab(A.retarget(islandTab, a) || A.firstTab(a));
     }
     function openPreferences(tab = "General") {
       const win = document.getElementById("preferences-window");

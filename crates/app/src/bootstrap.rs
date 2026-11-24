@@ -135,7 +135,7 @@ fn start_island(host: &Host, args: &Args, pref: &Settings) {
 /// window tracker and the shared compositor that the two features above have just created.
 fn start_desktop_features(host: &Host, args: &Args) {
   if args.open_settings {
-    settings_win::open(&host.compositor);
+    settings_win::open(&host.compositor, args.settings_page);
   }
   report("mission", mission::init(&host.compositor));
   report("launchpad", launchpad::init(&host.compositor));

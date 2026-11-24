@@ -78,11 +78,7 @@ fn sanitize(name: &str) -> Option<&str> {
     || n.starts_with('[')
     || n.chars().any(|c| c.is_control() || c == ';');
   // An entry that reduces to nothing (for example just a path separator) matches nothing and is dropped too.
-  if bad || key(n).is_empty() {
-    None
-  } else {
-    Some(n)
-  }
+  if bad || key(n).is_empty() { None } else { Some(n) }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

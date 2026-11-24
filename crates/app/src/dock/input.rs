@@ -225,8 +225,10 @@ impl Dock {
           log::line("dock", &format!("aktifkan {} hwnd={target} ok={ok}", it.name));
         } else {
           launch::open(&it.path);
-          if let Some(v) = self.views.get(idx) {
-            let _ = v.bounce(self.icon_y);
+          if crate::prefs::get().extra.dock_animate_launch {
+            if let Some(v) = self.views.get(idx) {
+              let _ = v.bounce(self.icon_y);
+            }
           }
           log::line("dock", &format!("luncurkan {}", it.path));
         }

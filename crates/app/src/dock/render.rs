@@ -139,6 +139,24 @@ impl Dock {
       self.entries.truncate(self.views.len());
       self.slots.truncate(self.views.len());
     }
+    // Add labels if setting is enabled
+    self.labels.clear();
+    let show_labels = crate::prefs::get().extra.dock_show_labels;
+    if show_labels {
+      for (i, entry) in self.entries.iter().enumerate() {
+        if let nexora_core::dock::entries::Entry::App(idx) = entry {
+          if let Some(it) = self.items.get(*idx) {
+            let text = {
+              let f = nexora_platform::wins::names::friendly(&it.path);
+              if f.is_empty() { it.name.clone() } else { f }
+            };
+            if let Ok(label) = self.create_label(&text) {
+              self.labels.insert(i, label);
+            }
+          }
+        }
+      }
+    }
     self.hover = None;
     self.resize_window();
     self.apply(None, false);
@@ -271,6 +289,7 @@ impl Dock {
     }
     self.layout = l;
     self.last_apply = Instant::now();
+    self.update_label_positions();
   }
 
   pub(super) fn make_trash_surface(&mut self) {
@@ -401,5 +420,50 @@ impl Dock {
     self.surfaces.remove(path);
     self.requested.insert(path.to_string());
     let _ = self.worker.requests.send(path.to_string());
+  }
+
+  fn create_label(&self, text: &str) -> windows_core::Result<windows::UI::Composition::SpriteVisual> {
+    use windows::UI::Composition::CompositionStretch;
+    use windows_numerics::Vector2;
+
+    let px = (13.0 * self.dpi).round() as i32;
+    let style = nexora_platform::text::Style { px, weight: 400 };
+    let (tw, th) = nexora_platform::text::measure(text, &style);
+    let tw = tw.min((self.m.icon * 3.0) as i32);
+
+    let Some(bitmap) = nexora_platform::text::render(text, &style, tw, th) else {
+      return Err(windows_core::Error::from(windows::Win32::Foundation::WIN32_ERROR(0)));
+    };
+
+    let surface = self.gfx.surface_from_bgra(tw as u32, th as u32, &bitmap.bgra)?;
+    let label = self.comp.CreateSpriteVisual()?;
+    label.SetSize(Vector2 {
+      X: tw as f32,
+      Y: th as f32,
+    })?;
+    let brush = self.comp.CreateSurfaceBrushWithSurface(&surface)?;
+    brush.SetStretch(CompositionStretch::None)?;
+    label.SetBrush(&brush)?;
+
+    self.content.Children()?.InsertAtTop(&label)?;
+    Ok(label)
+  }
+
+  fn update_label_positions(&self) {
+    let y = self.icon_y;
+    for (i, label) in &self.labels {
+      if let Some(c) = self.layout.cells.get(*i) {
+        let x = c.x + c.w / 2.0;
+        if let Ok(size) = label.Size() {
+          let offset_x = x - size.X / 2.0;
+          let offset_y = y + self.m.icon + (4.0 * self.dpi);
+          let _ = label.SetOffset(windows_numerics::Vector3 {
+            X: offset_x,
+            Y: offset_y,
+            Z: 0.0,
+          });
+        }
+      }
+    }
   }
 }

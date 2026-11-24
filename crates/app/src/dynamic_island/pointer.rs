@@ -171,7 +171,7 @@ impl Notch {
         self.refresh();
       }
       Action::Tab(t) => self.dispatch(Event::SelectTab(t)),
-      Action::Settings => crate::settings_win::open(&self.paint.comp),
+      Action::Settings => crate::settings_win::open(&self.paint.comp, None),
       Action::TimerToggle => {
         if self.timer.phase == Phase::Running {
           self.timer.pause(now);

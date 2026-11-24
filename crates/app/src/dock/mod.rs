@@ -172,6 +172,7 @@ pub struct Dock {
   trash_full: bool,
   worker: icons::Worker,
   plates: bool,
+  labels: HashMap<usize, windows::UI::Composition::SpriteVisual>,
 
   region_full: bool,
   cursor: Option<f32>,

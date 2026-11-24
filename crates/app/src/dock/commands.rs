@@ -290,7 +290,7 @@ impl Dock {
           self.refresh_windows();
         }
       }
-      CMD_SETTINGS => crate::settings_win::open(&self.comp),
+      CMD_SETTINGS => crate::settings_win::open(&self.comp, None),
       CMD_TRASH_OPEN => launch::open("shell:RecycleBinFolder"),
       CMD_TRASH_EMPTY => unsafe {
         let _ = windows::Win32::UI::Shell::SHEmptyRecycleBinW(Some(self.hwnd), windows::core::PCWSTR::null(), 0);

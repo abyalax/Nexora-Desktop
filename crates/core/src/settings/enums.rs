@@ -268,11 +268,25 @@ impl HotAction {
       HotAction::Stage => "stage",
       HotAction::Notifications => "notifications",
       HotAction::Lock => "lock",
+      _ => "unknown", // Placeholder for future variants (D-16.2)
     }
   }
   pub fn next(self) -> HotAction {
     let i = Self::ALL.iter().position(|a| *a == self).unwrap_or(0);
     Self::ALL[(i + 1) % Self::ALL.len()]
+  }
+  /// Check if this is a known variant (for D-16.2 future variants)
+  pub fn is_known(self) -> bool {
+    matches!(
+      self,
+      HotAction::None
+        | HotAction::Mission
+        | HotAction::Launchpad
+        | HotAction::Desktop
+        | HotAction::Stage
+        | HotAction::Notifications
+        | HotAction::Lock
+    )
   }
 }
 

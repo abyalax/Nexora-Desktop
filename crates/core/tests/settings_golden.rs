@@ -8,8 +8,7 @@ fn round_trips(text: &str) {
   // Normalize line endings for cross-platform comparison
   let normalized_text = text.replace("\r\n", "\n");
   assert_eq!(
-    serialized,
-    normalized_text,
+    serialized, normalized_text,
     "serialize(parse(file)) must equal the original file"
   );
   assert_eq!(Settings::parse(&serialized), parsed);

@@ -125,6 +125,7 @@ impl Dock {
         trash_full: nexora_platform::recycle::is_full(),
         worker,
         plates: crate::prefs::get().dock_plates,
+        labels: HashMap::new(),
         region_full: false,
         cursor: None,
         last_apply: Instant::now(),

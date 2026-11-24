@@ -199,7 +199,7 @@ accepts dropped files. It rests as a small pill, peeks on hover, and opens into 
 | I-11 | Privacy indicators (microphone/camera in use)                                                                                      | ✅                                 |
 | I-12 | Hover-to-open toggle, idle style, greeting text, material, rounding                                                                | ✅                                 |
 | I-13 | Notification surfacing (app toasts as transient island content)                                                                    | ⬜                                 |
-| I-14 | Per-activity enable switches beyond downloads and send                                                                             | ⬜                                 |
+| I-14 | Per-activity enable switches beyond downloads and send                                                                             | 🟡 core + HTML done; app/UI written, Windows build and QA pending |
 
 ### 4.3 Settings (sidebar group **Dynamic Island**)
 

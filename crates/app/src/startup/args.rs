@@ -15,6 +15,7 @@ pub struct Args {
   pub keep_taskbar: bool,
   pub open_settings: bool,
   pub open_widgets: bool,
+  pub settings_page: Option<u8>,
   pub add_app: Option<String>,
   pub set_icon: Option<(String, String)>,
   pub glass: Option<Tier>,
@@ -44,6 +45,7 @@ impl Args {
         .and_then(|i| Some((v.get(i + 1)?.clone(), v.get(i + 2)?.clone()))),
       open_settings: v.iter().any(|a| a == "--open-settings"),
       open_widgets: v.iter().any(|a| a == "--open-widgets"),
+      settings_page: flag_value(&v, "--settings-page").and_then(|s| s.parse().ok()),
       keep_taskbar: v.iter().any(|a| a == "--keep-taskbar"),
       glass: flag_value(&v, "--glass").and_then(|s| match s.as_str() {
         "full" => Some(Tier::Full),

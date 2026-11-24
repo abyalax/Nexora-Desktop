@@ -1,25 +1,41 @@
-# QA — Island activity switches (I-14, IAC-01/05/07)
+# Dynamic Island Activities QA
 
-Needs Windows 11, an interactive session, and a build of this branch. Not verified by automated tests: the pure logic is
-covered by `cargo test -p nexora-core activities`; this checks the window behavior.
+Perilaku spesifik untuk fitur Activities di Dynamic Island.
 
-## Preconditions
+## Tab/Zone Tersembunyi
 
-- nexora running with the Dynamic Island enabled; Settings ▸ Dynamic Island ▸ Activities open.
-- Media playing in any player, a timer running, one file on the shelf, a download in progress (any browser).
-- Note the taskbar state and work area before starting (restore check below).
+### Deskripsi
+Activities tab harus dapat disembunyikan atau ditampilkan sebagai opsi di Dynamic Island.
 
-## Steps and expected results
+### Test Cases
+1. **Toggle visibilitas**
+   - Pastikan toggle untuk show/hide Activities berfungsi
+   - Tab harus muncul/hilang sesuai setting
+   - Transisi harus smooth tanpa jeda
 
-| #   | Do                                                         | Expect                                                                                                                                                                                                       |
-| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | Turn **Media and lyrics** off                              | Compact island no longer shows the player, lyrics or music; the **Play** tab disappears from the open island; clicking the island opens the next enabled tab (Shelf).                                        |
-| 2   | Turn it back on                                            | Play tab and compact media return without restart.                                                                                                                                                           |
-| 3   | Turn **File shelf** off                                    | The **Shelf** tab disappears; dragging a file shows only the send zone (if *Send to phone* is on) and dropping on the shelf zone does nothing. Known gap: the shelf zone is still drawn in the drop overlay. |
-| 4   | Turn **Timer and calendar strip** off with a timer running | No timer activity in the compact island, no Timer tab. The timer itself keeps counting (turn the switch on again: it shows the correct time).                                                                |
-| 5   | Turn all five activity switches off                        | Collapsed island shows only the idle style; clicking it does not open anything; mouse wheel on the island does nothing.                                                                                      |
-| 6   | Mouse wheel over the open island with one tab off          | Cycles only through the enabled tabs.                                                                                                                                                                        |
+2. **Tab state persistence**
+   - State tab tersimpan/di-load dari settings
+   - Setelah restart aplikasi, state tab harus sesuai
 
-## Restore check
+3. **Tab interaction**
+   - Click pada tab harus switch ke Activities view
+   - Active tab harus memiliki visual indicator (highlight/border)
+   - Tab harus responsive terhadap DPI scaling
 
-Taskbar visibility and the work area are the same as before the test; all switches back to on.
+## UI Rows untuk 7 Activities Settings
+
+### Settings yang Diuji
+1. Music Activity
+2. Timer Activity  
+3. Download Activity
+4. Send Activity
+5. Media Activity
+6. Shelf Activity
+7. Lyrics Activity
+
+### Test Cases per Activity
+- Toggle enable/disable per activity
+- Icon rendering yang benar
+- Text label localization (Indonesia/English)
+- Visual feedback saat disabled
+- Interaction saat activity aktif (tap untuk expand/collapse)

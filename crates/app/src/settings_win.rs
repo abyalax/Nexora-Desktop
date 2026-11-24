@@ -2,7 +2,7 @@ use crate::popup::Popup;
 use crate::prefs::{self, Role, WM_PREFS};
 use nexora_core::hud::slider;
 use nexora_core::i18n::Lang;
-use nexora_core::settings::{Behavior, Material, Theme};
+use nexora_core::settings::{Behavior, HotAction, ListKind, Material, Theme};
 use nexora_platform::icons::Bitmap;
 use nexora_platform::text::{ICON_FACE, Style, measure, render, render_face};
 use nexora_platform::{log, sys};
@@ -153,6 +153,130 @@ enum Action {
   WidgetStyle(u8),
   WidgetGallery,
   BatteryPct(u8),
+  // M2 DLB settings
+  DockIconEffect(u8),
+  DockIconLightInt(u8),
+  DockIconBgLightInt(u8),
+  DockPosition(u8),
+  DockDisplay(u8),
+  // M2 DLP settings
+  LaunchpadIconSize(u8),
+  LaunchpadHSpacing(u8),
+  LaunchpadVSpacing(u8),
+  LaunchpadSources(u8),
+  LaunchpadDisplay(u8),
+  LaunchpadFollowDock,
+  // M2 DAD settings
+  DockDblClickFolder,
+  DockHideOpenFolder,
+  DockLockDrag,
+  DockShowLabels,
+  DockAnimateLaunch,
+  DockPreventCover,
+  DockShowIndicators,
+  DockShowUnpinned,
+  DockSeparateUnpinned,
+  DockDetection(u8),
+  DockHiddenEffect(u8),
+  DockActivationTrigger(u8),
+  DockActBarWidth(u8),
+  DockActBarHeight(u8),
+  DockActBarDistance(u8),
+  DockActivationDelay(u8),
+  // M2 DMN settings
+  UseNexoraMinimize,
+  DisableMinimizeAnim,
+  ShiftSlowAnim,
+  MinimizeIntoIcon,
+  DynamicMinimizeContent,
+  MinimizedIconPos(u8),
+  MinimizeAnimSpeed(u8),
+  // M2 DPV settings
+  WindowPreviews,
+  PreviewSize(u8),
+  PreviewDelay(u8),
+  PreviewAppName,
+  PreviewControls,
+  PreviewNative,
+  // M2 STG settings
+  StageIcon,
+  StageBlurIcons,
+  StageNativePreview,
+  StageKeepBorder,
+  StageHiddenMode(u8),
+  // M2 FLB settings
+  FinderMenuIcon,
+  FinderAutoHide,
+  FinderShutdownConfirm,
+  FinderMaximizedAffects,
+  FinderCloseMaximizedCorner,
+  FinderLockTrayDrag,
+  FinderWindowOptions,
+  FinderColoredTray,
+  FinderInputMethod,
+  FinderSearchIcon,
+  FinderAccountIcon,
+  FinderMediaPlayback,
+  FinderLyricsMenu,
+  FinderColorLyrics,
+  // M2 FNO settings
+  FinderShowNotif,
+  FinderNotifSounds,
+  FinderNotifDuration(u8),
+  // M2 FTD settings
+  FinderShowTime,
+  FinderShowDate,
+  FinderDateFormat(u8),
+  // M2 FAU settings
+  FinderShowVolume,
+  FinderShowAudioOutput,
+  FinderShowMediaControls,
+  // M2 FDI settings
+  FinderShowBrightness,
+  // M2 FHW settings
+  FinderShowWifi,
+  FinderShowBluetooth,
+  FinderShowHardware,
+  // M2 FBA settings
+  FinderShowBattery,
+  FinderRemainingBattery,
+  FinderAutoPowerModes,
+  FinderPowerPlugged(u8),
+  FinderPowerBattery(u8),
+  // M2 IAC settings
+  IslandMedia,
+  IslandShelf,
+  IslandTimer,
+  // M2 APP settings
+  CustomDockBlur,
+  PinnedReflections,
+  CustomIconLabels,
+  CustomContextMenus,
+  CustomFolderGrid,
+  CustomNexoraMenus,
+  CustomFinderBlur,
+  LaunchpadCustomBlur,
+  LaunchpadAboveWindows,
+  LaunchpadBlurBackground,
+  TrayAllFinder,
+  TrayAllDock,
+  TraySystemFinder,
+  NightLight,
+  // M2 TRY settings
+  NewTrayIconSeconds(u8),
+  // M2 SCR settings
+  ScreenBrightness(u8),
+  NightLightIntensity(u8),
+  ScreenTarget(u8),
+  // M2 GEN settings
+  StartMethod(u8),
+  TaskbarScope(u8),
+  DisplayFont(u8),
+  FontScale(u8),
+  // M2 WAN settings
+  WindowAnimEffect(u8),
+  WindowAnimSpeed(u8),
+  MinimizeExcludedWindows,
 }
 
 struct Region {
@@ -164,8 +288,66 @@ struct Region {
   scroll: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Page {
+  General,
+  Dock,
+  Island,
+  Stage,
+  Appearance,
+  Advanced,
+}
+
+impl Page {
+  fn index(&self) -> u8 {
+    match self {
+      Page::General => 0,
+      Page::Dock => 1,
+      Page::Island => 2,
+      Page::Stage => 3,
+      Page::Appearance => 4,
+      Page::Advanced => 5,
+    }
+  }
+
+  fn name(&self) -> &'static str {
+    match self {
+      Page::General => "Umum",
+      Page::Dock => "Dock",
+      Page::Island => "Dynamic Island",
+      Page::Stage => "Stage Manager",
+      Page::Appearance => "Tampilan",
+      Page::Advanced => "Lanjutan",
+    }
+  }
+
+  fn icon(&self) -> &'static str {
+    match self {
+      Page::General => "\u{E713}",
+      Page::Dock => "\u{E7C4}",
+      Page::Island => "\u{E7F4}",
+      Page::Stage => "\u{E8A0}",
+      Page::Appearance => "\u{E790}",
+      Page::Advanced => "\u{E73F}",
+    }
+  }
+
+  fn from_index(idx: u8) -> Option<Self> {
+    match idx {
+      0 => Some(Page::General),
+      1 => Some(Page::Dock),
+      2 => Some(Page::Island),
+      3 => Some(Page::Stage),
+      4 => Some(Page::Appearance),
+      5 => Some(Page::Advanced),
+      _ => None,
+    }
+  }
+}
+
 enum RowDef {
   Toggle(&'static str, bool, Action),
+  ToggleInactive(&'static str, bool, Action, bool),
   Seg(&'static str, Vec<(&'static str, Action)>, usize),
   Slider(&'static str, u8, u8),
   Pick(&'static str, String, Action),
@@ -173,6 +355,7 @@ enum RowDef {
   Thumbs(&'static str, Vec<(&'static str, Thumb, Action)>, usize),
   Radios(Vec<(&'static str, Action)>, usize),
   Text(&'static str, String, String, u8),
+  List(&'static str, Vec<String>, Action),
 }
 
 #[derive(Clone, Copy)]
@@ -196,12 +379,14 @@ const ACCENT_NAMES: [&str; 9] = [
 fn row_label(r: &RowDef) -> &'static str {
   match r {
     RowDef::Toggle(l, ..)
+    | RowDef::ToggleInactive(l, ..)
     | RowDef::Seg(l, ..)
     | RowDef::Slider(l, ..)
     | RowDef::Pick(l, ..)
     | RowDef::Swatches(l, ..)
     | RowDef::Thumbs(l, ..)
-    | RowDef::Text(l, ..) => l,
+    | RowDef::Text(l, ..)
+    | RowDef::List(l, ..) => l,
     RowDef::Radios(..) => "",
   }
 }
@@ -249,7 +434,7 @@ thread_local! {
     static WIN: RefCell<Option<Box<Win>>> = const { RefCell::new(None) };
 }
 
-pub fn open(comp: &Compositor) {
+pub fn open(comp: &Compositor, page: Option<u8>) {
   let existing = WIN.with(|w| w.borrow().as_ref().map(|b| b.popup.hwnd));
   if let Some(h) = existing {
     unsafe {
@@ -263,15 +448,22 @@ pub fn open(comp: &Compositor) {
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
       );
     }
+    if let Some(p) = page {
+      WIN.with(|w| {
+        if let Some(win) = w.borrow_mut().as_mut() {
+          win.go(p, false);
+        }
+      });
+    }
     return;
   }
-  match create(comp) {
+  match create(comp, page) {
     Ok(()) => log::line("settings", "dibuka"),
     Err(e) => log::line("settings", &format!("gagal: {e}")),
   }
 }
 
-fn create(comp: &Compositor) -> windows_core::Result<()> {
+fn create(comp: &Compositor, page: Option<u8>) -> windows_core::Result<()> {
   let glass = side_glass(prefs::glass((10.0, 10.0), SIDE_RADIUS, Role::Themed));
   let popup = Popup::new(comp, w!("NexoraSettings"), Some(proc), WINDOW_EX_STYLE(0), glass)?;
   let dpi = unsafe { GetDpiForWindow(popup.hwnd) }.max(96) as f32 / 96.0;
@@ -302,10 +494,10 @@ fn create(comp: &Compositor) -> windows_core::Result<()> {
     side_bar: None,
     side_drag: None,
     press: None,
-    tab: 0,
+    tab: page.unwrap_or(0),
     scroll: 0.0,
     content_h: 0.0,
-    history: vec![0],
+    history: vec![page.unwrap_or(0)],
     hpos: 0,
     search: String::new(),
     search_focus: false,
@@ -621,12 +813,43 @@ impl Win {
       9 => (0.0, 60.0, " dp"),
       10 => (2.0, 10.0, ""),
       11 => (50.0, 200.0, "%"),
+      12 => (75.0, 150.0, "%"),
+      13 => (0.0, 100.0, "%"),
+      14 => (0.0, 100.0, "%"),
+      15 => (0.0, 100.0, "%"),
+      16 => (0.0, 100.0, "%"),
+      17 => (24.0, 100.0, " dp"),
+      18 => (0.0, 60.0, " dp"),
+      19 => (0.0, 60.0, " dp"),
+      20 => (1.0, 100.0, " dp"),
+      21 => (1.0, 30.0, " dp"),
+      22 => (0.0, 40.0, " dp"),
+      23 => (0.0, 250.0, " ms"),
+      24 => (0.0, 100.0, " dp"),
+      25 => (0.0, 250.0, " ms"),
+      26 => (1.0, 15.0, " s"),
+      27 => (0.0, 30.0, " s"),
       _ => (0.0, 100.0, "%"),
     }
   }
 
   fn commit_edit(&mut self) {
     let Some(f) = self.edit.take() else { return };
+
+    // Handle list text fields (8-11)
+    if f >= 8 && f <= 11 {
+      let kind = match f {
+        8 => ListKind::ExcludedPrograms,
+        9 => ListKind::ProgramBlacklist,
+        10 => ListKind::MinimizeBlacklist,
+        11 => ListKind::DeletedStartMenuPrograms,
+        _ => return,
+      };
+      prefs::update_lists(|l| l.set_from_text(kind, &self.edit_buf));
+      self.render();
+      return;
+    }
+
     let t = nexora_core::settings::ShortText::new(&self.edit_buf);
     prefs::update(|s| {
       if f == 0 {
@@ -644,6 +867,7 @@ impl Win {
       RowDef::Thumbs(..) => 96.0,
       RowDef::Radios(..) => 34.0,
       RowDef::Swatches(..) => 58.0,
+      RowDef::List(..) => 68.0,
       _ => 44.0,
     }
   }
@@ -665,7 +889,7 @@ impl Win {
     let accent = prefs::accent();
     for (i, r) in rows.iter().enumerate() {
       let rh = Self::row_height(r) * d;
-      if i > 0 && !matches!(r, RowDef::Radios(..)) {
+      if i > 0 && !matches!(r, RowDef::Radios(..) | RowDef::List(..)) {
         self.rect(c, x0 + 16.0 * d, y, cw - 32.0 * d, 1.0, 0.0, col(look.fg, 28));
       }
       let (lx, rx) = (x0 + 16.0 * d, x0 + cw - 16.0 * d);
@@ -708,6 +932,48 @@ impl Win {
             );
           }
           self.region(x0, y, cw, rh, *act);
+        }
+        RowDef::ToggleInactive(label, on, act, inactive) => {
+          let alpha = if *inactive { 0.4 } else { 0.95 };
+          let rgb = if *inactive { look.fg } else { look.fg };
+          self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, rgb, alpha, 0);
+          let (tw, th) = (46.0 * d, 22.0 * d);
+          let (tx, ty) = (rx - tw, y + (rh - th) / 2.0);
+          let bg_color = if *inactive {
+            col(look.fg, 30)
+          } else if *on {
+            col(accent, 255)
+          } else {
+            col(look.fg, 60)
+          };
+          self.rect(c, tx, ty, tw, th, th / 2.0, bg_color);
+          let knob = th - 4.0 * d;
+          let pressed = self.press.map_or(false, |(px, py)| {
+            px >= x0 && px < x0 + cw && py + self.scroll >= y && py + self.scroll < y + rh && py > VIEW_TOP * d
+          });
+          let kw = if pressed { knob * 1.8 } else { knob * 1.55 };
+          let kx = if *on { tx + tw - kw - 2.0 * d } else { tx + 2.0 * d };
+          if pressed {
+            self.glass_knob(c, kx, ty + 2.0 * d, kw, knob);
+          } else {
+            self.rect(
+              c,
+              kx,
+              ty + 2.0 * d,
+              kw,
+              knob,
+              knob / 2.0,
+              Color {
+                A: if *inactive { 150 } else { 255 },
+                R: 255,
+                G: 255,
+                B: 255,
+              },
+            );
+          }
+          if !*inactive {
+            self.region(x0, y, cw, rh, *act);
+          }
         }
         RowDef::Seg(label, opts, sel) => {
           self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
@@ -1041,6 +1307,27 @@ impl Win {
           );
           self.region(bx, y, bw, rh, Action::EditText(*field));
         }
+        RowDef::List(label, items, act) => {
+          self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
+          let item_count = items.len();
+          let hint = if item_count == 0 { "(kosong)" } else { "" };
+          self.text(c, hint, rx, y + (rh - 17.0 * d) / 2.0, 12.5, 400, look.fg, 0.7, 2);
+          let (bw, bh) = (32.0 * d, 24.0 * d);
+          let (bx, by) = (rx - bw - 40.0 * d, y + (rh - bh) / 2.0);
+          self.rect(c, bx, by, bw, bh, bh / 2.0, col(look.fg, 50));
+          self.text(
+            c,
+            &format!("{} items", item_count),
+            bx + bw / 2.0,
+            by + (bh - 14.0 * d) / 2.0,
+            11.0,
+            500,
+            [255, 255, 255],
+            0.9,
+            1,
+          );
+          self.region(bx, y, bw + 40.0 * d, rh, *act);
+        }
         RowDef::Pick(label, value, act) => {
           self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
           let vw = (measure(
@@ -1158,6 +1445,138 @@ impl Win {
           ],
         ),
         (
+          Some(prefs::tr("Sistem")),
+          vec![
+            RowDef::Seg(
+              prefs::tr("Metode start saat boot"),
+              vec![
+                (prefs::tr("Jangan start saat boot"), Action::StartMethod(0)),
+                (prefs::tr("Registry"), Action::StartMethod(1)),
+                (prefs::tr("Scheduled Task"), Action::StartMethod(2)),
+              ],
+              s.extra.start_method as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Sembunyikan taskbar saat boot"),
+              vec![
+                (prefs::tr("Tidak ada"), Action::TaskbarScope(0)),
+                (prefs::tr("Semua layar"), Action::TaskbarScope(1)),
+                (prefs::tr("Layar Dock"), Action::TaskbarScope(2)),
+              ],
+              s.extra.taskbar_scope as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Font tampilan"),
+              vec![
+                (prefs::tr("Segoe UI"), Action::DisplayFont(0)),
+                (prefs::tr("Arial"), Action::DisplayFont(1)),
+                (prefs::tr("Inter"), Action::DisplayFont(2)),
+                (prefs::tr("Roboto"), Action::DisplayFont(3)),
+                (prefs::tr("System UI"), Action::DisplayFont(4)),
+              ],
+              s.extra.display_font as usize,
+            ),
+            RowDef::Slider(
+              prefs::tr("Skala font global"),
+              ((s.extra.font_scale as f32 - 75.0) / 75.0 * 100.0).round() as u8,
+              12,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Animasi Jendela")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Hapus jendela program yang dikecualikan"),
+              s.extra.minimize_excluded_windows,
+              Action::MinimizeExcludedWindows,
+            ),
+            RowDef::Seg(
+              prefs::tr("Efek animasi"),
+              vec![
+                (prefs::tr("Scale"), Action::WindowAnimEffect(0)),
+                (prefs::tr("Fade"), Action::WindowAnimEffect(1)),
+                (prefs::tr("Slide"), Action::WindowAnimEffect(2)),
+                (prefs::tr("Zoom"), Action::WindowAnimEffect(3)),
+              ],
+              s.extra.window_anim_effect as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Kecepatan animasi"),
+              vec![
+                (prefs::tr("0.5x"), Action::WindowAnimSpeed(0)),
+                (prefs::tr("0.75x"), Action::WindowAnimSpeed(1)),
+                (prefs::tr("1.0x"), Action::WindowAnimSpeed(2)),
+                (prefs::tr("1.25x"), Action::WindowAnimSpeed(3)),
+                (prefs::tr("1.5x"), Action::WindowAnimSpeed(4)),
+              ],
+              s.extra.window_anim_speed as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Layar")),
+          vec![
+            RowDef::Slider(prefs::tr("Kecerahan layar"), s.extra.screen_brightness as u8, 12),
+            RowDef::Toggle(prefs::tr("Night light"), s.extra.night_light, Action::NightLight),
+            RowDef::Slider(
+              prefs::tr("Intensitas night light"),
+              s.extra.night_light_intensity as u8,
+              12,
+            ),
+            RowDef::Seg(
+              prefs::tr("Target layar"),
+              vec![
+                (prefs::tr("Semua layar"), Action::ScreenTarget(0)),
+                (prefs::tr("Layar utama"), Action::ScreenTarget(1)),
+                (prefs::tr("Layar aktif"), Action::ScreenTarget(2)),
+              ],
+              s.extra.screen_target as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Program")),
+          vec![
+            RowDef::Text(
+              prefs::tr("Program yang dikecualikan"),
+              {
+                let lists = prefs::lists();
+                lists.to_text(ListKind::ExcludedPrograms)
+              },
+              "pisahkan dengan titik koma".to_string(),
+              8,
+            ),
+            RowDef::Text(
+              prefs::tr("Program blacklist"),
+              {
+                let lists = prefs::lists();
+                lists.to_text(ListKind::ProgramBlacklist)
+              },
+              "pisahkan dengan titik koma".to_string(),
+              9,
+            ),
+            RowDef::Text(
+              prefs::tr("Blacklist animasi minimize"),
+              {
+                let lists = prefs::lists();
+                lists.to_text(ListKind::MinimizeBlacklist)
+              },
+              "pisahkan dengan titik koma".to_string(),
+              10,
+            ),
+            RowDef::Text(
+              prefs::tr("Program Start Menu yang dihapus"),
+              {
+                let lists = prefs::lists();
+                lists.to_text(ListKind::DeletedStartMenuPrograms)
+              },
+              "pisahkan dengan titik koma".to_string(),
+              11,
+            ),
+          ],
+        ),
+        (
           Some(prefs::tr("Tentang")),
           vec![RowDef::Pick(
             prefs::tr("Dibuat oleh kreativa.dev"),
@@ -1193,6 +1612,248 @@ impl Win {
             RowDef::Slider(prefs::tr("Zoom saat hover"), s.dock_zoom, 6),
             RowDef::Slider(prefs::tr("Jarak dari tepi bawah"), s.dock_margin, 7),
             RowDef::Slider(prefs::tr("Kebulatan sudut"), s.dock_round, 2),
+          ],
+        ),
+        (
+          Some(prefs::tr("Tampilan & Perilaku Dock")),
+          vec![
+            RowDef::Seg(
+              prefs::tr("Efek ikon"),
+              vec![
+                (prefs::tr("Tidak ada"), Action::DockIconEffect(0)),
+                (prefs::tr("Scaling"), Action::DockIconEffect(1)),
+                (prefs::tr("Select"), Action::DockIconEffect(2)),
+                (prefs::tr("Light"), Action::DockIconEffect(3)),
+                (prefs::tr("Scaling Light"), Action::DockIconEffect(4)),
+                (prefs::tr("Select Light"), Action::DockIconEffect(5)),
+              ],
+              s.extra.dock_icon_effect as usize,
+            ),
+            RowDef::Slider(
+              prefs::tr("Intensitas cahaya ikon"),
+              s.extra.dock_icon_light_intensity as u8,
+              15,
+            ),
+            RowDef::Slider(
+              prefs::tr("Intensitas cahaya latar ikon"),
+              s.extra.dock_icon_background_light as u8,
+              16,
+            ),
+            RowDef::Seg(
+              prefs::tr("Posisi di layar"),
+              vec![
+                (prefs::tr("Kiri"), Action::DockPosition(0)),
+                (prefs::tr("Bawah"), Action::DockPosition(1)),
+                (prefs::tr("Kanan"), Action::DockPosition(2)),
+                (prefs::tr("Atas"), Action::DockPosition(3)),
+              ],
+              s.extra.dock_position as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Tampilan di layar"),
+              vec![
+                (prefs::tr("Layar utama"), Action::DockDisplay(0)),
+                (prefs::tr("Setiap layar terdeteksi"), Action::DockDisplay(1)),
+              ],
+              s.extra.dock_display as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Launchpad")),
+          vec![
+            RowDef::Slider(prefs::tr("Ukuran ikon"), s.extra.launchpad_icon_size as u8, 17),
+            RowDef::Slider(prefs::tr("Jarak horizontal"), s.extra.launchpad_h_spacing as u8, 18),
+            RowDef::Slider(prefs::tr("Jarak vertikal"), s.extra.launchpad_v_spacing as u8, 19),
+            RowDef::Seg(
+              prefs::tr("Sumber"),
+              vec![
+                (prefs::tr("Ditambahkan"), Action::LaunchpadSources(0)),
+                (prefs::tr("Ditambahkan & Start Menu"), Action::LaunchpadSources(1)),
+                (prefs::tr("Ditambahkan & Desktop"), Action::LaunchpadSources(2)),
+                (prefs::tr("Semua"), Action::LaunchpadSources(3)),
+              ],
+              s.extra.launchpad_sources as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Tampilan"),
+              vec![
+                (prefs::tr("Layar utama"), Action::LaunchpadDisplay(0)),
+                (prefs::tr("Semua layar"), Action::LaunchpadDisplay(1)),
+                (prefs::tr("Layar 1"), Action::LaunchpadDisplay(2)),
+                (prefs::tr("Layar 2"), Action::LaunchpadDisplay(3)),
+              ],
+              s.extra.launchpad_display as usize,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Ikuti Dock"),
+              s.extra.launchpad_follow_dock,
+              Action::LaunchpadFollowDock,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Lanjutan Dock")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Klik ganda folder"),
+              s.extra.dock_dblclick_folder,
+              Action::DockDblClickFolder,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Sembunyikan tombol folder terbuka"),
+              s.extra.dock_hide_open_folder_button,
+              Action::DockHideOpenFolder,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Kunci dragging"),
+              s.extra.dock_lock_dragging,
+              Action::DockLockDrag,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan label"),
+              s.extra.dock_show_labels,
+              Action::DockShowLabels,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Animasi peluncuran"),
+              s.extra.dock_animate_launch,
+              Action::DockAnimateLaunch,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Cegah penutupan"),
+              s.extra.dock_prevent_cover,
+              Action::DockPreventCover,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan indikator"),
+              s.extra.dock_show_indicators,
+              Action::DockShowIndicators,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan yang tidak disematkan"),
+              s.extra.dock_show_unpinned,
+              Action::DockShowUnpinned,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Pisahkan yang tidak disematkan"),
+              s.extra.dock_separate_unpinned,
+              Action::DockSeparateUnpinned,
+            ),
+            RowDef::Seg(
+              prefs::tr("Jendela deteksi"),
+              vec![
+                (prefs::tr("Semua jendela program"), Action::DockDetection(0)),
+                (prefs::tr("Jendela program saat ini"), Action::DockDetection(1)),
+              ],
+              s.extra.dock_detection as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Efek tersembunyi"),
+              vec![
+                (prefs::tr("Geser"), Action::DockHiddenEffect(0)),
+                (prefs::tr("Memudar"), Action::DockHiddenEffect(1)),
+              ],
+              s.extra.dock_hidden_effect as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Pemicu aktivasi"),
+              vec![
+                (prefs::tr("Tepi layar"), Action::DockActivationTrigger(0)),
+                (prefs::tr("Bar aktivasi"), Action::DockActivationTrigger(1)),
+                (prefs::tr("Tepi layar & Bar aktivasi"), Action::DockActivationTrigger(2)),
+              ],
+              s.extra.dock_activation_trigger as usize,
+            ),
+            RowDef::Slider(prefs::tr("Lebar bar aktivasi"), s.extra.dock_act_bar_width as u8, 20),
+            RowDef::Slider(prefs::tr("Tinggi bar aktivasi"), s.extra.dock_act_bar_height as u8, 21),
+            RowDef::Slider(prefs::tr("Jarak bar aktivasi"), s.extra.dock_act_bar_distance as u8, 22),
+            RowDef::Slider(
+              prefs::tr("Delay aktivasi mouse"),
+              (s.extra.dock_activation_delay / 6) as u8,
+              23,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Efek Minimize")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Gunakan minimize Nexora"),
+              s.extra.use_nexora_minimize,
+              Action::UseNexoraMinimize,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Jangan animasikan minimize"),
+              s.extra.disable_minimize_anim,
+              Action::DisableMinimizeAnim,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tahan Shift untuk perlambat"),
+              s.extra.shift_slow_anim,
+              Action::ShiftSlowAnim,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Minimize ke ikon"),
+              s.extra.minimize_into_icon,
+              Action::MinimizeIntoIcon,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Konten minimize dinamis"),
+              s.extra.dynamic_minimize_content,
+              Action::DynamicMinimizeContent,
+            ),
+            RowDef::Seg(
+              prefs::tr("Posisi ikon diminimalkan"),
+              vec![
+                (prefs::tr("Di samping ikon"), Action::MinimizedIconPos(0)),
+                (prefs::tr("Independen"), Action::MinimizedIconPos(1)),
+                (prefs::tr("Pemisah"), Action::MinimizedIconPos(2)),
+              ],
+              s.extra.minimized_icon_position as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Kecepatan animasi minimize"),
+              vec![
+                (prefs::tr("0.5x"), Action::MinimizeAnimSpeed(0)),
+                (prefs::tr("0.75x"), Action::MinimizeAnimSpeed(1)),
+                (prefs::tr("1.0x"), Action::MinimizeAnimSpeed(2)),
+                (prefs::tr("1.25x"), Action::MinimizeAnimSpeed(3)),
+                (prefs::tr("1.5x"), Action::MinimizeAnimSpeed(4)),
+              ],
+              s.extra.minimize_anim_speed as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Preview Jendela")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Aktifkan preview jendela"),
+              s.extra.window_previews,
+              Action::WindowPreviews,
+            ),
+            RowDef::Slider(
+              prefs::tr("Ukuran preview"),
+              ((s.extra.preview_size - 120) / 4) as u8,
+              24,
+            ),
+            RowDef::Slider(prefs::tr("Delay preview"), (s.extra.preview_delay / 6) as u8, 25),
+            RowDef::Toggle(
+              prefs::tr("Nama aplikasi"),
+              s.extra.preview_app_name,
+              Action::PreviewAppName,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tombol kontrol jendela"),
+              s.extra.preview_controls,
+              Action::PreviewControls,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan preview native"),
+              s.extra.preview_native,
+              Action::PreviewNative,
+            ),
           ],
         ),
       ],
@@ -1473,6 +2134,61 @@ impl Win {
               RowDef::Toggle(prefs::tr("Refraksi tepi kaca (Deck)"), s.refraction, Action::Refraction),
             ],
           ),
+          (
+            Some(prefs::tr("Kustomisasi")),
+            vec![
+              RowDef::Toggle(
+                prefs::tr("Blur Dock kustom"),
+                s.extra.custom_dock_blur,
+                Action::CustomDockBlur,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Refleksi yang disematkan"),
+                s.extra.pinned_reflections,
+                Action::PinnedReflections,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Label ikon kustom"),
+                s.extra.custom_icon_labels,
+                Action::CustomIconLabels,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Menu konteks kustom"),
+                s.extra.custom_context_menus,
+                Action::CustomContextMenus,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Grid folder kustom"),
+                s.extra.custom_folder_grid,
+                Action::CustomFolderGrid,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Menu Nexora kustom"),
+                s.extra.custom_nexora_menus,
+                Action::CustomNexoraMenus,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Blur Menu Bar kustom"),
+                s.extra.custom_finder_blur,
+                Action::CustomFinderBlur,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Blur Launchpad kustom"),
+                s.extra.launchpad_custom_blur,
+                Action::LaunchpadCustomBlur,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Tampilkan Launchpad di atas jendela"),
+                s.extra.launchpad_above_windows,
+                Action::LaunchpadAboveWindows,
+              ),
+              RowDef::Toggle(
+                prefs::tr("Launchpad blur latar belakang"),
+                s.extra.launchpad_blur_background,
+                Action::LaunchpadBlurBackground,
+              ),
+            ],
+          ),
         ]
       }
       5 => vec![
@@ -1526,6 +2242,262 @@ impl Win {
             RowDef::Slider(prefs::tr("Jarak antar kartu"), s.stage_gap, 9),
             RowDef::Slider(prefs::tr("Jumlah kartu"), s.stage_count, 10),
             RowDef::Slider(prefs::tr("Kecepatan animasi"), s.stage_speed, 11),
+          ],
+        ),
+        (
+          Some(prefs::tr("Stage Manager")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon Stage Manager"),
+              s.extra.stage_icon,
+              Action::StageIcon,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Blur ikon jendela latar"),
+              s.extra.stage_blur_icons,
+              Action::StageBlurIcons,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan preview jendela native"),
+              s.extra.stage_native_preview,
+              Action::StageNativePreview,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Pertahankan Batas Jendela"),
+              s.extra.stage_keep_border,
+              Action::StageKeepBorder,
+            ),
+            RowDef::Seg(
+              prefs::tr("Mode Tampilan Tersembunyi Daftar Jendela"),
+              vec![
+                (prefs::tr("Default"), Action::StageHiddenMode(0)),
+                (prefs::tr("Selalu tampilkan"), Action::StageHiddenMode(1)),
+                (prefs::tr("Selalu sembunyi"), Action::StageHiddenMode(2)),
+              ],
+              s.extra.stage_hidden_mode as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Menu Bar")),
+          vec![
+            RowDef::Toggle(prefs::tr("Ikon menu"), s.extra.finder_menu_icon, Action::FinderMenuIcon),
+            RowDef::Toggle(prefs::tr("Auto-Hide"), s.extra.finder_auto_hide, Action::FinderAutoHide),
+            RowDef::Toggle(
+              prefs::tr("Konfirmasi shutdown"),
+              s.extra.finder_shutdown_confirmation,
+              Action::FinderShutdownConfirm,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Jendela maksimal memengaruhi tampilan"),
+              s.extra.finder_maximized_affects_appearance,
+              Action::FinderMaximizedAffects,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tutup maksimal di sudut"),
+              s.extra.finder_close_maximized_on_corner,
+              Action::FinderCloseMaximizedCorner,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Kunci dragging ikon tray"),
+              s.extra.finder_lock_tray_dragging,
+              Action::FinderLockTrayDrag,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan opsi jendela"),
+              s.extra.finder_window_options,
+              Action::FinderWindowOptions,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon tray berwarna"),
+              s.extra.finder_colored_tray_icons,
+              Action::FinderColoredTray,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan menu metode input"),
+              s.extra.finder_input_method_menu,
+              Action::FinderInputMethod,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon pencarian"),
+              s.extra.finder_search_icon,
+              Action::FinderSearchIcon,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon akun"),
+              s.extra.finder_account_icon,
+              Action::FinderAccountIcon,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon pemutaran media"),
+              s.extra.finder_media_playback_icon,
+              Action::FinderMediaPlayback,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan menu lirik"),
+              s.extra.finder_lyrics_menu,
+              Action::FinderLyricsMenu,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan Lirik Pemain Warna"),
+              s.extra.finder_color_player_lyrics,
+              Action::FinderColorLyrics,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Notifikasi")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan notifikasi desktop"),
+              s.extra.finder_show_notifications,
+              Action::FinderShowNotif,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Suara notifikasi"),
+              s.extra.finder_notification_sounds,
+              Action::FinderNotifSounds,
+            ),
+            RowDef::Slider(
+              prefs::tr("Durasi tampilan notifikasi"),
+              s.extra.finder_notification_seconds as u8,
+              26,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Waktu & Tanggal")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan waktu"),
+              s.extra.finder_show_time,
+              Action::FinderShowTime,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan tanggal"),
+              s.extra.finder_show_date,
+              Action::FinderShowDate,
+            ),
+            RowDef::Seg(
+              prefs::tr("Format tanggal"),
+              vec![
+                (prefs::tr("Pendek"), Action::FinderDateFormat(0)),
+                (prefs::tr("Panjang"), Action::FinderDateFormat(1)),
+                (prefs::tr("ISO"), Action::FinderDateFormat(2)),
+              ],
+              s.extra.finder_date_format as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Audio")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan kontrol volume"),
+              s.extra.finder_show_volume,
+              Action::FinderShowVolume,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan pemilih output audio"),
+              s.extra.finder_show_audio_output,
+              Action::FinderShowAudioOutput,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan kontrol pemutaran media"),
+              s.extra.finder_show_media_controls,
+              Action::FinderShowMediaControls,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Tampilan")),
+          vec![RowDef::Toggle(
+            prefs::tr("Tampilkan kontrol kecerahan tampilan"),
+            s.extra.finder_show_brightness,
+            Action::FinderShowBrightness,
+          )],
+        ),
+        (
+          Some(prefs::tr("Status Hardware")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan status Wi-Fi"),
+              s.extra.finder_show_wifi,
+              Action::FinderShowWifi,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan status Bluetooth"),
+              s.extra.finder_show_bluetooth,
+              Action::FinderShowBluetooth,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon status perangkat"),
+              s.extra.finder_show_hardware_icons,
+              Action::FinderShowHardware,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Baterai")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Tampilkan Menu Status Baterai"),
+              s.extra.finder_show_battery_menu,
+              Action::FinderShowBattery,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan waktu baterai tersisa"),
+              s.extra.finder_remaining_battery_time,
+              Action::FinderRemainingBattery,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Otomatis ganti mode daya"),
+              s.extra.finder_auto_power_modes,
+              Action::FinderAutoPowerModes,
+            ),
+            RowDef::Seg(
+              prefs::tr("Mode daya saat dicolokkan"),
+              vec![
+                (prefs::tr("Seimbang"), Action::FinderPowerPlugged(0)),
+                (prefs::tr("Performa terbaik"), Action::FinderPowerPlugged(1)),
+                (prefs::tr("Efisiensi daya terbaik"), Action::FinderPowerPlugged(2)),
+              ],
+              s.extra.finder_power_mode_plugged as usize,
+            ),
+            RowDef::Seg(
+              prefs::tr("Mode daya saat menggunakan baterai"),
+              vec![
+                (prefs::tr("Seimbang"), Action::FinderPowerBattery(0)),
+                (prefs::tr("Performa terbaik"), Action::FinderPowerBattery(1)),
+                (prefs::tr("Efisiensi daya terbaik"), Action::FinderPowerBattery(2)),
+              ],
+              s.extra.finder_power_mode_battery as usize,
+            ),
+          ],
+        ),
+        (
+          Some(prefs::tr("Tray")),
+          vec![
+            RowDef::Toggle(
+              prefs::tr("Selalu tampilkan semua ikon tray di Menu Bar"),
+              s.extra.tray_all_finder,
+              Action::TrayAllFinder,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Selalu tampilkan semua ikon tray di Dock"),
+              s.extra.tray_all_dock,
+              Action::TrayAllDock,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Tampilkan ikon tray sistem sendiri di Menu Bar"),
+              s.extra.tray_system_finder,
+              Action::TraySystemFinder,
+            ),
+            RowDef::Slider(
+              prefs::tr("Waktu tampilan ikon tray baru"),
+              s.extra.new_tray_icon_seconds as u8,
+              27,
+            ),
           ],
         ),
       ],
@@ -1669,16 +2641,38 @@ impl Win {
       0,
     );
 
-    let pages: [(&'static str, &'static str, [u8; 3], u8); 9] = [
-      (prefs::tr("Umum"), "\u{E713}", [142, 142, 147], 0),
-      (prefs::tr("Deck"), "\u{E7C4}", [10, 132, 255], 1),
-      (prefs::tr("Visor"), "\u{E7F4}", [58, 58, 60], 2),
-      (prefs::tr("Menu Bar"), "\u{E700}", [90, 200, 250], 3),
-      (prefs::tr("Tampilan"), "\u{E790}", [88, 86, 214], 4),
-      (prefs::tr("Scene"), "\u{E8A0}", [48, 209, 88], 5),
-      (prefs::tr("Screen Corners"), "\u{E73F}", [175, 82, 222], 6),
-      (prefs::tr("Quick Search"), "\u{E721}", [255, 149, 10], 7),
-      (prefs::tr("Widget"), "\u{E737}", [0, 122, 255], 8),
+    let pages: [(&'static str, &'static str, [u8; 3], u8); 6] = [
+      (
+        Page::General.name(),
+        Page::General.icon(),
+        [142, 142, 147],
+        Page::General.index(),
+      ),
+      (Page::Dock.name(), Page::Dock.icon(), [10, 132, 255], Page::Dock.index()),
+      (
+        Page::Island.name(),
+        Page::Island.icon(),
+        [58, 58, 60],
+        Page::Island.index(),
+      ),
+      (
+        Page::Stage.name(),
+        Page::Stage.icon(),
+        [48, 209, 88],
+        Page::Stage.index(),
+      ),
+      (
+        Page::Appearance.name(),
+        Page::Appearance.icon(),
+        [88, 86, 214],
+        Page::Appearance.index(),
+      ),
+      (
+        Page::Advanced.name(),
+        Page::Advanced.icon(),
+        [175, 82, 222],
+        Page::Advanced.index(),
+      ),
     ];
     let mut sy = 140.0 * d;
     self.side.clear();
@@ -2018,13 +3012,29 @@ impl Win {
       9 => s.stage_gap = v,
       10 => s.stage_count = v,
       11 => s.stage_speed = v,
+      12 => s.extra.font_scale = ((v as f32 / 100.0) * 75.0 + 75.0).round() as u16,
+      13 => s.extra.screen_brightness = v as u16,
+      14 => s.extra.night_light_intensity = v as u16,
+      15 => s.extra.dock_icon_light_intensity = v as u16,
+      16 => s.extra.dock_icon_background_light = v as u16,
+      17 => s.extra.launchpad_icon_size = v as u16,
+      18 => s.extra.launchpad_h_spacing = v as u16,
+      19 => s.extra.launchpad_v_spacing = v as u16,
+      20 => s.extra.dock_act_bar_width = v as u16,
+      21 => s.extra.dock_act_bar_height = v as u16,
+      22 => s.extra.dock_act_bar_distance = v as u16,
+      23 => s.extra.dock_activation_delay = (v as u16) * 6,
+      24 => s.extra.preview_size = (v as u16) * 4 + 120,
+      25 => s.extra.preview_delay = (v as u16) * 6,
+      26 => s.extra.finder_notification_seconds = v as u16,
+      27 => s.extra.new_tray_icon_seconds = v as u16,
       _ => s.dock_margin = v,
     });
   }
 }
 
-fn hot_label(a: nexora_core::settings::HotAction) -> &'static str {
-  use nexora_core::settings::HotAction::*;
+fn hot_label(a: HotAction) -> &'static str {
+  use HotAction::*;
   match a {
     None => "Tidak ada",
     Mission => "Overview",
@@ -2033,6 +3043,7 @@ fn hot_label(a: nexora_core::settings::HotAction) -> &'static str {
     Stage => "Scene",
     Notifications => "Pusat Notifikasi",
     Lock => "Kunci Layar",
+    _ => a.key(), // Show the key name for future variants (D-16.2)
   }
 }
 
@@ -2261,11 +3272,23 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
                 w.commit_edit();
               }
               let s = prefs::get();
-              w.edit_buf = if f == 0 {
-                s.greet_name.as_str().to_string()
+              if f >= 8 && f <= 11 {
+                let kind = match f {
+                  8 => ListKind::ExcludedPrograms,
+                  9 => ListKind::ProgramBlacklist,
+                  10 => ListKind::MinimizeBlacklist,
+                  11 => ListKind::DeletedStartMenuPrograms,
+                  _ => return,
+                };
+                let lists = prefs::lists();
+                w.edit_buf = lists.to_text(kind);
               } else {
-                s.greet_text.as_str().to_string()
-              };
+                w.edit_buf = if f == 0 {
+                  s.greet_name.as_str().to_string()
+                } else {
+                  s.greet_text.as_str().to_string()
+                };
+              }
               w.edit = Some(f);
               w.render();
             }
@@ -2319,6 +3342,202 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::BatteryPct(v)) => prefs::update(|s| s.battery_pct = v),
         Some(Action::WidgetGallery) => crate::widgets::open_gallery(),
         Some(Action::NotchShape(b)) => prefs::update(|s| s.notch_island = b),
+        // M2 DLB handlers
+        Some(Action::DockIconEffect(v)) => prefs::update(|s| s.extra.dock_icon_effect = v),
+        Some(Action::DockIconLightInt(v)) => prefs::update(|s| s.extra.dock_icon_light_intensity = v as u16),
+        Some(Action::DockIconBgLightInt(v)) => prefs::update(|s| s.extra.dock_icon_background_light = v as u16),
+        Some(Action::DockPosition(v)) => prefs::update(|s| s.extra.dock_position = v),
+        Some(Action::DockDisplay(v)) => prefs::update(|s| s.extra.dock_display = v as u16),
+        // M2 DLP handlers
+        Some(Action::LaunchpadIconSize(v)) => prefs::update(|s| s.extra.launchpad_icon_size = v as u16),
+        Some(Action::LaunchpadHSpacing(v)) => prefs::update(|s| s.extra.launchpad_h_spacing = v as u16),
+        Some(Action::LaunchpadVSpacing(v)) => prefs::update(|s| s.extra.launchpad_v_spacing = v as u16),
+        Some(Action::LaunchpadSources(v)) => prefs::update(|s| s.extra.launchpad_sources = v),
+        Some(Action::LaunchpadDisplay(v)) => prefs::update(|s| s.extra.launchpad_display = v as u16),
+        Some(Action::LaunchpadFollowDock) => {
+          prefs::update(|s| s.extra.launchpad_follow_dock = !s.extra.launchpad_follow_dock)
+        }
+        // M2 DAD handlers
+        Some(Action::DockDblClickFolder) => {
+          prefs::update(|s| s.extra.dock_dblclick_folder = !s.extra.dock_dblclick_folder)
+        }
+        Some(Action::DockHideOpenFolder) => {
+          prefs::update(|s| s.extra.dock_hide_open_folder_button = !s.extra.dock_hide_open_folder_button)
+        }
+        Some(Action::DockLockDrag) => prefs::update(|s| s.extra.dock_lock_dragging = !s.extra.dock_lock_dragging),
+        Some(Action::DockShowLabels) => prefs::update(|s| s.extra.dock_show_labels = !s.extra.dock_show_labels),
+        Some(Action::DockAnimateLaunch) => {
+          prefs::update(|s| s.extra.dock_animate_launch = !s.extra.dock_animate_launch)
+        }
+        Some(Action::DockPreventCover) => prefs::update(|s| s.extra.dock_prevent_cover = !s.extra.dock_prevent_cover),
+        Some(Action::DockShowIndicators) => {
+          prefs::update(|s| s.extra.dock_show_indicators = !s.extra.dock_show_indicators)
+        }
+        Some(Action::DockShowUnpinned) => prefs::update(|s| s.extra.dock_show_unpinned = !s.extra.dock_show_unpinned),
+        Some(Action::DockSeparateUnpinned) => {
+          prefs::update(|s| s.extra.dock_separate_unpinned = !s.extra.dock_separate_unpinned)
+        }
+        Some(Action::DockDetection(v)) => prefs::update(|s| s.extra.dock_detection = v),
+        Some(Action::DockHiddenEffect(v)) => prefs::update(|s| s.extra.dock_hidden_effect = v),
+        Some(Action::DockActivationTrigger(v)) => prefs::update(|s| s.extra.dock_activation_trigger = v),
+        Some(Action::DockActBarWidth(v)) => prefs::update(|s| s.extra.dock_act_bar_width = v as u16),
+        Some(Action::DockActBarHeight(v)) => prefs::update(|s| s.extra.dock_act_bar_height = v as u16),
+        Some(Action::DockActBarDistance(v)) => prefs::update(|s| s.extra.dock_act_bar_distance = v as u16),
+        Some(Action::DockActivationDelay(v)) => prefs::update(|s| s.extra.dock_activation_delay = v as u16),
+        // M2 DMN handlers
+        Some(Action::UseNexoraMinimize) => {
+          prefs::update(|s| s.extra.use_nexora_minimize = !s.extra.use_nexora_minimize)
+        }
+        Some(Action::DisableMinimizeAnim) => {
+          prefs::update(|s| s.extra.disable_minimize_anim = !s.extra.disable_minimize_anim)
+        }
+        Some(Action::ShiftSlowAnim) => prefs::update(|s| s.extra.shift_slow_anim = !s.extra.shift_slow_anim),
+        Some(Action::MinimizeIntoIcon) => prefs::update(|s| s.extra.minimize_into_icon = !s.extra.minimize_into_icon),
+        Some(Action::DynamicMinimizeContent) => {
+          prefs::update(|s| s.extra.dynamic_minimize_content = !s.extra.dynamic_minimize_content)
+        }
+        Some(Action::MinimizedIconPos(v)) => prefs::update(|s| s.extra.minimized_icon_position = v),
+        Some(Action::MinimizeAnimSpeed(v)) => prefs::update(|s| s.extra.minimize_anim_speed = v),
+        // M2 DPV handlers
+        Some(Action::WindowPreviews) => prefs::update(|s| s.extra.window_previews = !s.extra.window_previews),
+        Some(Action::PreviewSize(v)) => prefs::update(|s| s.extra.preview_size = v as u16),
+        Some(Action::PreviewDelay(v)) => prefs::update(|s| s.extra.preview_delay = v as u16),
+        Some(Action::PreviewAppName) => prefs::update(|s| s.extra.preview_app_name = !s.extra.preview_app_name),
+        Some(Action::PreviewControls) => prefs::update(|s| s.extra.preview_controls = !s.extra.preview_controls),
+        Some(Action::PreviewNative) => prefs::update(|s| s.extra.preview_native = !s.extra.preview_native),
+        // M2 STG handlers
+        Some(Action::StageIcon) => prefs::update(|s| s.extra.stage_icon = !s.extra.stage_icon),
+        Some(Action::StageBlurIcons) => prefs::update(|s| s.extra.stage_blur_icons = !s.extra.stage_blur_icons),
+        Some(Action::StageNativePreview) => {
+          prefs::update(|s| s.extra.stage_native_preview = !s.extra.stage_native_preview)
+        }
+        Some(Action::StageKeepBorder) => prefs::update(|s| s.extra.stage_keep_border = !s.extra.stage_keep_border),
+        Some(Action::StageHiddenMode(v)) => prefs::update(|s| s.extra.stage_hidden_mode = v),
+        // M2 FLB handlers
+        Some(Action::FinderMenuIcon) => prefs::update(|s| s.extra.finder_menu_icon = !s.extra.finder_menu_icon),
+        Some(Action::FinderAutoHide) => prefs::update(|s| s.extra.finder_auto_hide = !s.extra.finder_auto_hide),
+        Some(Action::FinderShutdownConfirm) => {
+          prefs::update(|s| s.extra.finder_shutdown_confirmation = !s.extra.finder_shutdown_confirmation)
+        }
+        Some(Action::FinderMaximizedAffects) => {
+          prefs::update(|s| s.extra.finder_maximized_affects_appearance = !s.extra.finder_maximized_affects_appearance)
+        }
+        Some(Action::FinderCloseMaximizedCorner) => {
+          prefs::update(|s| s.extra.finder_close_maximized_on_corner = !s.extra.finder_close_maximized_on_corner)
+        }
+        Some(Action::FinderLockTrayDrag) => {
+          prefs::update(|s| s.extra.finder_lock_tray_dragging = !s.extra.finder_lock_tray_dragging)
+        }
+        Some(Action::FinderWindowOptions) => {
+          prefs::update(|s| s.extra.finder_window_options = !s.extra.finder_window_options)
+        }
+        Some(Action::FinderColoredTray) => {
+          prefs::update(|s| s.extra.finder_colored_tray_icons = !s.extra.finder_colored_tray_icons)
+        }
+        Some(Action::FinderInputMethod) => {
+          prefs::update(|s| s.extra.finder_input_method_menu = !s.extra.finder_input_method_menu)
+        }
+        Some(Action::FinderSearchIcon) => prefs::update(|s| s.extra.finder_search_icon = !s.extra.finder_search_icon),
+        Some(Action::FinderAccountIcon) => {
+          prefs::update(|s| s.extra.finder_account_icon = !s.extra.finder_account_icon)
+        }
+        Some(Action::FinderMediaPlayback) => {
+          prefs::update(|s| s.extra.finder_media_playback_icon = !s.extra.finder_media_playback_icon)
+        }
+        Some(Action::FinderLyricsMenu) => prefs::update(|s| s.extra.finder_lyrics_menu = !s.extra.finder_lyrics_menu),
+        Some(Action::FinderColorLyrics) => {
+          prefs::update(|s| s.extra.finder_color_player_lyrics = !s.extra.finder_color_player_lyrics)
+        }
+        // M2 FNO handlers
+        Some(Action::FinderShowNotif) => {
+          prefs::update(|s| s.extra.finder_show_notifications = !s.extra.finder_show_notifications)
+        }
+        Some(Action::FinderNotifSounds) => {
+          prefs::update(|s| s.extra.finder_notification_sounds = !s.extra.finder_notification_sounds)
+        }
+        Some(Action::FinderNotifDuration(v)) => prefs::update(|s| s.extra.finder_notification_seconds = v as u16),
+        // M2 FTD handlers
+        Some(Action::FinderShowTime) => prefs::update(|s| s.extra.finder_show_time = !s.extra.finder_show_time),
+        Some(Action::FinderShowDate) => prefs::update(|s| s.extra.finder_show_date = !s.extra.finder_show_date),
+        Some(Action::FinderDateFormat(v)) => prefs::update(|s| s.extra.finder_date_format = v),
+        // M2 FAU handlers
+        Some(Action::FinderShowVolume) => prefs::update(|s| s.extra.finder_show_volume = !s.extra.finder_show_volume),
+        Some(Action::FinderShowAudioOutput) => {
+          prefs::update(|s| s.extra.finder_show_audio_output = !s.extra.finder_show_audio_output)
+        }
+        Some(Action::FinderShowMediaControls) => {
+          prefs::update(|s| s.extra.finder_show_media_controls = !s.extra.finder_show_media_controls)
+        }
+        // M2 FDI handlers
+        Some(Action::FinderShowBrightness) => {
+          prefs::update(|s| s.extra.finder_show_brightness = !s.extra.finder_show_brightness)
+        }
+        // M2 FHW handlers
+        Some(Action::FinderShowWifi) => prefs::update(|s| s.extra.finder_show_wifi = !s.extra.finder_show_wifi),
+        Some(Action::FinderShowBluetooth) => {
+          prefs::update(|s| s.extra.finder_show_bluetooth = !s.extra.finder_show_bluetooth)
+        }
+        Some(Action::FinderShowHardware) => {
+          prefs::update(|s| s.extra.finder_show_hardware_icons = !s.extra.finder_show_hardware_icons)
+        }
+        // M2 FBA handlers
+        Some(Action::FinderShowBattery) => {
+          prefs::update(|s| s.extra.finder_show_battery_menu = !s.extra.finder_show_battery_menu)
+        }
+        Some(Action::FinderRemainingBattery) => {
+          prefs::update(|s| s.extra.finder_remaining_battery_time = !s.extra.finder_remaining_battery_time)
+        }
+        Some(Action::FinderAutoPowerModes) => {
+          prefs::update(|s| s.extra.finder_auto_power_modes = !s.extra.finder_auto_power_modes)
+        }
+        Some(Action::FinderPowerPlugged(v)) => prefs::update(|s| s.extra.finder_power_mode_plugged = v),
+        Some(Action::FinderPowerBattery(v)) => prefs::update(|s| s.extra.finder_power_mode_battery = v),
+        // M2 IAC handlers
+        Some(Action::IslandMedia) => prefs::update(|s| s.extra.notch_media = !s.extra.notch_media),
+        Some(Action::IslandShelf) => prefs::update(|s| s.extra.notch_shelf = !s.extra.notch_shelf),
+        Some(Action::IslandTimer) => prefs::update(|s| s.extra.notch_timer = !s.extra.notch_timer),
+        // M2 APP handlers
+        Some(Action::CustomDockBlur) => prefs::update(|s| s.extra.custom_dock_blur = !s.extra.custom_dock_blur),
+        Some(Action::PinnedReflections) => prefs::update(|s| s.extra.pinned_reflections = !s.extra.pinned_reflections),
+        Some(Action::CustomIconLabels) => prefs::update(|s| s.extra.custom_icon_labels = !s.extra.custom_icon_labels),
+        Some(Action::CustomContextMenus) => {
+          prefs::update(|s| s.extra.custom_context_menus = !s.extra.custom_context_menus)
+        }
+        Some(Action::CustomFolderGrid) => prefs::update(|s| s.extra.custom_folder_grid = !s.extra.custom_folder_grid),
+        Some(Action::CustomNexoraMenus) => {
+          prefs::update(|s| s.extra.custom_nexora_menus = !s.extra.custom_nexora_menus)
+        }
+        Some(Action::CustomFinderBlur) => prefs::update(|s| s.extra.custom_finder_blur = !s.extra.custom_finder_blur),
+        Some(Action::LaunchpadCustomBlur) => {
+          prefs::update(|s| s.extra.launchpad_custom_blur = !s.extra.launchpad_custom_blur)
+        }
+        Some(Action::LaunchpadAboveWindows) => {
+          prefs::update(|s| s.extra.launchpad_above_windows = !s.extra.launchpad_above_windows)
+        }
+        Some(Action::LaunchpadBlurBackground) => {
+          prefs::update(|s| s.extra.launchpad_blur_background = !s.extra.launchpad_blur_background)
+        }
+        Some(Action::TrayAllFinder) => prefs::update(|s| s.extra.tray_all_finder = !s.extra.tray_all_finder),
+        Some(Action::TrayAllDock) => prefs::update(|s| s.extra.tray_all_dock = !s.extra.tray_all_dock),
+        Some(Action::TraySystemFinder) => prefs::update(|s| s.extra.tray_system_finder = !s.extra.tray_system_finder),
+        Some(Action::NightLight) => prefs::update(|s| s.extra.night_light = !s.extra.night_light),
+        // M2 TRY handlers
+        Some(Action::NewTrayIconSeconds(v)) => prefs::update(|s| s.extra.new_tray_icon_seconds = v as u16),
+        // M2 SCR handlers
+        Some(Action::ScreenBrightness(v)) => prefs::update(|s| s.extra.screen_brightness = v as u16),
+        Some(Action::NightLightIntensity(v)) => prefs::update(|s| s.extra.night_light_intensity = v as u16),
+        Some(Action::ScreenTarget(v)) => prefs::update(|s| s.extra.screen_target = v),
+        // M2 GEN handlers
+        Some(Action::StartMethod(v)) => prefs::update(|s| s.extra.start_method = v),
+        Some(Action::TaskbarScope(v)) => prefs::update(|s| s.extra.taskbar_scope = v),
+        Some(Action::DisplayFont(v)) => prefs::update(|s| s.extra.display_font = v),
+        Some(Action::FontScale(v)) => prefs::update(|s| s.extra.font_scale = v as u16),
+        // M2 WAN handlers
+        Some(Action::WindowAnimEffect(v)) => prefs::update(|s| s.extra.window_anim_effect = v),
+        Some(Action::WindowAnimSpeed(v)) => prefs::update(|s| s.extra.window_anim_speed = v),
+        Some(Action::MinimizeExcludedWindows) => {
+          prefs::update(|s| s.extra.minimize_excluded_windows = !s.extra.minimize_excluded_windows)
+        }
         Some(Action::MenuLogoReset) => {
           crate::menubar::logo::reset();
           prefs::broadcast();

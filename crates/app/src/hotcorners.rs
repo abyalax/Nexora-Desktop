@@ -87,6 +87,13 @@ fn apply() {
 
 fn run(a: HotAction) {
   log::line("hotcorner", &format!("aksi {}", a.key()));
+  if !a.is_known() {
+    log::line(
+      "hotcorner",
+      &format!("WARNING: aksi '{}' belum diimplementasi (D-16.2)", a.key()),
+    );
+    return;
+  }
   match a {
     HotAction::None => {}
     HotAction::Mission => crate::mission::toggle(),
@@ -95,6 +102,7 @@ fn run(a: HotAction) {
     HotAction::Stage => prefs::update(|s| s.stage = !s.stage),
     HotAction::Notifications => keys::chord(&[keys::WIN, 0x4E]),
     HotAction::Lock => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
+    _ => {}
   }
 }
 
