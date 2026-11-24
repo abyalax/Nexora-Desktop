@@ -83,6 +83,7 @@ Organize by presentation responsibility:
 - Prefer ownership and borrowing over excessive `Arc<Mutex<T>>`.
 - Use `Result` for recoverable errors; avoid unnecessary `unwrap()` and `expect()` in production code.
 - Separate persistent configuration from runtime state.
+- Avoid one file with more 500 line of code
 
 ## 5. Feature Organization
 
@@ -119,15 +120,35 @@ Windhawk Mods are reference implementations, not direct Rust dependencies.
 
 Keep reference sources isolated:
 
-```text
-references/
-└── windhawk/
-    ├── original/
-    ├── modularized/
-    └── generated/
+```Shell
+└── 📁mods
+    └── 📁local@dynamic-island-for-windows
+        ├── analysis-summary.json
+        ├── functions.csv
+        ├── functions.json
+        ├── includes.csv
+        ├── lifecycle-symbols.csv
+        ├── README-ANALYSIS.md
+        ├── repository-files.csv
+        ├── variable-candidates.csv
+        ├── windhawk-settings.csv
+        ├── windows-api-usage.csv
+    └── 📁local@mac-island-dock-fork
+        ├── analysis-summary.json
+        ├── functions.csv
+        ├── functions.json
+        ├── includes.csv
+        ├── lifecycle-symbols.csv
+        ├── MODULES.md
+        ├── README-ANALYSIS.md
+        ├── repository-files.csv
+        ├── variable-candidates.csv
+        ├── windhawk-settings.csv
+        ├── windows-api-usage.csv
+    ├── local@dynamic-island-for-windows.wh.cpp
+    ├── local@mac-island-dock-fork.wh.cpp
+    └── README.md
 ```
-
-Maintain deterministic extraction and remodularization scripts under `scripts/windhawk/`.
 
 Rules:
 
