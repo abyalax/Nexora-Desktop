@@ -110,7 +110,7 @@ impl Settings {
             })
             .unwrap_or(s.accent)
         }
-        "min_effect" => s.min_effect = v.parse::<i32>().map(|n| n.clamp(0, 1) as u8).unwrap_or(s.min_effect),
+        "min_effect" => s.min_effect = v.parse::<i32>().map(|n| n.clamp(0, 2) as u8).unwrap_or(s.min_effect),
         "notch_idle" => s.notch_idle = v.parse::<i32>().map(|n| n.clamp(0, 2) as u8).unwrap_or(s.notch_idle),
         "greet_name" => s.greet_name = ShortText::new(v),
         "greet_text" => s.greet_text = ShortText::new(v),

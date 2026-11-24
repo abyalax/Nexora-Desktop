@@ -140,3 +140,21 @@ fn dock_rows_accept_the_wide_ranges_and_hex_colours() {
   assert!(text.contains("dock_icon_background_color=#ff8000"));
   assert_eq!(Settings::parse(&text), s);
 }
+
+/// D-7.1: `min_effect` gains a third value (Suck); the 0.4.0 values 0 and 1 keep their meaning and garbage keeps the old one.
+#[test]
+fn min_effect_accepts_legacy_values_and_the_new_third_effect() {
+  use nexora_core::dock::minimize::Effect;
+  for (text, want) in [("0", 0), ("1", 1), ("2", 2), ("9", 2), ("-3", 0)] {
+    let s = Settings::parse(&format!("min_effect={text}\n"));
+    assert_eq!(s.min_effect, want, "min_effect={text}");
+  }
+  let kept = Settings::parse("min_effect=1\nmin_effect=oops\n");
+  assert_eq!(kept.min_effect, 1, "garbage keeps the old value");
+  assert_eq!(
+    Effect::from_stored(Settings::parse("min_effect=2\n").min_effect),
+    Effect::Suck
+  );
+  let s = Settings::parse("min_effect=2\n");
+  assert_eq!(Settings::parse(&s.serialize()).min_effect, 2, "round trip");
+}

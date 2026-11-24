@@ -5,6 +5,7 @@ pub mod entries;
 pub mod geometry;
 pub mod items;
 pub mod layout;
+pub mod minimize;
 pub mod pins;
 pub mod recents;
 pub mod reorder;

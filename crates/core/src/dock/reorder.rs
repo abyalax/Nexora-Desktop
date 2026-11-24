@@ -16,6 +16,17 @@ pub fn move_to<T>(v: &mut Vec<T>, from: usize, to: usize) -> bool {
   true
 }
 
+/// DAD-04: with icon dragging locked, a drag never starts and nothing is reordered or unpinned by dropping.
+/// Unpinning from the context menu is a separate path and is not gated.
+pub fn may_start_drag(locked: bool) -> bool {
+  !locked
+}
+
+/// [`move_to`] behind the lock (D-3.1). Returns `true` only when the order changed.
+pub fn reorder<T>(v: &mut Vec<T>, from: usize, to: usize, locked: bool) -> bool {
+  may_start_drag(locked) && move_to(v, from, to)
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -51,5 +62,21 @@ mod tests {
     let mut v = vec![1, 2, 3];
     assert!(move_to(&mut v, 0, 99));
     assert_eq!(v, [2, 3, 1]);
+  }
+
+  #[test]
+  fn reorder_is_noop_when_locked() {
+    let mut v = vec![1, 2, 3];
+    assert!(!reorder(&mut v, 0, 3, true));
+    assert_eq!(v, [1, 2, 3]);
+    assert!(!may_start_drag(true));
+  }
+
+  #[test]
+  fn reorder_moves_when_unlocked() {
+    let mut v = vec![1, 2, 3];
+    assert!(reorder(&mut v, 0, 3, false));
+    assert_eq!(v, [2, 3, 1]);
+    assert!(may_start_drag(false));
   }
 }

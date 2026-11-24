@@ -48,7 +48,14 @@ impl Dock {
       ),
     );
     let show_downloads = crate::prefs::get().downloads_stack && nexora_platform::downloads::folder().is_some();
-    self.entries = entries::build(&self.items, show_downloads);
+    let x = crate::prefs::get().extra;
+    let opts = entries::Options {
+      show_downloads,
+      show_indicators: x.dock_show_indicators,
+      show_unpinned: x.dock_show_unpinned,
+      separate_unpinned: x.dock_separate_unpinned,
+    };
+    self.entries = entries::build_with(&self.items, &opts);
     self.slots = entries::slots(&self.entries);
 
     if let Ok(kids) = self.content.Children() {
@@ -115,7 +122,7 @@ impl Dock {
             &self.content,
             it.path.clone(),
             icon,
-            it.running(),
+            entries::shows_indicator(it, &opts),
             self.dpi,
             look,
           )

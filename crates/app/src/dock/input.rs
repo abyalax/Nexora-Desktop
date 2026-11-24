@@ -108,7 +108,7 @@ impl Dock {
     let Some(p) = &self.press else { return };
     if self.dragging.is_none() {
       let far = (x - p.x).abs().max((y - p.y).abs()) > 6.0 * self.dpi;
-      if !far || p.pinned_item.is_none() {
+      if !far || p.pinned_item.is_none() || !reorder::may_start_drag(crate::prefs::get().extra.dock_lock_dragging) {
         return;
       }
       self.dragging = Some(p.slot);
