@@ -34,11 +34,7 @@ pub fn window_rect(edge: Edge, screen: Rect, main: f32, cross: f32, margin: f32)
 
 /// Pointer position along the main axis, relative to the Dock window. Feed this to `layout()` as the cursor.
 pub fn main_coord(edge: Edge, win: &Rect, px: f32, py: f32) -> f32 {
-  if edge.is_horizontal() {
-    px - win.x
-  } else {
-    py - win.y
-  }
+  if edge.is_horizontal() { px - win.x } else { py - win.y }
 }
 
 /// Pointer distance from the screen edge, across the strip (`0` at the edge).
@@ -80,7 +76,7 @@ pub fn popup_side(edge: Edge) -> Edge {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::dock::layout::{layout, Metrics, Slot};
+  use crate::dock::layout::{Metrics, Slot, layout};
 
   const SCREEN: Rect = Rect::new(0.0, 0.0, 1920.0, 1080.0);
 

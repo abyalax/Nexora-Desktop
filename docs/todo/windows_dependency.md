@@ -47,24 +47,38 @@ This is TODO based on ../TODO.md, list ini khusus untuk task yang windows platfo
   - `launchpad/sources.rs` → D-8.2/8.5 (enumerasi Start Menu/Desktop menjadi `Entry`, `visible`, `grid`).
 
 ## 5. Finder / Menu Bar (M5)
-- [ ] **F-8.3/8.4**: deteksi jendela maksimal per monitor, reveal di tepi atas, dan pelepasan work area saat tersembunyi (QA).
-- [ ] **F-9**: dialog konfirmasi shutdown bertema (Enter/Esc).
-- [ ] **F-10**: kirim `WM_CLOSE` ke jendela foreground yang maksimal (QA).
-- [ ] **F-11.0** (spike): cara enumerasi dan hosting ikon tray; ini memblokir F-11.5…7.
+Core M5 sudah selesai dan diuji di Linux (`cargo test -p nexora-core`); semua item di bawah belum pernah dibangun atau dijalankan di Windows.
+- [ ] **F-4.5**: app memanggil `clock::format_clock` dan `items::build_with` (dengan `Show::from_settings` dan `Available`); saat ini app masih memakai `format` dan `build`.
+- [ ] **F-8.3/8.4**: deteksi jendela maksimal per monitor (input `maximized` dan `overlapped`), reveal di tepi atas (`edge_armed`), dan pelepasan work area saat tersembunyi (QA, aturan di `appearance::reserves_work_area`).
+- [ ] **F-9.2**: dialog konfirmasi shutdown bertema (Enter/Esc lewat `actions::dialog_result`), QA.
+- [ ] **F-10.2**: kirim `WM_CLOSE` ke jendela foreground yang maksimal setelah `actions::can_close` (QA).
+- [ ] **F-11.0** (spike): cara enumerasi dan hosting ikon tray; ini memblokir F-11.5…7. Riset meja ada di addendum ADR-0007, belum terverifikasi di Windows.
 - [ ] **F-11.5…7**: enumerasi dan event perubahan tray, render, forward klik, drag reorder, plus row TRY-01…04, FLB-06, FLB-08.
-- [ ] **F-12.0** (spike): API Windows untuk membaca notifikasi di app tanpa package identity; ini memblokir F-12.2…4 dan I-13.
+- [ ] **F-12.0** (spike): API Windows untuk membaca notifikasi di app tanpa package identity; ini memblokir F-12.2…4 dan I-13. Riset meja ada di addendum ADR-0007, belum terverifikasi.
 - [ ] **F-12.2/12.3**: listener notifikasi di platform dan menu Finder.
-- [ ] **F-13…F-14**: menu audio (`platform/audio.rs`) dan brightness (`platform/brightness.rs`).
+- [ ] **F-13.2/F-14**: menu audio (`platform/audio.rs`) dan brightness (`platform/brightness.rs`), plus row FAU-01…03 dan FDI-01.
+- [ ] **F-15.2**: counter CPU/memori dari platform dan render item; ukur bahwa tidak ada polling lebih cepat dari 1 detik saat idle (QA-03).
 - [ ] **F-16.4**: ganti power mode/plan dan event AC/baterai (QA).
-- [ ] **F-17/F-18**: media di bar, daftar layout keyboard, nama dan avatar akun.
+- [ ] **F-17.2/F-18.2**: render media di bar dan row FLB-12…14, daftar layout keyboard, nama dan avatar akun.
+- [ ] **Wiring modul core M5** (core + tes sudah ada, butuh build Windows + QA di `docs/qa/`):
+  - `finder/items.rs` → `Show::from_settings` dan `Available` diisi dari platform (Bluetooth, volume, brightness, hardware, IME, akun, notifikasi, jumlah ikon tray, lebar media dari `media::budget`); id baru `BT`, `NOTIF`, `VOLUME`, `BRIGHT`, `HW`, `IME`, `ACCT`, `MEDIA`, `TRAY_MORE`, `TRAY0+i` perlu dihubungkan ke hit-test, menu, dan render.
+  - `finder/clock.rs` → `format_clock` dengan `ClockStyle` dari `finder_show_time/date`, `clock_24h`, dan `finder_date_format`.
+  - `finder/appearance.rs` → F-8.3/8.4 (`Signals` diisi host, `transition` menjalankan animasi hide/show, `bar_look(.., maximized)` menggantikan `settings::bar_look` untuk bar).
+  - `finder/actions.rs` → F-9.2 (`needs_confirm` sebelum Restart/Shut Down) dan F-10.2 (`corner_rect`, `can_close`, `own_pid` dari host).
+  - `finder/tray.rs` → F-11.5…7 (platform memanggil `upsert`/`remove`, UI memanggil `split` dan `move_to`, timer dari `next_expiry_ms`, warna dari `render`).
+  - `finder/notifications.rs` → F-12.2/12.3 (listener memanggil `push`, menu membaca `live`, timer dari `next_expiry_ms`).
+  - `finder/audio.rs` → F-13.2 (`Audio` dan `Outputs` disinkronkan dengan `platform/audio.rs`).
+  - `finder/hardware.rs` → F-15.2 (`Sampler::due` dipanggil dari timer host, `reading` dari counter platform).
+  - `finder/battery.rs` → F-16.4 (`AutoPlan::observe` dipanggil dari event AC/baterai, `remaining_text` dari estimasi Windows; estimasi tidak diketahui menjadi `None`).
+  - `finder/media.rs` → F-17.2 (`budget`, `label`, `fit`, `fg`; teks lirik dari `Lyrics::current`, warna dari `tint::from_art`).
 
 ## 6. Halaman bersama (M6)
-- [ ] **Start on boot**: Registry (sudah ada di `platform/startup.rs`) dan Scheduled Task; tes buat/hapus entri (`#[ignore]`); QA bahwa uninstaller `NEXORA.iss` menghapus semua metode.
-- [ ] **Hide taskbar on boot**: sembunyikan taskbar per monitor (`platform/shell/taskbar.rs`), dipulihkan `nexora-guard` (REC-01).
-- [ ] **Display font**: rendering teks memakai font pilihan dan skala font global.
-- [ ] **STG gaps**: efek untuk icon di Finder, blur ikon latar, native preview, hidden mode, keep border, desktop icons 3 keadaan, dan kecepatan animasi.
-- [ ] **WAN**: efek animasi jendela di `app/fx.rs` dan `app/motion.rs`.
-- [ ] **SCR**: jendela overlay click-through atau gamma ramp; gamma wajib punya jalur restore.
+[ ] **Start on boot**: Registry sudah ada (`platform/startup.rs`); tinggal Scheduled Task, tes buat/hapus entri (`#[ignore]`), dan QA bahwa uninstaller `NEXORA.iss` menghapus semua metode. Core: `Settings::set_start_method`.
+[ ] **Hide taskbar on boot**: sembunyikan/pulihkan taskbar per monitor di `platform/shell/taskbar.rs`, dipulihkan `nexora-guard` (REC-01). Core siap: `window_management/taskbar.rs` (`to_hide` untuk monitor yang disembunyikan, `to_restore` saat pilihan berubah).
+[ ] **Display font**: pasang font Inter dari `assets/fonts`, cek font terpasang di platform, lalu rendering teks memakai `shared::font::resolve` dan `text_scale` (live). Core siap.
+[ ] **STG gaps**: efek di `app/stage.rs` memakai `window_management/stage_options.rs`: icon di Finder, blur ikon latar, native preview, hidden mode (`strip_visible`), keep border, desktop icons 3 keadaan (`desktop_icons_visible`), kecepatan animasi, dan WAN-06 (`left_out_of_stage`). Asumsi yang perlu dikonfirmasi maintainer: arti "Default/Always show/Always hide" pada `HiddenMode`.
+[ ] **WAN**: terapkan `window_management/animation.rs` (`frame`, `duration`, `should_animate`) di `app/fx.rs` dan `app/motion.rs`.
+[ ] **SCR**: jendela overlay click-through (`dim_alpha`, `night_light`) atau gamma ramp (`gamma_gain`); target monitor lewat `screen::targets`; gamma wajib punya jalur restore di `nexora-guard`.
 
 ## 7. Hardening (M7) dan lapisan tes
 - [ ] **REC-01**: jalur restore di `nexora-guard` untuk taskbar per display, work area, parked windows, cursor, dan gamma; uji manual saat exit normal, panic, Ctrl-C, dan kill.

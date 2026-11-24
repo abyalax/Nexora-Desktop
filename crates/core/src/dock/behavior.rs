@@ -5,6 +5,7 @@
 //! `dock_` sehingga berkas lama tetap terbaca dan nilai yang hilang jatuh ke
 //! bawaan.
 
+use crate::dock::overlap::Scope;
 use crate::settings::parse_bool;
 
 /// Efek ikon saat kursor melintas di Dock.
@@ -113,6 +114,8 @@ pub struct DockConfig {
   pub preview_enabled: bool,
   /// Tunda pratinjau jendela saat hover, dalam kelipatan 10 ms.
   pub preview_delay: u8,
+  /// Scope for overlap detection (DAD-13).
+  pub overlap_scope: Scope,
 }
 
 impl Default for DockConfig {
@@ -132,6 +135,7 @@ impl Default for DockConfig {
       activation_delay: 20,
       preview_enabled: true,
       preview_delay: 45,
+      overlap_scope: Scope::All,
     }
   }
 }
@@ -185,6 +189,7 @@ impl DockConfig {
       "dock_wake_delay" => self.activation_delay = parse_level(v, 100, self.activation_delay),
       "dock_preview" => self.preview_enabled = parse_bool(v).unwrap_or(self.preview_enabled),
       "dock_preview_delay" => self.preview_delay = parse_level(v, 100, self.preview_delay),
+      "dock_overlap_scope" => self.overlap_scope = Scope::from_index(v.parse().unwrap_or(0)),
       _ => return false,
     }
     true
@@ -194,12 +199,16 @@ impl DockConfig {
   pub fn write_to(&self, out: &mut String) {
     use std::fmt::Write;
     let [r, g, b] = self.light_rgb;
+    let scope_index = match self.overlap_scope {
+      Scope::All => 0,
+      Scope::Current => 1,
+    };
     let _ = write!(
       out,
       "dock_icon_effect={}\ndock_light={}\ndock_bg_light={}\ndock_light_color={r},{g},{b}\n\
              dock_labels={}\ndock_indicators={}\ndock_unpinned={}\ndock_separate={}\n\
              dock_lock={}\ndock_launch_anim={}\ndock_hide_effect={}\ndock_wake_delay={}\n\
-             dock_preview={}\ndock_preview_delay={}\n",
+             dock_preview={}\ndock_preview_delay={}\ndock_overlap_scope={}\n",
       self.icon_effect.key(),
       self.light_intensity,
       self.bg_light_intensity,
@@ -213,6 +222,7 @@ impl DockConfig {
       self.activation_delay,
       self.preview_enabled,
       self.preview_delay,
+      scope_index,
     );
   }
 }
@@ -259,6 +269,7 @@ mod tests {
       activation_delay: 7,
       preview_enabled: false,
       preview_delay: 99,
+      overlap_scope: Scope::Current,
     };
     assert_eq!(roundtrip(&c), c);
   }

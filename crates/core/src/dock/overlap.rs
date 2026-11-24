@@ -14,11 +14,7 @@ pub enum Scope {
 impl Scope {
   /// From the stored choice index (`all`, `current`). Unknown values fall back to `All`.
   pub fn from_index(i: u8) -> Scope {
-    if i == 1 {
-      Scope::Current
-    } else {
-      Scope::All
-    }
+    if i == 1 { Scope::Current } else { Scope::All }
   }
 }
 

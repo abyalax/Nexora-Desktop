@@ -685,65 +685,102 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 
 ## M5 — Finder (after ADR-0003)
 
-- [ ] F-1/F-3 core: menu item list omits hidden items (menu icon, window options). Layout tests.
+**Status: core slices done (`crates/core/src/finder/`); the platform, app and UI halves and both spikes are open and
+listed in `windows_dependency.md` §5.** Core was built and tested on Linux (`cargo test -p nexora-core`); nothing here
+was built or run on Windows.
+
+- [x] F-1/F-3 core: menu item list omits hidden items (menu icon, window options). Layout tests. (`items::{Show, Available,
+  build_with}`; `build` keeps the old behavior. Window options = the Window menu of the five static menus.)
 - [ ] **F-4 Time & Date**
-  - [ ] F-4.1 core: time format enum replaces `clock_24h`; legacy key still read. Test.
-  - [ ] F-4.2 core: date formats Short/Long/ISO in English **and** Indonesian (acceptance criterion). Tests.
-  - [ ] F-4.3 core: show time/date toggles + truncation in `menubar/layout.rs`. Tests.
-  - [ ] F-4.4 core: Wi-Fi/Bluetooth/hardware visibility toggles. Layout tests.
+  - [x] F-4.1 core: time format enum replaces `clock_24h`; legacy key still read. Test. (`clock::TimeFormat`; the key stays
+    on disk so 0.4.0 golden files stay byte-identical, ADR-0004.)
+  - [x] F-4.2 core: date formats Short/Long/ISO in English **and** Indonesian (acceptance criterion). Tests.
+  - [x] F-4.3 core: show time/date toggles + truncation in `menubar/layout.rs`. Tests. (`clock::format_clock`,
+    `layout::ellipsize`)
+  - [x] F-4.4 core: Wi-Fi/Bluetooth/hardware visibility toggles. Layout tests.
+  - [ ] F-4.5 app: call `format_clock` and `build_with` with `Show::from_settings` (the app still calls `format`/`build`).
 - [ ] **F-7** Finder custom glass (APP-26…29): wire through `SurfaceGlass`.
 - [ ] **F-8 Auto-hide and maximized appearance**
-  - [ ] F-8.1 core: map auto-hide to `Mode::AutoHide` with inputs. Test.
-  - [ ] F-8.2 core: `bar_look(s, dark, maximized)`; tests for solid vs glass.
+  - [x] F-8.1 core: map auto-hide to `Mode::AutoHide` with inputs. Test. (`appearance::{mode, Signals, transition}`)
+  - [x] F-8.2 core: `bar_look(s, dark, maximized)`; tests for solid vs glass. (`appearance::bar_look`)
   - [ ] F-8.3 platform: maximized-window detection per monitor.
-  - [ ] F-8.4 app: reveal on top-edge hover; work area released when hidden (QA). · [ ] F-8.5 H.
-- [ ] **F-9 Shut-down confirmation**: core `needs_confirm(action, setting)` (decide: only Shut Down/Restart?); app: themed
-  dialog (Enter/Esc). Test.
-- [ ] **F-10 Corner close**: core hit-test rect; core exclusion list (never close desktop, shell, Nexora itself); platform
-  posts `WM_CLOSE` to the maximized foreground window (QA).
+  - [ ] F-8.4 app: reveal on top-edge hover; work area released when hidden (QA; rule is `appearance::reserves_work_area`).
+    · [ ] F-8.5 H.
+- [ ] **F-9 Shut-down confirmation**
+  - [x] F-9.1 core `needs_confirm(action, setting)`; decision: only Restart and Shut Down. Test. (`actions`)
+  - [ ] F-9.2 app: themed dialog (Enter/Esc; `actions::dialog_result`). QA.
+- [ ] **F-10 Corner close**
+  - [x] F-10.1 core hit-test rect and exclusion list (never close desktop, shell, Nexora itself). Tests. (`actions::{corner_rect,
+    in_corner, can_close}`)
+  - [ ] F-10.2 platform posts `WM_CLOSE` to the maximized foreground window (QA).
 - [ ] **F-11 Tray**
   - [ ] F-11.0 **spike** (no production code): how to enumerate and host tray icons; use the Windhawk analyses in `mods/`.
-    Output: a note with feasibility and the approach. Gates F-11.5…7.
-  - [ ] F-11.1 core: tray model (id, order, visible, overflow); lock reorder. Tests.
-  - [ ] F-11.2 core: "show all" vs overflow rule. Test. · [ ] F-11.3 core: "new icon shows N s" timer with injected clock. Test.
-  - [ ] F-11.4 core: coloured vs monochrome mapping. Tests.
+    Output: a note with feasibility and the approach. Gates F-11.5…7. *Desk research is in the ADR-0007 addendum;
+    nothing in it is verified on Windows, so this stays open.*
+  - [x] F-11.1 core: tray model (id, order, visible, overflow); lock reorder. Tests. (`tray::Tray`)
+  - [x] F-11.2 core: "show all" vs overflow rule. Test. · [x] F-11.3 core: "new icon shows N s" timer with injected clock.
+    Test.
+  - [x] F-11.4 core: coloured vs monochrome mapping. Tests.
   - [ ] F-11.5 platform: enumerate + change events. · [ ] F-11.6 app/ui: render, click forwarding, drag reorder.
   - [ ] F-11.7 rows TRY-01…04, FLB-06, FLB-08.
 - [ ] **F-12 Notifications**
   - [ ] F-12.0 **spike**: which Windows API can read notifications for an unpackaged app (it may need package identity or a
-    user consent flow; verify before committing).
-  - [ ] F-12.1 core: queue model (dedupe, TTL = duration setting). Tests. · [ ] F-12.2 platform listener.
-  - [ ] F-12.3 Finder menu. · [ ] F-12.4 hand over to I-13.
-- [ ] **F-13 Audio**: core device/volume/mute model (step clamp tests); menu items on `platform/audio.rs`; rows FAU-01…03.
+    user consent flow; verify before committing). *Desk research is in the ADR-0007 addendum; unverified, stays open.*
+  - [x] F-12.1 core: queue model (dedupe, TTL = duration setting). Tests. (`notifications::Queue`)
+  - [ ] F-12.2 platform listener. · [ ] F-12.3 Finder menu. · [ ] F-12.4 hand over to I-13.
+- [ ] **F-13 Audio**
+  - [x] F-13.1 core device/volume/mute model (step clamp tests). (`audio`)
+  - [ ] F-13.2 menu items on `platform/audio.rs`; rows FAU-01…03.
 - [ ] **F-14 Display**: brightness menu on `platform/brightness.rs`; FDI-01. Screen mirroring per ADR-0007.
-- [ ] **F-15 Hardware status**: CPU/memory item reusing the System Monitor in `core/panels/widgets.rs`. Acceptance: no
-  polling faster than once per second while idle. Test the sampler interval.
+- [ ] **F-15 Hardware status**
+  - [x] F-15.1 core: sampler interval, never faster than once per second; test. (`hardware`; CPU math reuses
+    `widgets::cpu_percent`.)
+  - [ ] F-15.2 CPU/memory item reusing the System Monitor in `core/panels/widgets.rs` (platform counters + render).
+    Acceptance: no polling faster than once per second while idle (measure on Windows, QA-03).
 - [ ] **F-16 Battery**
   - [ ] F-16.1 rows FBA-01…03; `battery_pct` 3 modes ↔ design toggle (SPEC-03).
-  - [ ] F-16.2 core: remaining-time text (h/min; English/Indonesian; unknown; charging). Tests.
-  - [ ] F-16.3 core: `plan_for(source, settings, current)` with hysteresis (no flapping). Tests.
+  - [x] F-16.2 core: remaining-time text (h/min; English/Indonesian; unknown; charging). Tests. (`battery::remaining_text`)
+  - [x] F-16.3 core: `plan_for(source, settings, current)` with hysteresis (no flapping). Tests. (`battery::{plan_for,
+    AutoPlan}`)
   - [ ] F-16.4 platform: set power mode/plan (per ADR-0007) + AC/battery change events (QA).
-- [ ] **F-17 Media in the bar**: core width budgeting and ellipsis for title/lyrics (tests); plain vs coloured (reuse
-  `dynamic_island::tint`); reuse lyrics logic from the Island; rows FLB-12…14.
-- [ ] **F-18 Input method, search, account**: platform keyboard layout list + switch; account name/avatar; layout tests for
-  the three toggles.
+- [ ] **F-17 Media in the bar**
+  - [x] F-17.1 core width budgeting and ellipsis for title/lyrics (tests); plain vs coloured; reuses the Island's lyrics
+    parser and `dynamic_island::tint`. (`media`)
+  - [ ] F-17.2 app/ui: draw the item; rows FLB-12…14.
+- [ ] **F-18 Input method, search, account**
+  - [x] F-18.1 core: layout tests for the three toggles. (`items` tests)
+  - [ ] F-18.2 platform keyboard layout list + switch; account name/avatar.
 
 ## M6 — Shared pages
 
-- [ ] **GEN Start on boot**: core enum with migration (`autostart=true` → Registry); platform Registry (exists in `platform/startup.rs`)
-  and Scheduled Task; "Service" per ADR-0007. Tests: migration (core); create/delete entries (`#[ignore]`); QA: the
-  uninstaller (`installer/NEXORA.iss`) removes every method.
-- [ ] **GEN Hide taskbar on boot**: core enum (none / all / Dock display); platform per-monitor taskbar hide
-  (`platform/shell/taskbar.rs`); `nexora-guard` restores it (REC-01).
-- [ ] **GEN Display font**: core font list with fallback when not installed (Segoe UI, bundled Inter in `assets/fonts`);
-  text rendering uses it; global font scale. Test: fallback resolution.
-- [ ] **GEN Scale, accent, full-screen**: after SPEC-03 (ui_scale, accent palette vs hex, `above_fullscreen` meaning).
-- [ ] **STG gaps** (each: core test in `window_management/stage.rs`, then effect): icon in Finder (STG-01) · blur background
-  icons · native preview · hidden mode (3) · keep border · desktop icons 3-state · animation speed steps.
-- [ ] **WAN Window animation**: effect enum (scale/fade/slide/zoom), speed steps → multiplier (tests), excluded/blacklist via
-  `ProgramList`, WAN-06 once defined. Effects live in `app/fx.rs` / `app/motion.rs`.
-- [ ] **SCR Screen** (only if ADR-0007 accepts): core intensity → alpha/colour curves (tests); overlay window (layered,
-  click-through) or gamma ramp; gamma needs a guaranteed restore (REC-01).
+Core logic for every page below is done and tested (Linux). What is left is OS or window work; it is listed in
+`docs/todo/windows_dependency.md` §6 and needs a Windows build plus a QA entry (`docs/qa/m6-shared-pages.md`).
+
+- [ ] **GEN Start on boot**
+  - [x] core enum with migration (`autostart=true` → Registry): `start_method`, `Settings::set_start_method`, `reconcile`.
+  - [x] platform Registry (`platform/startup.rs`).
+  - [ ] platform Scheduled Task; tests create/delete entries (`#[ignore]`); QA: the uninstaller (`installer/NEXORA.iss`)
+    removes every method. "Service" is dropped per ADR-0007.
+- [ ] **GEN Hide taskbar on boot**
+  - [x] core scope enum + selection: `window_management/taskbar.rs` (`Scope`, `to_hide`, `to_restore`). Tests: none, all, dock display, display gone, restore diff.
+  - [ ] platform per-monitor taskbar hide (`platform/shell/taskbar.rs`); `nexora-guard` restores it (REC-01).
+- [ ] **GEN Display font**
+  - [x] core font list, fallback when not installed, text scale: `shared/font.rs` (`family`, `resolve`, `text_scale`). Tests: fallback chain, bundled Inter, clamp.
+  - [ ] text rendering uses `resolve()` and `text_scale()` (live, no restart).
+- [ ] **GEN Scale, accent, full-screen**: decisions are in `docs/spec_reconciliation.md` (rows 6, 7, 13); effect work is
+  Windows-only (see windows_dependency).
+- [ ] **STG gaps**
+  - [x] core: `window_management/stage_options.rs` (`HiddenMode`, `strip_visible`, `desktop_icons_visible`,
+    `icon_size`); animation speed steps already in `stage::SPEED_PRESETS`.
+  - [ ] effects in `app/stage.rs`: icon in Finder (STG-01) · blur background icons · native preview · hidden mode ·
+    keep border · desktop icons 3-state · animation speed.
+- [ ] **WAN Window animation**
+  - [x] core: effect enum (scale/fade/slide/zoom) + `frame()`, speed steps → duration (`animation::duration`),
+    excluded/blacklist via `ProgramList` (`should_animate`), WAN-06 (`stage_options::left_out_of_stage`).
+  - [ ] effects in `app/fx.rs` / `app/motion.rs`.
+- [ ] **SCR Screen** (ADR-0007: in)
+  - [x] core curves: `shared/screen.rs` (`dim_alpha`, `night_light`, `gamma_gain`, `targets`). Tests: monotone, clamp, off states, monitor choice.
+  - [ ] overlay window (layered, click-through) or gamma ramp; gamma needs a guaranteed restore (REC-01).
 
 ## M7 — Hardening
 

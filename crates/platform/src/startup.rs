@@ -77,3 +77,31 @@ pub fn set(enabled: bool, exe: &Path) -> Result<(), String> {
   }
   Ok(())
 }
+
+/// Set or delete a Scheduled Task for auto-start (GEN-08 alternate method)
+/// Note: Requires COM and Task Scheduler API; currently stubbed for future implementation
+pub fn set_scheduled_task(_enabled: bool, _exe: &Path) -> Result<(), String> {
+  // TODO: Implement Task Scheduler COM interface
+  // This requires using the Task Scheduler 1.0/2.0 COM interfaces
+  Err("Scheduled Task support not yet implemented".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  #[ignore] // Requires actual Windows registry access
+  fn registry_roundtrip() {
+    let exe = Path::new("C:\\test\\nexora.exe");
+    let before = current();
+    set(true, exe).unwrap();
+    assert!(is_enabled());
+    set(false, exe).unwrap();
+    assert!(!is_enabled());
+    if let Some(orig) = before {
+      set(true, exe).unwrap();
+      // restore original
+    }
+  }
+}

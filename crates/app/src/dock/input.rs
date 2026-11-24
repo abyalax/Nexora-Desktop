@@ -31,6 +31,8 @@ impl Dock {
       kill(self.hwnd, TIMER_PREVIEW);
       if slot.is_some() {
         let preview_up = self.preview.as_ref().is_some_and(|p| p.is_visible());
+        // D-6.2: read preview delay live from settings
+        let delay = crate::prefs::get().extra.preview_delay as u32;
         if preview_up {
           self.show_preview();
           if !self.preview.as_ref().is_some_and(|p| p.is_visible()) {
@@ -38,7 +40,7 @@ impl Dock {
           }
         } else {
           timer(self.hwnd, TIMER_TIP, 250);
-          timer(self.hwnd, TIMER_PREVIEW, 450);
+          timer(self.hwnd, TIMER_PREVIEW, delay);
         }
       }
     }

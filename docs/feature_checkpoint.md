@@ -160,6 +160,7 @@ in one place, replacing the need for the Windows taskbar's notification area.
 | Concern                        | Target                                               | Today                                                                               |
 | ------------------------------ | ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | Item layout, clock formatting  | `core/finder/{layout,clock}.rs`                      | ✅ in place                                                                          |
+| Finder policies (auto-hide, look, confirm, corner close, tray, notifications, audio, hardware, battery, media) | `core/finder/{appearance,actions,tray,notifications,audio,hardware,battery,media}.rs` | 🟡 core and tests done (M5); no `app`/`platform` wiring yet, see `todo/windows_dependency.md` §5 |
 | Menu model (logo, app menus)   | `core/finder/menus.rs`                               | ⬜ menu items are built in `app/finder/menus.rs`                                     |
 | Settings vs. state             | `core/settings/finder.rs`, `core/finder/state.rs`    | ⬜ `menubar_*`, `clock_24h`, `battery_pct` in the flat `Settings`                    |
 | Battery, Wi-Fi, audio, display | `platform/system/{battery,wifi,audio,brightness}.rs` | ✅ implemented, flat layout until the platform regrouping lands                      |

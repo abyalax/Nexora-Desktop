@@ -63,6 +63,26 @@ pub fn bar_height(dpi: f32, notch_height_dp: Option<f32>) -> f32 {
   (notch_height_dp.unwrap_or(26.0) * dpi).round()
 }
 
+/// Shortens `text` with a trailing ellipsis until `measure` says it fits in `max_width` (F-4.3, F-17). Text that already
+/// fits is returned unchanged; when not even the ellipsis fits, the result is empty.
+pub fn ellipsize(text: &str, max_width: f32, measure: &dyn Fn(&str) -> f32) -> String {
+  if measure(text) <= max_width {
+    return text.to_string();
+  }
+  let mut chars: Vec<char> = text.chars().collect();
+  while !chars.is_empty() {
+    chars.pop();
+    while chars.last().is_some_and(|c| c.is_whitespace()) {
+      chars.pop();
+    }
+    let candidate: String = chars.iter().collect::<String>() + "\u{2026}";
+    if measure(&candidate) <= max_width {
+      return candidate;
+    }
+  }
+  String::new()
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -118,5 +138,31 @@ mod tests {
   fn bar_height_matches_notch_when_present() {
     assert_eq!(bar_height(1.25, Some(32.0)), 40.0);
     assert_eq!(bar_height(1.0, None), 26.0);
+  }
+
+  #[test]
+  fn ellipsize_keeps_text_that_fits() {
+    let w = |s: &str| s.chars().count() as f32 * 8.0;
+    assert_eq!(ellipsize("Thu Nov 19", 80.0, &w), "Thu Nov 19");
+  }
+
+  #[test]
+  fn ellipsize_cuts_and_appends_an_ellipsis_within_the_budget() {
+    let w = |s: &str| s.chars().count() as f32 * 8.0;
+    let out = ellipsize("Thursday, November 19", 80.0, &w);
+    assert_eq!(out, "Thursday,\u{2026}");
+    assert!(w(&out) <= 80.0);
+  }
+
+  #[test]
+  fn ellipsize_drops_trailing_spaces_before_the_ellipsis() {
+    let w = |s: &str| s.chars().count() as f32;
+    assert_eq!(ellipsize("ab cd", 4.0, &w), "ab\u{2026}");
+  }
+
+  #[test]
+  fn ellipsize_returns_empty_when_nothing_fits() {
+    let w = |s: &str| s.chars().count() as f32 * 8.0;
+    assert_eq!(ellipsize("long text", 4.0, &w), "");
   }
 }

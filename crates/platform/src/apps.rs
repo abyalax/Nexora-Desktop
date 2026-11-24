@@ -1,14 +1,23 @@
 use std::sync::Mutex;
 use windows::Win32::System::Com::{COINIT_MULTITHREADED, CoInitializeEx, CoTaskMemFree};
 use windows::Win32::UI::Shell::{
-  BHID_EnumItems, FOLDERID_AppsFolder, IEnumShellItems, IShellItem, KF_FLAG_DEFAULT, SHGetKnownFolderItem,
-  SIGDN_NORMALDISPLAY, SIGDN_PARENTRELATIVEPARSING,
+  BHID_EnumItems, FOLDERID_AppsFolder, FOLDERID_Desktop, IEnumShellItems, IShellItem, KF_FLAG_DEFAULT,
+  SHGetKnownFolderItem, SIGDN_NORMALDISPLAY, SIGDN_PARENTRELATIVEPARSING,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct App {
   pub name: String,
   pub path: String,
+  pub origin: Origin,
+}
+
+/// Origin of an app entry for Launchpad (D-8.2)
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Origin {
+  Added,
+  StartMenu,
+  Desktop,
 }
 
 static CACHE: Mutex<Option<Vec<App>>> = Mutex::new(None);
@@ -45,6 +54,44 @@ fn load() -> Vec<App> {
             out.push(App {
               name,
               path: format!("shell:AppsFolder\\{rel}"),
+              origin: Origin::StartMenu,
+            });
+          }
+        }
+      }
+    }
+  }
+  // Load desktop shortcuts (D-8.2)
+  unsafe {
+    let Ok(folder) = SHGetKnownFolderItem::<IShellItem>(&FOLDERID_Desktop, KF_FLAG_DEFAULT, None) else {
+      return out;
+    };
+    let Ok(en) = folder.BindToHandler::<_, IEnumShellItems>(None, &BHID_EnumItems) else {
+      return out;
+    };
+    loop {
+      let mut batch: [Option<IShellItem>; 16] = Default::default();
+      let mut got = 0u32;
+      if en.Next(&mut batch, Some(&mut got)).is_err() || got == 0 {
+        break;
+      }
+      for item in batch.iter().take(got as usize).flatten() {
+        let name = item.GetDisplayName(SIGDN_NORMALDISPLAY).ok().and_then(|p| {
+          let s = p.to_string().ok();
+          CoTaskMemFree(Some(p.0 as *const _));
+          s
+        });
+        let rel = item.GetDisplayName(SIGDN_PARENTRELATIVEPARSING).ok().and_then(|p| {
+          let s = p.to_string().ok();
+          CoTaskMemFree(Some(p.0 as *const _));
+          s
+        });
+        if let (Some(name), Some(rel)) = (name, rel) {
+          if !name.trim().is_empty() {
+            out.push(App {
+              name,
+              path: format!("shell:AppsFolder\\{rel}"),
+              origin: Origin::Desktop,
             });
           }
         }

@@ -19,6 +19,9 @@ impl Dock {
       self.signature = sig;
       self.rebuild();
     }
+    // D-10.5: core overlap module exists (dock/overlap.rs) and is ready for integration.
+    // Full integration requires platform to provide window rectangles per hwnd.
+    // Currently using platform overlap::evaluate as a fallback.
     self.overlap = overlap::evaluate(
       tracker::external_foreground(),
       std::process::id(),

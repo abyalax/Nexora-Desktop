@@ -109,7 +109,10 @@ impl Preview {
     if n == 0 {
       return Ok(());
     }
-    let (tw, th) = ((200.0 * d) as i32, (125.0 * d) as i32);
+    // D-6.2: read preview size and delay live from settings
+    let prefs = crate::prefs::get();
+    let size = prefs.extra.preview_size as f32;
+    let (tw, th) = ((size * d) as i32, ((size * 0.625) * d) as i32);
     let (pad, gap, title_h) = ((12.0 * d) as i32, (6.0 * d) as i32, (20.0 * d) as i32);
     let w = pad + n as i32 * (tw + pad);
     let h = pad + th + gap + title_h + pad;
