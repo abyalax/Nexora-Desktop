@@ -37,6 +37,14 @@ This is TODO based on ../TODO.md, list ini khusus untuk task yang windows platfo
 - [ ] **D-15.3**: renderer refleksi, dengan cek footprint.
 - [ ] **D-16.2**: aksi platform untuk display sleep, Start Menu, dan Windows widget.
 - [ ] **D-17.2/17.3**: daftar isi folder, popup grid, double-click ke Explorer.
+- [ ] **Wiring modul core M4** (core + tes sudah ada, butuh build Windows + QA di `docs/qa/`):
+  - `dock/edge.rs` → D-11.5…11.8 (penempatan, render vertikal, anchor popup via `popup_side`, target minimize).
+  - `dock/activation.rs` → D-13.4 (jendela hit-test memakai `hit_rect`, jam dari host ke `step`).
+  - `dock/overlap.rs` → D-10.5 (`wins/overlap.rs` mengisi `Win` untuk `overlapped(scope, ...)`).
+  - `dock/curve.rs` → D-14.3/14.4 (render plate/glow memakai `scale_at` dan `glow_at`).
+  - `dock/reflection.rs` → D-15.3 (renderer refleksi memakai `derive` dan `opacity_at`).
+  - `dock/folder.rs` → D-17.2/17.3 (popup grid memakai `grid` dan `cell_of`).
+  - `launchpad/sources.rs` → D-8.2/8.5 (enumerasi Start Menu/Desktop menjadi `Entry`, `visible`, `grid`).
 
 ## 5. Finder / Menu Bar (M5)
 - [ ] **F-8.3/8.4**: deteksi jendela maksimal per monitor, reveal di tepi atas, dan pelepasan work area saat tersembunyi (QA).

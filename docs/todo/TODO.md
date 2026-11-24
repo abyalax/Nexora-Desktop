@@ -585,42 +585,42 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 ## M4 — Dock
 
 **D-1 Running/pinned display options**
-- [ ] D-1.1 core: `show_indicators` toggles the indicator flag in `dock::entries`. Test.
-- [ ] D-1.2 core: `show_unpinned=false` excludes unpinned running apps; matrix test with `recent_apps`.
-- [ ] D-1.3 core: separator only when both groups are non-empty. Test.
+- [x] D-1.1 core: `show_indicators` toggles the indicator flag in `dock::entries`. Test.
+- [x] D-1.2 core: `show_unpinned=false` excludes unpinned running apps; matrix test with `recent_apps`.
+- [x] D-1.3 core: separator only when both groups are non-empty. Test.
 - [ ] D-1.4 ui: always-visible labels vs on hover (`app/dock/tooltip.rs`).
 - [ ] D-1.5 app: launch bounce on/off.
 - [ ] D-1.6 H for each of the five.
 
 **D-3 Lock reorder**
-- [ ] D-3.1 core: `reorder` refuses moves when locked; test `reorder_is_noop_when_locked`. Unpin by menu still works.
+- [x] D-3.1 core: `reorder` refuses moves when locked; test `reorder_is_noop_when_locked`. Unpin by menu still works.
 - [ ] D-3.2 app: drag start ignored when locked (QA). · [ ] D-3.3 H.
 
 **D-5 Size, gap, margin, zoom** (ranges per SPEC-03)
 - [ ] D-5.1 widen/keep clamps in codec with tests · [ ] D-5.2 UI rows use WIN-01 sliders.
 
 **D-6 Window previews settings**
-- [ ] D-6.1 core: size 120–520 step 10, delay 0–1500; codec tests. (`DockConfig` stores delay in 10 ms units up to 1000; widen.)
+- [x] D-6.1 core: size 120–520 step 10, delay 0–1500; codec tests. (`DockConfig` stores delay in 10 ms units up to 1000; widen.)
 - [ ] D-6.2 app: preview popup reads size/delay live. · [ ] D-6.3 ui: app name and window buttons toggles.
 - [ ] D-6.4 decide if "native preview" is the DWM thumbnail; STG-06 has the same label (one meaning or two?).
 - [ ] D-6.5 H.
 
 **D-7 Minimize effects**
 - [ ] D-7.0 spec: is `window_management/genie.rs` the "Funnel"? Fix names and the `min_effect` 0/1/2 mapping.
-- [ ] D-7.1 core: effect enum {Funnel/Genie, Scale, Suck}; legacy `min_effect=0|1` still parses. Test.
-- [ ] D-7.2 core: Suck path math: endpoints, monotone, finite (no NaN). Tests.
-- [ ] D-7.3 core: speed multiplier 0.5–1.5 and Shift-slow factor → duration function. Tests.
-- [ ] D-7.4 core: blacklist match using `ProgramList` (ENG-08). Tests.
+- [x] D-7.1 core: effect enum {Funnel/Genie, Scale, Suck}; legacy `min_effect=0|1` still parses. Test.
+- [x] D-7.2 core: Suck path math: endpoints, monotone, finite (no NaN). Tests.
+- [x] D-7.3 core: speed multiplier 0.5–1.5 and Shift-slow factor → duration function. Tests.
+- [x] D-7.4 core: blacklist match using `ProgramList` (ENG-08). Tests.
 - [ ] D-7.5 app: "don't animate" and "use Nexora effect" off → plain minimize (QA).
-- [ ] D-7.6 core: minimized-item placement, 3 modes, with separator. Tests per mode.
+- [x] D-7.6 core: minimized-item placement, 3 modes, with separator. Tests per mode.
 - [ ] D-7.7 platform/ui: live window content (`platform/wins/thumbnail.rs`); toggle.
 - [ ] D-7.8 "minimize into Dock icon" semantics (QA). · [ ] D-7.9 H.
 
 **D-8 Launchpad page**
-- [ ] D-8.1 core: source filter (Added / +Start Menu / +Desktop / all). Tests.
+- [x] D-8.1 core: source filter (Added / +Start Menu / +Desktop / all). Tests.
 - [ ] D-8.2 platform: Start Menu and Desktop shortcut enumeration (check `platform/apps.rs`).
-- [ ] D-8.3 core: deleted-programs filter via `ProgramList`. Test.
-- [ ] D-8.4 core: grid from icon size + h/v spacing + screen size → columns/rows/pages. Tests.
+- [x] D-8.3 core: deleted-programs filter via `ProgramList`. Test.
+- [x] D-8.4 core: grid from icon size + h/v spacing + screen size → columns/rows/pages. Tests.
 - [ ] D-8.5 Launchpad display + Follow Dock via `shared::monitors::pick`.
 - [ ] D-8.6 above windows vs hide; live blur vs pre-render (APP-30…33).
 - [ ] D-8.7 H.
@@ -631,45 +631,45 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-10.1 characterization tests, then move Dock-specific rules from `app/dock/visibility.rs` to `core/dock/visibility.rs` (spec §2.4 marks this ⬜). No behavior change.
 - [ ] D-10.2 spec: define "Only display with…".
 - [ ] D-10.3 core: modes AlwaysShow, ForceVisible, DesktopOnly; on-disk `dock=` values stay stable. Table test: mode × inputs → visible.
-- [ ] D-10.4 core: detection scope (All windows / Current window) as an input to `overlapped`. Test with window lists.
+- [x] D-10.4 core: detection scope (All windows / Current window) as an input to `overlapped`. Test with window lists.
 - [ ] D-10.5 platform: overlap computation honoring scope (`wins/overlap.rs`).
 - [ ] D-10.6 ui/app: hide effect Move vs Fade.
 - [ ] D-10.7 "window borders keep windows from covering Dock/Finder": work-area reserve (QA: nothing left behind after switching).
 - [ ] D-10.8 acceptance: mode switch at runtime, no restart. · [ ] D-10.9 H.
 
 **D-11 Position (4 edges)**
-- [ ] D-11.1 core: geometry for left/right/top from (screen, edge, size, margin). Tests per edge. (`shared::geometry::Edge` exists.)
-- [ ] D-11.2 core: layout main axis (x or y). Test: same order, swapped axes.
-- [ ] D-11.3 core: magnification distance along the main axis. Test.
-- [ ] D-11.4 core: `position` codec; default bottom; old files unchanged.
+- [x] D-11.1 core: geometry for left/right/top from (screen, edge, size, margin). Tests per edge. (`shared::geometry::Edge` exists.)
+- [x] D-11.2 core: layout main axis (x or y). Test: same order, swapped axes.
+- [x] D-11.3 core: magnification distance along the main axis. Test.
+- [x] D-11.4 core: `position` codec; default bottom; old files unchanged.
 - [ ] D-11.5 app: placement per edge + work-area reserve/release (QA).
 - [ ] D-11.6 ui: vertical render (icons, indicators, separator, Trash).
 - [ ] D-11.7 app: tooltip, preview, popup anchors flip per edge.
 - [ ] D-11.8 app: minimize target from the new position. · [ ] D-11.9 H.
 
 **D-12 Hosting display**
-- [ ] D-12.1 core: store a stable monitor id, not an index; `pick` falls back to primary when it is gone. Tests.
+- [x] D-12.1 core: store a stable monitor id, not an index; `pick` falls back to primary when it is gone. Tests.
 - [ ] D-12.2 platform: monitor list with stable id and friendly name.
 - [ ] D-12.3 app: rebuild on display change / hotplug (QA).
 - [ ] D-12.4 per ADR-0007: "All displays" semantics. · [ ] D-12.5 UI: select from detected displays (WIN-02).
 
 **D-13 Activation bar**
-- [ ] D-13.1 core: hit-test rect (edge, width, height, offset). Tests per edge and an oversized offset.
-- [ ] D-13.2 core: delay state machine (enter → armed → reveal; leave cancels) as a pure `step()`. Tests like the Island's.
-- [ ] D-13.3 core: widen delay to 1500 ms; settings DAD-15…19.
+- [x] D-13.1 core: hit-test rect (edge, width, height, offset). Tests per edge and an oversized offset.
+- [x] D-13.2 core: delay state machine (enter → armed → reveal; leave cancels) as a pure `step()`. Tests like the Island's.
+- [x] D-13.3 core: widen delay to 1500 ms; settings DAD-15…19.
 - [ ] D-13.4 app: invisible hit window (layered, no-activate, topmost). · [ ] D-13.5 H.
 
 **D-14 Icon effects and light**
 - [ ] D-14.0 BASE-02 done first (`IconEffect` tests run).
-- [ ] D-14.1 core: scale curve per effect: None → 1.0, Select → 1.0, monotone falloff, symmetric. Tests.
-- [ ] D-14.2 core: UI dependency: zoom only matters when the effect magnifies (`effective_zoom`, exists in draft).
+- [x] D-14.1 core: scale curve per effect: None → 1.0, Select → 1.0, monotone falloff, symmetric. Tests.
+- [x] D-14.2 core: UI dependency: zoom only matters when the effect magnifies (`effective_zoom`, exists in draft).
 - [ ] D-14.3 ui: select plate. · [ ] D-14.4 ui: light glow (intensity, background intensity, RGB).
 - [ ] D-14.5 rows DLB-02, 04, 05, 06 (needs WIN-03). · [ ] D-14.6 H.
 
 **D-15 Surface glass and reflection**
 - [ ] D-15.1 ENG-07 done. · one commit per surface, each with rows + consumer: [ ] Dock · [ ] labels · [ ] context menus ·
   [ ] Nexora menus
-- [ ] D-15.2 core: reflection params clamp/derive (distance, gradient). Tests.
+- [x] D-15.2 core: reflection params clamp/derive (distance, gradient). Tests.
 - [ ] D-15.3 ui: reflection renderer (flipped icon, gradient mask, blur). Check footprint (BASE-11).
 - [ ] D-15.4 H.
 
@@ -679,7 +679,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-16.2 platform: each new action. · [ ] D-16.3 decide: spec/design offer bottom-left only; core has 4 corners.
 
 **D-17 Folder icons**
-- [ ] D-17.1 core: folder pin kind + grid layout (icon size 24–96). Tests: columns for a width.
+- [x] D-17.1 core: folder pin kind + grid layout (icon size 24–96). Tests: columns for a width.
 - [ ] D-17.2 platform: list folder contents (entry cap, lazy icons).
 - [ ] D-17.3 app: popup grid; double-click → Explorer; hide open-folder button. · [ ] D-17.4 H.
 

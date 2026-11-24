@@ -62,7 +62,7 @@ fn base_width(slots: &[Slot], m: &Metrics) -> f32 {
   w
 }
 
-fn falloff(distance: f32, reach: f32) -> f32 {
+pub(crate) fn falloff(distance: f32, reach: f32) -> f32 {
   let t = (distance / reach).clamp(0.0, 1.0);
   0.5 * (1.0 + (std::f32::consts::PI * t).cos())
 }

@@ -268,7 +268,6 @@ impl HotAction {
       HotAction::Stage => "stage",
       HotAction::Notifications => "notifications",
       HotAction::Lock => "lock",
-      _ => "unknown", // Placeholder for future variants (D-16.2)
     }
   }
   pub fn next(self) -> HotAction {

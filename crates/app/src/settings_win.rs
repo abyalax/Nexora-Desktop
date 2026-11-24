@@ -3043,7 +3043,6 @@ fn hot_label(a: HotAction) -> &'static str {
     Stage => "Scene",
     Notifications => "Pusat Notifikasi",
     Lock => "Kunci Layar",
-    _ => a.key(), // Show the key name for future variants (D-16.2)
   }
 }
 

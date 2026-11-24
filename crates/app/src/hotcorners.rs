@@ -102,7 +102,6 @@ fn run(a: HotAction) {
     HotAction::Stage => prefs::update(|s| s.stage = !s.stage),
     HotAction::Notifications => keys::chord(&[keys::WIN, 0x4E]),
     HotAction::Lock => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
-    _ => {}
   }
 }
 
