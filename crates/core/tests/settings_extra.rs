@@ -101,3 +101,42 @@ fn setters_keep_legacy_bools_in_step() {
   assert!(!s.autostart && !s.takeover && !s.hide_desktop_icons);
   assert_eq!(Settings::parse(&s.serialize()), s);
 }
+
+#[test]
+fn stage_size_never_wraps_around_u8() {
+  // `clamp(70, 260) as u8` used to turn 999 into 4. The field is a u8, so 255 is the real ceiling.
+  assert_eq!(Settings::parse("stage_size=999\n").stage_size, 255);
+  assert_eq!(Settings::parse("stage_size=1\n").stage_size, 70);
+  assert_eq!(Settings::parse("stage_size=200\n").stage_size, 200);
+}
+
+#[test]
+fn dock_look_and_behavior_rows_use_the_catalogue_defaults() {
+  let e = Settings::default().extra;
+  assert_eq!(e.get("dock_icon_effect"), Some(1), "Scaling");
+  assert_eq!(e.get("dock_icon_light_intensity"), Some(35));
+  assert_eq!(e.get("dock_icon_background_light"), Some(25));
+  assert_eq!(e.get("dock_icon_background_color"), Some(0x63c7dc));
+  assert_eq!(e.get("dock_activation_delay"), Some(150));
+  assert_eq!(e.get("preview_delay"), Some(450));
+  assert_eq!(e.get("dock_show_labels"), Some(0), "off by default (design)");
+  assert_eq!(e.get("dock_separate_unpinned"), Some(0), "off by default (design)");
+  assert_eq!(e.get("window_previews"), Some(1));
+}
+
+#[test]
+fn dock_rows_accept_the_wide_ranges_and_hex_colours() {
+  let s = Settings::parse(
+    "dock_activation_delay=1500\npreview_delay=99999\ndock_icon_effect=select_light\n\
+     dock_icon_background_color=#FF8000\ndock_hidden_effect=fade\ndock_show_labels=on\n",
+  );
+  assert_eq!(s.extra.dock_activation_delay, 1500);
+  assert_eq!(s.extra.preview_delay, 1500, "clamped to the 1500 ms maximum");
+  assert_eq!(s.extra.dock_icon_effect, 5);
+  assert_eq!(s.extra.dock_icon_background_color, 0xff8000);
+  assert_eq!(s.extra.dock_hidden_effect, 1);
+  assert!(s.extra.dock_show_labels);
+  let text = s.serialize();
+  assert!(text.contains("dock_icon_background_color=#ff8000"));
+  assert_eq!(Settings::parse(&text), s);
+}

@@ -7,7 +7,7 @@
 //!
 //! Ranges and defaults follow `docs/settings_catalog.md`. Percent-like sliders store whole numbers
 //! (`font_scale` is 75–150 = 0.75–1.5×). Select rows store an index into their option list; the saved text is the
-//! option name, so reordering the UI never changes a file.
+//! option name, so reordering the UI never changes a file. Colour rows store `0xRRGGBB` and are saved as `#rrggbb`.
 
 use std::fmt::Write as _;
 
@@ -26,6 +26,10 @@ pub enum Kind {
     names: &'static [&'static str],
     default: u8,
   },
+  /// `0xRRGGBB`, saved as `#rrggbb`.
+  Color {
+    default: u32,
+  },
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -34,22 +38,33 @@ pub struct Spec {
   pub kind: Kind,
 }
 
+/// `#rrggbb` or `rrggbb` (exactly six hex digits). Anything else is garbage and the caller keeps its old value.
+fn parse_hex_color(v: &str) -> Option<u32> {
+  let h = v.trim().strip_prefix('#').unwrap_or(v.trim());
+  if h.len() != 6 || !h.bytes().all(|b| b.is_ascii_hexdigit()) {
+    return None;
+  }
+  u32::from_str_radix(h, 16).ok()
+}
+
 macro_rules! extra_settings {
   (
     bool { $($b:ident : $bd:expr,)* }
     int { $($i:ident : $imin:expr, $imax:expr, $idef:expr;)* }
     choice { $($c:ident : [$($cn:literal),+], $cdef:expr;)* }
+    color { $($k:ident : $kdef:expr;)* }
   ) => {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     pub struct Extra {
       $(pub $b: bool,)*
       $(pub $i: u16,)*
       $(pub $c: u8,)*
+      $(pub $k: u32,)*
     }
 
     impl Default for Extra {
       fn default() -> Self {
-        Extra { $($b: $bd,)* $($i: $idef,)* $($c: $cdef,)* }
+        Extra { $($b: $bd,)* $($i: $idef,)* $($c: $cdef,)* $($k: $kdef,)* }
       }
     }
 
@@ -59,6 +74,7 @@ macro_rules! extra_settings {
         $(Spec { key: stringify!($b), kind: Kind::Bool { default: $bd } },)*
         $(Spec { key: stringify!($i), kind: Kind::Int { min: $imin, max: $imax, default: $idef } },)*
         $(Spec { key: stringify!($c), kind: Kind::Choice { names: &[$($cn),+], default: $cdef } },)*
+        $(Spec { key: stringify!($k), kind: Kind::Color { default: $kdef } },)*
       ];
 
       /// Apply one `key=value` line. Returns `false` when `key` is not an extra key.
@@ -81,6 +97,12 @@ macro_rules! extra_settings {
           }
           return true;
         })*
+        $(if key == stringify!($k) {
+          if let Some(x) = parse_hex_color(v) {
+            self.$k = x;
+          }
+          return true;
+        })*
         false
       }
 
@@ -96,6 +118,9 @@ macro_rules! extra_settings {
         $(if self.$c != d.$c {
           let _ = writeln!(out, "{}={}", stringify!($c), [$($cn),+][self.$c as usize]);
         })*
+        $(if self.$k != d.$k {
+          let _ = writeln!(out, "{}=#{:06x}", stringify!($k), self.$k);
+        })*
       }
 
       /// Current value of a row as a number (bool 0/1, int as is, choice index). `None` for an unknown key.
@@ -108,6 +133,9 @@ macro_rules! extra_settings {
         })*
         $(if key == stringify!($c) {
           return Some(self.$c as i64);
+        })*
+        $(if key == stringify!($k) {
+          return Some(self.$k as i64);
         })*
         None
       }
@@ -179,6 +207,13 @@ extra_settings! {
     notch_media: true, // IAC-01
     notch_shelf: true, // IAC-05
     notch_timer: true, // IAC-07
+    dock_lock_dragging: false, // DAD-04
+    dock_show_labels: false, // DAD-05
+    dock_animate_launch: true, // DAD-06
+    dock_show_indicators: true, // DAD-08
+    dock_show_unpinned: true, // DAD-09
+    dock_separate_unpinned: false, // DAD-10
+    window_previews: true, // DPV-01
   }
   int {
     font_scale: 75, 150, 100; // GEN-12
@@ -218,6 +253,10 @@ extra_settings! {
     dock_act_bar_distance: 0, 40, 0; // DAD-18
     preview_size: 120, 520, 260; // DPV-02
     finder_notification_seconds: 1, 15, 5; // FNO-03
+    dock_icon_light_intensity: 0, 100, 35; // DLB-04
+    dock_icon_background_light: 0, 100, 25; // DLB-05
+    dock_activation_delay: 0, 1500, 150; // DAD-19 (ms)
+    preview_delay: 0, 1500, 450; // DPV-03 (ms)
   }
   choice {
     start_method: ["none", "registry", "task"], 0; // GEN-08
@@ -237,6 +276,11 @@ extra_settings! {
     finder_date_format: ["short", "long", "iso"], 0; // FTD-04
     finder_power_mode_plugged: ["balanced", "best_performance", "best_power_efficiency"], 0; // FBA-05
     finder_power_mode_battery: ["balanced", "best_performance", "best_power_efficiency"], 0; // FBA-06
+    dock_icon_effect: ["none", "scaling", "select", "light", "scaling_light", "select_light"], 1; // DLB-02
+    dock_hidden_effect: ["move", "fade"], 0; // DAD-14
+  }
+  color {
+    dock_icon_background_color: 0x63c7dc; // DLB-06
   }
 }
 
@@ -290,6 +334,29 @@ mod tests {
           e.apply(s.key, &max.to_string());
           let mut text = String::new();
           e.write_non_default(&mut text);
+          let mut back = Extra::default();
+          for l in text.lines() {
+            let (k, v) = l.split_once('=').unwrap();
+            back.apply(k, v);
+          }
+          assert_eq!(back, e, "{} round-trip", s.key);
+        }
+        Kind::Color { default } => {
+          assert_eq!(d.get(s.key), Some(default as i64), "{} default", s.key);
+          for bad in ["banana", "#12345", "#1234567", "#gggggg", "", "#"] {
+            assert_eq!(line(s.key, bad), d, "{} garbage {bad:?} keeps default", s.key);
+          }
+          assert_eq!(
+            line(s.key, "#FF8000").get(s.key),
+            Some(0xff8000),
+            "{} upper-case hex",
+            s.key
+          );
+          assert_eq!(line(s.key, "ff8000").get(s.key), Some(0xff8000), "{} without #", s.key);
+          let e = line(s.key, "#010203");
+          let mut text = String::new();
+          e.write_non_default(&mut text);
+          assert!(text.contains("=#010203"), "{} writes lower-case #rrggbb", s.key);
           let mut back = Extra::default();
           for l in text.lines() {
             let (k, v) = l.split_once('=').unwrap();

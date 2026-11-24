@@ -166,7 +166,7 @@ impl Settings {
             s.stage_titles = b;
           }
         }
-        "stage_size" => s.stage_size = v.parse::<i32>().map(|n| n.clamp(70, 260) as u8).unwrap_or(s.stage_size),
+        "stage_size" => s.stage_size = v.parse::<i32>().map(|n| n.clamp(70, 255) as u8).unwrap_or(s.stage_size),
         "stage_gap" => s.stage_gap = v.parse::<i32>().map(|n| n.clamp(0, 60) as u8).unwrap_or(s.stage_gap),
         "stage_count" => s.stage_count = v.parse::<i32>().map(|n| n.clamp(2, 10) as u8).unwrap_or(s.stage_count),
         "stage_speed" => {
