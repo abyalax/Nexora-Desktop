@@ -811,8 +811,15 @@ English labels that were missing), QA files in `docs/qa/` (see `docs/qa/README.m
 
 ## M8 — HTML parity (optional)
 
-- [ ] **HTM-07** Script that diffs the Rust catalogue (`docs/settings_catalog.md`) against `design/settings-schema.js` and
+- [x] **HTM-07** Script that diffs the Rust catalogue (`docs/settings_catalog.md`) against `design/settings-schema.js` and
   prints keys missing on either side. Run in CI as a warning, not a failure.
+  Done: `scripts/schema_parity.mjs` (`--strict` exits 1 on differences), tests in `design/tests/schema-parity.test.mjs`, CI job
+  `design` (warning only). Until HTM-01 creates `design/settings-schema.js` the script reads `defaultSettings` from
+  `design/nexora-v1.html`. First report: 1 key only in the catalogue (`shared.aboveFullscreen`, GEN-03, design name is
+  `shared.exitOnFullscreen`), 17 only in the HTML (`shared.exitOnFullscreen`, the other half of GEN-03; 14 duplicated
+  `shared.*` keys that HTM-03 removes; and `shared.showScreenMirroring` plus `finder.showScreenMirroring`, dropped by
+  ADR-0007 FDI-02). Node 22 needs `node --test "design/tests/*.test.mjs"`;
+  a bare directory argument no longer works.
 
 ---
 

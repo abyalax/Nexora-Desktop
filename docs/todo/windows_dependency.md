@@ -112,3 +112,6 @@ Core M7 selesai dan diuji di Linux (`cargo test -p nexora-core`): `shared/featur
 - [ ] **ADR-0009**: migrasi edition 2024 (`cargo fix --edition`), baru bisa diverifikasi dengan build Windows.
 - [ ] **QA-05**: audit baris ✅ di `feature_checkpoint.md` terhadap perilaku Windows (§8 sudah memuat status M7).
 - [ ] **L3, L4, L5, L7** di rencana tes: tes platform (`#[ignore]`), smoke `--settings-page`, QA manual, dan footprint.
+
+## 8. Paritas HTML (M8)
+Tidak ada task M8 yang bergantung pada Windows. **HTM-07** (`scripts/schema_parity.mjs`, tes `design/tests/schema-parity.test.mjs`, job CI `design`) berjalan dengan Node di Linux dan Windows, jadi dikerjakan dan diverifikasi di sini, bukan di daftar ini.

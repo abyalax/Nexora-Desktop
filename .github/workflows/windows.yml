@@ -37,3 +37,16 @@ jobs:
         run: cargo check --workspace
       - name: Test
         run: cargo test --workspace
+
+  design:
+    name: HTML design (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: HTML tests
+        run: node --test "design/tests/*.test.mjs"
+      - name: Schema parity Rust catalogue vs HTML (warning only, HTM-07)
+        run: node scripts/schema_parity.mjs

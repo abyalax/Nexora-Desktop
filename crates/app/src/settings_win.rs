@@ -155,14 +155,9 @@ enum Action {
   BatteryPct(u8),
   // M2 DLB settings
   DockIconEffect(u8),
-  DockIconLightInt(u8),
-  DockIconBgLightInt(u8),
   DockPosition(u8),
   DockDisplay(u8),
   // M2 DLP settings
-  LaunchpadIconSize(u8),
-  LaunchpadHSpacing(u8),
-  LaunchpadVSpacing(u8),
   LaunchpadSources(u8),
   LaunchpadDisplay(u8),
   LaunchpadFollowDock,
@@ -179,10 +174,6 @@ enum Action {
   DockDetection(u8),
   DockHiddenEffect(u8),
   DockActivationTrigger(u8),
-  DockActBarWidth(u8),
-  DockActBarHeight(u8),
-  DockActBarDistance(u8),
-  DockActivationDelay(u8),
   // M2 DMN settings
   UseNexoraMinimize,
   DisableMinimizeAnim,
@@ -193,8 +184,6 @@ enum Action {
   MinimizeAnimSpeed(u8),
   // M2 DPV settings
   WindowPreviews,
-  PreviewSize(u8),
-  PreviewDelay(u8),
   PreviewAppName,
   PreviewControls,
   PreviewNative,
@@ -222,7 +211,6 @@ enum Action {
   // M2 FNO settings
   FinderShowNotif,
   FinderNotifSounds,
-  FinderNotifDuration(u8),
   // M2 FTD settings
   FinderShowTime,
   FinderShowDate,
@@ -243,10 +231,6 @@ enum Action {
   FinderAutoPowerModes,
   FinderPowerPlugged(u8),
   FinderPowerBattery(u8),
-  // M2 IAC settings
-  IslandMedia,
-  IslandShelf,
-  IslandTimer,
   // M2 APP settings
   CustomDockBlur,
   PinnedReflections,
@@ -262,17 +246,12 @@ enum Action {
   TrayAllDock,
   TraySystemFinder,
   NightLight,
-  // M2 TRY settings
-  NewTrayIconSeconds(u8),
   // M2 SCR settings
-  ScreenBrightness(u8),
-  NightLightIntensity(u8),
   ScreenTarget(u8),
   // M2 GEN settings
   StartMethod(u8),
   TaskbarScope(u8),
   DisplayFont(u8),
-  FontScale(u8),
   // M2 WAN settings
   WindowAnimEffect(u8),
   WindowAnimSpeed(u8),
@@ -331,23 +310,10 @@ impl Page {
       Page::Advanced => "\u{E73F}",
     }
   }
-
-  fn from_index(idx: u8) -> Option<Self> {
-    match idx {
-      0 => Some(Page::General),
-      1 => Some(Page::Dock),
-      2 => Some(Page::Island),
-      3 => Some(Page::Stage),
-      4 => Some(Page::Appearance),
-      5 => Some(Page::Advanced),
-      _ => None,
-    }
-  }
 }
 
 enum RowDef {
   Toggle(&'static str, bool, Action),
-  ToggleInactive(&'static str, bool, Action, bool),
   Seg(&'static str, Vec<(&'static str, Action)>, usize),
   Slider(&'static str, u8, u8),
   Pick(&'static str, String, Action),
@@ -355,7 +321,6 @@ enum RowDef {
   Thumbs(&'static str, Vec<(&'static str, Thumb, Action)>, usize),
   Radios(Vec<(&'static str, Action)>, usize),
   Text(&'static str, String, String, u8),
-  List(&'static str, Vec<String>, Action),
 }
 
 #[derive(Clone, Copy)]
@@ -379,14 +344,12 @@ const ACCENT_NAMES: [&str; 9] = [
 fn row_label(r: &RowDef) -> &'static str {
   match r {
     RowDef::Toggle(l, ..)
-    | RowDef::ToggleInactive(l, ..)
     | RowDef::Seg(l, ..)
     | RowDef::Slider(l, ..)
     | RowDef::Pick(l, ..)
     | RowDef::Swatches(l, ..)
     | RowDef::Thumbs(l, ..)
-    | RowDef::Text(l, ..)
-    | RowDef::List(l, ..) => l,
+    | RowDef::Text(l, ..) => l,
     RowDef::Radios(..) => "",
   }
 }
@@ -867,7 +830,6 @@ impl Win {
       RowDef::Thumbs(..) => 96.0,
       RowDef::Radios(..) => 34.0,
       RowDef::Swatches(..) => 58.0,
-      RowDef::List(..) => 68.0,
       _ => 44.0,
     }
   }
@@ -889,7 +851,7 @@ impl Win {
     let accent = prefs::accent();
     for (i, r) in rows.iter().enumerate() {
       let rh = Self::row_height(r) * d;
-      if i > 0 && !matches!(r, RowDef::Radios(..) | RowDef::List(..)) {
+      if i > 0 && !matches!(r, RowDef::Radios(..)) {
         self.rect(c, x0 + 16.0 * d, y, cw - 32.0 * d, 1.0, 0.0, col(look.fg, 28));
       }
       let (lx, rx) = (x0 + 16.0 * d, x0 + cw - 16.0 * d);
@@ -932,48 +894,6 @@ impl Win {
             );
           }
           self.region(x0, y, cw, rh, *act);
-        }
-        RowDef::ToggleInactive(label, on, act, inactive) => {
-          let alpha = if *inactive { 0.4 } else { 0.95 };
-          let rgb = if *inactive { look.fg } else { look.fg };
-          self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, rgb, alpha, 0);
-          let (tw, th) = (46.0 * d, 22.0 * d);
-          let (tx, ty) = (rx - tw, y + (rh - th) / 2.0);
-          let bg_color = if *inactive {
-            col(look.fg, 30)
-          } else if *on {
-            col(accent, 255)
-          } else {
-            col(look.fg, 60)
-          };
-          self.rect(c, tx, ty, tw, th, th / 2.0, bg_color);
-          let knob = th - 4.0 * d;
-          let pressed = self.press.map_or(false, |(px, py)| {
-            px >= x0 && px < x0 + cw && py + self.scroll >= y && py + self.scroll < y + rh && py > VIEW_TOP * d
-          });
-          let kw = if pressed { knob * 1.8 } else { knob * 1.55 };
-          let kx = if *on { tx + tw - kw - 2.0 * d } else { tx + 2.0 * d };
-          if pressed {
-            self.glass_knob(c, kx, ty + 2.0 * d, kw, knob);
-          } else {
-            self.rect(
-              c,
-              kx,
-              ty + 2.0 * d,
-              kw,
-              knob,
-              knob / 2.0,
-              Color {
-                A: if *inactive { 150 } else { 255 },
-                R: 255,
-                G: 255,
-                B: 255,
-              },
-            );
-          }
-          if !*inactive {
-            self.region(x0, y, cw, rh, *act);
-          }
         }
         RowDef::Seg(label, opts, sel) => {
           self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
@@ -1306,27 +1226,6 @@ impl Win {
             0,
           );
           self.region(bx, y, bw, rh, Action::EditText(*field));
-        }
-        RowDef::List(label, items, act) => {
-          self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
-          let item_count = items.len();
-          let hint = if item_count == 0 { "(kosong)" } else { "" };
-          self.text(c, hint, rx, y + (rh - 17.0 * d) / 2.0, 12.5, 400, look.fg, 0.7, 2);
-          let (bw, bh) = (32.0 * d, 24.0 * d);
-          let (bx, by) = (rx - bw - 40.0 * d, y + (rh - bh) / 2.0);
-          self.rect(c, bx, by, bw, bh, bh / 2.0, col(look.fg, 50));
-          self.text(
-            c,
-            &format!("{} items", item_count),
-            bx + bw / 2.0,
-            by + (bh - 14.0 * d) / 2.0,
-            11.0,
-            500,
-            [255, 255, 255],
-            0.9,
-            1,
-          );
-          self.region(bx, y, bw + 40.0 * d, rh, *act);
         }
         RowDef::Pick(label, value, act) => {
           self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
@@ -3343,14 +3242,9 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::NotchShape(b)) => prefs::update(|s| s.notch_island = b),
         // M2 DLB handlers
         Some(Action::DockIconEffect(v)) => prefs::update(|s| s.extra.dock_icon_effect = v),
-        Some(Action::DockIconLightInt(v)) => prefs::update(|s| s.extra.dock_icon_light_intensity = v as u16),
-        Some(Action::DockIconBgLightInt(v)) => prefs::update(|s| s.extra.dock_icon_background_light = v as u16),
         Some(Action::DockPosition(v)) => prefs::update(|s| s.extra.dock_position = v),
         Some(Action::DockDisplay(v)) => prefs::update(|s| s.extra.dock_display = v as u16),
         // M2 DLP handlers
-        Some(Action::LaunchpadIconSize(v)) => prefs::update(|s| s.extra.launchpad_icon_size = v as u16),
-        Some(Action::LaunchpadHSpacing(v)) => prefs::update(|s| s.extra.launchpad_h_spacing = v as u16),
-        Some(Action::LaunchpadVSpacing(v)) => prefs::update(|s| s.extra.launchpad_v_spacing = v as u16),
         Some(Action::LaunchpadSources(v)) => prefs::update(|s| s.extra.launchpad_sources = v),
         Some(Action::LaunchpadDisplay(v)) => prefs::update(|s| s.extra.launchpad_display = v as u16),
         Some(Action::LaunchpadFollowDock) => {
@@ -3379,10 +3273,6 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::DockDetection(v)) => prefs::update(|s| s.extra.dock_detection = v),
         Some(Action::DockHiddenEffect(v)) => prefs::update(|s| s.extra.dock_hidden_effect = v),
         Some(Action::DockActivationTrigger(v)) => prefs::update(|s| s.extra.dock_activation_trigger = v),
-        Some(Action::DockActBarWidth(v)) => prefs::update(|s| s.extra.dock_act_bar_width = v as u16),
-        Some(Action::DockActBarHeight(v)) => prefs::update(|s| s.extra.dock_act_bar_height = v as u16),
-        Some(Action::DockActBarDistance(v)) => prefs::update(|s| s.extra.dock_act_bar_distance = v as u16),
-        Some(Action::DockActivationDelay(v)) => prefs::update(|s| s.extra.dock_activation_delay = v as u16),
         // M2 DMN handlers
         Some(Action::UseNexoraMinimize) => {
           prefs::update(|s| s.extra.use_nexora_minimize = !s.extra.use_nexora_minimize)
@@ -3399,8 +3289,6 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::MinimizeAnimSpeed(v)) => prefs::update(|s| s.extra.minimize_anim_speed = v),
         // M2 DPV handlers
         Some(Action::WindowPreviews) => prefs::update(|s| s.extra.window_previews = !s.extra.window_previews),
-        Some(Action::PreviewSize(v)) => prefs::update(|s| s.extra.preview_size = v as u16),
-        Some(Action::PreviewDelay(v)) => prefs::update(|s| s.extra.preview_delay = v as u16),
         Some(Action::PreviewAppName) => prefs::update(|s| s.extra.preview_app_name = !s.extra.preview_app_name),
         Some(Action::PreviewControls) => prefs::update(|s| s.extra.preview_controls = !s.extra.preview_controls),
         Some(Action::PreviewNative) => prefs::update(|s| s.extra.preview_native = !s.extra.preview_native),
@@ -3454,7 +3342,6 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::FinderNotifSounds) => {
           prefs::update(|s| s.extra.finder_notification_sounds = !s.extra.finder_notification_sounds)
         }
-        Some(Action::FinderNotifDuration(v)) => prefs::update(|s| s.extra.finder_notification_seconds = v as u16),
         // M2 FTD handlers
         Some(Action::FinderShowTime) => prefs::update(|s| s.extra.finder_show_time = !s.extra.finder_show_time),
         Some(Action::FinderShowDate) => prefs::update(|s| s.extra.finder_show_date = !s.extra.finder_show_date),
@@ -3491,10 +3378,6 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         }
         Some(Action::FinderPowerPlugged(v)) => prefs::update(|s| s.extra.finder_power_mode_plugged = v),
         Some(Action::FinderPowerBattery(v)) => prefs::update(|s| s.extra.finder_power_mode_battery = v),
-        // M2 IAC handlers
-        Some(Action::IslandMedia) => prefs::update(|s| s.extra.notch_media = !s.extra.notch_media),
-        Some(Action::IslandShelf) => prefs::update(|s| s.extra.notch_shelf = !s.extra.notch_shelf),
-        Some(Action::IslandTimer) => prefs::update(|s| s.extra.notch_timer = !s.extra.notch_timer),
         // M2 APP handlers
         Some(Action::CustomDockBlur) => prefs::update(|s| s.extra.custom_dock_blur = !s.extra.custom_dock_blur),
         Some(Action::PinnedReflections) => prefs::update(|s| s.extra.pinned_reflections = !s.extra.pinned_reflections),
@@ -3520,17 +3403,12 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::TrayAllDock) => prefs::update(|s| s.extra.tray_all_dock = !s.extra.tray_all_dock),
         Some(Action::TraySystemFinder) => prefs::update(|s| s.extra.tray_system_finder = !s.extra.tray_system_finder),
         Some(Action::NightLight) => prefs::update(|s| s.extra.night_light = !s.extra.night_light),
-        // M2 TRY handlers
-        Some(Action::NewTrayIconSeconds(v)) => prefs::update(|s| s.extra.new_tray_icon_seconds = v as u16),
         // M2 SCR handlers
-        Some(Action::ScreenBrightness(v)) => prefs::update(|s| s.extra.screen_brightness = v as u16),
-        Some(Action::NightLightIntensity(v)) => prefs::update(|s| s.extra.night_light_intensity = v as u16),
         Some(Action::ScreenTarget(v)) => prefs::update(|s| s.extra.screen_target = v),
         // M2 GEN handlers
         Some(Action::StartMethod(v)) => prefs::update(|s| s.extra.start_method = v),
         Some(Action::TaskbarScope(v)) => prefs::update(|s| s.extra.taskbar_scope = v),
         Some(Action::DisplayFont(v)) => prefs::update(|s| s.extra.display_font = v),
-        Some(Action::FontScale(v)) => prefs::update(|s| s.extra.font_scale = v as u16),
         // M2 WAN handlers
         Some(Action::WindowAnimEffect(v)) => prefs::update(|s| s.extra.window_anim_effect = v),
         Some(Action::WindowAnimSpeed(v)) => prefs::update(|s| s.extra.window_anim_speed = v),
