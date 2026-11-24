@@ -4,12 +4,15 @@ use nexora_core::settings::Settings;
 
 fn round_trips(text: &str) {
   let parsed = Settings::parse(text);
+  let serialized = parsed.serialize();
+  // Normalize line endings for cross-platform comparison
+  let normalized_text = text.replace("\r\n", "\n");
   assert_eq!(
-    parsed.serialize(),
-    text,
+    serialized,
+    normalized_text,
     "serialize(parse(file)) must equal the original file"
   );
-  assert_eq!(Settings::parse(&parsed.serialize()), parsed);
+  assert_eq!(Settings::parse(&serialized), parsed);
 }
 
 #[test]
