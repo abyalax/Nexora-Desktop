@@ -9,6 +9,7 @@ use crate::{
   mission, paths, prefs, services, settings_win, spotlight, stage, switcher, topmost, widgets,
 };
 use nexora_core::settings::Settings;
+use nexora_core::shared::features::{self, Outcome, Startup};
 use nexora_platform::log;
 use nexora_ui::host::Host;
 use windows::Win32::Foundation::HWND;
@@ -22,11 +23,26 @@ pub fn run() {
   }
 }
 
-/// Logs a failed feature start under `tag` and carries on.
-fn report<E: std::fmt::Display>(tag: &str, result: Result<(), E>) {
-  if let Err(e) = result {
-    log::line(tag, &format!("gagal: {e}"));
+/// Raw `NEXORA_FAIL_FEATURE` value: names of features to force-fail (REC-02, manual test only).
+fn forced_features() -> Option<String> {
+  std::env::var("NEXORA_FAIL_FEATURE").ok()
+}
+
+/// Starts feature `tag` with `init`; a failure (real or forced) is logged and start-up carries on.
+fn report<E: std::fmt::Display>(tag: &'static str, init: impl FnOnce() -> Result<(), E>) {
+  let mut startup = Startup::new(forced_features());
+  if let Outcome::Failed(why) = startup.run(tag, init) {
+    log::line(tag, &format!("gagal: {why}"));
   }
+}
+
+/// True (and logged) when `NEXORA_FAIL_FEATURE` forces `tag` to fail before it is created.
+fn forced_off(tag: &str) -> bool {
+  let off = features::forced(forced_features().as_deref(), tag);
+  if off {
+    log::line(tag, "gagal: dipaksa gagal (NEXORA_FAIL_FEATURE)");
+  }
+  off
 }
 
 fn initialize() -> Option<Application> {
@@ -96,7 +112,7 @@ fn initialize() -> Option<Application> {
 }
 
 fn start_dock(host: &Host, main_hwnd: HWND, args: &Args, pref: &Settings) {
-  if args.no_dock {
+  if args.no_dock || forced_off("dock") {
     return;
   }
   let created = dock::Dock::create(
@@ -115,7 +131,7 @@ fn start_dock(host: &Host, main_hwnd: HWND, args: &Args, pref: &Settings) {
 }
 
 fn start_island(host: &Host, args: &Args, pref: &Settings) {
-  if args.no_island {
+  if args.no_island || forced_off("notch") {
     return;
   }
   let created = dynamic_island::Notch::create(
@@ -137,20 +153,20 @@ fn start_desktop_features(host: &Host, args: &Args) {
   if args.open_settings {
     settings_win::open(&host.compositor, args.settings_page);
   }
-  report("mission", mission::init(&host.compositor));
-  report("launchpad", launchpad::init(&host.compositor));
+  report("mission", || mission::init(&host.compositor));
+  report("launchpad", || launchpad::init(&host.compositor));
   recovery::restore_cursors();
-  report("macshortcuts", macshortcuts::init());
-  report("clipboard", nexora_platform::clipboard::init());
-  report("spotlight", spotlight::init(&host.compositor));
-  report("stage", stage::init(&host.compositor));
-  report("controlcenter", controlcenter::init(&host.compositor));
-  report("switcher", switcher::init(&host.compositor));
-  report("menubar", menubar::init(&host.compositor));
-  report("topmost", topmost::init());
-  report("hotcorner", hotcorners::init());
-  report("fx", fx::init(host));
-  report("widgets", widgets::init(&host.compositor));
+  report("macshortcuts", macshortcuts::init);
+  report("clipboard", nexora_platform::clipboard::init);
+  report("spotlight", || spotlight::init(&host.compositor));
+  report("stage", || stage::init(&host.compositor));
+  report("controlcenter", || controlcenter::init(&host.compositor));
+  report("switcher", || switcher::init(&host.compositor));
+  report("menubar", || menubar::init(&host.compositor));
+  report("topmost", topmost::init);
+  report("hotcorner", hotcorners::init);
+  report("fx", || fx::init(host));
+  report("widgets", || widgets::init(&host.compositor));
   nexora_platform::sys::trim_later(20_000);
   if args.open_widgets {
     widgets::open_gallery();

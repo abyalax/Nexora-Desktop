@@ -784,15 +784,30 @@ Core logic for every page below is done and tested (Linux). What is left is OS o
 
 ## M7 — Hardening
 
+**Status: core slices done (Linux); Windows halves are open and listed in `windows_dependency.md` §7.** Added:
+`core/shared/features.rs` (REC-02), `core/tests/upgrade_0_4_0.rs` (QA-02), `core/tests/i18n_completeness.rs` (QA-04, with 169
+English labels that were missing), QA files in `docs/qa/` (see `docs/qa/README.md`). Nothing here was built or run on Windows.
+
 - [ ] **REC-01** Every change to a system surface has a restore path in `nexora-guard`: taskbar per display, work-area
   reserve, parked windows, cursors, gamma ramp (if used). Manual test: normal exit, panic, Ctrl-C, kill.
+  - [x] checklist and result matrix: `docs/qa/rec-01-recovery.md`
+  - [ ] taskbar per display, work-area reserve and gamma restored by `guard` · [ ] matrix run on Windows
 - [ ] **REC-02** A feature that fails to start logs and the rest keeps running (spec rule 3). Test by forcing each feature to fail.
+  - [x] core: `shared/features.rs` (`Startup`, `forced`, `START_ORDER`), 6 tests
+  - [x] app: `bootstrap.rs` runs every feature through `Startup`; `NEXORA_FAIL_FEATURE` forces a failure (not built on Windows)
+  - [ ] QA run: `docs/qa/rec-02-feature-failure.md`
 - [ ] **QA-01** One `docs/qa/<id>.md` per Windows-only behavior (use BASE-10).
+  - [x] index: `docs/qa/README.md` · [ ] the 17 files it lists as missing (written with their behaviors, M4/M5)
 - [ ] **QA-02** Upgrade test: a real 0.4.0 `settings.cfg` loads in the new build, keeps all values, adds no keys until a
   new setting changes (ADR-0004), and a file saved by the new build is still readable by 0.4.0 semantics (unknown keys ignored).
+  - [x] automated: `core/tests/upgrade_0_4_0.rs` · [ ] manual with a real file: `docs/qa/qa-02-upgrade.md`
 - [ ] **QA-03** Footprint: repeat BASE-11 at each milestone; any new always-on work gets a note in `docs/decisions/`.
-- [ ] **QA-04** i18n completeness (ENG-10) green for every page.
+  - [x] procedure: `docs/qa/qa-03-footprint.md` · [ ] measure on Windows and create `docs/bench.md` (does not exist yet)
+- [x] **QA-04** i18n completeness (ENG-10) green for every page. (`core/tests/i18n_completeness.rs`; every `tr("…")` in
+  `crates/app/src` is known to `shared::i18n`.)
 - [ ] **QA-05** Update `feature_checkpoint.md`, `guides.md`, README modular table (SPEC-05).
+  - [x] `feature_checkpoint.md` §8 · [ ] `guides.md` and README: no change needed yet; recheck after Windows runs
+  - [ ] audit the ✅ rows against Windows behavior (BASE-12)
 
 ## M8 — HTML parity (optional)
 

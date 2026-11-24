@@ -81,9 +81,34 @@ Core M5 sudah selesai dan diuji di Linux (`cargo test -p nexora-core`); semua it
 [ ] **SCR**: jendela overlay click-through (`dim_alpha`, `night_light`) atau gamma ramp (`gamma_gain`); target monitor lewat `screen::targets`; gamma wajib punya jalur restore di `nexora-guard`.
 
 ## 7. Hardening (M7) dan lapisan tes
-- [ ] **REC-01**: jalur restore di `nexora-guard` untuk taskbar per display, work area, parked windows, cursor, dan gamma; uji manual saat exit normal, panic, Ctrl-C, dan kill.
-- [ ] **REC-02**: paksa tiap fitur gagal start, dan pastikan fitur lain tetap jalan.
-- [ ] **QA-01**: satu `docs/qa/<id>.md` untuk setiap perilaku khusus Windows.
-- [ ] **QA-02**: tes upgrade dengan `settings.cfg` 0.4.0 asli.
-- [ ] **QA-03**: footprint tiap milestone.
+Core M7 selesai dan diuji di Linux (`cargo test -p nexora-core`): `shared/features.rs` (REC-02), `tests/upgrade_0_4_0.rs` (QA-02), `tests/i18n_completeness.rs` (QA-04). Item di bawah belum pernah dibangun atau dijalankan di Windows.
+
+### REC-01 Jalur restore di `nexora-guard` (`docs/qa/rec-01-recovery.md`)
+- [x] taskbar, jendela terparkir, dan kursor sudah dipulihkan `guard` (ada di `crates/guard/src/main.rs`).
+- [ ] taskbar **per display**: tulis ke marker di `platform/shell/taskbar.rs` dan pulihkan di `guard` (sama dengan "Hide taskbar on boot" di §6).
+- [ ] reserve work area (Dock/Finder app bar): catat di marker, lepaskan di `guard`.
+- [ ] gamma ramp: wajib punya jalur restore di `guard` sebelum SCR memakainya (§6).
+- [ ] jalankan matriks 6 permukaan × 5 jalur keluar (normal, panic, Ctrl-C, kill, kill + guard).
+- [ ] opsional: flag CLI untuk memicu panic (belum ada; rilis memakai `panic = "abort"`).
+
+### REC-02 Fitur gagal start tidak menjatuhkan fitur lain (`docs/qa/rec-02-feature-failure.md`)
+- [x] core: `shared/features.rs`, 6 tes (tiap dari 15 fitur dipaksa gagal, sisanya tetap jalan).
+- [ ] `app/bootstrap.rs` sudah memakai `Startup` dan `NEXORA_FAIL_FEATURE` (kode ditulis, belum dikompilasi di Windows; cek `cargo clippy` untuk `redundant_closure`).
+- [ ] jalankan tabel 16 baris di QA (15 fitur + `all`).
+
+### QA-01 Satu `docs/qa/<id>.md` per perilaku khusus Windows
+- [x] indeks dan daftar yang belum ada: `docs/qa/README.md` (M4: 11 berkas, M5: 6 berkas).
+- [ ] tulis tiap berkas bersama perilakunya, lalu isi hasilnya di Windows 11.
+
+### QA-02 Tes upgrade
+- [x] otomatis: `core/tests/upgrade_0_4_0.rs`.
+- [ ] manual dengan `settings.cfg` 0.4.0 asli dan installer `NEXORA.iss` (`docs/qa/qa-02-upgrade.md`).
+
+### QA-03 Footprint
+- [ ] jalankan `tools/bench/m1-verify.ps1`, isi `docs/bench.md` (berkas ini belum ada dan belum ada angka terukur); ulangi di akhir tiap milestone.
+- [ ] tidak ada timer lebih cepat dari 1 detik saat idle (I-12.3, F-15.2).
+
+### Lain-lain
+- [ ] **ADR-0009**: migrasi edition 2024 (`cargo fix --edition`), baru bisa diverifikasi dengan build Windows.
+- [ ] **QA-05**: audit baris ✅ di `feature_checkpoint.md` terhadap perilaku Windows (§8 sudah memuat status M7).
 - [ ] **L3, L4, L5, L7** di rencana tes: tes platform (`#[ignore]`), smoke `--settings-page`, QA manual, dan footprint.

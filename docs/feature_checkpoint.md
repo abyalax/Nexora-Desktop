@@ -48,25 +48,25 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 
 ### 2.2 Capabilities
 
-| ID   | Capability                                                                             | Status                                                        |
-| ---- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| D-1  | Show pinned apps and running apps; running apps get an indicator                       | ✅                                                             |
-| D-2  | Click to launch or focus; group a running app's windows, sorted by recent focus        | ✅                                                             |
-| D-3  | Pin / unpin, drag to reorder, lock reorder                                             | ✅ / ⬜ lock (drafted in `core/dock/behavior.rs`, not compiled) |
-| D-4  | Recently used apps stay after they quit (toggle)                                       | ✅                                                             |
-| D-5  | Magnification on hover, icon size, gap, edge margin                                    | ✅                                                             |
-| D-6  | Live window previews on hover for running apps                                         | ✅                                                             |
+| ID   | Capability                                                                             | Status                                                                                                    |
+| ---- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| D-1  | Show pinned apps and running apps; running apps get an indicator                       | ✅                                                                                                         |
+| D-2  | Click to launch or focus; group a running app's windows, sorted by recent focus        | ✅                                                                                                         |
+| D-3  | Pin / unpin, drag to reorder, lock reorder                                             | ✅ / ⬜ lock (drafted in `core/dock/behavior.rs`, not compiled)                                             |
+| D-4  | Recently used apps stay after they quit (toggle)                                       | ✅                                                                                                         |
+| D-5  | Magnification on hover, icon size, gap, edge margin                                    | ✅                                                                                                         |
+| D-6  | Live window previews on hover for running apps                                         | ✅                                                                                                         |
 | D-7  | Minimize-into-Dock animation (Genie, Scale, Suck)                                      | 🟡 Genie is implemented as *Funnel* (`window_management/genie.rs`) and Scale; Suck and per-app blacklist ⬜ |
-| D-8  | App Grid (Launchpad) button, Downloads stack, Trash with *Empty Trash*                 | ✅                                                             |
-| D-9  | Custom icons per app and icon packs                                                    | ✅                                                             |
-| D-10 | Display behavior: Fixed, Overlay, Smart auto-hide; above full-screen toggle            | 🟡 *Always visible*, *desktop only*, hide effect (move/fade) ⬜ |
-| D-11 | Position on any screen edge (bottom, left, right, top)                                 | ⬜                                                             |
-| D-12 | Choose the display that hosts the Dock (multi-monitor)                                 | ⬜                                                             |
-| D-13 | Activation bar / edge reveal with configurable width, height, offset and delay         | ⬜                                                             |
-| D-14 | Icon effects: scaling, selection, illumination (light intensity and color)             | 🟡 scaling only; the rest is drafted in `core/dock/behavior.rs`, not compiled |
-| D-15 | Icon reflection and per-surface blur/transparency (labels, context menus, folder grid) | ⬜                                                             |
-| D-16 | Hot corners (including bottom-left) mapped to actions                                  | ✅ (4 corners)                                                 |
-| D-17 | Folder icons open a grid; *double-click opens in Explorer*; hide *open folder* button  | ⬜                                                             |
+| D-8  | App Grid (Launchpad) button, Downloads stack, Trash with *Empty Trash*                 | ✅                                                                                                         |
+| D-9  | Custom icons per app and icon packs                                                    | ✅                                                                                                         |
+| D-10 | Display behavior: Fixed, Overlay, Smart auto-hide; above full-screen toggle            | 🟡 *Always visible*, *desktop only*, hide effect (move/fade) ⬜                                             |
+| D-11 | Position on any screen edge (bottom, left, right, top)                                 | ⬜                                                                                                         |
+| D-12 | Choose the display that hosts the Dock (multi-monitor)                                 | ⬜                                                                                                         |
+| D-13 | Activation bar / edge reveal with configurable width, height, offset and delay         | ⬜                                                                                                         |
+| D-14 | Icon effects: scaling, selection, illumination (light intensity and color)             | 🟡 scaling only; the rest is drafted in `core/dock/behavior.rs`, not compiled                              |
+| D-15 | Icon reflection and per-surface blur/transparency (labels, context menus, folder grid) | ⬜                                                                                                         |
+| D-16 | Hot corners (including bottom-left) mapped to actions                                  | ✅ (4 corners)                                                                                             |
+| D-17 | Folder icons open a grid; *double-click opens in Explorer*; hide *open folder* button  | ⬜                                                                                                         |
 
 ### 2.3 Settings (sidebar group **Dock**)
 
@@ -90,16 +90,16 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 
 ### 2.4 Architecture mapping
 
-| Concern                      | Target (per `architecture.md`)                            | Today                                                                                                         |
-| ---------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Items, pins, order, recents  | `core/dock/{items,pins,reorder,recents}.rs`               | ✅ in place                                                                                                    |
-| Layout and geometry          | `core/dock/{layout,geometry,entries,ring}.rs`             | ✅ in place                                                                                                    |
+| Concern                      | Target (per `architecture.md`)                            | Today                                                                                                                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Items, pins, order, recents  | `core/dock/{items,pins,reorder,recents}.rs`               | ✅ in place                                                                                                                                                                                                                 |
+| Layout and geometry          | `core/dock/{layout,geometry,entries,ring}.rs`             | ✅ in place                                                                                                                                                                                                                 |
 | Behavior and visibility      | `core/dock/{behavior,visibility}.rs`                      | ⬜ `behavior.rs` exists (331 lines) but is not declared in `core/dock/mod.rs`, so it is not compiled (BASE-02); policy lives in shared `core/visibility/policy.rs`; Dock-specific rules are inside `app/dock/visibility.rs` |
-| Settings vs. state           | `core/settings/dock.rs`, `core/dock/state.rs`             | ⬜ one flat `Settings` struct (`dock_*` fields)                                                                |
-| Running apps, focus, launch  | `platform/windows/*`, `platform/filesystem/icons.rs`      | ✅ implemented, flat layout until the platform regrouping lands                                                |
-| Rendering                    | `ui/features/dock/{view,item,preview}.rs`                 | 🟡 `ui/features/dock/view.rs`; render orchestration in `app/dock/render.rs`                                    |
-| Preview and tooltip popups   | `ui/features/dock/preview.rs`, `ui/components/tooltip.rs` | ⬜ `app/dock/{preview,tooltip}.rs`                                                                             |
-| Window host, wndproc, timers | `app/dock/{window,wndproc,timers,input,hover}.rs`         | ✅ stays in `app` (composition and message pump)                                                               |
+| Settings vs. state           | `core/settings/dock.rs`, `core/dock/state.rs`             | ⬜ one flat `Settings` struct (`dock_*` fields)                                                                                                                                                                             |
+| Running apps, focus, launch  | `platform/windows/*`, `platform/filesystem/icons.rs`      | ✅ implemented, flat layout until the platform regrouping lands                                                                                                                                                             |
+| Rendering                    | `ui/features/dock/{view,item,preview}.rs`                 | 🟡 `ui/features/dock/view.rs`; render orchestration in `app/dock/render.rs`                                                                                                                                                 |
+| Preview and tooltip popups   | `ui/features/dock/preview.rs`, `ui/components/tooltip.rs` | ⬜ `app/dock/{preview,tooltip}.rs`                                                                                                                                                                                          |
+| Window host, wndproc, timers | `app/dock/{window,wndproc,timers,input,hover}.rs`         | ✅ stays in `app` (composition and message pump)                                                                                                                                                                            |
 
 ### 2.5 Acceptance criteria
 
@@ -157,15 +157,15 @@ in one place, replacing the need for the Windows taskbar's notification area.
 
 ### 3.4 Architecture mapping
 
-| Concern                        | Target                                               | Today                                                                               |
-| ------------------------------ | ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Item layout, clock formatting  | `core/finder/{layout,clock}.rs`                      | ✅ in place                                                                          |
+| Concern                                                                                                        | Target                                                                                | Today                                                                                           |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Item layout, clock formatting                                                                                  | `core/finder/{layout,clock}.rs`                                                       | ✅ in place                                                                                      |
 | Finder policies (auto-hide, look, confirm, corner close, tray, notifications, audio, hardware, battery, media) | `core/finder/{appearance,actions,tray,notifications,audio,hardware,battery,media}.rs` | 🟡 core and tests done (M5); no `app`/`platform` wiring yet, see `todo/windows_dependency.md` §5 |
-| Menu model (logo, app menus)   | `core/finder/menus.rs`                               | ⬜ menu items are built in `app/finder/menus.rs`                                     |
-| Settings vs. state             | `core/settings/finder.rs`, `core/finder/state.rs`    | ⬜ `menubar_*`, `clock_24h`, `battery_pct` in the flat `Settings`                    |
-| Battery, Wi-Fi, audio, display | `platform/system/{battery,wifi,audio,brightness}.rs` | ✅ implemented, flat layout until the platform regrouping lands                      |
-| Drawing                        | `ui/features/finder/{view,item}.rs`                  | ⬜ `ui/features/finder` does not exist; drawing is `app/finder/draw.rs` (≈730 lines) |
-| Window host, wndproc, actions  | `app/finder/{wndproc,actions,appearance}.rs`         | ✅ stays in `app`                                                                    |
+| Menu model (logo, app menus)                                                                                   | `core/finder/menus.rs`                                                                | ⬜ menu items are built in `app/finder/menus.rs`                                                 |
+| Settings vs. state                                                                                             | `core/settings/finder.rs`, `core/finder/state.rs`                                     | ⬜ `menubar_*`, `clock_24h`, `battery_pct` in the flat `Settings`                                |
+| Battery, Wi-Fi, audio, display                                                                                 | `platform/system/{battery,wifi,audio,brightness}.rs`                                  | ✅ implemented, flat layout until the platform regrouping lands                                  |
+| Drawing                                                                                                        | `ui/features/finder/{view,item}.rs`                                                   | ⬜ `ui/features/finder` does not exist; drawing is `app/finder/draw.rs` (≈730 lines)             |
+| Window host, wndproc, actions                                                                                  | `app/finder/{wndproc,actions,appearance}.rs`                                          | ✅ stays in `app`                                                                                |
 
 ### 3.5 Acceptance criteria
 
@@ -185,21 +185,21 @@ accepts dropped files. It rests as a small pill, peeks on hover, and opens into 
 
 ### 4.2 Capabilities
 
-| ID   | Capability                                                                                                                         | Status                            |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| I-1  | State machine: Rest → Peek → Open(tab) ↔ Drop; events Enter, Leave, Dwell, Click, SelectTab, DragEnter, DragLeave, Dropped, Escape | ✅ (`core::dynamic_island::state`) |
-| I-2  | Two shapes: attached to the top edge, or floating capsule                                                                          | ✅                                 |
-| I-3  | Idle content: greeting (time, date, battery) and rotating glance items                                                             | ✅                                 |
-| I-4  | Play tab: artwork, title, seekable progress, controls                                                                              | ✅                                 |
-| I-5  | Lyrics synced to playback: local `.lrc` files, optional LRCLIB lookup                                                              | ✅                                 |
-| I-6  | Audio visualizer (loopback bands)                                                                                                  | ✅                                 |
-| I-7  | Downloads: Microsoft Store, Steam, browser; progress ring                                                                          | ✅                                 |
-| I-8  | Shelf tab: drop zones *Keep on Shelf · Send · Copy to… · Open with…*                                                               | ✅                                 |
-| I-9  | Send to phone: local HTTP server + QR code, same-Wi-Fi, idle timeout                                                               | ✅                                 |
-| I-10 | Timer tab with calendar strip from Windows calendar                                                                                | ✅                                 |
-| I-11 | Privacy indicators (microphone/camera in use)                                                                                      | ✅                                 |
-| I-12 | Hover-to-open toggle, idle style, greeting text, material, rounding                                                                | ✅                                 |
-| I-13 | Notification surfacing (app toasts as transient island content)                                                                    | ⬜                                 |
+| ID   | Capability                                                                                                                         | Status                                                           |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| I-1  | State machine: Rest → Peek → Open(tab) ↔ Drop; events Enter, Leave, Dwell, Click, SelectTab, DragEnter, DragLeave, Dropped, Escape | ✅ (`core::dynamic_island::state`)                                |
+| I-2  | Two shapes: attached to the top edge, or floating capsule                                                                          | ✅                                                                |
+| I-3  | Idle content: greeting (time, date, battery) and rotating glance items                                                             | ✅                                                                |
+| I-4  | Play tab: artwork, title, seekable progress, controls                                                                              | ✅                                                                |
+| I-5  | Lyrics synced to playback: local `.lrc` files, optional LRCLIB lookup                                                              | ✅                                                                |
+| I-6  | Audio visualizer (loopback bands)                                                                                                  | ✅                                                                |
+| I-7  | Downloads: Microsoft Store, Steam, browser; progress ring                                                                          | ✅                                                                |
+| I-8  | Shelf tab: drop zones *Keep on Shelf · Send · Copy to… · Open with…*                                                               | ✅                                                                |
+| I-9  | Send to phone: local HTTP server + QR code, same-Wi-Fi, idle timeout                                                               | ✅                                                                |
+| I-10 | Timer tab with calendar strip from Windows calendar                                                                                | ✅                                                                |
+| I-11 | Privacy indicators (microphone/camera in use)                                                                                      | ✅                                                                |
+| I-12 | Hover-to-open toggle, idle style, greeting text, material, rounding                                                                | ✅                                                                |
+| I-13 | Notification surfacing (app toasts as transient island content)                                                                    | ⬜                                                                |
 | I-14 | Per-activity enable switches beyond downloads and send                                                                             | 🟡 core + HTML done; app/UI written, Windows build and QA pending |
 
 ### 4.3 Settings (sidebar group **Dynamic Island**)
@@ -313,15 +313,30 @@ cargo check --workspace
 
 ## 7. Corrections (SPEC-04, verified at `281a75c`)
 
-| Item | Was | Now | Evidence |
-| ---- | --- | --- | -------- |
-| Step 6, settings schema split | ✅ | 🟡 | Only 3 of 7 section types exist in `core/settings/`. |
-| D-3 lock reorder | ⬜ | ⬜, drafted | `DockConfig.lock_drag` is in `core/dock/behavior.rs`, which is not declared in `core/dock/mod.rs`. |
-| D-7 Genie | ⬜ | ✅ as *Funnel* | `core/window_management/genie.rs` slices a window into a funnel; `min_effect` 0 = Funnel, 1 = Scale. Suck and blacklist stay ⬜. |
-| D-14 icon effects | 🟡 scaling only | 🟡, rest drafted | `IconEffect`, light intensity and colour are in the uncompiled `behavior.rs`. |
-| Dock `behavior` row (§2.4) | ⬜ | ⬜, file exists | See BASE-02. |
-| Finder rows (§3.4) | paths `core/finder/…`, `app/finder/…` | unchanged | Targets. The code is still `menubar` until the ADR-0003 rename (ENG-03). |
-| D-11, D-12, D-13, F-8, F-17 | ⬜ | ⬜ | No code found: Dock is bottom-only, no configurable activation bar (only a fixed activation strip in `app/dock/window.rs`), no Finder auto-hide, no lyrics item in the bar. |
+| Item                          | Was                                   | Now             | Evidence                                                                                                                                                                    |
+| ----------------------------- | ------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Step 6, settings schema split | ✅                                     | 🟡               | Only 3 of 7 section types exist in `core/settings/`.                                                                                                                        |
+| D-3 lock reorder              | ⬜                                     | ⬜, drafted      | `DockConfig.lock_drag` is in `core/dock/behavior.rs`, which is not declared in `core/dock/mod.rs`.                                                                          |
+| D-7 Genie                     | ⬜                                     | ✅ as *Funnel*   | `core/window_management/genie.rs` slices a window into a funnel; `min_effect` 0 = Funnel, 1 = Scale. Suck and blacklist stay ⬜.                                             |
+| D-14 icon effects             | 🟡 scaling only                        | 🟡, rest drafted | `IconEffect`, light intensity and colour are in the uncompiled `behavior.rs`.                                                                                               |
+| Dock `behavior` row (§2.4)    | ⬜                                     | ⬜, file exists  | See BASE-02.                                                                                                                                                                |
+| Finder rows (§3.4)            | paths `core/finder/…`, `app/finder/…` | unchanged       | Targets. The code is still `menubar` until the ADR-0003 rename (ENG-03).                                                                                                    |
+| D-11, D-12, D-13, F-8, F-17   | ⬜                                     | ⬜               | No code found: Dock is bottom-only, no configurable activation bar (only a fixed activation strip in `app/dock/window.rs`), no Finder auto-hide, no lyrics item in the bar. |
 
 Other rows were not changed. A full row-by-row audit of ✅ items against Windows behavior needs a Windows build and is
 part of BASE-01 and BASE-12.
+
+## 8. M7 hardening status (QA-05)
+
+Verified on Linux with `cargo test -p nexora-core`; nothing in the "Windows" column has been built or run.
+
+| Item                                   | Status | Evidence / what is missing                                                                                                                                                                                            |
+| -------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| REC-02 feature failure isolation       | 🟡      | `core/shared/features.rs` (6 tests: each of the 15 features forced to fail, others still start). `app/bootstrap.rs` uses it via `NEXORA_FAIL_FEATURE`; needs a Windows build and `docs/qa/rec-02-feature-failure.md`. |
+| QA-02 upgrade from 0.4.0               | 🟡      | `core/tests/upgrade_0_4_0.rs` (5 tests, fixtures from 0.4.0). The test with a real user file is in `docs/qa/qa-02-upgrade.md`.                                                                                        |
+| QA-04 i18n completeness                | ✅      | `core/tests/i18n_completeness.rs` scans every `tr("…")` in `crates/app/src`; 169 missing English labels were added to `shared/i18n.rs`.                                                                               |
+| REC-01 restore paths                   | ⬜      | Taskbar, parked windows and cursors are restored by `nexora-guard`. Taskbar per display, work-area reserve and gamma are not. Checklist: `docs/qa/rec-01-recovery.md`.                                                |
+| QA-01 one QA file per Windows behavior | 🟡      | Index and gaps: `docs/qa/README.md`.                                                                                                                                                                                  |
+| QA-03 footprint                        | ⬜      | `docs/qa/qa-03-footprint.md`; `docs/bench.md` has no measured values yet.                                                                                                                                             |
+| Edition 2024 (ADR-0009)                | ⬜      | Revisit needs a Windows build (`cargo fix --edition`).                                                                                                                                                                |
+
