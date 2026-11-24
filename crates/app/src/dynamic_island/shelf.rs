@@ -35,6 +35,10 @@ impl Notch {
       ((lp.0 as u32 >> 16) & 0xFFFF) as u16 as i16 as f32,
     );
     let (cx, cy) = (sx - ((self.screen_w - self.win.0) / 2) as f32, sy);
+    let acts = nexora_core::dynamic_island::activities::Activities::from_settings(&crate::prefs::get());
+    if !acts.accepts_drops() {
+      return;
+    }
     match kind {
       drop::ENTER => {
         self.drop_zone = None;
@@ -58,7 +62,9 @@ impl Notch {
         let paths = self.dnd.borrow().clone();
         self.drop_zone = None;
         log::line("notch", &format!("ditaruh {} berkas di zona {zone}", paths.len()));
-        if zone == 0 {
+        if zone == 0 && !acts.shelf {
+          self.dispatch(Event::DragLeave);
+        } else if zone == 0 {
           for p in &paths {
             self.shelf.add(p);
           }

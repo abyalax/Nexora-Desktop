@@ -10,6 +10,7 @@ mod appearance;
 mod codec;
 mod dock;
 mod enums;
+pub mod extra;
 mod finder;
 mod general;
 mod input;
@@ -23,6 +24,7 @@ pub use appearance::AppearanceSettings;
 pub(crate) use codec::parse_bool;
 pub use dock::DockSettings;
 pub use enums::*;
+pub use extra::Extra;
 pub use finder::FinderSettings;
 pub use general::GeneralSettings;
 pub use input::InputSettings;
@@ -100,6 +102,8 @@ pub struct Settings {
   pub notch_island: bool,
   pub widget_style: u8,
   pub battery_pct: u8,
+  /// Settings added after 0.4.0 (ADR-0004): table-driven, written only when not default.
+  pub extra: Extra,
 }
 
 impl Default for Settings {
@@ -169,6 +173,7 @@ impl Default for Settings {
       notch_island: false,
       widget_style: 0,
       battery_pct: 1,
+      extra: Extra::default(),
     }
   }
 }
@@ -215,7 +220,7 @@ menubar_style=glass
 
   #[test]
   fn roundtrip() {
-    let s = Settings {
+    let mut s = Settings {
       takeover: false,
       dock: Behavior::Smart,
       notch: Behavior::Overlay,
@@ -252,6 +257,9 @@ menubar_style=glass
       switcher: false,
       ..Default::default()
     };
+    // The new keys that shadow legacy bools must agree with them (parse always produces this).
+    s.set_start_method(1);
+    s.set_taskbar_scope(0);
     assert_eq!(Settings::parse(&s.serialize()), s);
   }
 

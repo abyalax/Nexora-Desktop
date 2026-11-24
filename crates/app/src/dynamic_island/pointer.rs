@@ -204,9 +204,13 @@ impl Notch {
 
   pub(super) fn on_wheel(&mut self, delta: i16) {
     if let Mode::Open(cur) = self.mode {
-      let i = Tab::ALL.iter().position(|t| *t == cur).unwrap_or(0) as i32;
-      let n = Tab::ALL.len() as i32;
-      let next = Tab::ALL[(i + if delta > 0 { -1 } else { 1 }).rem_euclid(n) as usize];
+      let tabs = nexora_core::dynamic_island::activities::Activities::from_settings(&crate::prefs::get()).visible_tabs();
+      if tabs.is_empty() {
+        return;
+      }
+      let i = tabs.iter().position(|t| *t == cur).unwrap_or(0) as i32;
+      let n = tabs.len() as i32;
+      let next = tabs[(i + if delta > 0 { -1 } else { 1 }).rem_euclid(n) as usize];
       self.dispatch(Event::SelectTab(next));
     }
   }

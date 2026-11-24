@@ -453,6 +453,10 @@ const EN: &[(&str, &str)] = &[
     "Send to phone via QR (same Wi-Fi)",
   ),
   ("Tidak ada acara hari ini", "Nothing for today"),
+  ("Media dan lirik", "Media and lyrics"),
+  ("Sesuai permintaan", "On demand"),
+  ("Rak file", "File shelf"),
+  ("Timer dan strip kalender", "Timer and calendar strip"),
   ("Tidak ada acara", "No events"),
   (
     "Tampilkan unduhan (Store, Steam, peramban)",

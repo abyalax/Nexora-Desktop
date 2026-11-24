@@ -6,6 +6,7 @@ impl Settings {
   pub fn parse(text: &str) -> Settings {
     let mut s = Settings::default();
     let mut legacy_glass = false;
+    let mut seen = Seen::default();
     for line in text.trim_start_matches('\u{feff}').lines() {
       let line = line.trim();
       if line.is_empty() || line.starts_with('#') {
@@ -15,6 +16,7 @@ impl Settings {
         continue;
       };
       let (k, v) = (k.trim(), v.trim());
+      seen.note(k);
       match k {
         "takeover" => {
           if let Some(b) = parse_bool(v) {
@@ -240,17 +242,20 @@ impl Settings {
             s.autostart = b;
           }
         }
-        _ => {}
+        _ => {
+          s.extra.apply(k, v);
+        }
       }
     }
     if legacy_glass {
       s.menubar_glass = false;
     }
+    s.reconcile(seen);
     s
   }
 
   pub fn serialize(&self) -> String {
-    format!(
+    let mut out = format!(
       "# nexora settings\ntakeover={}\ndock={}\nnotch={}\nblur={}\nstyle={}\ntransparency={}\ntheme={}\nlang={}\ndock_material={}\ndock_round={}\nnotch_material={}\nnotch_round={}\nautostart={}\ndock_size={}\ndock_gap={}\ndock_zoom={}\ndock_margin={}\nanim={}\nrefraction={}\ndock_enabled={}\nnotch_enabled={}\nnotch_hover_open={}\nwin_shadow={}\nmenubar={}\nclock_24h={}\nmenubar_glass={}\nhot_tl={}\nhot_tr={}\nhot_bl={}\nhot_br={}\nstage={}\nswitcher={}\nstage_right={}\nstage_size={}\nstage_gap={}\nstage_count={}\nstage_speed={}\nstage_desktop_click={}\nstage_media={}\nstage_icons={}\nstage_titles={}\nhide_desktop_icons={}\nmenubar_style={}\ndock_plates={}\nabove_fullscreen={}\nclipboard_history={}\nicon_style={}\nicon_tint={}\naccent={}\nmac_shortcuts={}\ndownloads_stack={}\nrecent_apps={}\nicon_pack={}\nmenubar_material={}\nicon_variant={}\nmin_effect={}\nnotch_idle={}\ngreet_name={}\ngreet_text={}\nlyrics_compact={}\nlyrics_online={}\nnotch_downloads={}\nnotch_send={}\nui_scale={}\nnotch_island={}\nwidget_style={}\nbattery_pct={}\n",
       self.takeover,
       self.dock.key(),
@@ -319,7 +324,85 @@ impl Settings {
       self.notch_island,
       self.widget_style,
       self.battery_pct
-    )
+    );
+    let mut extra = String::new();
+    self.extra.write_non_default(&mut extra);
+    // Keys whose value the legacy bool already implies are not written (0.4.0 files stay byte-identical).
+    let implied = [
+      ("start_method", START_NAMES[usize::from(self.autostart)]),
+      ("taskbar_scope", SCOPE_NAMES[usize::from(self.takeover)]),
+      ("desktop_icons", ICON_NAMES[if self.hide_desktop_icons { 0 } else { 2 }]),
+    ];
+    for line in extra.lines() {
+      let skip = implied.iter().any(|(k, v)| line == format!("{k}={v}"));
+      if !skip {
+        out.push_str(line);
+        out.push('\n');
+      }
+    }
+    out
+  }
+}
+
+const START_NAMES: [&str; 2] = ["none", "registry"];
+const SCOPE_NAMES: [&str; 2] = ["none", "all_displays"];
+const ICON_NAMES: [&str; 3] = ["hide", "auto", "show"];
+
+/// Which of the new keys that shadow a legacy bool were present in the file (spec reconciliation rows 8–10).
+#[derive(Default, Clone, Copy)]
+struct Seen {
+  start: bool,
+  scope: bool,
+  icons: bool,
+}
+
+impl Seen {
+  fn note(&mut self, key: &str) {
+    match key {
+      "start_method" => self.start = true,
+      "taskbar_scope" => self.scope = true,
+      "desktop_icons" => self.icons = true,
+      _ => {}
+    }
+  }
+}
+
+impl Settings {
+  /// New key wins when present (legacy bool derived from it); otherwise the new value is derived from the legacy bool.
+  fn reconcile(&mut self, seen: Seen) {
+    if seen.start {
+      self.autostart = self.extra.start_method != 0;
+    } else {
+      self.extra.start_method = u8::from(self.autostart);
+    }
+    if seen.scope {
+      self.takeover = self.extra.taskbar_scope != 0;
+    } else {
+      self.extra.taskbar_scope = u8::from(self.takeover);
+    }
+    if seen.icons {
+      self.hide_desktop_icons = self.extra.desktop_icons != 2;
+    } else {
+      self.extra.desktop_icons = if self.hide_desktop_icons { 0 } else { 2 };
+    }
+  }
+
+  /// Set the boot method and keep the legacy `autostart` bool in step (GEN-08).
+  pub fn set_start_method(&mut self, method: u8) {
+    self.extra.start_method = method.min(2);
+    self.autostart = self.extra.start_method != 0;
+  }
+
+  /// Set the taskbar scope and keep the legacy `takeover` bool in step (GEN-09).
+  pub fn set_taskbar_scope(&mut self, scope: u8) {
+    self.extra.taskbar_scope = scope.min(2);
+    self.takeover = self.extra.taskbar_scope != 0;
+  }
+
+  /// Set the desktop-icons mode and keep the legacy `hide_desktop_icons` bool in step (STG-07).
+  pub fn set_desktop_icons(&mut self, mode: u8) {
+    self.extra.desktop_icons = mode.min(2);
+    self.hide_desktop_icons = self.extra.desktop_icons != 2;
   }
 }
 

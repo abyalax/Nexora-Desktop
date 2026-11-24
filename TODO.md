@@ -278,84 +278,84 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | GEN-05 | Global Interface Blur Intensity                | `shared.globalBlur` · range 0–48 · 26                                                                                    | ~ `blur` (0–100; design 0–48)                                  | GEN | ☑☐☐☐☑         |
 | GEN-06 | Appearance                                     | `shared.appearance` · select [light \| dark \| system] · dark                                                            | ✔ `theme` (Auto/Light/Dark)                                    | GEN | ☑☑☐☐☑         |
 | GEN-07 | Accent Color                                   | `shared.accentColor` · color · #63c7dc                                                                                   | ~ `accent` (palette index; design is hex)                      | GEN | ☑☐☐☐☑         |
-| GEN-08 | Start On Boot Method                           | `shared.startOnBoot` · select [Don't Start On Boot \| Registry Value \| Scheduled Task \| Start as a Service] · disabled | ~ `autostart` (bool; design has 4 methods)                     | GEN | ☑☐☐☐☐         |
-| GEN-09 | Automatically hide the taskbar on boot         | `shared.hideTaskbarOnBoot` · select [none \| allDisplays \| dockDisplay] · none                                          | ~ `takeover` (bool; design has 3 states)                       | GEN | ☑☐☐☐☐         |
+| GEN-08 | Start On Boot Method                           | `shared.startOnBoot` · select [Don't Start On Boot \| Registry Value \| Scheduled Task \| Start as a Service] · disabled | ~ `autostart` (bool; design has 4 methods)                     | GEN | ☑☑☐☐☐         |
+| GEN-09 | Automatically hide the taskbar on boot         | `shared.hideTaskbarOnBoot` · select [none \| allDisplays \| dockDisplay] · none                                          | ~ `takeover` (bool; design has 3 states)                       | GEN | ☑☑☐☐☐         |
 | GEN-10 | Display Language                               | `shared.displayLanguage` · select [English \| Indonesian] · English                                                      | ✔ `lang`                                                       | GEN | ☑☑☐☐☐         |
-| GEN-11 | Display Font                                   | `shared.displayFont` · select (5 options) · Segoe UI                                                                     | ✗                                                              | GEN | ☑☐☐☐☐         |
-| GEN-12 | Global Font Scaling                            | `shared.globalFontScale` · range 0.75–1.5 · 1                                                                            | ✗                                                              | GEN | ☑☐☐☐☐         |
+| GEN-11 | Display Font                                   | `shared.displayFont` · select (5 options) · Segoe UI                                                                     | ✗                                                              | GEN | ☑☑☐☐☐         |
+| GEN-12 | Global Font Scaling                            | `shared.globalFontScale` · range 0.75–1.5 · 1                                                                            | ✗                                                              | GEN | ☑☑☐☐☐         |
 
 #### System ▸ Appearance (33)
 
 | ID     | Setting                                                           | Key · type · default                                 | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | ----------------------------------------------------------------- | ---------------------------------------------------- | ---------- | ---- | ------------- |
-| APP-01 | Make Dock use custom blur and transparency values                 | `shared.customDockBlur` · toggle · off               | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-02 | Dock blur intensity                                               | `shared.dockBlur` · range 0–50 · 22                  | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-03 | Dock transparency                                                 | `shared.dockTransparency` · range 0–100 · 62         | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-04 | Make pinned icons reflect from the Dock                           | `shared.pinnedReflections` · toggle · off            | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-05 | Reflection blur strength                                          | `shared.reflectionBlur` · range 0–30 · 5             | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-06 | Reflection transparency                                           | `shared.reflectionTransparency` · range 0–100 · 35   | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-07 | Icon reflection distance                                          | `shared.reflectionDistance` · range 0–20 · 3         | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-08 | Gradient distance of icon reflection                              | `shared.reflectionGradientDistance` · range 0–30 · 8 | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-09 | Make Dock icon labels use custom blur and transparency values     | `shared.customIconLabels` · toggle · off             | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-10 | Label blur intensity                                              | `shared.labelBlur` · range 0–40 · 18                 | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-11 | Label transparency                                                | `shared.labelTransparency` · range 0–100 · 70        | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-12 | Label border transparency                                         | `shared.labelBorderTransparency` · range 0–100 · 12  | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-13 | Make context menus use custom blur and transparency values        | `shared.customContextMenus` · toggle · off           | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-14 | Context menu blur intensity                                       | `shared.contextBlur` · range 0–50 · 22               | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-15 | Context menu transparency                                         | `shared.contextTransparency` · range 0–100 · 85      | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-16 | Context menu border transparency                                  | `shared.contextBorder` · range 0–100 · 12            | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-17 | Make folder contents grid use custom blur and transparency values | `shared.customFolderGrid` · toggle · off             | ✗          | D-17 | ☑☐☐☐☐         |
-| APP-18 | Folder grid blur intensity                                        | `shared.folderBlur` · range 0–50 · 22                | ✗          | D-17 | ☑☐☐☐☐         |
-| APP-19 | Folder grid transparency                                          | `shared.folderTransparency` · range 0–100 · 85       | ✗          | D-17 | ☑☐☐☐☐         |
-| APP-20 | Folder grid border transparency                                   | `shared.folderBorder` · range 0–100 · 12             | ✗          | D-17 | ☑☐☐☐☐         |
-| APP-21 | Folder grid icon size                                             | `shared.folderIconSize` · range 24–96 · 48           | ✗          | D-17 | ☑☐☐☐☐         |
-| APP-22 | Make Nexora menus use custom blur and transparency values         | `shared.customNexoraMenus` · toggle · off            | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-23 | Nexora menu blur intensity                                        | `shared.menuBlur` · range 0–50 · 26                  | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-24 | Nexora menu transparency                                          | `shared.menuTransparency` · range 0–100 · 90         | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-25 | Nexora menu border transparency                                   | `shared.menuBorder` · range 0–100 · 10               | ✗          | D-15 | ☑☐☐☐☐         |
-| APP-26 | Make Finder use custom blur and transparency values               | `shared.customFinderBlur` · toggle · off             | ✗          | F-7  | ☑☐☐☐☐         |
-| APP-27 | Finder blur intensity                                             | `shared.finderBlur` · range 0–50 · 26                | ✗          | F-7  | ☑☐☐☐☐         |
-| APP-28 | Finder transparency                                               | `shared.finderTransparency` · range 0–100 · 88       | ✗          | F-7  | ☑☐☐☐☐         |
-| APP-29 | Wallpaper tint intensity                                          | `shared.wallpaperTint` · range 0–100 · 0             | ✗          | F-7  | ☑☐☐☐☐         |
-| APP-30 | Launchpad uses custom background blur                             | `shared.launchpadCustomBlur` · toggle · off          | ✗          | D-8  | ☑☐☐☐☐         |
-| APP-31 | Display Launchpad above windows instead of hiding them            | `shared.launchpadAboveWindows` · toggle · off        | ✗          | D-8  | ☑☐☐☐☐         |
-| APP-32 | Launchpad blurs the background instead of pre-rendering it        | `shared.launchpadBlurBackground` · toggle · on       | ✗          | D-8  | ☑☐☐☐☐         |
-| APP-33 | Launchpad background blur intensity                               | `shared.launchpadBlur` · range 0–50 · 24             | ✗          | D-8  | ☑☐☐☐☐         |
+| APP-01 | Make Dock use custom blur and transparency values                 | `shared.customDockBlur` · toggle · off               | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-02 | Dock blur intensity                                               | `shared.dockBlur` · range 0–50 · 22                  | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-03 | Dock transparency                                                 | `shared.dockTransparency` · range 0–100 · 62         | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-04 | Make pinned icons reflect from the Dock                           | `shared.pinnedReflections` · toggle · off            | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-05 | Reflection blur strength                                          | `shared.reflectionBlur` · range 0–30 · 5             | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-06 | Reflection transparency                                           | `shared.reflectionTransparency` · range 0–100 · 35   | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-07 | Icon reflection distance                                          | `shared.reflectionDistance` · range 0–20 · 3         | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-08 | Gradient distance of icon reflection                              | `shared.reflectionGradientDistance` · range 0–30 · 8 | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-09 | Make Dock icon labels use custom blur and transparency values     | `shared.customIconLabels` · toggle · off             | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-10 | Label blur intensity                                              | `shared.labelBlur` · range 0–40 · 18                 | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-11 | Label transparency                                                | `shared.labelTransparency` · range 0–100 · 70        | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-12 | Label border transparency                                         | `shared.labelBorderTransparency` · range 0–100 · 12  | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-13 | Make context menus use custom blur and transparency values        | `shared.customContextMenus` · toggle · off           | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-14 | Context menu blur intensity                                       | `shared.contextBlur` · range 0–50 · 22               | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-15 | Context menu transparency                                         | `shared.contextTransparency` · range 0–100 · 85      | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-16 | Context menu border transparency                                  | `shared.contextBorder` · range 0–100 · 12            | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-17 | Make folder contents grid use custom blur and transparency values | `shared.customFolderGrid` · toggle · off             | ✗          | D-17 | ☑☑☐☐☐         |
+| APP-18 | Folder grid blur intensity                                        | `shared.folderBlur` · range 0–50 · 22                | ✗          | D-17 | ☑☑☐☐☐         |
+| APP-19 | Folder grid transparency                                          | `shared.folderTransparency` · range 0–100 · 85       | ✗          | D-17 | ☑☑☐☐☐         |
+| APP-20 | Folder grid border transparency                                   | `shared.folderBorder` · range 0–100 · 12             | ✗          | D-17 | ☑☑☐☐☐         |
+| APP-21 | Folder grid icon size                                             | `shared.folderIconSize` · range 24–96 · 48           | ✗          | D-17 | ☑☑☐☐☐         |
+| APP-22 | Make Nexora menus use custom blur and transparency values         | `shared.customNexoraMenus` · toggle · off            | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-23 | Nexora menu blur intensity                                        | `shared.menuBlur` · range 0–50 · 26                  | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-24 | Nexora menu transparency                                          | `shared.menuTransparency` · range 0–100 · 90         | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-25 | Nexora menu border transparency                                   | `shared.menuBorder` · range 0–100 · 10               | ✗          | D-15 | ☑☑☐☐☐         |
+| APP-26 | Make Finder use custom blur and transparency values               | `shared.customFinderBlur` · toggle · off             | ✗          | F-7  | ☑☑☐☐☐         |
+| APP-27 | Finder blur intensity                                             | `shared.finderBlur` · range 0–50 · 26                | ✗          | F-7  | ☑☑☐☐☐         |
+| APP-28 | Finder transparency                                               | `shared.finderTransparency` · range 0–100 · 88       | ✗          | F-7  | ☑☑☐☐☐         |
+| APP-29 | Wallpaper tint intensity                                          | `shared.wallpaperTint` · range 0–100 · 0             | ✗          | F-7  | ☑☑☐☐☐         |
+| APP-30 | Launchpad uses custom background blur                             | `shared.launchpadCustomBlur` · toggle · off          | ✗          | D-8  | ☑☑☐☐☐         |
+| APP-31 | Display Launchpad above windows instead of hiding them            | `shared.launchpadAboveWindows` · toggle · off        | ✗          | D-8  | ☑☑☐☐☐         |
+| APP-32 | Launchpad blurs the background instead of pre-rendering it        | `shared.launchpadBlurBackground` · toggle · on       | ✗          | D-8  | ☑☑☐☐☐         |
+| APP-33 | Launchpad background blur intensity                               | `shared.launchpadBlur` · range 0–50 · 24             | ✗          | D-8  | ☑☑☐☐☐         |
 
 #### System ▸ System Icon Tray (4) — H: n/a
 
 | ID     | Setting                                      | Key · type · default                         | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | -------------------------------------------- | -------------------------------------------- | ---------- | ---- | ------------- |
-| TRY-01 | Always display all tray icons in Finder      | `shared.trayAllFinder` · toggle · off        | ✗          | F-11 | ☑☐☐☐☐         |
-| TRY-02 | Always display all tray icons in Dock        | `shared.trayAllDock` · toggle · off          | ✗          | F-11 | ☑☐☐☐☐         |
-| TRY-03 | Display the system's own tray icon in Finder | `shared.traySystemFinder` · toggle · on      | ✗          | F-11 | ☑☐☐☐☐         |
-| TRY-04 | Newly run tray icon display time (seconds)   | `shared.newTrayIconSeconds` · range 0–30 · 5 | ✗          | F-11 | ☑☐☐☐☐         |
+| TRY-01 | Always display all tray icons in Finder      | `shared.trayAllFinder` · toggle · off        | ✗          | F-11 | ☑☑☐☐☐         |
+| TRY-02 | Always display all tray icons in Dock        | `shared.trayAllDock` · toggle · off          | ✗          | F-11 | ☑☑☐☐☐         |
+| TRY-03 | Display the system's own tray icon in Finder | `shared.traySystemFinder` · toggle · on      | ✗          | F-11 | ☑☑☐☐☐         |
+| TRY-04 | Newly run tray icon display time (seconds)   | `shared.newTrayIconSeconds` · range 0–30 · 5 | ✗          | F-11 | ☑☑☐☐☐         |
 
 #### System ▸ Screen (4) — not in `feature.md`, pending ADR-0007
 
 | ID     | Setting                    | Key · type · default                                                                                 | Rust today | Cap | Sp Co UI Fx H |
 | ------ | -------------------------- | ---------------------------------------------------------------------------------------------------- | ---------- | --- | ------------- |
-| SCR-01 | Display brightness overlay | `shared.screenBrightness` · range 0–100 · 100                                                        | ⊘          | —   | ☐☐☐☐☐         |
-| SCR-02 | Enable night light         | `shared.nightLight` · toggle · off                                                                   | ⊘          | —   | ☐☐☐☐☐         |
-| SCR-03 | Night light intensity      | `shared.nightLightIntensity` · range 0–100 · 25                                                      | ⊘          | —   | ☐☐☐☐☐         |
-| SCR-04 | Display target             | `shared.screenTarget` · select [All displays \| Primary display \| Active display] · Primary display | ⊘          | —   | ☐☐☐☐☐         |
+| SCR-01 | Display brightness overlay | `shared.screenBrightness` · range 0–100 · 100                                                        | ⊘          | —   | ☐☑☐☐☐         |
+| SCR-02 | Enable night light         | `shared.nightLight` · toggle · off                                                                   | ⊘          | —   | ☐☑☐☐☐         |
+| SCR-03 | Night light intensity      | `shared.nightLightIntensity` · range 0–100 · 25                                                      | ⊘          | —   | ☐☑☐☐☐         |
+| SCR-04 | Display target             | `shared.screenTarget` · select [All displays \| Primary display \| Active display] · Primary display | ⊘          | —   | ☐☑☐☐☐         |
 
 #### System ▸ Stage Manager (15)
 
 | ID     | Setting                                              | Key · type · default                                                                                     | Rust today                                                            | Cap | Sp Co UI Fx H |
 | ------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --- | ------------- |
-| STG-01 | Show Stage Manager icon in Finder                    | `shared.stageIcon` · toggle · on                                                                         | ✗                                                                     | STG | ☑☐☐☐☐         |
+| STG-01 | Show Stage Manager icon in Finder                    | `shared.stageIcon` · toggle · on                                                                         | ✗                                                                     | STG | ☑☑☐☐☐         |
 | STG-02 | Show window title on mouseover                       | `shared.stageWindowTitle` · toggle · on                                                                  | ✔ `stage_titles`                                                      | STG | ☑☑☐☐☐         |
-| STG-03 | Blur background window icons                         | `shared.stageBlurIcons` · toggle · on                                                                    | ✗                                                                     | STG | ☑☐☐☐☐         |
+| STG-03 | Blur background window icons                         | `shared.stageBlurIcons` · toggle · on                                                                    | ✗                                                                     | STG | ☑☑☐☐☐         |
 | STG-04 | Click on the desktop to hide all windows             | `shared.stageClickDesktopHide` · toggle · off                                                            | ✔ `stage_desktop_click`                                               | STG | ☑☑☐☐☐         |
 | STG-05 | Automatically pause and play background window media | `shared.stageAutoPauseMedia` · toggle · on                                                               | ✔ `stage_media`                                                       | STG | ☑☑☐☐☐         |
-| STG-06 | Show native window preview on hover                  | `shared.stageNativePreview` · toggle · on                                                                | ✗                                                                     | STG | ☑☐☐☐☐         |
-| STG-07 | Show Desktop Icons                                   | `shared.stageDesktopIcons` · select [Always Hide Icon \| Auto Show Hide \| Always Show] · Auto Show Hide | ~ `hide_desktop_icons` (bool; design has 3 states)                    | STG | ☑☐☐☐☐         |
+| STG-06 | Show native window preview on hover                  | `shared.stageNativePreview` · toggle · on                                                                | ✗                                                                     | STG | ☑☑☐☐☐         |
+| STG-07 | Show Desktop Icons                                   | `shared.stageDesktopIcons` · select [Always Hide Icon \| Auto Show Hide \| Always Show] · Auto Show Hide | ~ `hide_desktop_icons` (bool; design has 3 states)                    | STG | ☑☑☐☐☐         |
 | STG-08 | Adjust Animation Speed                               | `shared.stageAnimationSpeed` · select (5 options) · 1.0x                                                 | ~ `stage_speed` (percent; design has 5 steps)                         | STG | ☑☐☐☐☐         |
 | STG-09 | Open Stage Manager                                   | `shared.stageEnabled` · toggle · off                                                                     | ✔ `stage`                                                             | STG | ☑☑☐☐☐         |
 | STG-10 | Window list screen position                          | `shared.stagePosition` · select [left \| right] · left                                                   | ✔ `stage_right`                                                       | STG | ☑☑☐☐☐         |
-| STG-11 | Window List Show Hidden Mode                         | `shared.stageHiddenMode` · select [default \| alwaysShow \| alwaysHide] · default                        | ✗                                                                     | STG | ☑☐☐☐☐         |
-| STG-12 | Keep Window Border                                   | `shared.stageKeepBorder` · toggle · off                                                                  | ✗                                                                     | STG | ☑☐☐☐☐         |
+| STG-11 | Window List Show Hidden Mode                         | `shared.stageHiddenMode` · select [default \| alwaysShow \| alwaysHide] · default                        | ✗                                                                     | STG | ☑☑☐☐☐         |
+| STG-12 | Keep Window Border                                   | `shared.stageKeepBorder` · toggle · off                                                                  | ✗                                                                     | STG | ☑☑☐☐☐         |
 | STG-13 | Window list icon size                                | `shared.stageIconSize` · range 16–80 · 36                                                                | ~ `stage_size` (170, looks like card size; design is 16–80 icon size) | STG | ☑☐☐☐☐         |
 | STG-14 | Window list icon spacing                             | `shared.stageIconSpacing` · range 0–30 · 8                                                               | ✔ `stage_gap`                                                         | STG | ☑☑☐☐☐         |
 | STG-15 | Number of window list icons                          | `shared.stageIconCount` · range 1–20 · 8                                                                 | ✔ `stage_count`                                                       | STG | ☑☑☐☐☐         |
@@ -365,11 +365,11 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | ID     | Setting                                     | Key · type · default                                                             | Rust today                | Cap | Sp Co UI Fx H |
 | ------ | ------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------- | --- | ------------- |
 | WAN-01 | Window opening animation                    | `shared.windowAnimation` · toggle · on                                           | ✔ `anim`                  | WAN | ☑☑☐☐☐         |
-| WAN-02 | Window opening animation effect             | `shared.windowAnimationEffect` · select [scale \| fade \| slide \| zoom] · scale | ✗                         | WAN | ☑☐☐☐☐         |
-| WAN-03 | Adjust animation speed                      | `shared.windowAnimationSpeed` · select (5 options) · 1.0x                        | ✗                         | WAN | ☑☐☐☐☐         |
+| WAN-02 | Window opening animation effect             | `shared.windowAnimationEffect` · select [scale \| fade \| slide \| zoom] · scale | ✗                         | WAN | ☑☑☐☐☐         |
+| WAN-03 | Adjust animation speed                      | `shared.windowAnimationSpeed` · select (5 options) · 1.0x                        | ✗                         | WAN | ☑☑☐☐☐         |
 | WAN-04 | Add excluded programs (semicolon separated) | `shared.excludedPrograms` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☐☐☐☐         |
 | WAN-05 | Manage running program blacklist            | `shared.programBlacklist` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☐☐☐☐         |
-| WAN-06 | Remove windows for excluded programs        | `shared.minimizeExcludedWindows` · toggle · on                                   | ✗ meaning unclear in spec | WAN | ☑☐☐☐☐         |
+| WAN-06 | Remove windows for excluded programs        | `shared.minimizeExcludedWindows` · toggle · on                                   | ✗ meaning unclear in spec | WAN | ☑☑☐☐☐         |
 
 #### Dock ▸ Look & Behavior (10)
 
@@ -383,57 +383,57 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | DLB-06 | Icon background light color     | `dock.iconBackgroundColor` · color · #63c7dc                                                          | ◐ `DockConfig.light_rgb` (design is hex)         | D-14 | ☑☐☐☐☐         |
 | DLB-07 | Distance between icons          | `dock.iconSpacing` · range 0–30 · 8                                                                   | ✔ `dock_gap` (0–24; design 0–30)                 | D-5  | ☑☑☐☐☐         |
 | DLB-08 | Dock distance from screen edge  | `dock.edgeDistance` · range 0–80 · 8                                                                  | ✔ `dock_margin` (0–60; design 0–80)              | D-5  | ☑☑☐☐☐         |
-| DLB-09 | Position on screen              | `dock.position` · select [left \| bottom \| right \| top] · bottom                                    | ✗                                                | D-11 | ☑☐☐☐☐         |
-| DLB-10 | Display on screen               | `dock.display` · select [Primary display \| All displays \| Display 1 \| Display 2] · Primary display | ✗                                                | D-12 | ☑☐☐☐☐         |
+| DLB-09 | Position on screen              | `dock.position` · select [left \| bottom \| right \| top] · bottom                                    | ✗                                                | D-11 | ☑☑☐☐☐         |
+| DLB-10 | Display on screen               | `dock.display` · select [Primary display \| All displays \| Display 1 \| Display 2] · Primary display | ✗                                                | D-12 | ☑☑☐☐☐         |
 
 #### Dock ▸ Launchpad (7)
 
 | ID     | Setting                                           | Key · type · default                                                                                           | Rust today              | Cap | Sp Co UI Fx H |
 | ------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------- | --- | ------------- |
-| DLP-01 | Launchpad icon size                               | `dock.launchpadIconSize` · range 24–100 · 52                                                                   | ✗                       | D-8 | ☑☐☐☐☐         |
-| DLP-02 | Icon horizontal spacing                           | `dock.launchpadHorizontalSpacing` · range 0–60 · 22                                                            | ✗                       | D-8 | ☑☐☐☐☐         |
-| DLP-03 | Icon vertical spacing                             | `dock.launchpadVerticalSpacing` · range 0–60 · 24                                                              | ✗                       | D-8 | ☑☐☐☐☐         |
-| DLP-04 | Choose which icons will be displayed by Launchpad | `dock.launchpadSources` · select [added \| addedStartMenu \| addedDesktop \| all] · added                      | ✗                       | D-8 | ☑☐☐☐☐         |
+| DLP-01 | Launchpad icon size                               | `dock.launchpadIconSize` · range 24–100 · 52                                                                   | ✗                       | D-8 | ☑☑☐☐☐         |
+| DLP-02 | Icon horizontal spacing                           | `dock.launchpadHorizontalSpacing` · range 0–60 · 22                                                            | ✗                       | D-8 | ☑☑☐☐☐         |
+| DLP-03 | Icon vertical spacing                             | `dock.launchpadVerticalSpacing` · range 0–60 · 24                                                              | ✗                       | D-8 | ☑☑☐☐☐         |
+| DLP-04 | Choose which icons will be displayed by Launchpad | `dock.launchpadSources` · select [added \| addedStartMenu \| addedDesktop \| all] · added                      | ✗                       | D-8 | ☑☑☐☐☐         |
 | DLP-05 | Edit deleted Start Menu programs                  | `dock.deletedStartMenuPrograms` · text · empty                                                                 | ✗ list value → ADR-0005 | D-8 | ☑☐☐☐☐         |
-| DLP-06 | Select the screen to display Launchpad            | `dock.launchpadDisplay` · select [Primary display \| All displays \| Display 1 \| Display 2] · Primary display | ✗                       | D-8 | ☑☐☐☐☐         |
-| DLP-07 | Follow Dock                                       | `dock.launchpadFollowDock` · toggle · on                                                                       | ✗                       | D-8 | ☑☐☐☐☐         |
+| DLP-06 | Select the screen to display Launchpad            | `dock.launchpadDisplay` · select [Primary display \| All displays \| Display 1 \| Display 2] · Primary display | ✗                       | D-8 | ☑☑☐☐☐         |
+| DLP-07 | Follow Dock                                       | `dock.launchpadFollowDock` · toggle · on                                                                       | ✗                       | D-8 | ☑☑☐☐☐         |
 
 #### Dock ▸ Advanced (19)
 
 | ID     | Setting                                                               | Key · type · default                                                                                                                             | Rust today                                                                  | Cap  | Sp Co UI Fx H |
 | ------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ---- | ------------- |
 | DAD-01 | Scale all icons to macOS standards                                    | `dock.scaleMacIcons` · toggle · on                                                                                                               | ~ `dock_plates` (squircle plates: confirm same meaning)                     | D-9  | ☑☐☐☐☐         |
-| DAD-02 | Double-click the folder icon to open in Finder                        | `dock.doubleClickFolderFinder` · toggle · on                                                                                                     | ✗                                                                           | D-17 | ☑☐☐☐☐         |
-| DAD-03 | Hide the open folder button                                           | `dock.hideOpenFolderButton` · toggle · off                                                                                                       | ✗                                                                           | D-17 | ☑☐☐☐☐         |
+| DAD-02 | Double-click the folder icon to open in Finder                        | `dock.doubleClickFolderFinder` · toggle · on                                                                                                     | ✗                                                                           | D-17 | ☑☑☐☐☐         |
+| DAD-03 | Hide the open folder button                                           | `dock.hideOpenFolderButton` · toggle · off                                                                                                       | ✗                                                                           | D-17 | ☑☑☐☐☐         |
 | DAD-04 | Lock icon dragging                                                    | `dock.lockIconDragging` · toggle · off                                                                                                           | ◐ `DockConfig.lock_drag`                                                    | D-3  | ☑☐☐☐☐         |
 | DAD-05 | Show icon labels                                                      | `dock.showIconLabels` · toggle · off                                                                                                             | ◐ `DockConfig.show_labels`                                                  | D-1  | ☑☐☐☐☐         |
 | DAD-06 | Animate opening applications                                          | `dock.animateAppLaunch` · toggle · on                                                                                                            | ◐ `DockConfig.animate_launch`                                               | D-1  | ☑☐☐☐☐         |
-| DAD-07 | Turn on window borders to prevent windows from hiding Dock and Finder | `dock.preventWindowsCoverDock` · toggle · on                                                                                                     | ✗                                                                           | D-10 | ☑☐☐☐☐         |
+| DAD-07 | Turn on window borders to prevent windows from hiding Dock and Finder | `dock.preventWindowsCoverDock` · toggle · on                                                                                                     | ✗                                                                           | D-10 | ☑☑☐☐☐         |
 | DAD-08 | Show indicators under running programs                                | `dock.showRunningIndicators` · toggle · on                                                                                                       | ◐ `DockConfig.show_indicators`                                              | D-1  | ☑☐☐☐☐         |
 | DAD-09 | Show icons of unpinned running programs                               | `dock.showUnpinnedRunning` · toggle · on                                                                                                         | ◐ `DockConfig.show_unpinned`                                                | D-1  | ☑☐☐☐☐         |
 | DAD-10 | Separate unpinned running programs                                    | `dock.separateUnpinned` · toggle · off                                                                                                           | ◐ `DockConfig.separate_unpinned`                                            | D-1  | ☑☐☐☐☐         |
 | DAD-11 | Bottom left hot-corner function                                       | `dock.bottomLeftHotCorner` · select (10 options) · Do nothing                                                                                    | ~ `hot[2]` (7 actions today; spec lists 10)                                 | D-16 | ☑☐☐☐☐         |
 | DAD-12 | Dock display mode                                                     | `dock.displayMode` · select (8 options) · default                                                                                                | ~ `dock: Behavior` (Fixed/Overlay/Smart = 3 of 8 modes)                     | D-10 | ☑☐☐☐☐         |
-| DAD-13 | Detection window                                                      | `dock.detectionWindow` · select [All Program Windows \| The Current Program Window] · All Program Windows                                        | ✗                                                                           | D-10 | ☑☐☐☐☐         |
+| DAD-13 | Detection window                                                      | `dock.detectionWindow` · select [All Program Windows \| The Current Program Window] · All Program Windows                                        | ✗                                                                           | D-10 | ☑☑☐☐☐         |
 | DAD-14 | Dock hidden effect                                                    | `dock.hiddenEffect` · select [Move \| Fade Away] · Move                                                                                          | ◐ `DockConfig.hide_effect`                                                  | D-10 | ☑☐☐☐☐         |
-| DAD-15 | Dock activation trigger                                               | `dock.activationTrigger` · select [The edge of the screen \| Activation bar \| The edge of the screen & Activation bar] · The edge of the screen | ✗                                                                           | D-13 | ☑☐☐☐☐         |
-| DAD-16 | Activation bar width                                                  | `dock.activationBarWidth` · range 1–100 · 4                                                                                                      | ✗                                                                           | D-13 | ☑☐☐☐☐         |
-| DAD-17 | Activation bar height                                                 | `dock.activationBarHeight` · range 1–30 · 2                                                                                                      | ✗                                                                           | D-13 | ☑☐☐☐☐         |
-| DAD-18 | Activation bar distance from screen edge                              | `dock.activationBarDistance` · range 0–40 · 0                                                                                                    | ✗                                                                           | D-13 | ☑☐☐☐☐         |
+| DAD-15 | Dock activation trigger                                               | `dock.activationTrigger` · select [The edge of the screen \| Activation bar \| The edge of the screen & Activation bar] · The edge of the screen | ✗                                                                           | D-13 | ☑☑☐☐☐         |
+| DAD-16 | Activation bar width                                                  | `dock.activationBarWidth` · range 1–100 · 4                                                                                                      | ✗                                                                           | D-13 | ☑☑☐☐☐         |
+| DAD-17 | Activation bar height                                                 | `dock.activationBarHeight` · range 1–30 · 2                                                                                                      | ✗                                                                           | D-13 | ☑☑☐☐☐         |
+| DAD-18 | Activation bar distance from screen edge                              | `dock.activationBarDistance` · range 0–40 · 0                                                                                                    | ✗                                                                           | D-13 | ☑☑☐☐☐         |
 | DAD-19 | Mouse delay activates dock time (ms)                                  | `dock.mouseActivationDelay` · range 0–1500 · 150                                                                                                 | ◐ `DockConfig.activation_delay` (10 ms units, max 1000 ms; design max 1500) | D-13 | ☑☐☐☐☐         |
 
 #### Dock ▸ Minimize Effects (9)
 
 | ID     | Setting                                           | Key · type · default                                                                                                                                                                                  | Rust today                                  | Cap | Sp Co UI Fx H |
 | ------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --- | ------------- |
-| DMN-01 | Use Nexora minimize effect                        | `dock.useNexoraMinimize` · toggle · on                                                                                                                                                                | ✗                                           | D-7 | ☑☐☐☐☐         |
-| DMN-02 | Don't animate minimizing windows                  | `dock.disableMinimizeAnimation` · toggle · off                                                                                                                                                        | ✗                                           | D-7 | ☑☐☐☐☐         |
-| DMN-03 | Hold down Shift to slow down an animation         | `dock.shiftSlowAnimation` · toggle · on                                                                                                                                                               | ✗                                           | D-7 | ☑☐☐☐☐         |
-| DMN-04 | Minimize windows into their Dock icon             | `dock.minimizeIntoIcon` · toggle · on                                                                                                                                                                 | ✗                                           | D-7 | ☑☐☐☐☐         |
-| DMN-05 | Dynamically display window content when minimized | `dock.dynamicMinimizeContent` · toggle · on                                                                                                                                                           | ✗                                           | D-7 | ☑☐☐☐☐         |
-| DMN-06 | Minimize window icon position                     | `dock.minimizedIconPosition` · select [Next to the icon on the right \| Independently displayed on the right \| Right side displayed independently using a separator] · Next to the icon on the right | ✗                                           | D-7 | ☑☐☐☐☐         |
+| DMN-01 | Use Nexora minimize effect                        | `dock.useNexoraMinimize` · toggle · on                                                                                                                                                                | ✗                                           | D-7 | ☑☑☐☐☐         |
+| DMN-02 | Don't animate minimizing windows                  | `dock.disableMinimizeAnimation` · toggle · off                                                                                                                                                        | ✗                                           | D-7 | ☑☑☐☐☐         |
+| DMN-03 | Hold down Shift to slow down an animation         | `dock.shiftSlowAnimation` · toggle · on                                                                                                                                                               | ✗                                           | D-7 | ☑☑☐☐☐         |
+| DMN-04 | Minimize windows into their Dock icon             | `dock.minimizeIntoIcon` · toggle · on                                                                                                                                                                 | ✗                                           | D-7 | ☑☑☐☐☐         |
+| DMN-05 | Dynamically display window content when minimized | `dock.dynamicMinimizeContent` · toggle · on                                                                                                                                                           | ✗                                           | D-7 | ☑☑☐☐☐         |
+| DMN-06 | Minimize window icon position                     | `dock.minimizedIconPosition` · select [Next to the icon on the right \| Independently displayed on the right \| Right side displayed independently using a separator] · Next to the icon on the right | ✗                                           | D-7 | ☑☑☐☐☐         |
 | DMN-07 | Minimize animation                                | `dock.minimizeAnimation` · select [Genie \| Scale \| Suck] · Genie                                                                                                                                    | ~ `min_effect` (0 Funnel, 1 Scale; no Suck) | D-7 | ☑☐☐☐☐         |
-| DMN-08 | Minimize animation speed                          | `dock.minimizeAnimationSpeed` · select (5 options) · 1.0x                                                                                                                                             | ✗                                           | D-7 | ☑☐☐☐☐         |
+| DMN-08 | Minimize animation speed                          | `dock.minimizeAnimationSpeed` · select (5 options) · 1.0x                                                                                                                                             | ✗                                           | D-7 | ☑☑☐☐☐         |
 | DMN-09 | Minimize animation blacklist                      | `dock.minimizeBlacklist` · text · empty                                                                                                                                                               | ✗ list value → ADR-0005                     | D-7 | ☑☐☐☐☐         |
 
 #### Dock ▸ Window Previews (6)
@@ -441,81 +441,81 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | ID     | Setting                             | Key · type · default                     | Rust today                                              | Cap | Sp Co UI Fx H |
 | ------ | ----------------------------------- | ---------------------------------------- | ------------------------------------------------------- | --- | ------------- |
 | DPV-01 | Enable window previews              | `dock.windowPreviews` · toggle · on      | ◐ `DockConfig.preview_enabled`                          | D-6 | ☑☐☐☐☐         |
-| DPV-02 | Window preview size                 | `dock.previewSize` · range 120–520 · 260 | ✗                                                       | D-6 | ☑☐☐☐☐         |
+| DPV-02 | Window preview size                 | `dock.previewSize` · range 120–520 · 260 | ✗                                                       | D-6 | ☑☑☐☐☐         |
 | DPV-03 | Preview delay on hover (ms)         | `dock.previewDelay` · range 0–1500 · 450 | ◐ `DockConfig.preview_delay` (max 1000 ms; design 1500) | D-6 | ☑☐☐☐☐         |
-| DPV-04 | Application name                    | `dock.previewAppName` · toggle · on      | ✗                                                       | D-6 | ☑☐☐☐☐         |
-| DPV-05 | Window control buttons              | `dock.previewControls` · toggle · on     | ✗                                                       | D-6 | ☑☐☐☐☐         |
-| DPV-06 | Show native window preview on hover | `dock.previewNative` · toggle · on       | ✗                                                       | D-6 | ☑☐☐☐☐         |
+| DPV-04 | Application name                    | `dock.previewAppName` · toggle · on      | ✗                                                       | D-6 | ☑☑☐☐☐         |
+| DPV-05 | Window control buttons              | `dock.previewControls` · toggle · on     | ✗                                                       | D-6 | ☑☑☐☐☐         |
+| DPV-06 | Show native window preview on hover | `dock.previewNative` · toggle · on       | ✗                                                       | D-6 | ☑☑☐☐☐         |
 
 #### Finder ▸ Look & Behavior (14)
 
 | ID     | Setting                                                            | Key · type · default                              | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | ------------------------------------------------------------------ | ------------------------------------------------- | ---------- | ---- | ------------- |
-| FLB-01 | Finder menu icon                                                   | `finder.menuIcon` · toggle · on                   | ✗          | F-1  | ☑☐☐☐☐         |
-| FLB-02 | Auto-Hide Finder                                                   | `finder.autoHide` · toggle · off                  | ✗          | F-8  | ☑☐☐☐☐         |
-| FLB-03 | Shut down confirmation box                                         | `finder.shutdownConfirmation` · toggle · on       | ✗          | F-9  | ☑☐☐☐☐         |
-| FLB-04 | Maximized windows affect Finder appearance                         | `finder.maximizedAffectsAppearance` · toggle · on | ✗          | F-8  | ☑☐☐☐☐         |
-| FLB-05 | Click the upper right corner to close the current maximized window | `finder.closeMaximizedOnCorner` · toggle · off    | ✗          | F-10 | ☑☐☐☐☐         |
-| FLB-06 | Lock dragging tray icons                                           | `finder.lockTrayDragging` · toggle · off          | ✗          | F-11 | ☑☐☐☐☐         |
-| FLB-07 | Show window options in Finder                                      | `finder.windowOptions` · toggle · on              | ✗          | F-3  | ☑☐☐☐☐         |
-| FLB-08 | Show colored tray icons                                            | `finder.coloredTrayIcons` · toggle · on           | ✗          | F-11 | ☑☐☐☐☐         |
-| FLB-09 | Show input method menu                                             | `finder.inputMethodMenu` · toggle · on            | ✗          | F-18 | ☑☐☐☐☐         |
-| FLB-10 | Show search icon                                                   | `finder.searchIcon` · toggle · on                 | ✗          | F-18 | ☑☐☐☐☐         |
-| FLB-11 | The account icon is displayed                                      | `finder.accountIcon` · toggle · on                | ✗          | F-18 | ☑☐☐☐☐         |
-| FLB-12 | Displays the media playback icon                                   | `finder.mediaPlaybackIcon` · toggle · on          | ✗          | F-17 | ☑☐☐☐☐         |
-| FLB-13 | Show music player lyrics menu                                      | `finder.lyricsMenu` · toggle · on                 | ✗          | F-17 | ☑☐☐☐☐         |
-| FLB-14 | Show Color Player Lyrics                                           | `finder.colorPlayerLyrics` · toggle · on          | ✗          | F-17 | ☑☐☐☐☐         |
+| FLB-01 | Finder menu icon                                                   | `finder.menuIcon` · toggle · on                   | ✗          | F-1  | ☑☑☐☐☐         |
+| FLB-02 | Auto-Hide Finder                                                   | `finder.autoHide` · toggle · off                  | ✗          | F-8  | ☑☑☐☐☐         |
+| FLB-03 | Shut down confirmation box                                         | `finder.shutdownConfirmation` · toggle · on       | ✗          | F-9  | ☑☑☐☐☐         |
+| FLB-04 | Maximized windows affect Finder appearance                         | `finder.maximizedAffectsAppearance` · toggle · on | ✗          | F-8  | ☑☑☐☐☐         |
+| FLB-05 | Click the upper right corner to close the current maximized window | `finder.closeMaximizedOnCorner` · toggle · off    | ✗          | F-10 | ☑☑☐☐☐         |
+| FLB-06 | Lock dragging tray icons                                           | `finder.lockTrayDragging` · toggle · off          | ✗          | F-11 | ☑☑☐☐☐         |
+| FLB-07 | Show window options in Finder                                      | `finder.windowOptions` · toggle · on              | ✗          | F-3  | ☑☑☐☐☐         |
+| FLB-08 | Show colored tray icons                                            | `finder.coloredTrayIcons` · toggle · on           | ✗          | F-11 | ☑☑☐☐☐         |
+| FLB-09 | Show input method menu                                             | `finder.inputMethodMenu` · toggle · on            | ✗          | F-18 | ☑☑☐☐☐         |
+| FLB-10 | Show search icon                                                   | `finder.searchIcon` · toggle · on                 | ✗          | F-18 | ☑☑☐☐☐         |
+| FLB-11 | The account icon is displayed                                      | `finder.accountIcon` · toggle · on                | ✗          | F-18 | ☑☑☐☐☐         |
+| FLB-12 | Displays the media playback icon                                   | `finder.mediaPlaybackIcon` · toggle · on          | ✗          | F-17 | ☑☑☐☐☐         |
+| FLB-13 | Show music player lyrics menu                                      | `finder.lyricsMenu` · toggle · on                 | ✗          | F-17 | ☑☑☐☐☐         |
+| FLB-14 | Show Color Player Lyrics                                           | `finder.colorPlayerLyrics` · toggle · on          | ✗          | F-17 | ☑☑☐☐☐         |
 
 #### Finder ▸ Notifications (3) — not in `feature.md`, H: n/a
 
 | ID     | Setting                                 | Key · type · default                           | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | --------------------------------------- | ---------------------------------------------- | ---------- | ---- | ------------- |
-| FNO-01 | Show desktop notifications              | `finder.showNotifications` · toggle · on       | ✗          | F-12 | ☐☐☐☐☐         |
-| FNO-02 | Notification sounds                     | `finder.notificationSounds` · toggle · on      | ✗          | F-12 | ☐☐☐☐☐         |
-| FNO-03 | Notification display duration (seconds) | `finder.notificationDuration` · range 1–15 · 5 | ✗          | F-12 | ☐☐☐☐☐         |
+| FNO-01 | Show desktop notifications              | `finder.showNotifications` · toggle · on       | ✗          | F-12 | ☐☑☐☐☐         |
+| FNO-02 | Notification sounds                     | `finder.notificationSounds` · toggle · on      | ✗          | F-12 | ☐☑☐☐☐         |
+| FNO-03 | Notification display duration (seconds) | `finder.notificationDuration` · range 1–15 · 5 | ✗          | F-12 | ☐☑☐☐☐         |
 
 #### Finder ▸ Time & Date (4) — not in `feature.md`
 
 | ID     | Setting               | Key · type · default                                        | Rust today           | Cap | Sp Co UI Fx H |
 | ------ | --------------------- | ----------------------------------------------------------- | -------------------- | --- | ------------- |
-| FTD-01 | Show time in Menu Bar | `finder.showTime` · toggle · on                             | ✗                    | F-4 | ☐☐☐☐☐         |
-| FTD-02 | Show date in Menu Bar | `finder.showDate` · toggle · on                             | ✗                    | F-4 | ☐☐☐☐☐         |
+| FTD-01 | Show time in Menu Bar | `finder.showTime` · toggle · on                             | ✗                    | F-4 | ☐☑☐☐☐         |
+| FTD-02 | Show date in Menu Bar | `finder.showDate` · toggle · on                             | ✗                    | F-4 | ☐☑☐☐☐         |
 | FTD-03 | Time format           | `finder.timeFormat` · select [12-hour \| 24-hour] · 24-hour | ~ `clock_24h` (bool) | F-4 | ☐☐☐☐☐         |
-| FTD-04 | Date format           | `finder.dateFormat` · select [Short \| Long \| ISO] · Short | ✗                    | F-4 | ☐☐☐☐☐         |
+| FTD-04 | Date format           | `finder.dateFormat` · select [Short \| Long \| ISO] · Short | ✗                    | F-4 | ☐☑☐☐☐         |
 
 #### Finder ▸ Audio (3) — not in `feature.md`
 
 | ID     | Setting                      | Key · type · default                     | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | ---------------------------- | ---------------------------------------- | ---------- | ---- | ------------- |
-| FAU-01 | Show volume control          | `finder.showVolume` · toggle · on        | ✗          | F-13 | ☐☐☐☐☐         |
-| FAU-02 | Show audio output selector   | `finder.showAudioOutput` · toggle · on   | ✗          | F-13 | ☐☐☐☐☐         |
-| FAU-03 | Show media playback controls | `finder.showMediaControls` · toggle · on | ✗          | F-13 | ☐☐☐☐☐         |
+| FAU-01 | Show volume control          | `finder.showVolume` · toggle · on        | ✗          | F-13 | ☐☑☐☐☐         |
+| FAU-02 | Show audio output selector   | `finder.showAudioOutput` · toggle · on   | ✗          | F-13 | ☐☑☐☐☐         |
+| FAU-03 | Show media playback controls | `finder.showMediaControls` · toggle · on | ✗          | F-13 | ☐☑☐☐☐         |
 
 #### Finder ▸ Display (2) — not in `feature.md`
 
 | ID     | Setting                         | Key · type · default                       | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | ------------------------------- | ------------------------------------------ | ---------- | ---- | ------------- |
-| FDI-01 | Show display brightness control | `finder.showBrightness` · toggle · on      | ✗          | F-14 | ☐☐☐☐☐         |
+| FDI-01 | Show display brightness control | `finder.showBrightness` · toggle · on      | ✗          | F-14 | ☐☑☐☐☐         |
 | FDI-02 | Show screen mirroring control   | `finder.showScreenMirroring` · toggle · on | ⊘          | —    | ☐☐☐☐☐         |
 
 #### Finder ▸ Hardware Status (3) — not in `feature.md`
 
 | ID     | Setting                  | Key · type · default                     | Rust today | Cap  | Sp Co UI Fx H |
 | ------ | ------------------------ | ---------------------------------------- | ---------- | ---- | ------------- |
-| FHW-01 | Show Wi-Fi status        | `finder.showWifi` · toggle · on          | ✗          | F-4  | ☐☐☐☐☐         |
-| FHW-02 | Show Bluetooth status    | `finder.showBluetooth` · toggle · on     | ✗          | F-15 | ☐☐☐☐☐         |
-| FHW-03 | Show device status icons | `finder.showHardwareIcons` · toggle · on | ✗          | F-15 | ☐☐☐☐☐         |
+| FHW-01 | Show Wi-Fi status        | `finder.showWifi` · toggle · on          | ✗          | F-4  | ☐☑☐☐☐         |
+| FHW-02 | Show Bluetooth status    | `finder.showBluetooth` · toggle · on     | ✗          | F-15 | ☐☑☐☐☐         |
+| FHW-03 | Show device status icons | `finder.showHardwareIcons` · toggle · on | ✗          | F-15 | ☐☑☐☐☐         |
 
 #### Finder ▸ Battery (6) — H: n/a for FBA-04…06
 
 | ID     | Setting                                       | Key · type · default                                                                               | Rust today                                    | Cap  | Sp Co UI Fx H |
 | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------- | ---- | ------------- |
-| FBA-01 | Show Battery Status menu in Finder            | `finder.showBatteryMenu` · toggle · on                                                             | ✗                                             | F-16 | ☑☐☐☐☐         |
+| FBA-01 | Show Battery Status menu in Finder            | `finder.showBatteryMenu` · toggle · on                                                             | ✗                                             | F-16 | ☑☑☐☐☐         |
 | FBA-02 | Show Battery percentage in Finder status menu | `finder.batteryPercentage` · toggle · on                                                           | ~ `battery_pct` (3 modes; design is a toggle) | F-16 | ☑☐☐☐☐         |
-| FBA-03 | Display the remaining battery time            | `finder.remainingBatteryTime` · toggle · on                                                        | ✗                                             | F-16 | ☑☐☐☐☐         |
-| FBA-04 | Automatically switch power plans              | `finder.autoPowerPlans` · toggle · off                                                             | ✗                                             | F-16 | ☑☐☐☐☐         |
-| FBA-05 | Power plan when plugged in                    | `finder.powerPlanPlugged` · select [balanced \| bestPerformance \| bestPowerEfficiency] · balanced | ✗                                             | F-16 | ☑☐☐☐☐         |
-| FBA-06 | Power plan when using batteries               | `finder.powerPlanBattery` · select [balanced \| bestPerformance \| bestPowerEfficiency] · balanced | ✗                                             | F-16 | ☑☐☐☐☐         |
+| FBA-03 | Display the remaining battery time            | `finder.remainingBatteryTime` · toggle · on                                                        | ✗                                             | F-16 | ☑☑☐☐☐         |
+| FBA-04 | Automatically switch power plans              | `finder.autoPowerPlans` · toggle · off                                                             | ✗                                             | F-16 | ☑☑☐☐☐         |
+| FBA-05 | Power plan when plugged in                    | `finder.powerPlanPlugged` · select [balanced \| bestPerformance \| bestPowerEfficiency] · balanced | ✗                                             | F-16 | ☑☑☐☐☐         |
+| FBA-06 | Power plan when using batteries               | `finder.powerPlanBattery` · select [balanced \| bestPerformance \| bestPowerEfficiency] · balanced | ✗                                             | F-16 | ☑☑☐☐☐         |
 
 #### Dynamic Island ▸ Look & Behavior (17)
 
@@ -543,13 +543,13 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 
 | ID     | Setting                  | Key · type · default                 | Rust today          | Cap  | Sp Co UI Fx H |
 | ------ | ------------------------ | ------------------------------------ | ------------------- | ---- | ------------- |
-| IAC-01 | Media and lyrics         | `island.mediaLyrics` · toggle · on   | ✗                   | I-14 | ☑☐☐☐☐         |
+| IAC-01 | Media and lyrics         | `island.mediaLyrics` · toggle · on   | ✗                   | I-14 | ☑☑☐☐☐         |
 | IAC-02 | Compact lyrics           | `island.compactLyrics` · toggle · on | ✔ `lyrics_compact`  | I-5  | ☑☑☐☐☐         |
 | IAC-03 | Online lyrics lookup     | `island.onlineLyrics` · toggle · off | ✔ `lyrics_online`   | I-5  | ☑☑☐☐☐         |
 | IAC-04 | Downloads                | `island.downloads` · toggle · on     | ✔ `notch_downloads` | I-7  | ☑☑☐☐☐         |
-| IAC-05 | File shelf               | `island.fileShelf` · toggle · on     | ✗                   | I-14 | ☑☐☐☐☐         |
+| IAC-05 | File shelf               | `island.fileShelf` · toggle · on     | ✗                   | I-14 | ☑☑☐☐☐         |
 | IAC-06 | Send to phone            | `island.sendToPhone` · toggle · off  | ✔ `notch_send`      | I-9  | ☑☑☐☐☐         |
-| IAC-07 | Timer and calendar strip | `island.timerCalendar` · toggle · on | ✗                   | I-14 | ☑☐☐☐☐         |
+| IAC-07 | Timer and calendar strip | `island.timerCalendar` · toggle · on | ✗                   | I-14 | ☑☑☐☐☐         |
 
 ---
 
@@ -561,18 +561,18 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 ## M3 — Dynamic Island
 
 **I-14 Per-activity switches** (smallest slice; do it first, end to end, as the pattern for the rest)
-- [ ] I-14.1 core: `Activities { media, downloads, shelf, send, timer }` + `visible_tabs(flags)` and activity priority as pure
+- [x] I-14.1 core: `Activities { media, downloads, shelf, send, timer }` + `visible_tabs(flags)` and activity priority as pure
   functions. Tests: a disabled activity never appears; all off → idle only.
-- [ ] I-14.2 core: IAC-01, IAC-05, IAC-07 (Co boxes, recipe)
-- [ ] I-14.3 app: tabs/zones hide; decide what a file drop does when the shelf is off (Send/Copy/Open still available?)
-- [ ] I-14.4 UI rows for the 7 Activities settings (UI + Fx together)
+- [x] I-14.2 core: IAC-01, IAC-05, IAC-07 (Co boxes, recipe)
+- [ ] I-14.3 app (code written, needs a Windows build + QA `docs/qa/island-activities.md`): tabs/zones hide; decide what a file drop does when the shelf is off (Send/Copy/Open still available?)
+- [ ] I-14.4 UI rows (written for IAC-01/05/07 + display-mode segment; needs a Windows build) for the 7 Activities settings (UI + Fx together)
 - [ ] I-14.5 H: tab visibility in the HTML island
 
 **I-3 / I-12 Reconciliation** (needs SPEC-03)
-- [ ] I-3.1 idle styles: extend `notch_idle` from 3 to the agreed set; old values keep meaning (test: legacy 0/1/2)
-- [ ] I-12.1 display mode names ↔ `Behavior` ↔ `visibility::policy::Mode`: one mapping function, exhaustively tested
-- [ ] I-12.2 material names mapping, tested both directions
-- [ ] I-12.3 acceptance: `step()` still exhaustively tested; no wake-ups beyond the minute tick when idle
+- [x] I-3.1 idle styles: extend `notch_idle` from 3 to the agreed set; old values keep meaning (test: legacy 0/1/2)
+- [x] I-12.1 display mode names ↔ `Behavior` ↔ `visibility::policy::Mode`: one mapping function, exhaustively tested
+- [x] I-12.2 material names mapping, tested both directions
+- [ ] I-12.3 acceptance: `step()` still exhaustively tested (unchanged, tests green); no wake-ups beyond the minute tick when idle (not measured: needs Windows, see BASE-11)
 
 **I-15 Eye companion** (only if ADR-0007 accepts it)
 - [ ] I-15.1 core: pure timing model (glance interval in [min,max], chance 0–1, seeded RNG for tests)

@@ -99,6 +99,9 @@ enum Action {
   LyricsCompact,
   NotchDownloads,
   NotchSend,
+  NotchMedia,
+  NotchShelf,
+  NotchTimer,
   LyricsOnline,
   LyricsDir,
   Donate,
@@ -1090,8 +1093,10 @@ impl Win {
         (prefs::tr("Tetap"), Behavior::Fixed),
         (prefs::tr("Menimpa"), Behavior::Overlay),
         (prefs::tr("Pintar"), Behavior::Smart),
+        (prefs::tr("Sesuai permintaan"), Behavior::OnDemand),
       ]
       .into_iter()
+      .filter(|(_, b)| !dock || Behavior::DOCK.contains(b))
       .map(|(t, b)| (t, if dock { Action::Dock(b) } else { Action::Notch(b) }))
       .collect()
     };
@@ -1099,6 +1104,8 @@ impl Win {
       Behavior::Fixed => 0,
       Behavior::Overlay => 1,
       Behavior::Smart => 2,
+      // Only the Island offers this segment; a Dock file that says `ondemand` shows the last Dock option.
+      Behavior::OnDemand => 3,
     };
     match page {
       0 => vec![
@@ -1164,7 +1171,7 @@ impl Win {
           None,
           vec![
             RowDef::Toggle(prefs::tr("Aktifkan Deck"), s.dock_enabled, Action::DockOn),
-            RowDef::Seg(prefs::tr("Perilaku"), behaviors(true), beh_idx(s.dock)),
+            RowDef::Seg(prefs::tr("Perilaku"), behaviors(true), beh_idx(s.dock).min(2)),
             RowDef::Seg(
               prefs::tr("Efek minimize"),
               vec![
@@ -1266,14 +1273,25 @@ impl Win {
           Some(prefs::tr("Aktivitas")),
           vec![
             RowDef::Toggle(
+              prefs::tr("Media dan lirik"),
+              s.extra.notch_media,
+              Action::NotchMedia,
+            ),
+            RowDef::Toggle(
               prefs::tr("Tampilkan unduhan (Store, Steam, peramban)"),
               s.notch_downloads,
               Action::NotchDownloads,
             ),
+            RowDef::Toggle(prefs::tr("Rak file"), s.extra.notch_shelf, Action::NotchShelf),
             RowDef::Toggle(
               prefs::tr("Kirim ke HP lewat QR (Wi-Fi yang sama)"),
               s.notch_send,
               Action::NotchSend,
+            ),
+            RowDef::Toggle(
+              prefs::tr("Timer dan strip kalender"),
+              s.extra.notch_timer,
+              Action::NotchTimer,
             ),
           ],
         ),
@@ -2263,6 +2281,9 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
         Some(Action::LyricsCompact) => prefs::update(|s| s.lyrics_compact = !s.lyrics_compact),
         Some(Action::NotchDownloads) => prefs::update(|s| s.notch_downloads = !s.notch_downloads),
         Some(Action::NotchSend) => prefs::update(|s| s.notch_send = !s.notch_send),
+        Some(Action::NotchMedia) => prefs::update(|s| s.extra.notch_media = !s.extra.notch_media),
+        Some(Action::NotchShelf) => prefs::update(|s| s.extra.notch_shelf = !s.extra.notch_shelf),
+        Some(Action::NotchTimer) => prefs::update(|s| s.extra.notch_timer = !s.extra.notch_timer),
         Some(Action::LyricsOnline) => prefs::update(|s| s.lyrics_online = !s.lyrics_online),
         Some(Action::Donate) => nexora_platform::launch::open(DONATE_URL),
         Some(Action::MenuLogoPick) => {

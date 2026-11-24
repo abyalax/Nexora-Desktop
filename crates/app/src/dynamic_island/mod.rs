@@ -23,6 +23,7 @@ use draw::Painter;
 use nexora_core::dynamic_island::state::{self, Event, Live, Look, Mode, OpenOn, Size, Tab, View, motion};
 use nexora_core::dynamic_island::timer::{Phase, Timer};
 use nexora_core::dynamic_island::visibility::{self, Transition};
+use nexora_core::dynamic_island::activities::{self, Activities};
 use nexora_core::dynamic_island::{glance, layout};
 use nexora_core::panels::calendar;
 use nexora_core::visibility::policy::Mode as Vis;
@@ -503,18 +504,23 @@ impl Notch {
 
   fn live(&self) -> Live {
     let running = self.timer.phase == Phase::Running;
-    Live {
+    let prefs = crate::prefs::get();
+    let acts = Activities::from_settings(&prefs);
+    let live = acts.mask(Live {
       media: self.has_media,
       playing: self.playing,
       lyric_line: self.lyr.as_ref().is_some_and(|l| l.synced),
-      lyrics_on: crate::prefs::get().lyrics_compact,
+      lyrics_on: prefs.lyrics_compact,
       timer_left_s: running.then(|| self.timer.remaining_secs(self.now_ms())),
       charging_fresh: self.charging_fresh,
       shelf: self.shelf.len(),
-      glance: crate::prefs::get().notch_idle == 0,
-      download: (crate::prefs::get().notch_downloads && (self.dl.is_some() || self.dl_done.is_some()))
-        || self.send_compact().is_some(),
-      wide_music: crate::prefs::get().notch_idle == 2,
+      glance: prefs.notch_idle == 0,
+      download: prefs.notch_downloads && (self.dl.is_some() || self.dl_done.is_some()),
+      wide_music: prefs.notch_idle == 2,
+    });
+    Live {
+      download: live.download || (acts.send && self.send_compact().is_some()),
+      ..live
     }
   }
 
@@ -525,6 +531,7 @@ impl Notch {
       OpenOn::Click
     };
     let next = state::step(self.mode, ev, open_on, self.tracking);
+    let next = activities::retarget(next, &Activities::from_settings(&crate::prefs::get()));
     if next != self.mode {
       log::line("notch", &format!("{:?} --{ev:?}--> {next:?}", self.mode));
       self.mode = next;

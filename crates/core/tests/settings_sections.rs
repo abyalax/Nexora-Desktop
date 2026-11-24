@@ -168,7 +168,8 @@ fn applying_one_new_section_leaves_the_others_untouched() {
 #[test]
 fn sections_cover_every_setting_except_widget_style() {
   // Starting from defaults and applying all seven sections of a fully customised file must rebuild that file's
-  // settings. `widget_style` is the one key no section owns yet (Widget page, ADR-0006).
+  // settings. `widget_style` is the one legacy key no section owns yet (Widget page, ADR-0006). The table-driven
+  // `extra` rows (ADR-0004) move into their section structs as each row's UI box lands, so they are copied whole.
   let base = Settings::parse(FULL);
   let mut s = Settings::default();
   base.general_settings().apply(&mut s);
@@ -179,6 +180,7 @@ fn sections_cover_every_setting_except_widget_style() {
   base.finder_settings().apply(&mut s);
   base.island_settings().apply(&mut s);
   s.widget_style = base.widget_style;
+  s.extra = base.extra;
   assert_eq!(s, base);
   assert_ne!(
     Settings::default().widget_style,

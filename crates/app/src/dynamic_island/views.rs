@@ -1128,7 +1128,8 @@ fn compact_charging(p: &mut Painter, c: &ContainerVisual, f: Frame, d: &Data) {
 
 fn header(p: &mut Painter, c: &ContainerVisual, f: Frame, cur: Tab, d: &Data, regions: &mut Vec<Region>) {
   let (cy, bh, pad) = (p.px(25.0), p.px(26.0), p.px(3.0));
-  let widths: Vec<f32> = Tab::ALL
+  let tabs = nexora_core::dynamic_island::activities::Activities::from_settings(&crate::prefs::get()).visible_tabs();
+  let widths: Vec<f32> = tabs
     .iter()
     .map(|t| (p.measure(tr(t.title()), 12.5, 600) + p.px(28.0)).max(p.px(60.0)))
     .collect();
@@ -1137,7 +1138,7 @@ fn header(p: &mut Painter, c: &ContainerVisual, f: Frame, cur: Tab, d: &Data, re
   p.rect(c, x, cy - bh / 2.0, total, bh, bh / 2.0, white(26));
   let mut sx = x + pad;
   let th = p.px(12.5) * 1.3;
-  for (t, w) in Tab::ALL.iter().zip(&widths) {
+  for (t, w) in tabs.iter().zip(&widths) {
     let on = *t == cur;
     let n0 = kids(c);
     if on {

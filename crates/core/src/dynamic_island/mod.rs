@@ -1,5 +1,6 @@
 //! Dynamic Island domain logic: activity state, bands, timer, shelf, lyrics and transfers.
 
+pub mod activities;
 pub mod bands;
 pub mod download;
 pub mod glance;

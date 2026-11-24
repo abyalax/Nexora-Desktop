@@ -5,6 +5,8 @@ pub enum Behavior {
   Fixed,
   Overlay,
   Smart,
+  /// Island only: hidden until summoned (spec "On demand", ILB-03). Maps to `Mode::OnDemand`.
+  OnDemand,
 }
 
 impl Behavior {
@@ -13,6 +15,7 @@ impl Behavior {
       "fixed" | "tetap" | "permanent" => Some(Behavior::Fixed),
       "overlay" | "menimpa" => Some(Behavior::Overlay),
       "smart" | "autohide" | "auto-hide" | "auto" | "peek" | "hidden" => Some(Behavior::Smart),
+      "ondemand" | "on_demand" | "on-demand" | "on demand" | "demand" => Some(Behavior::OnDemand),
       _ => None,
     }
   }
@@ -22,6 +25,7 @@ impl Behavior {
       Behavior::Fixed => "fixed",
       Behavior::Overlay => "overlay",
       Behavior::Smart => "smart",
+      Behavior::OnDemand => "ondemand",
     }
   }
 
@@ -29,6 +33,7 @@ impl Behavior {
     match self {
       Behavior::Fixed | Behavior::Overlay => Mode::Always,
       Behavior::Smart => Mode::AutoHide,
+      Behavior::OnDemand => Mode::OnDemand,
     }
   }
 
@@ -36,7 +41,10 @@ impl Behavior {
     self == Behavior::Fixed
   }
 
-  pub const ALL: [Behavior; 3] = [Behavior::Fixed, Behavior::Overlay, Behavior::Smart];
+  pub const ALL: [Behavior; 4] = [Behavior::Fixed, Behavior::Overlay, Behavior::Smart, Behavior::OnDemand];
+
+  /// Modes the Dock offers today (D-10 adds more later). The Island offers all of [`Behavior::ALL`].
+  pub const DOCK: [Behavior; 3] = [Behavior::Fixed, Behavior::Overlay, Behavior::Smart];
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -101,9 +109,9 @@ pub enum Material {
 impl Material {
   pub fn parse(s: &str) -> Option<Material> {
     match s.trim().to_ascii_lowercase().as_str() {
-      "blur" | "buram" | "frosted" => Some(Material::Blur),
+      "blur" | "buram" | "frosted" | "translucent" => Some(Material::Blur),
       "glass" | "liquid" | "liquidglass" => Some(Material::Glass),
-      "black" | "hitam" => Some(Material::Black),
+      "black" | "hitam" | "opaque" => Some(Material::Black),
       "clear" | "transparan" | "transparent" => Some(Material::Glass),
       _ => None,
     }
@@ -116,6 +124,47 @@ impl Material {
     }
   }
   pub const ALL: [Material; 3] = [Material::Blur, Material::Glass, Material::Black];
+
+  /// Name used by the design prototype (SPEC-03 row 16): Glass / Opaque / Translucent.
+  pub fn design_name(self) -> &'static str {
+    match self {
+      Material::Blur => "Translucent",
+      Material::Glass => "Glass",
+      Material::Black => "Opaque",
+    }
+  }
+}
+
+/// What the Island shows while idle (`notch_idle`, ILB-05). Stored numbers keep their 0.4.0 meaning.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IdleStyle {
+  /// 0: greeting, time/date/battery and rotating glance items.
+  Greeting,
+  /// 1: empty pill.
+  Blank,
+  /// 2: wide music player when media is present.
+  Music,
+}
+
+impl IdleStyle {
+  pub const ALL: [IdleStyle; 3] = [IdleStyle::Greeting, IdleStyle::Blank, IdleStyle::Music];
+
+  /// Stored value; anything out of range falls back to `Greeting`, the default.
+  pub fn from_stored(n: u8) -> IdleStyle {
+    match n {
+      1 => IdleStyle::Blank,
+      2 => IdleStyle::Music,
+      _ => IdleStyle::Greeting,
+    }
+  }
+
+  pub fn stored(self) -> u8 {
+    match self {
+      IdleStyle::Greeting => 0,
+      IdleStyle::Blank => 1,
+      IdleStyle::Music => 2,
+    }
+  }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -224,5 +273,62 @@ impl HotAction {
   pub fn next(self) -> HotAction {
     let i = Self::ALL.iter().position(|a| *a == self).unwrap_or(0);
     Self::ALL[(i + 1) % Self::ALL.len()]
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn behavior_maps_to_visibility_modes_exhaustively() {
+    // I-12.1: one mapping, every variant listed so a new variant fails to compile here first.
+    for b in Behavior::ALL {
+      let (mode, reserves) = match b {
+        Behavior::Fixed => (Mode::Always, true),
+        Behavior::Overlay => (Mode::Always, false),
+        Behavior::Smart => (Mode::AutoHide, false),
+        Behavior::OnDemand => (Mode::OnDemand, false),
+      };
+      assert_eq!(b.mode(), mode, "{b:?}");
+      assert_eq!(b.reserves(), reserves, "{b:?}");
+      assert_eq!(Behavior::parse(b.key()), Some(b), "{b:?} round-trips through its key");
+    }
+  }
+
+  #[test]
+  fn on_demand_has_aliases_and_old_names_keep_their_meaning() {
+    for s in ["ondemand", "On Demand", "on-demand", "on_demand", "demand"] {
+      assert_eq!(Behavior::parse(s), Some(Behavior::OnDemand), "{s}");
+    }
+    for s in ["peek", "autohide", "hidden"] {
+      assert_eq!(Behavior::parse(s), Some(Behavior::Smart), "legacy {s}");
+    }
+    assert_eq!(Behavior::DOCK.len(), 3);
+    assert!(!Behavior::DOCK.contains(&Behavior::OnDemand));
+  }
+
+  #[test]
+  fn material_design_names_map_both_ways() {
+    // I-12.2: Opaque = Black, Translucent = Blur, Glass = Glass.
+    for m in Material::ALL {
+      assert_eq!(Material::parse(m.design_name()), Some(m), "{m:?}");
+      assert_eq!(Material::parse(m.key()), Some(m), "{m:?}");
+    }
+    assert_eq!(Material::parse("Opaque"), Some(Material::Black));
+    assert_eq!(Material::parse("Translucent"), Some(Material::Blur));
+    assert_eq!(Material::parse("sparkly"), None);
+  }
+
+  #[test]
+  fn idle_style_keeps_legacy_numbers() {
+    // I-3.1: stored 0/1/2 keep their 0.4.0 meaning; out-of-range falls back to the default.
+    assert_eq!(IdleStyle::from_stored(0), IdleStyle::Greeting);
+    assert_eq!(IdleStyle::from_stored(1), IdleStyle::Blank);
+    assert_eq!(IdleStyle::from_stored(2), IdleStyle::Music);
+    assert_eq!(IdleStyle::from_stored(9), IdleStyle::Greeting);
+    for s in IdleStyle::ALL {
+      assert_eq!(IdleStyle::from_stored(s.stored()), s);
+    }
   }
 }
