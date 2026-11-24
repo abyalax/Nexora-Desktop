@@ -114,8 +114,8 @@ ADR-0004: new keys are written only when ≠ default; lists live in `lists.cfg` 
 | WAN-01 | Window opening animation                    | shared.windowAnimation         | toggle                                  | on      | GeneralSettings | WAN | ✔ `anim`                  |      |
 | WAN-02 | Window opening animation effect             | shared.windowAnimationEffect   | select [scale \| fade \| slide \| zoom] | scale   | GeneralSettings | WAN | ✗                         |      |
 | WAN-03 | Adjust animation speed                      | shared.windowAnimationSpeed    | select (5 options)                      | 1.0x    | GeneralSettings | WAN | ✗                         |      |
-| WAN-04 | Add excluded programs (semicolon separated) | shared.excludedPrograms        | text                                    | empty   | GeneralSettings | WAN | ✗ list value → ADR-0005   |      |
-| WAN-05 | Manage running program blacklist            | shared.programBlacklist        | text                                    | empty   | GeneralSettings | WAN | ✗ list value → ADR-0005   |      |
+| WAN-04 | Add excluded programs (semicolon separated) | shared.excludedPrograms        | text                                    | empty   | GeneralSettings | WAN | ✔ `ProgramLists` · `ListKind::ExcludedPrograms` (core only; app wiring open)   |      |
+| WAN-05 | Manage running program blacklist            | shared.programBlacklist        | text                                    | empty   | GeneralSettings | WAN | ✔ `ProgramLists` · `ListKind::ProgramBlacklist` (core only; app wiring open)   |      |
 | WAN-06 | Remove windows for excluded programs        | shared.minimizeExcludedWindows | toggle                                  | on      | GeneralSettings | WAN | ✗ meaning unclear in spec |      |
 
 ## Dock ▸ Look & Behavior (10)
@@ -141,7 +141,7 @@ ADR-0004: new keys are written only when ≠ default; lists live in `lists.cfg` 
 | DLP-02 | Icon horizontal spacing                           | dock.launchpadHorizontalSpacing | range 0–60                                                         | 22              | DockSettings  | D-8 | ✗                       |      |
 | DLP-03 | Icon vertical spacing                             | dock.launchpadVerticalSpacing   | range 0–60                                                         | 24              | DockSettings  | D-8 | ✗                       |      |
 | DLP-04 | Choose which icons will be displayed by Launchpad | dock.launchpadSources           | select [added \| addedStartMenu \| addedDesktop \| all]            | added           | DockSettings  | D-8 | ✗                       |      |
-| DLP-05 | Edit deleted Start Menu programs                  | dock.deletedStartMenuPrograms   | text                                                               | empty           | DockSettings  | D-8 | ✗ list value → ADR-0005 |      |
+| DLP-05 | Edit deleted Start Menu programs                  | dock.deletedStartMenuPrograms   | text                                                               | empty           | DockSettings  | D-8 | ✔ `ProgramLists` · `ListKind::DeletedStartMenuPrograms` (core only; app wiring open) |      |
 | DLP-06 | Select the screen to display Launchpad            | dock.launchpadDisplay           | select [Primary display \| All displays \| Display 1 \| Display 2] | Primary display | DockSettings  | D-8 | ✗                       |      |
 | DLP-07 | Follow Dock                                       | dock.launchpadFollowDock        | toggle                                                             | on              | DockSettings  | D-8 | ✗                       |      |
 
@@ -181,7 +181,7 @@ ADR-0004: new keys are written only when ≠ default; lists live in `lists.cfg` 
 | DMN-06 | Minimize window icon position                     | dock.minimizedIconPosition    | select [Next to the icon on the right \| Independently displayed on the right \| Right side displayed independently using a separator] | Next to the icon on the right | DockSettings  | D-7 | ✗                                           |      |
 | DMN-07 | Minimize animation                                | dock.minimizeAnimation        | select [Genie \| Scale \| Suck]                                                                                                        | Genie                         | DockSettings  | D-7 | ~ `min_effect` (0 Funnel, 1 Scale; no Suck) |      |
 | DMN-08 | Minimize animation speed                          | dock.minimizeAnimationSpeed   | select (5 options)                                                                                                                     | 1.0x                          | DockSettings  | D-7 | ✗                                           |      |
-| DMN-09 | Minimize animation blacklist                      | dock.minimizeBlacklist        | text                                                                                                                                   | empty                         | DockSettings  | D-7 | ✗ list value → ADR-0005                     |      |
+| DMN-09 | Minimize animation blacklist                      | dock.minimizeBlacklist        | text                                                                                                                                   | empty                         | DockSettings  | D-7 | ✔ `ProgramLists` · `ListKind::MinimizeBlacklist` (core only; app wiring open)                     |      |
 
 ## Dock ▸ Window Previews (6)
 

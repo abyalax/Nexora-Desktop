@@ -273,11 +273,11 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | ------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | --- | ------------- |
 | GEN-01 | Enable Finder                                  | `shared.enableFinder` · toggle · on                                                                                      | ✔ `menubar`                                                    | F-* | ☑☑☐☐☑         |
 | GEN-02 | Enable Dock                                    | `shared.enableDock` · toggle · on                                                                                        | ✔ `dock_enabled`                                               | D-* | ☑☑☐☐☑         |
-| GEN-03 | Automatically Exit When Playing On Full Screen | `shared.exitOnFullscreen` · toggle · on                                                                                  | ~ `above_fullscreen` (reads as the opposite behavior: confirm) | GEN | ☑☐☐☐☐         |
-| GEN-04 | Global Interface Scale                         | `shared.globalScale` · range 0.75–1.5 · 1                                                                                | ~ `ui_scale` (steps 100/125/150; design is a .75–1.5 slider)   | GEN | ☑☐☐☐☑         |
-| GEN-05 | Global Interface Blur Intensity                | `shared.globalBlur` · range 0–48 · 26                                                                                    | ~ `blur` (0–100; design 0–48)                                  | GEN | ☑☐☐☐☑         |
+| GEN-03 | Automatically Exit When Playing On Full Screen | `shared.exitOnFullscreen` · toggle · on                                                                                  | ~ `above_fullscreen` (reads as the opposite behavior: confirm) | GEN | ☑☑☐☐☐         |
+| GEN-04 | Global Interface Scale                         | `shared.globalScale` · range 0.75–1.5 · 1                                                                                | ~ `ui_scale` (steps 100/125/150; design is a .75–1.5 slider)   | GEN | ☑☑☐☐☑         |
+| GEN-05 | Global Interface Blur Intensity                | `shared.globalBlur` · range 0–48 · 26                                                                                    | ~ `blur` (0–100; design 0–48)                                  | GEN | ☑☑☐☐☑         |
 | GEN-06 | Appearance                                     | `shared.appearance` · select [light \| dark \| system] · dark                                                            | ✔ `theme` (Auto/Light/Dark)                                    | GEN | ☑☑☐☐☑         |
-| GEN-07 | Accent Color                                   | `shared.accentColor` · color · #63c7dc                                                                                   | ~ `accent` (palette index; design is hex)                      | GEN | ☑☐☐☐☑         |
+| GEN-07 | Accent Color                                   | `shared.accentColor` · color · #63c7dc                                                                                   | ~ `accent` (palette index; design is hex)                      | GEN | ☑☑☐☐☑         |
 | GEN-08 | Start On Boot Method                           | `shared.startOnBoot` · select [Don't Start On Boot \| Registry Value \| Scheduled Task \| Start as a Service] · disabled | ~ `autostart` (bool; design has 4 methods)                     | GEN | ☑☑☐☐☐         |
 | GEN-09 | Automatically hide the taskbar on boot         | `shared.hideTaskbarOnBoot` · select [none \| allDisplays \| dockDisplay] · none                                          | ~ `takeover` (bool; design has 3 states)                       | GEN | ☑☑☐☐☐         |
 | GEN-10 | Display Language                               | `shared.displayLanguage` · select [English \| Indonesian] · English                                                      | ✔ `lang`                                                       | GEN | ☑☑☐☐☐         |
@@ -367,8 +367,8 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | WAN-01 | Window opening animation                    | `shared.windowAnimation` · toggle · on                                           | ✔ `anim`                  | WAN | ☑☑☐☐☐         |
 | WAN-02 | Window opening animation effect             | `shared.windowAnimationEffect` · select [scale \| fade \| slide \| zoom] · scale | ✗                         | WAN | ☑☑☐☐☐         |
 | WAN-03 | Adjust animation speed                      | `shared.windowAnimationSpeed` · select (5 options) · 1.0x                        | ✗                         | WAN | ☑☑☐☐☐         |
-| WAN-04 | Add excluded programs (semicolon separated) | `shared.excludedPrograms` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☐☐☐☐         |
-| WAN-05 | Manage running program blacklist            | `shared.programBlacklist` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☐☐☐☐         |
+| WAN-04 | Add excluded programs (semicolon separated) | `shared.excludedPrograms` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☑☐☐☐         |
+| WAN-05 | Manage running program blacklist            | `shared.programBlacklist` · text · empty                                         | ✗ list value → ADR-0005   | WAN | ☑☑☐☐☐         |
 | WAN-06 | Remove windows for excluded programs        | `shared.minimizeExcludedWindows` · toggle · on                                   | ✗ meaning unclear in spec | WAN | ☑☑☐☐☐         |
 
 #### Dock ▸ Look & Behavior (10)
@@ -394,7 +394,7 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | DLP-02 | Icon horizontal spacing                           | `dock.launchpadHorizontalSpacing` · range 0–60 · 22                                                            | ✗                       | D-8 | ☑☑☐☐☐         |
 | DLP-03 | Icon vertical spacing                             | `dock.launchpadVerticalSpacing` · range 0–60 · 24                                                              | ✗                       | D-8 | ☑☑☐☐☐         |
 | DLP-04 | Choose which icons will be displayed by Launchpad | `dock.launchpadSources` · select [added \| addedStartMenu \| addedDesktop \| all] · added                      | ✗                       | D-8 | ☑☑☐☐☐         |
-| DLP-05 | Edit deleted Start Menu programs                  | `dock.deletedStartMenuPrograms` · text · empty                                                                 | ✗ list value → ADR-0005 | D-8 | ☑☐☐☐☐         |
+| DLP-05 | Edit deleted Start Menu programs                  | `dock.deletedStartMenuPrograms` · text · empty                                                                 | ✗ list value → ADR-0005 | D-8 | ☑☑☐☐☐         |
 | DLP-06 | Select the screen to display Launchpad            | `dock.launchpadDisplay` · select [Primary display \| All displays \| Display 1 \| Display 2] · Primary display | ✗                       | D-8 | ☑☑☐☐☐         |
 | DLP-07 | Follow Dock                                       | `dock.launchpadFollowDock` · toggle · on                                                                       | ✗                       | D-8 | ☑☑☐☐☐         |
 
@@ -434,7 +434,7 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | DMN-06 | Minimize window icon position                     | `dock.minimizedIconPosition` · select [Next to the icon on the right \| Independently displayed on the right \| Right side displayed independently using a separator] · Next to the icon on the right | ✗                                           | D-7 | ☑☑☐☐☐         |
 | DMN-07 | Minimize animation                                | `dock.minimizeAnimation` · select [Genie \| Scale \| Suck] · Genie                                                                                                                                    | ~ `min_effect` (0 Funnel, 1 Scale; no Suck) | D-7 | ☑☐☐☐☐         |
 | DMN-08 | Minimize animation speed                          | `dock.minimizeAnimationSpeed` · select (5 options) · 1.0x                                                                                                                                             | ✗                                           | D-7 | ☑☑☐☐☐         |
-| DMN-09 | Minimize animation blacklist                      | `dock.minimizeBlacklist` · text · empty                                                                                                                                                               | ✗ list value → ADR-0005                     | D-7 | ☑☐☐☐☐         |
+| DMN-09 | Minimize animation blacklist                      | `dock.minimizeBlacklist` · text · empty                                                                                                                                                               | ✗ list value → ADR-0005                     | D-7 | ☑☑☐☐☐         |
 
 #### Dock ▸ Window Previews (6)
 
@@ -480,7 +480,7 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | ------ | --------------------- | ----------------------------------------------------------- | -------------------- | --- | ------------- |
 | FTD-01 | Show time in Menu Bar | `finder.showTime` · toggle · on                             | ✗                    | F-4 | ☐☑☐☐☐         |
 | FTD-02 | Show date in Menu Bar | `finder.showDate` · toggle · on                             | ✗                    | F-4 | ☐☑☐☐☐         |
-| FTD-03 | Time format           | `finder.timeFormat` · select [12-hour \| 24-hour] · 24-hour | ~ `clock_24h` (bool) | F-4 | ☐☐☐☐☐         |
+| FTD-03 | Time format           | `finder.timeFormat` · select [12-hour \| 24-hour] · 24-hour | ~ `clock_24h` (bool) | F-4 | ☐☑☐☐☐         |
 | FTD-04 | Date format           | `finder.dateFormat` · select [Short \| Long \| ISO] · Short | ✗                    | F-4 | ☐☑☐☐☐         |
 
 #### Finder ▸ Audio (3) — not in `feature.md`
@@ -523,12 +523,12 @@ outside the spec. Types: 88 toggles, 53 sliders, 35 selects, 2 colours, 6 text.
 | ------ | ---------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ---- | ------------- |
 | ILB-01 | Enable Dynamic Island        | `island.enabled` · toggle · on                                                             | ✔ `notch_enabled`                                                          | I-12 | ☑☑☐☐☑         |
 | ILB-02 | Shape                        | `island.shape` · select [attached \| floating capsule] · attached                          | ✔ `notch_island`                                                           | I-2  | ☑☑☐☐☑         |
-| ILB-03 | Display mode                 | `island.displayMode` · select [Fixed \| Smart \| On demand] · Smart                        | ~ `notch: Behavior` (Fixed/Overlay/Smart; spec says Fixed/Smart/On demand) | I-12 | ☑☐☐☐☐         |
+| ILB-03 | Display mode                 | `island.displayMode` · select [Fixed \| Smart \| On demand] · Smart                        | ~ `notch: Behavior` (Fixed/Overlay/Smart; spec says Fixed/Smart/On demand) | I-12 | ☑☑☐☐☐         |
 | ILB-04 | Open on hover                | `island.openOnHover` · toggle · on                                                         | ✔ `notch_hover_open`                                                       | I-12 | ☑☑☐☐☑         |
-| ILB-05 | Idle style                   | `island.idleStyle` · select [Minimal \| Toothless eyes \| Media \| Clock] · Toothless eyes | ~ `notch_idle` (0..2; design has 4 styles)                                 | I-3  | ☑☐☐☐☐         |
+| ILB-05 | Idle style                   | `island.idleStyle` · select [Minimal \| Toothless eyes \| Media \| Clock] · Toothless eyes | ~ `notch_idle` (0..2; design has 4 styles)                                 | I-3  | ☑☑☐☐☐         |
 | ILB-06 | Greeting name                | `island.greetingName` · text · empty                                                       | ✔ `greet_name`                                                             | I-3  | ☑☑☐☐☐         |
 | ILB-07 | Greeting text                | `island.greetingText` · text · "Hello!"                                                    | ✔ `greet_text`                                                             | I-3  | ☑☑☐☐☐         |
-| ILB-08 | Material                     | `island.material` · select [Glass \| Opaque \| Translucent] · Glass                        | ~ `notch_material` (Blur/Glass/Black; design Glass/Opaque/Translucent)     | I-12 | ☑☐☐☐☐         |
+| ILB-08 | Material                     | `island.material` · select [Glass \| Opaque \| Translucent] · Glass                        | ~ `notch_material` (Blur/Glass/Black; design Glass/Opaque/Translucent)     | I-12 | ☑☑☐☐☐         |
 | ILB-09 | Material rounding            | `island.rounding` · range 0–48 · 28                                                        | ✔ `notch_round` (0–100; design 0–48)                                       | I-12 | ☑☑☐☐☐         |
 | ILB-10 | Show Toothless eye companion | `island.eyeEnabled` · toggle · on                                                          | ⊘                                                                          | —    | ☐☐☐☐☑         |
 | ILB-11 | Eye color theme              | `island.eyeTheme` · select (6 options) · toothless                                         | ⊘                                                                          | —    | ☐☐☐☐☑         |

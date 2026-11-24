@@ -29,3 +29,13 @@ Option (b).
 ## Consequences
 
 * No change to `prefs::get()` callers. Blocks: WAN-04/05, DLP-05, DMN-09 only get a new accessor.
+
+## Implementation status
+
+* Core landed: `core::settings::lists` (`ProgramLists`, `ListKind`) covers WAN-04, WAN-05, DLP-05 and DMN-09 with parsing,
+  serialising, sanitising (no `;`, control characters, leading `#` or `[`; 260 characters; 1024 entries per list) and
+  case-insensitive matching on the executable name (directory part and trailing `.exe` ignored).
+* `lists.cfg` I/O, the `Arc<ProgramLists>` snapshot, `prefs::lists()` and the settings rows are still open in `app`
+  (they need a Windows build). Consumers must read `prefs::lists()` per use.
+* The two "remove windows" lists mentioned above have no catalogue row yet (WAN-06 is "meaning unclear"); add a `ListKind`
+  variant when SPEC defines them.
