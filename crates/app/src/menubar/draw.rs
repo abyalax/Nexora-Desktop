@@ -316,11 +316,8 @@ impl Bar {
     let layer = self.layer.clone();
     self.sprite(&layer, &surf, bx, by, sw as f32, sh as f32, 1.0);
     let cy = self.h as f32 / 2.0;
-    match mode {
-      2 => {
-        self.small_text(&format!("{pct}%"), 12.0, BAR_W, rgb, x + text_w / 2.0, cy, 0.95);
-      }
-      _ => {}
+    if mode == 2 {
+      self.small_text(&format!("{pct}%"), 12.0, BAR_W, rgb, x + text_w / 2.0, cy, 0.95);
     }
   }
 
@@ -357,7 +354,7 @@ impl Bar {
         M_VIEW => self.draw_text(&mt("Menu:Tampilan"), BAR_W, p.x, p.w, 1.0),
         M_WIN => self.draw_text(&mt("Menu:Jendela"), BAR_W, p.x, p.w, 1.0),
         M_HELP => self.draw_text(&mt("Bantuan"), BAR_W, p.x, p.w, 1.0),
-        n if n >= NATIVE0 && n < NATIVE0 + 20 => {
+        n if (NATIVE0..NATIVE0 + 20).contains(&n) => {
           let title = self
             .native
             .get((n - NATIVE0) as usize)

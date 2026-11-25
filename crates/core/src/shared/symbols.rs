@@ -247,7 +247,7 @@ fn shape(sym: Sym, p: P) -> bool {
       .any(|c| rrect(p, *c, (0.17, 0.17), 0.06) <= 0.0),
     Sym::Windows => {
       let back = rrect(p, (0.40, 0.38), (0.30, 0.22), 0.06).abs() - 0.035 <= 0.0
-        && !(rrect(p, (0.60, 0.62), (0.32, 0.24), 0.06) <= 0.0);
+        && rrect(p, (0.60, 0.62), (0.32, 0.24), 0.06) > 0.0;
       let front = rrect(p, (0.60, 0.62), (0.30, 0.22), 0.06).abs() - 0.035 <= 0.0;
       back || front
     }
@@ -417,7 +417,7 @@ pub fn render(sym: Sym, px: u32, rgb: [u8; 3]) -> Vec<u8> {
       if hit == 0 {
         continue;
       }
-      let a = (hit * 255 / (SS * SS)) as u32;
+      let a = hit * 255 / (SS * SS);
       let i = ((y * n + x) * 4) as usize;
       out[i] = (rgb[2] as u32 * a / 255) as u8;
       out[i + 1] = (rgb[1] as u32 * a / 255) as u8;
@@ -518,7 +518,7 @@ mod tests {
     let (c, cw, ch) = crop_ink(&b, w, h).unwrap();
     assert_eq!((cw, ch), (5, 3));
     assert!(c.chunks_exact(4).all(|p| p[3] == 255));
-    assert!(crop_ink(&vec![0u8; 16], 2, 2).is_none());
+    assert!(crop_ink(&[0u8; 16], 2, 2).is_none());
   }
 
   #[test]

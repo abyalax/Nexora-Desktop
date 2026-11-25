@@ -9,9 +9,10 @@ use windows::Win32::UI::WindowsAndMessaging::{
   EVENT_SYSTEM_MOVESIZEEND, GetForegroundWindow, WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS,
 };
 
+type FxCallback = fn(u32, isize);
 static FOCUS: Mutex<Option<HashMap<isize, i64>>> = Mutex::new(None);
 static CALLBACKS: Mutex<Vec<fn()>> = Mutex::new(Vec::new());
-static FX_CALLBACKS: Mutex<Vec<fn(u32, isize)>> = Mutex::new(Vec::new());
+static FX_CALLBACKS: Mutex<Vec<FxCallback>> = Mutex::new(Vec::new());
 static HOOKED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static EXTERNAL_FG: AtomicIsize = AtomicIsize::new(0);
 

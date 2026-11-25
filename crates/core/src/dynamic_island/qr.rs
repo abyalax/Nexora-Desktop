@@ -308,7 +308,7 @@ pub fn encode(text: &str) -> Option<Matrix> {
   for (i, &ay) in al.iter().enumerate() {
     for (j, &ax) in al.iter().enumerate() {
       let last = al.len() - 1;
-      if (i == 0 && j == 0) || (i == 0 && j == last) || (i == last && j == 0) {
+      if (j == last || j == 0) && i == 0 || (i == last && j == 0) {
         continue;
       }
       g.alignment(ax, ay);

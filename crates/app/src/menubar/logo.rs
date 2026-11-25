@@ -118,8 +118,8 @@ pub fn fit(b: Bitmap, max_w: u32, max_h: u32) -> Bitmap {
       for yy in ya..yb {
         for xx in xa..xb {
           let i = ((yy * b.w + xx) * 4) as usize;
-          for c in 0..4 {
-            acc[c] += b.bgra[i + c] as u32;
+          for (c, acc) in acc.iter_mut().enumerate() {
+            *acc += b.bgra[i + c] as u32;
           }
           n += 1;
         }

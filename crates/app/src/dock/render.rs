@@ -216,7 +216,7 @@ impl Dock {
       let start = format!("({area:.3} - ({total}))/2");
       let reach = self.m.reach.max(1.0);
       let amp = self.m.max_scale - 1.0;
-      for i in 0..n {
+      for (i, node) in nodes.iter().enumerate().take(n) {
         let seps_before = (0..i).filter(|j| !is_item(*j)).count() as f32;
         let mut prefix = format!("{:.3}", seps_before * sep + gap * i as f32);
         for j in 0..i {
@@ -231,14 +231,14 @@ impl Dock {
         };
         let box_x = format!("({start} + ({prefix}))");
         let left = make(&format!("{box_x} + ({w_i})/2 - {:.3}", base_w / 2.0))?;
-        nodes[i].StartAnimation(&HSTRING::from("Offset.X"), &left)?;
+        node.StartAnimation(&HSTRING::from("Offset.X"), &left)?;
         if is_item(i) {
           let c = rest.cells[i].x + rest.cells[i].w / 2.0;
           let scale = make(&format!(
             "1 + {amp:.4}*p.k*0.5*(1 + Cos(3.14159265*Clamp(Abs(p.cx - {c:.3})/{reach:.3}, 0, 1)))"
           ))?;
-          nodes[i].StartAnimation(&HSTRING::from("Scale.X"), &scale)?;
-          nodes[i].StartAnimation(&HSTRING::from("Scale.Y"), &scale)?;
+          node.StartAnimation(&HSTRING::from("Scale.X"), &scale)?;
+          node.StartAnimation(&HSTRING::from("Scale.Y"), &scale)?;
         }
         if let Some(dot) = &self.views[i].dot {
           let half = dot.Size()?.X / 2.0;

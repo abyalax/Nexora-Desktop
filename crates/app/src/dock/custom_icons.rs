@@ -28,7 +28,11 @@ fn read() -> Vec<(String, String)> {
 
 fn write(rows: &[(String, String)]) {
   let _ = std::fs::create_dir_all(paths::config_dir());
-  let text: String = rows.iter().map(|(a, b)| format!("{a}\t{b}\n")).collect();
+  let text = rows.iter().fold(String::new(), |mut acc, (a, b)| {
+    use std::fmt::Write;
+    writeln!(acc, "{a}\t{b}").unwrap();
+    acc
+  });
   let tmp = list_path().with_extension("tmp");
   if std::fs::write(&tmp, text).is_ok() {
     let _ = std::fs::rename(&tmp, list_path());

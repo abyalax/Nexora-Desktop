@@ -68,8 +68,8 @@ fn apply() {
   HC.with(|c| {
     let mut g = c.borrow_mut();
     let Some(hc) = g.as_mut() else { return };
-    for i in 0..4 {
-      if hot[i] == HotAction::None {
+    for (i, h) in hot.iter().enumerate() {
+      if *h == HotAction::None {
         hc.strips[i] = None;
         continue;
       }

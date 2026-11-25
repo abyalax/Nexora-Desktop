@@ -125,10 +125,11 @@ pub struct Placed {
 }
 
 pub fn to_text(list: &[Placed]) -> String {
-  list
-    .iter()
-    .map(|p| format!("{} {} {}\n", p.kind.key(), p.x, p.y))
-    .collect()
+  list.iter().fold(String::new(), |mut acc, p| {
+    use std::fmt::Write;
+    writeln!(acc, "{} {} {}", p.kind.key(), p.x, p.y).unwrap();
+    acc
+  })
 }
 
 pub fn from_text(t: &str) -> Vec<Placed> {
@@ -195,7 +196,7 @@ pub fn nearest_free(taken: &[Rect], size: (i32, i32), want: (i32, i32), area: Re
           continue;
         }
         let d = ((p.0 - want.0) as i64).pow(2) + ((p.1 - want.1) as i64).pow(2);
-        if best.map_or(true, |b| d < b.1) {
+        if best.is_none_or(|b| d < b.1) {
           best = Some((p, d));
         }
       }
@@ -221,7 +222,7 @@ pub fn nearest_cell(taken: &[Rect], size: (i32, i32), want: (i32, i32), grid: (i
         continue;
       }
       let d = (c - want.0).pow(2) + (r - want.1).pow(2);
-      if best.map_or(true, |b| d < b.1 || (d == b.1 && (r, c) < (b.0.1, b.0.0))) {
+      if best.is_none_or(|b| d < b.1 || (d == b.1 && (r, c) < (b.0.1, b.0.0))) {
         best = Some(((c, r), d));
       }
     }

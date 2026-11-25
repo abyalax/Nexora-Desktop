@@ -1,5 +1,9 @@
 pub fn token(random: &[u8; 10]) -> String {
-  random.iter().map(|b| format!("{b:02x}")).collect()
+  random.iter().fold(String::new(), |mut acc, b| {
+    use std::fmt::Write;
+    write!(acc, "{b:02x}").unwrap();
+    acc
+  })
 }
 
 pub fn url(ip: [u8; 4], port: u16, token: &str) -> String {

@@ -25,6 +25,8 @@ use windows::core::w;
 use windows_core::{HSTRING, Interface};
 use windows_numerics::{Vector2, Vector3};
 
+type SnapState = (HWND, (i32, i32), (i32, i32), std::time::Instant);
+
 const WM_MOUSELEAVE: u32 = 0x02A3;
 const T_TICK: usize = 1;
 const T_REMOVE: usize = 2;
@@ -102,7 +104,7 @@ struct Mgr {
   pending_remove: Option<HWND>,
   slot: Option<Popup>,
   slot_at: Option<(i32, i32, i32, i32)>,
-  snap: Option<(HWND, (i32, i32), (i32, i32), std::time::Instant)>,
+  snap: Option<SnapState>,
 }
 
 thread_local! {

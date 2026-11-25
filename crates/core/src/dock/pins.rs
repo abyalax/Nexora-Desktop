@@ -24,7 +24,11 @@ pub fn parse(text: &str, name_for: impl Fn(&str) -> String) -> Vec<Pin> {
 
 /// Serializes pins in the format read by [`parse`].
 pub fn serialize(pins: &[Pin]) -> String {
-  pins.iter().map(|p| format!("{}\t{}\n", p.path, p.name)).collect()
+  pins.iter().fold(String::new(), |mut acc, p| {
+    use std::fmt::Write;
+    writeln!(acc, "{}\t{}", p.path, p.name).unwrap();
+    acc
+  })
 }
 
 #[cfg(test)]

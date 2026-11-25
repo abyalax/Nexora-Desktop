@@ -518,7 +518,7 @@ unsafe extern "system" fn mc_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
       let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
       let in_r = |r: &Rect| x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
       let desk = with_mc(|m| {
-        if let Some(p) = m.plus.filter(|p| in_r(p)) {
+        if let Some(p) = m.plus.filter(in_r) {
           let _ = p;
           return Some(Err(()));
         }

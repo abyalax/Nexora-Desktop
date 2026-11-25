@@ -1704,7 +1704,7 @@ impl Spot {
     if n == 0 {
       self.text(
         content,
-        &prefs::tr("Tidak ada aplikasi").to_string(),
+        prefs::tr("Tidak ada aplikasi"),
         w / 2.0 - 60.0 * d,
         top + 60.0 * d,
         (15.0 * d).round() as i32,

@@ -104,7 +104,7 @@ pub fn look(s: &Settings, system_dark: bool, material: Material) -> Look {
 }
 
 pub fn bar_look(s: &Settings, system_dark: bool) -> Look {
-  let mut t = s.clone();
+  let mut t = *s;
   match s.menubar_style {
     BarStyle::Light => t.theme = Theme::Light,
     BarStyle::Dark => t.theme = Theme::Dark,

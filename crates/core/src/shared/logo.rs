@@ -1,5 +1,6 @@
 const STROKE: f32 = 0.10;
-const SEGMENTS: &[((f32, f32), (f32, f32))] = &[
+type Segment = ((f32, f32), (f32, f32));
+const SEGMENTS: &[Segment] = &[
   ((0.50, 0.06), (0.17, 0.39)),
   ((0.50, 0.06), (0.83, 0.39)),
   ((0.355, 0.27), (0.645, 0.27)),
@@ -41,7 +42,7 @@ pub fn render(size: u32, rgb: [u8; 3]) -> Vec<u8> {
           }
         }
       }
-      let a = (hit * 255 / (ss * ss)) as u32;
+      let a = hit * 255 / (ss * ss);
       let i = ((y * n + x) * 4) as usize;
       out[i] = (rgb[2] as u32 * a / 255) as u8;
       out[i + 1] = (rgb[1] as u32 * a / 255) as u8;

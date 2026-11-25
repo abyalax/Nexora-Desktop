@@ -81,7 +81,7 @@ mod tests {
       assert!((x - WIN.x).abs() < 0.01 && (y - (WIN.y + i as f32 * 10.0)).abs() < 0.01 && (sx - 1.0).abs() < 1e-4);
       let ((x, y), (sx, _)) = slice(i, n, 1.0, WIN, ICON);
       assert!((x - ICON.x).abs() < 0.01, "irisan {i} x={x}");
-      assert!(y >= ICON.y - 0.01 && y <= ICON.y + ICON.h, "irisan {i} y={y}");
+      assert!((ICON.y - 0.01..=ICON.y + ICON.h).contains(&y), "irisan {i} y={y}");
       assert!((sx - ICON.w / WIN.w).abs() < 1e-3);
     }
   }

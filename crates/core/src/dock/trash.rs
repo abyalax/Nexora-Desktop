@@ -22,7 +22,7 @@ fn in_ellipse(u: f32, v: f32, c: (f32, f32), r: (f32, f32)) -> bool {
 }
 
 fn in_body(u: f32, v: f32) -> bool {
-  if v < TOP || v > BOT {
+  if !(TOP..=BOT).contains(&v) {
     return false;
   }
   let hw = half_width(v);

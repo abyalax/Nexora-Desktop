@@ -253,7 +253,7 @@ mod tests {
   fn settings_switches_flow_into_activities() {
     let s = Settings::parse("notch_media=false\nnotch_shelf=false\nnotch_timer=false\nnotch_send=false\n");
     let a = Activities::from_settings(&s);
-    assert_eq!(a.media | a.shelf | a.timer | a.send, false);
+    assert!(!(a.media | a.shelf | a.timer | a.send));
     assert!(a.downloads);
     let back = Settings::parse(&s.serialize());
     assert_eq!(Activities::from_settings(&back), a);

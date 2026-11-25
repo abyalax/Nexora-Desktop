@@ -42,8 +42,8 @@ pub fn fit(b: Bitmap, px: u32) -> Bitmap {
           let wx = ((xx + 1) as f32).min(x1) - (xx as f32).max(x0);
           let w = wx * wy;
           let i = ((yy * b.w + xx) * 4) as usize;
-          for c in 0..4 {
-            acc[c] += b.bgra[i + c] as f32 * w;
+          for (c, acc) in acc.iter_mut().enumerate() {
+            *acc += b.bgra[i + c] as f32 * w;
           }
           wsum += w;
           xx += 1;

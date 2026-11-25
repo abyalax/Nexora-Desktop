@@ -343,7 +343,7 @@ mod tests {
     ["File", "Edit", "View", "Window", "Help"].map(String::from)
   }
 
-  fn inputs<'a>(menus: Menus<'a>) -> BarInputs<'a> {
+  fn inputs(menus: Menus<'_>) -> BarInputs<'_> {
     BarInputs {
       dpi: 1.0,
       bar_height: 26.0,

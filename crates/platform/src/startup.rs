@@ -99,7 +99,7 @@ mod tests {
     assert!(is_enabled());
     set(false, exe).unwrap();
     assert!(!is_enabled());
-    if let Some(orig) = before {
+    if let Some(_orig) = before {
       set(true, exe).unwrap();
       // restore original
     }

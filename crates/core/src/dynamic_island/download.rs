@@ -167,7 +167,7 @@ mod tests {
     let r = 15.0;
     let bmp = arc_bitmap(n, r, 3.0, 0.0, 1.0, [255, 255, 255], 255);
     let alpha = |deg: f32| {
-      let t = (deg as f32).to_radians();
+      let t = deg.to_radians();
       let (x, y) = (20.0 + r * t.sin(), 20.0 - r * t.cos());
       bmp[((y as u32 * n + x as u32) * 4 + 3) as usize]
     };
