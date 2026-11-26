@@ -67,6 +67,7 @@ A macOS-style Dock for Windows 11: launch, switch and manage applications from o
 | D-15 | Icon reflection and per-surface blur/transparency (labels, context menus, folder grid) | ⬜                                                                                                         |
 | D-16 | Hot corners (including bottom-left) mapped to actions                                  | ✅ (4 corners)                                                                                             |
 | D-17 | Folder icons open a grid; *double-click opens in Explorer*; hide *open folder* button  | ⬜                                                                                                         |
+| D-18 | Scroll an overwide Dock row with the mouse wheel                                      | ✅ (core viewport layout and Dock wheel input; manual Windows QA pending)                                  |
 
 ### 2.3 Settings (sidebar group **Dock**)
 

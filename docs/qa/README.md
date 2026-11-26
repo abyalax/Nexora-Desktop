@@ -22,6 +22,7 @@ recovery check). Create the file in the same PR that wires the behavior; fill th
 | Suggested file            | Covers                                             | Milestone |
 | ------------------------- | -------------------------------------------------- | --------- |
 | `dock-lock-drag.md`       | D-3.2                                              | M4        |
+| `dock-overflow-scroll.md` | D-18                                               | M4        |
 | `dock-previews.md`        | D-6.2, D-6.4                                       | M4        |
 | `dock-minimize.md`        | D-7.5, D-7.7, D-7.8                                | M4        |
 | `dock-launchpad.md`       | D-8.2, D-8.5, D-8.6                                | M4        |

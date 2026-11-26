@@ -32,6 +32,11 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
       with_dock(hwnd, |d| d.on_leave());
       LRESULT(0)
     }
+    WM_MOUSEWHEEL => {
+      let delta = (wp.0 >> 16) as u16 as i16;
+      with_dock(hwnd, |d| d.on_wheel(delta));
+      LRESULT(0)
+    }
     WM_LBUTTONDOWN => {
       let (x, y) = xy(lp);
       with_dock(hwnd, |d| d.on_down(x, y));

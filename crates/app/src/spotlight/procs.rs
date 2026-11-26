@@ -1,6 +1,7 @@
 use super::*;
+use super::{finish_closing, hit};
 
-pub(super) unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
+pub unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
   match msg {
     WM_HOTKEY => {
       if wp.0 as i32 == HOTKEY_APPS {
@@ -55,7 +56,7 @@ pub(super) unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, 
   }
 }
 
-pub(super) unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
+pub unsafe extern "system" fn spot_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
   match msg {
     WM_CHAR => {
       let c = wp.0 as u32;

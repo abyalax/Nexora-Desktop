@@ -1,3 +1,4 @@
+use super::recolor;
 use super::*;
 
 impl Spot {

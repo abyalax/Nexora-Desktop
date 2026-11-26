@@ -51,8 +51,8 @@ impl Dock {
     }
     self.cursor = Some(x);
     if self.exprs_ok {
-      self.layout = layout(&self.slots, Some(x), self.win.0 as f32, &self.m);
-      let _ = self.props.InsertScalar(&HSTRING::from("cx"), x);
+      self.layout = self.layout_at(Some(x));
+      let _ = self.props.InsertScalar(&HSTRING::from("cx"), x + self.scroll_x);
       self.set_influence(true);
       self.last_apply = Instant::now();
     } else {
@@ -78,12 +78,34 @@ impl Dock {
     }
     if self.exprs_ok {
       self.set_influence(false);
-      self.layout = layout(&self.slots, None, self.win.0 as f32, &self.m);
+      self.layout = self.layout_at(None);
     } else {
       self.apply(None, true);
     }
     timer(self.hwnd, TIMER_REGION, 450);
     self.start_grace();
+    self.update_visibility();
+  }
+
+  pub(super) fn on_wheel(&mut self, delta: i16) {
+    let limit = self.scroll_limit();
+    if limit <= 0.0 || delta == 0 {
+      return;
+    }
+    let step = self.m.icon + self.m.gap;
+    let next = (self.scroll_x - delta as f32 / 120.0 * step).clamp(0.0, limit);
+    if (next - self.scroll_x).abs() < 0.01 {
+      return;
+    }
+    self.scroll_x = next;
+    self.hide_popups();
+    self.hover = None;
+    let _ = self.props.InsertScalar(&HSTRING::from("scroll"), self.scroll_x);
+    if let Some(x) = self.cursor {
+      let _ = self.props.InsertScalar(&HSTRING::from("cx"), x + self.scroll_x);
+    }
+    self.apply(self.cursor, false);
+    self.set_region(true);
     self.update_visibility();
   }
 
@@ -126,7 +148,7 @@ impl Dock {
 
   pub(super) fn shift_neighbors(&mut self, x: f32) {
     let Some(dragged) = self.dragging else { return };
-    let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
+    let rest = self.layout_at(None);
     let pinned_slots: Vec<usize> = self
       .entries
       .iter()
@@ -171,7 +193,7 @@ impl Dock {
 
   pub(super) fn finish_drag(&mut self, x: f32, y: f32, p: Press) {
     let Some(from) = p.pinned_item else { return };
-    let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
+    let rest = self.layout_at(None);
     let centers: Vec<f32> = self
       .entries
       .iter()
@@ -258,7 +280,7 @@ impl Dock {
       .entries
       .iter()
       .position(|e| matches!(e, Entry::App(i) if *i == item))?;
-    let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
+    let rest = self.layout_at(None);
     let c = rest.cells.get(j)?;
     Some((
       self.win_pos.0 + c.x as i32,

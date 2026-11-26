@@ -1,4 +1,5 @@
 use super::*;
+use super::{spring, union};
 
 impl Spot {
   pub(super) fn look(&self) -> nexora_core::settings::Look {

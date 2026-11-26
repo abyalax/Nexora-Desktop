@@ -82,6 +82,7 @@ impl Dock {
           let p = host.compositor.CreatePropertySet()?;
           p.InsertScalar(&HSTRING::from("cx"), -10000.0)?;
           p.InsertScalar(&HSTRING::from("k"), 0.0)?;
+          p.InsertScalar(&HSTRING::from("scroll"), 0.0)?;
           p
         },
         k_anim: spring(&host.compositor, 0.72, 85)?,
@@ -91,6 +92,7 @@ impl Dock {
         m,
         screen,
         win: (400, 120),
+        content_w: 400.0,
         win_pos: (0, 0),
         card_y: 0.0,
         card_h: 0.0,
@@ -99,6 +101,7 @@ impl Dock {
         icon_y: 0.0,
         dot_y: 0.0,
         pad_side: 10.0 * dpi,
+        scroll_x: 0.0,
         opts,
         state: DockState::new(crate::prefs::get().dock_enabled),
         pins,
@@ -188,10 +191,33 @@ impl Dock {
     geometry::max_content_width(&self.slots, &self.m)
   }
 
+  pub(super) fn content_width(&self) -> f32 {
+    self.content_w.max(self.win.0 as f32)
+  }
+
+  pub(super) fn scroll_limit(&self) -> f32 {
+    (self.content_width() - self.win.0 as f32).max(0.0)
+  }
+
+  pub(super) fn layout_at(&self, cursor_x: Option<f32>) -> Layout {
+    layout_scrolled(
+      &self.slots,
+      cursor_x,
+      self.content_width(),
+      self.win.0 as f32,
+      self.scroll_x,
+      &self.m,
+    )
+  }
+
   pub(super) fn resize_window(&mut self) {
-    let need = self.max_content_width() + 2.0 * self.pad_side + 40.0 * self.dpi;
+    let max_content = self.max_content_width();
+    let need = max_content + 2.0 * self.pad_side + 40.0 * self.dpi;
     let w = (need.ceil() as i32).clamp(200, self.screen.0);
     self.win.0 = w;
+    self.content_w = (max_content + 2.0 * self.pad_side).max(w as f32);
+    self.scroll_x = self.scroll_x.clamp(0.0, self.scroll_limit());
+    let _ = self.props.InsertScalar(&HSTRING::from("scroll"), self.scroll_x);
     self.win_pos = ((self.screen.0 - w) / 2, self.screen.1 - self.win.1);
     unsafe {
       let _ = SetWindowPos(
@@ -309,13 +335,13 @@ impl Dock {
     let (l, t, r, b) = if full || self.layout.cells.is_empty() {
       (0, 0, self.win.0, self.win.1)
     } else {
-      let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
+      let rest = self.layout_at(None);
       let cw = rest.total + 2.0 * self.pad_side;
-      let cx = (self.win.0 as f32 - cw) / 2.0;
+      let cx = (self.content_width() - cw) / 2.0 - self.scroll_x;
       (
-        cx as i32,
+        (cx as i32).max(0),
         self.card_y as i32,
-        (cx + cw).ceil() as i32,
+        (cx + cw).ceil().min(self.win.0 as f32) as i32,
         (self.card_y + self.card_h).ceil() as i32,
       )
     };
@@ -326,12 +352,13 @@ impl Dock {
   }
 
   pub(super) fn card_screen_rect(&self) -> (i32, i32, i32, i32) {
-    let rest = layout(&self.slots, None, self.win.0 as f32, &self.m);
+    let rest = self.layout_at(None);
     let cw = rest.total + 2.0 * self.pad_side;
-    let cx = (self.win.0 as f32 - cw) / 2.0;
-    let l = self.win_pos.0 + cx as i32;
+    let cx = (self.content_width() - cw) / 2.0 - self.scroll_x;
+    let l = self.win_pos.0 + (cx as i32).max(0);
     let t = self.win_pos.1 + self.card_y as i32;
-    (l, t, l + cw.ceil() as i32, t + (self.card_h + self.margin) as i32)
+    let r = self.win_pos.0 + (cx + cw).ceil().min(self.win.0 as f32) as i32;
+    (l, t, r, t + (self.card_h + self.margin) as i32)
   }
 
   pub(super) fn place_strip(&self) {

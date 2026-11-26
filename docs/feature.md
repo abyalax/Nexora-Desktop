@@ -7,7 +7,7 @@ and the crate mapping in [`architecture.md`](architecture.md). Every setting wit
 
 | #   | Feature (code name) | UI name  | Settings sidebar group | Capability IDs |
 | --- | ------------------- | -------- | ---------------------- | -------------- |
-| 1   | Dock                | Deck     | Dock                   | D-1 … D-17     |
+| 1   | Dock                | Deck     | Dock                   | D-1 … D-18     |
 | 2   | Finder              | Menu Bar | Menu Bar               | F-1 … F-18     |
 | 3   | Dynamic Island      | Visor    | Dynamic Island         | I-1 … I-14     |
 | 4   | Screen              | Screen   | (ungrouped)            | SCR            |

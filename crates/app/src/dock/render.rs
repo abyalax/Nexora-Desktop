@@ -184,7 +184,7 @@ impl Dock {
     let r = (|| -> windows_core::Result<()> {
       let n = self.views.len();
       let (icon, gap, sep) = (self.m.icon, self.m.gap, self.m.separator);
-      let area = self.win.0 as f32;
+      let area = self.content_width();
       let rest = layout(&self.slots, None, area, &self.m);
       let is_item = |i: usize| self.slots[i] == Slot::Item;
       let nodes: Vec<CompositionObject> = self
@@ -229,7 +229,7 @@ impl Dock {
         } else {
           (format!("{sep:.3}"), sep)
         };
-        let box_x = format!("({start} + ({prefix}))");
+        let box_x = format!("({start} + ({prefix}) - p.scroll)");
         let left = make(&format!("{box_x} + ({w_i})/2 - {:.3}", base_w / 2.0))?;
         node.StartAnimation(&HSTRING::from("Offset.X"), &left)?;
         if is_item(i) {
@@ -250,7 +250,7 @@ impl Dock {
       let card_w = format!("({total}) + {:.3}", 2.0 * self.pad_side);
       self
         .panel
-        .bind_x_width(&make, &format!("({area:.3} - ({card_w}))/2"), &card_w)?;
+        .bind_x_width(&make, &format!("({area:.3} - ({card_w}))/2 - p.scroll"), &card_w)?;
       Ok(())
     })();
     match r {
@@ -278,9 +278,9 @@ impl Dock {
   }
 
   pub(super) fn apply(&mut self, cursor: Option<f32>, animate: bool) {
-    let l = layout(&self.slots, cursor, self.win.0 as f32, &self.m);
+    let l = self.layout_at(cursor);
     let card_w = l.total + 2.0 * self.pad_side;
-    let cx = (self.win.0 as f32 - card_w) / 2.0;
+    let cx = (self.content_width() - card_w) / 2.0 - self.scroll_x;
     let card = (cx, self.card_y, card_w, self.card_h);
     let moved = |a: f32, b: f32| (a - b).abs() >= 0.5;
     if moved(card.0, self.last_card.0)
@@ -298,6 +298,7 @@ impl Dock {
       let _ = v.place(c.x, c.w, c.scale, self.icon_y, self.dot_y, animate);
     }
     self.layout = l;
+    let _ = self.props.InsertScalar(&HSTRING::from("scroll"), self.scroll_x);
     self.last_apply = Instant::now();
     self.update_label_positions();
   }

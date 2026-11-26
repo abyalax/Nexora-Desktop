@@ -18,7 +18,7 @@ use crate::strip::Strip;
 use nexora_core::dock::entries::{self, Entry, LAUNCHPAD_KEY, START_KEY, TRASH_PATH};
 use nexora_core::dock::geometry;
 use nexora_core::dock::items::{Item, Pin, key_of, merge, package_family};
-use nexora_core::dock::layout::{Layout, Metrics, Slot, hit, layout};
+use nexora_core::dock::layout::{Layout, Metrics, Slot, hit, layout, layout_scrolled};
 use nexora_core::dock::recents;
 use nexora_core::dock::reorder;
 use nexora_core::dock::ring::next_in_ring;
@@ -141,6 +141,7 @@ pub struct Dock {
   m: Metrics,
   screen: (i32, i32),
   win: (i32, i32),
+  content_w: f32,
   win_pos: (i32, i32),
   card_y: f32,
   card_h: f32,
@@ -149,6 +150,7 @@ pub struct Dock {
   icon_y: f32,
   dot_y: f32,
   pad_side: f32,
+  scroll_x: f32,
   opts: Options,
   state: DockState,
 

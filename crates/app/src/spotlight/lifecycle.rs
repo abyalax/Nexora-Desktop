@@ -1,4 +1,5 @@
 use super::*;
+use super::{ctl_proc, quick_file, spot_proc};
 
 pub fn init(comp: &Compositor) -> windows_core::Result<()> {
   unsafe {
@@ -130,7 +131,7 @@ pub fn close() {
   }
 }
 
-pub(super) fn finish_closing() {
+pub fn finish_closing() {
   let s = CLOSING.with(|c| c.borrow_mut().take());
   if let Some(s) = s {
     let h = s.popup.hwnd;

@@ -1,12 +1,12 @@
 use super::*;
 
-pub(super) fn union(a: Rect, b: Rect) -> Rect {
+pub fn union(a: Rect, b: Rect) -> Rect {
   let (l, t) = (a.0.min(b.0), a.1.min(b.1));
   let (r, bt) = ((a.0 + a.2).max(b.0 + b.2), (a.1 + a.3).max(b.1 + b.3));
   (l, t, r - l, bt - t)
 }
 
-pub(super) fn spring(comp: &Compositor, obj: &CompositionObject, prop: &str, v: f32, ratio: f32, period_ms: u32) {
+pub fn spring(comp: &Compositor, obj: &CompositionObject, prop: &str, v: f32, ratio: f32, period_ms: u32) {
   let go = || -> windows_core::Result<()> {
     let a = comp.CreateSpringScalarAnimation()?;
     a.SetDampingRatio(ratio)?;
@@ -21,7 +21,7 @@ pub(super) fn spring(comp: &Compositor, obj: &CompositionObject, prop: &str, v: 
   let _ = go();
 }
 
-pub(super) fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
+pub fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
   let mut out = b.bgra.clone();
   for px in out.chunks_exact_mut(4) {
     let a = px[3] as u32;
@@ -32,7 +32,7 @@ pub(super) fn recolor(b: &Bitmap, rgb: [u8; 3]) -> Vec<u8> {
   out
 }
 
-pub(super) fn url_encode(s: &str) -> String {
+pub fn url_encode(s: &str) -> String {
   let mut out = String::new();
   for b in s.bytes() {
     if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) {
@@ -46,19 +46,19 @@ pub(super) fn url_encode(s: &str) -> String {
   out
 }
 
-pub(super) fn hit(r: Rect, x: f32, y: f32) -> bool {
+pub fn hit(r: Rect, x: f32, y: f32) -> bool {
   x >= r.0 && x < r.0 + r.2 && y >= r.1 && y < r.1 + r.3
 }
 
-pub(super) fn quick_file() -> std::path::PathBuf {
+pub fn quick_file() -> std::path::PathBuf {
   paths::config_dir().join("actions.txt")
 }
 
-pub(super) fn action_title(a: &model::ActionDef) -> String {
+pub fn action_title(a: &model::ActionDef) -> String {
   prefs::tr(a.title).to_string()
 }
 
-pub(super) fn action_glyph(id: &str) -> (&'static str, [u8; 3]) {
+pub fn action_glyph(id: &str) -> (&'static str, [u8; 3]) {
   match id {
     "note" => ("\u{E70F}", [255, 204, 0]),
     "timer" => ("\u{E916}", [255, 149, 0]),

@@ -104,6 +104,30 @@ pub fn layout(slots: &[Slot], cursor_x: Option<f32>, area_w: f32, m: &Metrics) -
   Layout { cells, total }
 }
 
+/// Layout a row on a wider virtual canvas and expose the selected viewport.
+/// `area_w` is the virtual canvas width; `scroll_x` is clamped to the available
+/// horizontal range and hit testing remains in viewport coordinates.
+pub fn layout_scrolled(
+  slots: &[Slot],
+  cursor_x: Option<f32>,
+  area_w: f32,
+  viewport_w: f32,
+  scroll_x: f32,
+  m: &Metrics,
+) -> Layout {
+  let scroll_max = (area_w - viewport_w).max(0.0);
+  let scroll = if scroll_x.is_finite() {
+    scroll_x.clamp(0.0, scroll_max)
+  } else {
+    0.0
+  };
+  let mut result = layout(slots, cursor_x.map(|x| x + scroll), area_w, m);
+  for cell in &mut result.cells {
+    cell.x -= scroll;
+  }
+  result
+}
+
 pub fn hit(slots: &[Slot], l: &Layout, x: f32, m: &Metrics) -> Option<usize> {
   let half = m.gap / 2.0;
   for (i, c) in l.cells.iter().enumerate() {
@@ -194,5 +218,39 @@ mod tests {
     let l = layout(&[], Some(10.0), 300.0, &m());
     assert!(l.cells.is_empty());
     assert_eq!(l.total, 0.0);
+  }
+
+  #[test]
+  fn scrolled_layout_is_viewport_relative_and_clamps_the_offset() {
+    let s = items(8);
+    let m = m();
+    let area = 700.0;
+    let viewport = 300.0;
+    let start = layout_scrolled(&s, None, area, viewport, 0.0, &m);
+    let end = layout_scrolled(&s, None, area, viewport, 900.0, &m);
+    assert_eq!(end.cells[0].x, start.cells[0].x - (area - viewport));
+    assert_eq!(
+      layout_scrolled(&s, None, area, viewport, -10.0, &m).cells[0].x,
+      start.cells[0].x
+    );
+  }
+
+  #[test]
+  fn hit_testing_tracks_items_after_scroll() {
+    let s = items(8);
+    let m = m();
+    let l = layout_scrolled(&s, None, 700.0, 300.0, 200.0, &m);
+    assert_eq!(hit(&s, &l, l.cells[3].x + l.cells[3].w / 2.0, &m), Some(3));
+    assert_eq!(hit(&s, &l, 0.0, &m), Some(1));
+  }
+
+  #[test]
+  fn magnification_tracks_the_pointer_in_scrolled_coordinates() {
+    let s = items(8);
+    let m = m();
+    let baseline = layout_scrolled(&s, None, 700.0, 300.0, 200.0, &m);
+    let pointer = baseline.cells[4].x + baseline.cells[4].w / 2.0;
+    let moved = layout_scrolled(&s, Some(pointer), 700.0, 300.0, 200.0, &m);
+    assert!((moved.cells[4].scale - m.max_scale).abs() < 1e-3);
   }
 }

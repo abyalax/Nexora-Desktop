@@ -43,11 +43,9 @@ mod rowlist;
 mod rows_data;
 
 pub use self::actions::{clip_time, ctrl_down, perform};
-pub use self::lifecycle::{close, init, toggle, toggle_mode};
-#[allow(unused_imports)]
-use self::{
-  actions::*, canvas::*, frame::*, geometry::*, grid::*, helpers::*, lifecycle::*, procs::*, rowlist::*, rows_data::*,
-};
+pub use self::helpers::{action_glyph, action_title, hit, quick_file, recolor, spring, union, url_encode};
+pub use self::lifecycle::{close, finish_closing, init, toggle, toggle_mode};
+pub use self::procs::{ctl_proc, spot_proc};
 
 const WM_APPS: u32 = WM_APP + 80;
 const WM_CLOSE_SPOT: u32 = WM_APP + 81;
