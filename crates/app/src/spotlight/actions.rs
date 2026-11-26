@@ -78,29 +78,9 @@ impl Spot {
     self.rebuild_rows();
     self.render();
   }
-
-pub(super) fn clip_time(at: i64) -> String {
-  let now_local = time::local_now();
-  let now_secs = (now_local.hour * 3600 + now_local.minute * 60 + now_local.second) as i64;
-  let age = std::time::SystemTime::now()
-    .duration_since(std::time::UNIX_EPOCH)
-    .map(|d| d.as_secs() as i64)
-    .unwrap_or(0)
-    - at;
-  let t = (now_secs - age).rem_euclid(86_400);
-  let (h, m) = ((t / 3600) as u32, ((t % 3600) / 60) as u32);
-  if prefs::get().clock_24h {
-    format!("{h:02}.{m:02}")
-  } else {
-    format!(
-      "{}:{m:02} {}",
-      if h % 12 == 0 { 12 } else { h % 12 },
-      if h < 12 { "AM" } else { "PM" }
-    )
-  }
 }
 
-pub(super) fn run_action(id: &str) {
+pub fn run_action(id: &str) {
   match id {
     "note" => launch::run("notepad.exe", ""),
     "timer" => launch::open("ms-clock:"),
@@ -125,7 +105,28 @@ pub(super) fn run_action(id: &str) {
   }
 }
 
-pub(super) fn perform(r: Run) {
+pub fn clip_time(at: i64) -> String {
+  let now_local = time::local_now();
+  let now_secs = (now_local.hour * 3600 + now_local.minute * 60 + now_local.second) as i64;
+  let age = std::time::SystemTime::now()
+    .duration_since(std::time::UNIX_EPOCH)
+    .map(|d| d.as_secs() as i64)
+    .unwrap_or(0)
+    - at;
+  let t = (now_secs - age).rem_euclid(86_400);
+  let (h, m) = ((t / 3600) as u32, ((t % 3600) / 60) as u32);
+  if prefs::get().clock_24h {
+    format!("{h:02}.{m:02}")
+  } else {
+    format!(
+      "{}:{m:02} {}",
+      if h % 12 == 0 { 12 } else { h % 12 },
+      if h < 12 { "AM" } else { "PM" }
+    )
+  }
+}
+
+pub fn perform(r: Run) {
   match r {
     Run::Nothing => {}
     Run::Open(p) => launch::open(&p),
@@ -136,7 +137,6 @@ pub(super) fn perform(r: Run) {
   }
 }
 
-pub(super) fn ctrl_down() -> bool {
+pub fn ctrl_down() -> bool {
   unsafe { (GetKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0 }
-}
 }

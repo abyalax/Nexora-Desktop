@@ -31,20 +31,23 @@ use windows::core::w;
 use windows_core::{HSTRING, Interface};
 use windows_numerics::{Vector2, Vector3};
 
-mod helpers;
-mod lifecycle;
-mod geometry;
-mod rows_data;
+mod actions;
 mod canvas;
 mod frame;
+mod geometry;
 mod grid;
-mod rowlist;
-mod actions;
+mod helpers;
+mod lifecycle;
 mod procs;
+mod rowlist;
+mod rows_data;
 
+pub use self::actions::{clip_time, ctrl_down, perform};
+pub use self::lifecycle::{close, init, toggle, toggle_mode};
 #[allow(unused_imports)]
-use self::{helpers::*, lifecycle::*, geometry::*, rows_data::*, canvas::*, frame::*, grid::*, rowlist::*, actions::*, procs::*};
-pub use self::lifecycle::{close, init, shutdown, toggle, toggle_mode};
+use self::{
+  actions::*, canvas::*, frame::*, geometry::*, grid::*, helpers::*, lifecycle::*, procs::*, rowlist::*, rows_data::*,
+};
 
 const WM_APPS: u32 = WM_APP + 80;
 const WM_CLOSE_SPOT: u32 = WM_APP + 81;
@@ -121,7 +124,7 @@ enum HitKind {
   FType(usize),
 }
 
-enum Run {
+pub(super) enum Run {
   Nothing,
   Open(String),
   Action(&'static str),

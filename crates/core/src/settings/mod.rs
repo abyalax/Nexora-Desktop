@@ -187,7 +187,10 @@ mod tests {
 
   #[test]
   fn bar_styles_force_theme_and_are_denser_than_glass() {
-    let mut s = Settings { menubar_style: BarStyle::Light, ..Default::default() };
+    let mut s = Settings {
+      menubar_style: BarStyle::Light,
+      ..Default::default()
+    };
     let light = bar_look(&s, true);
     s.menubar_style = BarStyle::Dark;
     let dark = bar_look(&s, false);
@@ -206,7 +209,10 @@ menubar_style=glass
 ",
     );
     assert!(!s.menubar_glass, "latar kaca lama menjadi transparan");
-    let mut st = Settings { theme: Theme::Light, ..Default::default() };
+    let mut st = Settings {
+      theme: Theme::Light,
+      ..Default::default()
+    };
     let light = look(&st, false, Material::Glass);
     st.theme = Theme::Dark;
     let dark = look(&st, false, Material::Glass);

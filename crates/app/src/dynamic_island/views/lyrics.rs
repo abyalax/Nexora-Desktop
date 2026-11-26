@@ -1,6 +1,13 @@
 use super::*;
 
-pub(super) fn play(p: &mut Painter, c: &ContainerVisual, f: Frame, d: &Data, regions: &mut Vec<Region>, live: &mut Live) {
+pub(super) fn play(
+  p: &mut Painter,
+  c: &ContainerVisual,
+  f: Frame,
+  d: &Data,
+  regions: &mut Vec<Region>,
+  live: &mut Live,
+) {
   let (pad, gap) = (p.px(14.0), p.px(10.0));
   let (top, bottom) = (p.px(48.0), f.h - pad);
   let h = bottom - top;
@@ -54,10 +61,10 @@ pub(super) fn play(p: &mut Painter, c: &ContainerVisual, f: Frame, d: &Data, reg
 
 #[derive(Clone, Copy)]
 pub(super) struct Flow {
-  size: f32,
-  pad: f32,
-  anchor: f32,
-  card: bool,
+  pub size: f32,
+  pub pad: f32,
+  pub anchor: f32,
+  pub card: bool,
 }
 
 #[allow(clippy::too_many_arguments)]

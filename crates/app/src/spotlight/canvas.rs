@@ -46,7 +46,16 @@ impl Spot {
     measure(s, &Style { px, weight }).0 as f32 + 2.0
   }
 
-  pub(super) fn sprite(&self, parent: &ContainerVisual, s: &CompositionDrawingSurface, x: f32, y: f32, w: f32, h: f32, op: f32) {
+  pub(super) fn sprite(
+    &self,
+    parent: &ContainerVisual,
+    s: &CompositionDrawingSurface,
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+    op: f32,
+  ) {
     let go = || -> windows_core::Result<()> {
       let b = self.comp.CreateSurfaceBrushWithSurface(s)?;
       b.SetStretch(CompositionStretch::Uniform)?;
@@ -132,7 +141,16 @@ impl Spot {
     );
   }
 
-  pub(super) fn glyph(&mut self, parent: &ContainerVisual, g: &str, cx: f32, cy: f32, size: f32, rgb: [u8; 3], op: f32) {
+  pub(super) fn glyph(
+    &mut self,
+    parent: &ContainerVisual,
+    g: &str,
+    cx: f32,
+    cy: f32,
+    size: f32,
+    rgb: [u8; 3],
+    op: f32,
+  ) {
     let px = size.round() as i32;
     let b = (size * 1.6).round() as i32;
     let key = format!("g|{px}|{rgb:?}|{g}");
@@ -165,7 +183,16 @@ impl Spot {
     );
   }
 
-  pub(super) fn mode_icon(&mut self, parent: &ContainerVisual, m: Mode, cx: f32, cy: f32, size: f32, rgb: [u8; 3], op: f32) {
+  pub(super) fn mode_icon(
+    &mut self,
+    parent: &ContainerVisual,
+    m: Mode,
+    cx: f32,
+    cy: f32,
+    size: f32,
+    rgb: [u8; 3],
+    op: f32,
+  ) {
     match m {
       Mode::Search => self.sym(parent, Sym::Search, cx, cy, size, rgb, op),
       Mode::Apps => self.sym(parent, Sym::Grid, cx, cy, size * 0.95, rgb, op),

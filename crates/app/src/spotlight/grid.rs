@@ -273,7 +273,14 @@ impl Spot {
     }
   }
 
-  pub(super) fn sel_box(&mut self, parent: &ContainerVisual, row: &Row, center: Vector3, half: f32, room: f32) -> ContainerVisual {
+  pub(super) fn sel_box(
+    &mut self,
+    parent: &ContainerVisual,
+    row: &Row,
+    center: Vector3,
+    half: f32,
+    room: f32,
+  ) -> ContainerVisual {
     let k = motion::fit_pop(motion::HOVER_ROW, half, room);
     let Ok(c) = self.comp.CreateContainerVisual() else {
       return parent.clone();

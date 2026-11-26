@@ -25,18 +25,18 @@ use windows::core::w;
 use windows_core::{HSTRING, Interface};
 use windows_numerics::{Vector2, Vector3};
 
-mod helpers;
-mod layout;
-mod widget;
-mod surfaces;
 mod draw;
-mod interact;
-mod manage;
 mod gallery;
+mod helpers;
+mod interact;
+mod layout;
+mod manage;
 mod procs;
+mod surfaces;
+mod widget;
 
 #[allow(unused_imports)]
-use self::{helpers::*, layout::*, widget::*, surfaces::*, draw::*, interact::*, manage::*, gallery::*, procs::*};
+use self::{draw::*, gallery::*, helpers::*, interact::*, layout::*, manage::*, procs::*, surfaces::*, widget::*};
 
 type SnapState = (HWND, (i32, i32), (i32, i32), std::time::Instant);
 

@@ -32,7 +32,13 @@ impl Sources {
   }
 
   pub fn includes(self, o: Origin) -> bool {
-    matches!((self, o), (_, Origin::Added) | (Sources::All, _) | (Sources::AddedStartMenu, Origin::StartMenu) | (Sources::AddedDesktop, Origin::Desktop))
+    matches!(
+      (self, o),
+      (_, Origin::Added)
+        | (Sources::All, _)
+        | (Sources::AddedStartMenu, Origin::StartMenu)
+        | (Sources::AddedDesktop, Origin::Desktop)
+    )
   }
 }
 

@@ -8,15 +8,15 @@ use windows::UI::Color;
 use windows::UI::Composition::{CompositionDrawingSurface, ContainerVisual, SpriteVisual};
 use windows_numerics::Vector3;
 
-mod shelf;
+mod agenda;
 mod countdown;
-mod music;
 mod glance;
 mod lyrics;
-mod agenda;
+mod music;
+mod shelf;
 
 #[allow(unused_imports)]
-use self::{shelf::*, countdown::*, music::*, glance::*, lyrics::*, agenda::*};
+use self::{agenda::*, countdown::*, glance::*, lyrics::*, music::*, shelf::*};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
