@@ -20,6 +20,7 @@ pub mod lyrics;
 pub mod media;
 pub mod media_fake;
 pub mod menus;
+pub mod monitors;
 pub mod osd;
 pub mod pick;
 pub mod privacy;

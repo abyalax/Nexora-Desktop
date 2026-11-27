@@ -1,14 +1,14 @@
 # nexora User Guide
 
-nexora transforms the Windows 11 taskbar into a modern desktop experience featuring **Deck**, **Visor (Capsule)**, **MenuBar**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
+nexora transforms the Windows 11 taskbar into a modern desktop experience featuring **Dock**, **Menubar (Capsule)**, **MenuBar**, **Quick Search**, **Apps**, **Overview**, **Scene**, **Quick Panel**, and **Screen Corners** — all with a lightweight Crystal-inspired design.
 
 > This guide is available in English. For the project overview, build instructions, and development information, see the [README](../README.md).
 
 ## Table of Contents
 
 1. [Installation and Getting Started](#1-installation-and-getting-started)
-2. [Deck](#2-deck)
-3. [Visor](#3-visor)
+2. [Dock](#2-deck)
+3. [Menubar](#3-visor)
 4. [MenuBar](#4-menubar)
 5. [Quick Panel](#5-quick-panel)
 6. [Quick Search](#6-quick-search)
@@ -45,30 +45,30 @@ Download `nexora-<version>-win-x64.zip`, extract it to any folder, and run `nexo
 >
 > Select **More info → Run anyway** only if you downloaded the files from the project's official release page.
 
-Once `nexora.exe` starts, the native Windows taskbar is hidden and Deck appears at the bottom of the screen.
+Once `nexora.exe` starts, the native Windows taskbar is hidden and Dock appears at the bottom of the screen.
 
 ### Basic Operations
 
-- **Exit nexora:** Right-click an icon on Deck or the nexora tray icon, then select **Exit nexora**. The Windows taskbar is automatically restored.
+- **Exit nexora:** Right-click an icon on Dock or the nexora tray icon, then select **Exit nexora**. The Windows taskbar is automatically restored.
 - **Unexpected shutdown:** `nexora-guard.exe` automatically restores the Windows taskbar and any windows parked by Scene. If recovery does not occur, launch `nexora.exe` again and exit normally.
-- **Open Settings:** Right-click Deck and select **nexora Settings...**. You can also use the Settings gear icon on Deck or the circular nexora logo on MenuBar.
+- **Open Settings:** Right-click Dock and select **Nexora Settings...**. You can also use the Settings gear icon on Dock or the circular nexora logo on MenuBar.
 - **Launch at startup:** Go to Settings → General → **Launch at Windows startup**.
 
 Only one nexora instance can run at a time. Launching it again simply brings the existing instance back to the foreground.
 
 nexora does not permanently disable the Windows taskbar. It only hides it while nexora is running. This behavior can be changed under Settings → General → **Hide Windows taskbar**.
 
-## 2. Deck
+## 2. Dock
 
-Deck is the primary application launcher and taskbar replacement.
+Dock is the primary application launcher and taskbar replacement.
 
 ### Application Management
 
 - **Launch or activate an app:** Click its icon. Clicking the icon of an already active foreground app minimizes its window.
-- **Add an app:** Drag an executable or shortcut (`.exe`, `.lnk`) onto Deck. Alternatively, right-click Deck and select **Add App to Deck...**, or right-click a running app and select **Keep in Deck**. Microsoft Store apps, including WhatsApp, are supported.
+- **Add an app:** Drag an executable or shortcut (`.exe`, `.lnk`) onto Dock. Alternatively, right-click Dock and select **Add App to Dock...**, or right-click a running app and select **Keep in Dock**. Microsoft Store apps, including WhatsApp, are supported.
 - **Reorder apps:** Drag pinned icons to their desired positions.
-- **Remove an app:** Right-click its icon and select **Remove from Deck**, or drag the icon outside Deck.
-- **Change an icon:** Right-click an icon and select **Change Icon...**. Supported formats include PNG, JPG, ICO, BMP, and GIF. Select **Restore Original Icon** to revert the change. This also applies to the Start button at the left end of Deck.
+- **Remove an app:** Right-click its icon and select **Remove from Dock**, or drag the icon outside Dock.
+- **Change an icon:** Right-click an icon and select **Change Icon...**. Supported formats include PNG, JPG, ICO, BMP, and GIF. Select **Restore Original Icon** to revert the change. This also applies to the Start button at the left end of Dock.
 
 ### App Grid Button
 
@@ -81,7 +81,7 @@ Right-click it and select **Change Icon...** to customize its appearance. You ca
 ### Icon Appearance
 
 - **Uniform icons:** Icons are displayed inside consistently sized squircle containers with subtle shadows. Irregularly shaped icons are placed on a white background plate.
-- Disable this option under Settings → Deck if you prefer the original Windows icons.
+- Disable this option under Settings → Dock if you prefer the original Windows icons.
 - **Window previews:** Hover over an icon belonging to a running app to display its window previews. Click a preview to activate that window.
 - **Icon zoom:** Icons enlarge as the pointer moves over them. Icon size, spacing, zoom level, and screen-edge distance are configurable under the **Size** settings.
 
@@ -108,7 +108,7 @@ Other supported system applications include Mail, Calendar, Maps, Photos, and We
 
 Browsers and third-party applications are never automatically replaced.
 
-Icons supplied through an icon pack are displayed as-is, without additional background plates or visual effects. This applies to Deck, Quick Search, and Apps.
+Icons supplied through an icon pack are displayed as-is, without additional background plates or visual effects. This applies to Dock, Quick Search, and Apps.
 
 Manually assigned icons always take priority over icon pack icons.
 
@@ -116,29 +116,29 @@ To disable icon packs, go to Settings → Appearance → **Icon Pack**.
 
 **nexora does not include or distribute any icon packs.** Users are responsible for supplying their own icons and ensuring compliance with the applicable licenses.
 
-### Additional Deck Features
+### Additional Dock Features
 
-- **Downloads Stack:** Located immediately before the Recycle Bin. Click it to view and open the 10 most recently modified files in your Downloads folder, or select **Open Downloads Folder**. Files that are still downloading are excluded. This feature can be disabled under Settings → Deck.
-- **Recently Used Apps:** The three most recently closed apps that are not pinned remain available at the end of the app list. Their history is stored in `recents.txt`. This feature can be disabled under Settings → Deck.
+- **Downloads Stack:** Located immediately before the Recycle Bin. Click it to view and open the 10 most recently modified files in your Downloads folder, or select **Open Downloads Folder**. Files that are still downloading are excluded. This feature can be disabled under Settings → Dock.
+- **Recently Used Apps:** The three most recently closed apps that are not pinned remain available at the end of the app list. Their history is stored in `recents.txt`. This feature can be disabled under Settings → Dock.
 - **Tooltips:** Hovering over an icon displays its name in a small tooltip with a pointer.
-- **Recycle Bin:** Located at the far right of Deck. Its icon changes depending on whether the Recycle Bin is empty or contains files. The status is refreshed every few seconds. Right-click to open or empty it; Windows still displays its usual confirmation dialog. If your icon pack provides a Recycle Bin icon, that icon is used.
+- **Recycle Bin:** Located at the far right of Dock. Its icon changes depending on whether the Recycle Bin is empty or contains files. The status is refreshed every few seconds. Right-click to open or empty it; Windows still displays its usual confirmation dialog. If your icon pack provides a Recycle Bin icon, that icon is used.
 
-### Deck Behavior and Animations
+### Dock Behavior and Animations
 
-Deck supports several display modes, including **Fixed**, **Always on Top**, **Auto-hide**, and **Touch Edge**. Configure these under Settings → Deck.
+Dock supports several display modes, including **Fixed**, **Always on Top**, **Auto-hide**, and **Touch Edge**. Configure these under Settings → Dock.
 
 Surface materials (**Blur**, **Crystal**, or **Opaque Black**) and the global light/dark theme are managed under Settings → Appearance.
 
 **Minimize animation styles:**
 
-- **Funnel** (default): Windows appear to flow toward their corresponding Deck icons when minimized and return from those icons when restored.
+- **Funnel** (default): Windows appear to flow toward their corresponding Dock icons when minimized and return from those icons when restored.
 - **Scale:** Windows shrink directly toward their icons using a shorter animation.
 
 Window minimize, open, and close animations can be disabled under Settings → General. Active window shadows can be configured under Settings → Windows.
 
 ### Icon Styles
 
-Go to Settings → Appearance → **Icon Style** to customize the appearance of Deck icons, the Apps button, and the Apps grid.
+Go to Settings → Appearance → **Icon Style** to customize the appearance of Dock icons, the Apps button, and the Apps grid.
 
 Available styles:
 
@@ -150,11 +150,11 @@ Available tint colors include Blue, Purple, Pink, Orange, and Green.
 
 Manually customized icons are not affected by these styles.
 
-## 3. Visor
+## 3. Menubar
 
-Visor is a compact capsule positioned near the top-center of the screen, with a subtle shadow beneath it.
+Menubar is a compact capsule positioned near the top-center of the screen, with a subtle shadow beneath it.
 
-Its material can be configured under Settings → Appearance → **Visor Material**:
+Its material can be configured under Settings → Appearance → **Menubar Material**:
 
 - Blur
 - Crystal
@@ -164,7 +164,7 @@ Text is always displayed in white.
 
 ### Idle State
 
-When idle, Visor periodically rotates through greeting and system information displays approximately every nine seconds.
+When idle, Menubar periodically rotates through greeting and system information displays approximately every nine seconds.
 
 Available information includes:
 
@@ -173,7 +173,7 @@ Available information includes:
 - Current date.
 - Battery status, with an icon on the left and the value on the right.
 
-Under Settings → Visor → **When Visor Is Idle** → **Display**, choose one of the following:
+Under Settings → Menubar → **When Menubar Is Idle** → **Display**, choose one of the following:
 
 - **Greeting & Info**
 - **Music & Lyrics**
@@ -183,7 +183,7 @@ You can also configure your **Display Name** and **Greeting Text** in this secti
 
 ### Music and Lyrics
 
-When a song is playing or paused, the idle Visor expands slightly and moves downward.
+When a song is playing or paused, the idle Menubar expands slightly and moves downward.
 
 It displays:
 
@@ -195,13 +195,13 @@ The active lyric line is highlighted in bold, while surrounding lines are dimmed
 
 Playback controls are directly clickable. Hovering over these controls does not open the expanded panel. Hovering over or clicking other areas opens the panel normally.
 
-If synchronized lyrics are unavailable, Visor displays the track title and artist instead.
+If synchronized lyrics are unavailable, Menubar displays the track title and artist instead.
 
 ### Activity Priority
 
 Ongoing activities replace the idle greeting according to the following priority order:
 
-1. Files being dragged onto Visor.
+1. Files being dragged onto Menubar.
 2. Timers with less than one minute remaining.
 3. Active downloads.
 4. Lyrics.
@@ -215,9 +215,9 @@ Small privacy indicators also appear at the right edge:
 - **Orange dot:** An application is using the microphone.
 - **Green dot:** An application is using the camera.
 
-### Opening the Visor Panel
+### Opening the Menubar Panel
 
-Hover over Visor for approximately 0.3 seconds to open its panel.
+Hover over Menubar for approximately 0.3 seconds to open its panel.
 
 You can also click it if **Open Automatically on Hover** is disabled.
 
@@ -238,7 +238,7 @@ The panel also displays large synchronized lyrics. The active line is highlighte
 
 #### Shelf
 
-Displays files dropped onto Visor.
+Displays files dropped onto Menubar.
 
 - Click a file to open it.
 - Right-click a file to access **Show in Folder**, **Copy Path**, or **Remove from Shelf**.
@@ -267,11 +267,11 @@ If no events are available, the calendar displays **No events today**.
 
 Click a date to view its events. The calendar automatically returns to today's date when the panel closes.
 
-The panel also includes a battery indicator and a shortcut to nexora Settings in its upper-right corner.
+The panel also includes a battery indicator and a shortcut to Nexora Settings in its upper-right corner.
 
 ### Drag-and-Drop Actions
 
-When dragging files from File Explorer onto Visor, four drop zones become available:
+When dragging files from File Explorer onto Menubar, four drop zones become available:
 
 - **Add to Shelf:** Stores the file path in the Shelf.
 - **Send:** Transfers the file to a mobile device (see below).
@@ -286,24 +286,24 @@ The Shelf tab displays a QR code.
 
 Scan the QR code using an Android or iPhone camera. No additional mobile application is required. Open the displayed link and tap **Download**.
 
-Transfer progress appears in the file card and in the collapsed Visor, represented by a green progress arc with an upward arrow.
+Transfer progress appears in the file card and in the collapsed Menubar, represented by a green progress arc with an upward arrow.
 
-Once the transfer completes, Visor displays **Sent ✓**.
+Once the transfer completes, Menubar displays **Sent ✓**.
 
 **Requirements and behavior:**
 
 - Your laptop and phone must be connected to the **same Wi-Fi network or local network**.
 - Windows Firewall may request permission the first time this feature is used. Allow nexora on **Private networks** so your phone can access the transfer session.
 - A transfer session ends when **Done** is clicked, after 15 minutes of inactivity, or when nexora exits.
-- This feature can be disabled under Settings → Visor → Activity → **Send to Phone via QR (Same Wi-Fi)**.
+- This feature can be disabled under Settings → Menubar → Activity → **Send to Phone via QR (Same Wi-Fi)**.
 
-Visor display behavior, including **Fixed**, **Always on Top**, **Auto-hide**, and **When Covered**, can be configured under Settings → Visor.
+Menubar display behavior, including **Fixed**, **Always on Top**, **Auto-hide**, and **When Covered**, can be configured under Settings → Menubar.
 
-Visor can also be disabled using **Enable Visor**.
+Menubar can also be disabled using **Enable Menubar**.
 
-### Downloads in Visor
+### Downloads in Menubar
 
-When a download is active, the collapsed Visor expands slightly.
+When a download is active, the collapsed Menubar expands slightly.
 
 It displays:
 
@@ -321,11 +321,11 @@ nexora detects temporary `.crdownload` and `.part` files in the Downloads folder
 
 When a download completes, a full progress arc with a checkmark appears for approximately three seconds.
 
-To disable this feature, go to Settings → Visor → Activity → **Show Downloads (Store, Steam, Browsers)**.
+To disable this feature, go to Settings → Menubar → Activity → **Show Downloads (Store, Steam, Browsers)**.
 
-### Lyrics in Visor
+### Lyrics in Menubar
 
-When music is playing and synchronized lyrics are available, the collapsed Visor displays the **currently active lyric line** between the album artwork on the left and the visualizer on the right.
+When music is playing and synchronized lyrics are available, the collapsed Menubar displays the **currently active lyric line** between the album artwork on the left and the visualizer on the right.
 
 The displayed line updates according to the playback position.
 
@@ -335,7 +335,7 @@ Lyrics are retrieved in the following order:
 
 1. **Local `.lrc` files:** Place your own lyric files in `%APPDATA%\nexora\lyrics`. Supported filenames are `Artist - Title.lrc` and `Title.lrc`. Filename matching is case-insensitive.
 
-   Open this folder through Settings → Visor → Lyrics → **Lyrics Folder (.lrc)**.
+   Open this folder through Settings → Menubar → Lyrics → **Lyrics Folder (.lrc)**.
 
 2. **Local cache:** Previously retrieved lyrics are reused from the local cache.
 
@@ -343,7 +343,7 @@ Lyrics are retrieved in the following order:
 
 Lyrics without timestamps are displayed only in the Lyrics card.
 
-To hide lyrics from the collapsed Visor, disable **Show Lyrics in Visor**.
+To hide lyrics from the collapsed Menubar, disable **Show Lyrics in Menubar**.
 
 ## 4. Menubar
 
@@ -362,7 +362,7 @@ Provides shortcuts to:
 - About This PC
 - System Settings
 - Microsoft Store
-- nexora Settings
+- Nexora Settings
 - Apps
 - Overview
 - Force Quit (opens Task Manager)
@@ -460,7 +460,7 @@ It also updates when focus changes through keyboard navigation or Scene.
 
 ### Always-on-Top Behavior
 
-By default, Deck, Menubar, and Visor remain **above all windows, including fullscreen applications**.
+By default, Dock, Menubar, and Menubar remain **above all windows, including fullscreen applications**.
 
 If you prefer them to disappear when a fullscreen application is active (videos, games, or F11 fullscreen mode), disable:
 
@@ -511,7 +511,7 @@ Slider handles are displayed as white capsules.
 
 While dragging, the handle changes into translucent glass and slightly enlarges, creating a water-droplet effect.
 
-This matches the slider interaction used in Visor.
+This matches the slider interaction used in Menubar.
 
 The circular button on the right side of the Volume module opens the native Windows audio output selector, allowing you to switch between speakers and headphones.
 
@@ -617,7 +617,7 @@ Switch between modes using the circular buttons or the following shortcuts. Thes
 
 | Shortcut | Mode          | Description                                                                                                                                                                                                                                                                                                                                                                  |
 | -------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Ctrl+1` | **Apps**      | Displays a Suggestions section containing Deck apps, followed by application categories. Each category includes a **View All** row. Start typing to search for applications (see [Apps](#7-apps)).                                                                                                                                                                           |
+| `Ctrl+1` | **Apps**      | Displays a Suggestions section containing Dock apps, followed by application categories. Each category includes a **View All** row. Start typing to search for applications (see [Apps](#7-apps)).                                                                                                                                                                           |
 | `Ctrl+2` | **My Files**  | Without a search query, displays **Recent** files opened in Windows, including thumbnails. Filter by Images, Videos, Documents, or Music. With a query, searches file and folder names in Desktop, Documents, Downloads, Pictures, Videos, Music, and OneDrive. Search depth is limited to five directory levels, with up to 20 top results. This is not a full-disk search. |
 | `Ctrl+3` | **Actions**   | Provides quick commands such as Create Note, Start Timer, Send Email, Take Screenshot, Lock Screen, Show Desktop, Toggle Dark Mode, Scene, Overview, Calculator, Task Manager, Settings, and Clear Clipboard History.                                                                                                                                                        |
 | `Ctrl+4` | **Clipboard** | Displays text copied within the last eight hours, with entries such as `Text · Copied 15:20`. Press `Enter` or click the circular copy button to copy an entry again. Use **⋯ → Clear History** to remove the history.                                                                                                                                                       |
@@ -653,7 +653,7 @@ Apps provides a centralized application launcher.
 
 You can open it through:
 
-- The **Apps** button on Deck (colored dot-grid icon).
+- The **Apps** button on Dock (colored dot-grid icon).
 - `Ctrl+Shift+Space`.
 - `Ctrl+1` in Quick Search.
 - The Apps option in the nexora logo menu.
@@ -782,7 +782,7 @@ Corner actions are ignored while a mouse button is pressed, preventing accidenta
 
 ## 11. Settings
 
-nexora Settings uses a modern settings interface with a colored icon sidebar on the left and grouped configuration cards on the right.
+Nexora Settings uses a modern settings interface with a colored icon sidebar on the left and grouped configuration cards on the right.
 
 Long pages can be navigated using the mouse wheel.
 
@@ -805,10 +805,10 @@ The **◀ / ▶** buttons in the title bar navigate backward and forward through
 | Page               | Available Options                                                                                                                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **General**        | Language (Indonesian/English), launch at startup, hide Windows taskbar, hide desktop icons, always on top of fullscreen windows, window animations, active window shadows.                                                                      |
-| **Deck**           | Enable Deck, display behavior, uniform icons, icon size, spacing, zoom, screen-edge distance, corner radius.                                                                                                                                    |
-| **Visor**          | Enable Visor, display behavior, corner radius, automatically open when hovering over Visor.                                                                                                                                                     |
+| **Dock**           | Enable Dock, display behavior, uniform icons, icon size, spacing, zoom, screen-edge distance, corner radius.                                                                                                                                    |
+| **Menubar**          | Enable Menubar, display behavior, corner radius, automatically open when hovering over Menubar.                                                                                                                                                     |
 | **MenuBar**        | Enable MenuBar, background style (Transparent, Light, Dark, Material), 24-hour clock.                                                                                                                                                           |
-| **Appearance**     | Automatic, Light, and Dark previews; theme and accent colors; icon and widget styles; light/dark/automatic appearance; tint colors; icon packs; global glass material; Visor material; blur intensity; transparency; and glass-edge refraction. |
+| **Appearance**     | Automatic, Light, and Dark previews; theme and accent colors; icon and widget styles; light/dark/automatic appearance; tint colors; icon packs; global glass material; Menubar material; blur intensity; transparency; and glass-edge refraction. |
 | **Scene**          | All Scene configuration options.                                                                                                                                                                                                                |
 | **Screen Corners** | Actions assigned to the four screen corners.                                                                                                                                                                                                    |
 | **Quick Search**   | Clipboard History configuration.                                                                                                                                                                                                                |
@@ -830,7 +830,7 @@ Theme customization includes:
 Glass customization includes:
 
 - Global surface material (Blur, Crystal, or Opaque Black).
-- Visor material.
+- Menubar material.
 - Blur intensity.
 - Transparency.
 - Glass-edge refraction.
@@ -846,7 +846,7 @@ nexora stores its configuration files in:
 | File                     | Description                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
 | `settings.cfg`           | Application settings stored as `key=value` entries.               |
-| `pins.txt`               | Applications pinned to Deck.                                      |
+| `pins.txt`               | Applications pinned to Dock.                                      |
 | `icons.txt` and `icons\` | Custom icon configuration and icon files.                         |
 | `cc_layout.txt`          | Quick Panel module layout.                                        |
 | `stage_exclude.txt`      | Applications excluded from Scene.                                 |
@@ -859,8 +859,8 @@ The following command-line options are available:
 | Option                            | Description                                      |
 | --------------------------------- | ------------------------------------------------ |
 | `--keep-taskbar`                  | Prevents nexora from hiding the Windows taskbar. |
-| `--open-settings`                 | Opens nexora Settings.                           |
-| `--add-app <path>`                | Adds an application to Deck.                     |
+| `--open-settings`                 | Opens Nexora Settings.                           |
+| `--add-app <path>`                | Adds an application to Dock.                     |
 | `--set-icon <app\|start> <image>` | Changes an application or Start button icon.     |
 
 The `NACRE_CONFIG_DIR` environment variable specifies an alternative configuration directory.
@@ -897,7 +897,7 @@ The following sections describe how its features handle data and system access.
 
 nexora does not collect or transmit usage data.
 
-The only network requests initiated directly by nexora are related to **online lyric lookup** in Visor.
+The only network requests initiated directly by nexora are related to **online lyric lookup** in Menubar.
 
 When a track does not have a local `.lrc` file, nexora queries [LRCLIB](https://lrclib.net) using only the track title, artist, album, and duration.
 
@@ -907,7 +907,7 @@ Retrieved lyrics are cached locally in:
 
 Online lyric lookup is enabled by default and can be disabled under:
 
-Settings → Visor → Lyrics → **Search Lyrics Online (LRCLIB)**.
+Settings → Menubar → Lyrics → **Search Lyrics Online (LRCLIB)**.
 
 The **Search the Web** option in Quick Search only opens your browser when explicitly selected.
 
@@ -921,7 +921,7 @@ nexora does not collect this information.
 
 ### Download Monitoring
 
-Visor monitors download activity by reading:
+Menubar monitors download activity by reading:
 
 - Temporary filenames and file sizes in the Downloads folder.
 - The Windows-owned Microsoft Store installation queue.
@@ -999,7 +999,7 @@ The value name is `nexora`.
 
 Administrator privileges are not required.
 
-Automatic startup can be disabled through nexora Settings or Windows Settings → Apps → Startup.
+Automatic startup can be disabled through Nexora Settings or Windows Settings → Apps → Startup.
 
 ### License and Warranty
 
@@ -1019,9 +1019,9 @@ The following table covers common issues and their recommended solutions.
 | A window appears to be missing.                                 | It may have been parked by Scene. Restart nexora to restore parked windows, or disable Scene.                                                                                       |
 | Keyboard shortcuts do not work.                                 | Another application may already be using the same shortcut. Check `nexora.log`.                                                                                                     |
 | Application menus do not appear in MenuBar.                     | The application may not expose a classic Win32 menu. nexora uses its standard menu implementation instead.                                                                          |
-| MenuBar or Deck is not visible in fullscreen mode.              | Enable Settings → General → **Always on Top of Fullscreen Windows**. This option is enabled by default. Exclusive fullscreen applications cannot be overlaid.                       |
+| MenuBar or Dock is not visible in fullscreen mode.              | Enable Settings → General → **Always on Top of Fullscreen Windows**. This option is enabled by default. Exclusive fullscreen applications cannot be overlaid.                       |
 | Desktop icons are missing.                                      | Go to Settings → General and disable **Hide Desktop Icons While nexora Is Running**. Desktop icons are restored when nexora exits.                                                  |
-| Deck icons look different from their original appearance.       | Disable **Uniform Icons** under the Deck settings and set **Icon Style** to Default.                                                                                                |
+| Dock icons look different from their original appearance.       | Disable **Uniform Icons** under the Dock settings and set **Icon Style** to Default.                                                                                                |
 | The mouse cursor remains circular after nexora exits.           | Restart nexora and exit normally, or allow `nexora-guard.exe` to restore the cursor. You can also change it through Windows Settings → Bluetooth & devices → Mouse → Mouse pointer. |
 | Reporting a bug.                                                | Include your Windows version, reproduction steps, and the contents of `nexora.log` when submitting an issue to the project repository.                                              |
 
@@ -1049,7 +1049,7 @@ The installer automatically stops nexora, restores the Windows taskbar, and remo
 
 ### Portable ZIP Installation
 
-1. Disable **Launch at Windows Startup** in nexora Settings.
+1. Disable **Launch at Windows Startup** in Nexora Settings.
 2. Exit nexora to restore the Windows taskbar.
 3. Delete the folder containing the portable installation.
 

@@ -87,11 +87,116 @@ impl Win {
       113..=137 => 1,
       _ => 2,
     };
+    let e = s.extra;
+    let mut custom: Vec<RowDef> = Vec::new();
+    // Dependent sliders remain visible and dimmed while their custom override is off.
+    let mut group = |label: &'static str, on: bool, act: Action, sliders: &[(&'static str, u16, u8)]| {
+      custom.push(RowDef::Toggle(prefs::tr(label), on, act));
+      for (name, v, id) in sliders {
+        custom.push(RowDef::GatedSlider(
+          prefs::tr(name),
+          (*v).min(u8::MAX as u16) as u8,
+          *id,
+          on,
+        ));
+      }
+    };
+    group(
+      "Blur Dock kustom",
+      e.custom_dock_blur,
+      Action::CustomDockBlur,
+      &[
+        ("Intensitas blur Dock", e.dock_blur, 28),
+        ("Transparansi Dock", e.dock_transparency, 29),
+      ],
+    );
+    group(
+      "Refleksi yang disematkan",
+      e.pinned_reflections,
+      Action::PinnedReflections,
+      &[
+        ("Blur refleksi", e.reflection_blur, 30),
+        ("Transparansi refleksi", e.reflection_transparency, 31),
+        ("Jarak refleksi ikon", e.reflection_distance, 32),
+        ("Jarak gradasi refleksi", e.reflection_gradient_distance, 33),
+      ],
+    );
+    group(
+      "Label ikon kustom",
+      e.custom_icon_labels,
+      Action::CustomIconLabels,
+      &[
+        ("Blur label", e.label_blur, 34),
+        ("Transparansi label", e.label_transparency, 35),
+        ("Transparansi border label", e.label_border_transparency, 36),
+      ],
+    );
+    group(
+      "Menu konteks kustom",
+      e.custom_context_menus,
+      Action::CustomContextMenus,
+      &[
+        ("Blur menu konteks", e.context_blur, 37),
+        ("Transparansi menu konteks", e.context_transparency, 38),
+        ("Transparansi border menu", e.context_border, 39),
+      ],
+    );
+    group(
+      "Grid folder kustom",
+      e.custom_folder_grid,
+      Action::CustomFolderGrid,
+      &[
+        ("Blur grid folder", e.folder_blur, 40),
+        ("Transparansi grid folder", e.folder_transparency, 41),
+        ("Transparansi border grid", e.folder_border, 42),
+        ("Ukuran ikon grid folder", e.folder_icon_size, 43),
+      ],
+    );
+    group(
+      "Menu Nexora kustom",
+      e.custom_nexora_menus,
+      Action::CustomNexoraMenus,
+      &[
+        ("Blur menu Nexora", e.menu_blur, 44),
+        ("Transparansi menu Nexora", e.menu_transparency, 45),
+        ("Transparansi border menu Nexora", e.menu_border, 46),
+      ],
+    );
+    group(
+      "Blur Menu Bar kustom",
+      e.custom_finder_blur,
+      Action::CustomFinderBlur,
+      &[
+        ("Blur Menu Bar", e.finder_blur, 47),
+        ("Transparansi Menu Bar", e.finder_transparency, 48),
+      ],
+    );
+    group(
+      "Blur Launchpad kustom",
+      e.launchpad_custom_blur,
+      Action::LaunchpadCustomBlur,
+      &[("Blur latar Launchpad", e.launchpad_blur, 50)],
+    );
+    custom.push(RowDef::Slider(
+      prefs::tr("Intensitas tint wallpaper"),
+      e.wallpaper_tint as u8,
+      49,
+    ));
+    custom.push(RowDef::Toggle(
+      prefs::tr("Tampilkan Launchpad di atas jendela"),
+      e.launchpad_above_windows,
+      Action::LaunchpadAboveWindows,
+    ));
+    custom.push(RowDef::Toggle(
+      prefs::tr("Launchpad blur latar belakang"),
+      e.launchpad_blur_background,
+      Action::LaunchpadBlurBackground,
+    ));
     vec![
       (
         None,
         vec![RowDef::Seg(
-          prefs::tr("Skala Deck, Visor, Menu Bar & Quick Panel"),
+          prefs::tr("Skala Dock, Menubar, Menu Bar & Quick Panel"),
           vec![
             ("100%", Action::UiScale(100)),
             ("125%", Action::UiScale(125)),
@@ -117,67 +222,17 @@ impl Win {
         Some(prefs::tr("Kaca")),
         vec![
           RowDef::Seg(prefs::tr("Material"), mat_opts(true), mat_idx(s.dock_material)),
-          RowDef::Seg(prefs::tr("Material Visor"), mat_opts(false), mat_idx(s.notch_material)),
+          RowDef::Seg(
+            prefs::tr("Material Menubar"),
+            mat_opts(false),
+            mat_idx(s.notch_material),
+          ),
           RowDef::Slider(prefs::tr("Tingkat blur"), s.blur, 0),
           RowDef::Slider(prefs::tr("Transparansi"), s.transparency, 1),
           RowDef::Toggle(prefs::tr("Refraksi tepi kaca (Deck)"), s.refraction, Action::Refraction),
         ],
       ),
-      (
-        Some(prefs::tr("Kustomisasi")),
-        vec![
-          RowDef::Toggle(
-            prefs::tr("Blur Dock kustom"),
-            s.extra.custom_dock_blur,
-            Action::CustomDockBlur,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Refleksi yang disematkan"),
-            s.extra.pinned_reflections,
-            Action::PinnedReflections,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Label ikon kustom"),
-            s.extra.custom_icon_labels,
-            Action::CustomIconLabels,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Menu konteks kustom"),
-            s.extra.custom_context_menus,
-            Action::CustomContextMenus,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Grid folder kustom"),
-            s.extra.custom_folder_grid,
-            Action::CustomFolderGrid,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Menu Nexora kustom"),
-            s.extra.custom_nexora_menus,
-            Action::CustomNexoraMenus,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Blur Menu Bar kustom"),
-            s.extra.custom_finder_blur,
-            Action::CustomFinderBlur,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Blur Launchpad kustom"),
-            s.extra.launchpad_custom_blur,
-            Action::LaunchpadCustomBlur,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Tampilkan Launchpad di atas jendela"),
-            s.extra.launchpad_above_windows,
-            Action::LaunchpadAboveWindows,
-          ),
-          RowDef::Toggle(
-            prefs::tr("Launchpad blur latar belakang"),
-            s.extra.launchpad_blur_background,
-            Action::LaunchpadBlurBackground,
-          ),
-        ],
-      ),
+      (Some(prefs::tr("Kustomisasi")), custom),
     ]
   }
 }

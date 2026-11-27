@@ -118,15 +118,33 @@ pub enum Role {
   Dark,
 }
 
+/// Override blur and tint alpha with user values: blur is a sigma-like 0-50 value, transparency is 0-100
+/// where 100 is fully see-through.
+fn apply_custom(l: &mut Look, blur: u16, transparency: u16) {
+  l.blur_sigma = blur.min(50) as f32;
+  l.tint[0] = (255.0 * (1.0 - transparency.min(100) as f32 / 100.0)).round() as u8;
+}
+
 pub fn bar_look() -> Look {
-  settings::bar_look(&get(), sys::apps_dark())
+  let s = get();
+  let mut l = settings::bar_look(&s, sys::apps_dark());
+  if s.extra.custom_finder_blur {
+    apply_custom(&mut l, s.extra.finder_blur, s.extra.finder_transparency);
+  }
+  l
 }
 
 pub fn look(role: Role) -> Look {
   let mut s = get();
   let dark_sys = sys::apps_dark();
   match role {
-    Role::Dock => settings::look(&s, dark_sys, s.dock_material),
+    Role::Dock => {
+      let mut l = settings::look(&s, dark_sys, s.dock_material);
+      if s.extra.custom_dock_blur {
+        apply_custom(&mut l, s.extra.dock_blur, s.extra.dock_transparency);
+      }
+      l
+    }
     Role::Notch => {
       s.theme = settings::Theme::Dark;
       settings::look(&s, dark_sys, s.notch_material)

@@ -550,6 +550,23 @@ impl Notch {
   }
 }
 
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+pub fn agent_state() -> Option<serde_json::Value> {
+  let h = HWND(NOTCH_HWND.load(Ordering::Relaxed) as *mut _);
+  if h.0.is_null() {
+    return None;
+  }
+  with(h, |n| {
+    let (x, y, w, h) = n.pill_screen_rect();
+    serde_json::json!({
+      "state": if n.off { "off" } else if n.shown { "shown" } else { "hidden" },
+      "rect": [x, y, w, h],
+      "animating": n.starting || n.grace
+    })
+  })
+  .or_else(|| Some(serde_json::json!({"animating": true, "busy": true})))
+}
+
 fn hover_scale(a: Action) -> f32 {
   if matches!(a, Action::ShelfItem(_)) {
     crate::motion::HOVER_ROW

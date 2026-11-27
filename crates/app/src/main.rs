@@ -1,5 +1,7 @@
 #![windows_subsystem = "windows"]
 
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+mod agent;
 mod application;
 mod bootstrap;
 mod controlcenter;

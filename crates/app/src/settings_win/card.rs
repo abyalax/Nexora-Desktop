@@ -135,28 +135,67 @@ impl Win {
             sx += widths[i];
           }
         }
-        RowDef::Slider(label, value, id) => {
-          let (min, max, unit) = Self::spec(*id);
-          let frac = ((*value as f32 - min) / (max - min)).clamp(0.0, 1.0);
-          self.text(c, label, lx, y + (rh - 17.0 * d) / 2.0, 13.5, 400, look.fg, 0.95, 0);
+        RowDef::Slider(..) | RowDef::GatedSlider(..) | RowDef::WideSlider(..) => {
+          let (label, value, id, min, max, unit, enabled, scale) = match r {
+            RowDef::Slider(label, value, id) => {
+              let (min, max, unit) = Self::spec(*id);
+              (*label, *value as f32, *id, min, max, unit, true, None)
+            }
+            RowDef::GatedSlider(label, value, id, enabled) => {
+              let (min, max, unit) = Self::spec(*id);
+              (*label, *value as f32, *id, min, max, unit, *enabled, None)
+            }
+            RowDef::WideSlider(label, value, id, scale, unit) => {
+              (*label, *value, *id, scale.min(), scale.max(), *unit, true, Some(*scale))
+            }
+            _ => unreachable!(),
+          };
+          let frac = scale.map_or_else(
+            || ((value - min) / (max - min)).clamp(0.0, 1.0),
+            |scale| scale.value_to_position(value),
+          );
           self.text(
             c,
-            &format!("{value}{unit}"),
+            label,
+            lx,
+            y + (rh - 17.0 * d) / 2.0,
+            13.5,
+            400,
+            look.fg,
+            if enabled { 0.95 } else { 0.4 },
+            0,
+          );
+          let display_value = if value.fract() == 0.0 {
+            format!("{value:.0}{unit}")
+          } else {
+            format!("{value:.2}{unit}")
+          };
+          self.text(
+            c,
+            &display_value,
             rx,
             y + (rh - 17.0 * d) / 2.0,
             12.5,
             500,
             look.fg,
-            0.6,
+            if enabled { 0.6 } else { 0.35 },
             2,
           );
-          let (tw, th) = (190.0 * d, 5.0 * d);
+          let (tw, th) = (260.0 * d, 5.0 * d);
           let tx = rx - 56.0 * d - tw;
           let ty = y + rh / 2.0 - th / 2.0;
-          self.rect(c, tx, ty, tw, th, th / 2.0, col(look.fg, 50));
-          self.rect(c, tx, ty, (tw * frac).max(th), th, th / 2.0, col(accent, 255));
+          self.rect(c, tx, ty, tw, th, th / 2.0, col(look.fg, if enabled { 50 } else { 25 }));
+          self.rect(
+            c,
+            tx,
+            ty,
+            (tw * frac).max(th),
+            th,
+            th / 2.0,
+            col(accent, if enabled { 255 } else { 70 }),
+          );
           let knob = 18.0 * d;
-          if self.dragging.map(|(i, _, _)| i) == Some(*id) {
+          if enabled && self.dragging.map(|(i, _, _)| i) == Some(id) {
             let (kw, kh) = (knob * 1.9, knob * 1.25);
             let cx = (tx + tw * frac).clamp(tx + kw / 2.0 - knob / 4.0, tx + tw - kw / 2.0 + knob / 4.0);
             self.glass_knob(c, cx - kw / 2.0, ty + th / 2.0 - kh / 2.0, kw, kh);
@@ -170,7 +209,7 @@ impl Win {
               knob + 2.0 * d,
               knob / 2.0 + d,
               Color {
-                A: 60,
+                A: if enabled { 60 } else { 24 },
                 R: 0,
                 G: 0,
                 B: 0,
@@ -184,20 +223,22 @@ impl Win {
               knob,
               knob / 2.0,
               Color {
-                A: 255,
+                A: if enabled { 255 } else { 90 },
                 R: 255,
                 G: 255,
                 B: 255,
               },
             );
           }
-          self.region(
-            tx - 8.0 * d,
-            y + 4.0 * d,
-            tw + 16.0 * d,
-            rh - 8.0 * d,
-            Action::Slider(*id, tx, tw),
-          );
+          if enabled {
+            self.region(
+              tx - 8.0 * d,
+              y + 4.0 * d,
+              tw + 16.0 * d,
+              rh - 8.0 * d,
+              Action::Slider(id, tx, tw, scale),
+            );
+          }
         }
         RowDef::Swatches(label, sel) => {
           self.text(c, label, lx, y + 13.0 * d, 13.5, 400, look.fg, 0.95, 0);

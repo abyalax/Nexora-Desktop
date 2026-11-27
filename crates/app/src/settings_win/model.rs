@@ -53,7 +53,7 @@ pub(super) enum Action {
   HoverOpen,
   WinShadow,
   Material(bool, Material),
-  Slider(u8, f32, f32),
+  Slider(u8, f32, f32, Option<nexora_core::settings::NumericSlider>),
   MenuLogoPick,
   MenuLogoReset,
   UiScale(u8),
@@ -224,6 +224,14 @@ pub(super) enum RowDef {
   Toggle(&'static str, bool, Action),
   Seg(&'static str, Vec<(&'static str, Action)>, usize),
   Slider(&'static str, u8, u8),
+  GatedSlider(&'static str, u8, u8, bool),
+  WideSlider(
+    &'static str,
+    f32,
+    u8,
+    nexora_core::settings::NumericSlider,
+    &'static str,
+  ),
   Pick(&'static str, String, Action),
   Swatches(&'static str, usize),
   Thumbs(&'static str, Vec<(&'static str, Thumb, Action)>, usize),
@@ -256,6 +264,8 @@ pub(super) fn row_label(r: &RowDef) -> &'static str {
     RowDef::Toggle(l, ..)
     | RowDef::Seg(l, ..)
     | RowDef::Slider(l, ..)
+    | RowDef::GatedSlider(l, ..)
+    | RowDef::WideSlider(l, ..)
     | RowDef::Pick(l, ..)
     | RowDef::Swatches(l, ..)
     | RowDef::Thumbs(l, ..)
@@ -274,5 +284,8 @@ pub(super) fn hot_label(a: HotAction) -> &'static str {
     Stage => "Scene",
     Notifications => "Pusat Notifikasi",
     Lock => "Kunci Layar",
+    DisplaySleep => "Matikan Layar",
+    StartMenu => "Start Menu",
+    WindowsWidgets => "Windows Widgets",
   }
 }

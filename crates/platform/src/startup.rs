@@ -78,12 +78,60 @@ pub fn set(enabled: bool, exe: &Path) -> Result<(), String> {
   Ok(())
 }
 
-/// Set or delete a Scheduled Task for auto-start (GEN-08 alternate method)
-/// Note: Requires COM and Task Scheduler API; currently stubbed for future implementation
-pub fn set_scheduled_task(_enabled: bool, _exe: &Path) -> Result<(), String> {
-  // TODO: Implement Task Scheduler COM interface
-  // This requires using the Task Scheduler 1.0/2.0 COM interfaces
-  Err("Scheduled Task support not yet implemented".to_string())
+const TASK_NAME: &str = "Nexora Desktop";
+
+/// Set or delete the per-user logon task used by the Scheduled Task start method.
+/// `schtasks.exe` is part of Windows and avoids adding a Task Scheduler COM dependency.
+pub fn set_scheduled_task(enabled: bool, exe: &Path) -> Result<(), String> {
+  set_scheduled_task_named(enabled, exe, TASK_NAME)
+}
+
+fn set_scheduled_task_named(enabled: bool, exe: &Path, task_name: &str) -> Result<(), String> {
+  let mut command = std::process::Command::new("schtasks.exe");
+  if enabled {
+    let exe = exe
+      .canonicalize()
+      .map_err(|e| format!("resolve executable {}: {e}", exe.display()))?;
+    // schtasks parses /TR as a command line string. Quote the executable path so spaces
+    // remain part of the executable name; no user supplied arguments are inserted.
+    let task_command = format!("\"{}\"", exe.display());
+    command.args([
+      "/Create",
+      "/F",
+      "/SC",
+      "ONLOGON",
+      "/TN",
+      task_name,
+      "/TR",
+      &task_command,
+      "/RL",
+      "LIMITED",
+    ]);
+  } else {
+    command.args(["/Delete", "/F", "/TN", task_name]);
+  }
+  let output = command.output().map_err(|e| format!("launch schtasks.exe: {e}"))?;
+  if output.status.success() || (!enabled && output.status.code() == Some(1) && task_missing(&output)) {
+    return Ok(());
+  }
+  let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+  let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+  Err(format!(
+    "schtasks {} failed ({}): {}",
+    if enabled { "create" } else { "delete" },
+    output.status,
+    if stderr.is_empty() { stdout } else { stderr }
+  ))
+}
+
+fn task_missing(output: &std::process::Output) -> bool {
+  let text = format!(
+    "{}{}",
+    String::from_utf8_lossy(&output.stdout),
+    String::from_utf8_lossy(&output.stderr)
+  )
+  .to_ascii_lowercase();
+  text.contains("cannot find the file specified") || text.contains("cannot find the path specified")
 }
 
 #[cfg(test)]
@@ -91,7 +139,7 @@ mod tests {
   use super::*;
 
   #[test]
-  #[ignore] // Requires actual Windows registry access
+  #[ignore = "needs Windows registry access; run with cargo test -p nexora-platform -- --ignored"]
   fn registry_roundtrip() {
     let exe = Path::new("C:\\test\\nexora.exe");
     let before = current();
@@ -103,5 +151,24 @@ mod tests {
       set(true, exe).unwrap();
       // restore original
     }
+  }
+
+  #[test]
+  #[ignore = "creates a temporary per-user Windows Scheduled Task"]
+  fn scheduled_task_roundtrip() {
+    let exe = std::env::current_exe().unwrap();
+    let task = format!("Nexora Startup Test {}", std::process::id());
+    set_scheduled_task_named(true, &exe, &task).unwrap();
+    let query = std::process::Command::new("schtasks.exe")
+      .args(["/Query", "/TN", &task])
+      .output()
+      .unwrap();
+    assert!(query.status.success(), "{}", String::from_utf8_lossy(&query.stderr));
+    set_scheduled_task_named(false, &exe, &task).unwrap();
+    let query = std::process::Command::new("schtasks.exe")
+      .args(["/Query", "/TN", &task])
+      .output()
+      .unwrap();
+    assert!(!query.status.success(), "temporary task still exists");
   }
 }

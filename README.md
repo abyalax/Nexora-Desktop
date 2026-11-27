@@ -6,14 +6,14 @@
 
 > [!IMPORTANT]
 > **Disclaimer.** nexora is an independent, fan‑made project. It is **not affiliated with, endorsed by or sponsored by
-> Apple Inc.** in any way. nexora uses its own names (Deck, Visor, Menu Bar, Scene, Quick Search, Quick Panel, Crystal and so on).
+> Apple Inc.** in any way. nexora uses its own names (Dock, Menubar, Menu Bar, Scene, Quick Search, Quick Panel, Crystal and so on).
 > “Apple”, “macOS”, “Tahoe”, “Liquid Glass”, “Dynamic Island”, “Stage Manager”, “Mission Control”, “Spotlight”,
 > “Launchpad”, “AirDrop”, “AirPlay” and related names are trademarks of Apple Inc. nexora ships no Apple code, icons,
 > fonts or other assets.
 
 <p align="center">
   <b>A modern glass desktop for Windows 11.</b><br>
-  Deck · Visor · Menu Bar · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust, about 15 MB of RAM.
+  Dock · Menubar · Menu Bar · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust, about 15 MB of RAM.
 </p>
 
 <p align="center">
@@ -40,26 +40,31 @@
 
 nexora turns Windows 11 into a clean, modern desktop:
 
-- a magnifying **Deck** for your apps,
-- a **Visor** at the top of the screen that shows what is going on (music with live lyrics, downloads, timers, files),
+- a magnifying **Dock** for your apps,
+- a **Menubar** at the top of the screen that shows what is going on (music with live lyrics, downloads, timers, files),
 - a **Menu Bar** with real app menus, Wi‑Fi and battery,
 - a **Quick Panel** for toggles and sliders, **Quick Search**, **Scene**, **Overview** and desktop **Widgets**,
 
 all drawn with a frosted glass material and springy animations.
 
+The repository is also the in-progress Rust rewrite of `MacOS_Dock_TD` and the two Windhawk mods documented in
+[`mods/README.md`](mods/README.md). The C++ sources remain as isolated reference inputs; implementation and progress
+tracking live in this single native app. See [`docs/rewrite_status.md`](docs/rewrite_status.md) for the current mapping
+and the remaining platform work.
+
 It is one small native program: no Electron, no web view, no background services, no account. At idle it uses about
 **15 MB** of private memory.
 
 <p align="center">
-  <img src="assets/screenshots/desktop.png" alt="nexora desktop: Deck, Menu Bar, Visor and widgets" width="900">
+  <img src="assets/screenshots/desktop.png" alt="nexora desktop: Dock, Menu Bar, Menubar and widgets" width="900">
 </p>
 
 ### 🆕 New in 0.4.0
 
 - **Desktop widgets**: Clock, World Clock, Today, Month, Digital Clock, Battery and System Monitor, in the **Original** or
   **Crystal** material. Add them from a widget gallery; they snap to a tidy grid with a placeholder while you drag.
-- **Capsule**: an optional floating, pill‑shaped Visor.
-- **Global scale** (100 · 125 · 150%) for the Deck, Visor, Menu Bar and Quick Panel.
+- **Capsule**: an optional floating, pill‑shaped Menubar.
+- **Global scale** (100 · 125 · 150%) for the Dock, Menubar, Menu Bar and Quick Panel.
 - **Quick Panel editing**: drag controls to rearrange them (neighbours slide out of the way) and drag the glass corner
   handle to resize any control — Wi‑Fi down to a single circle, sliders vertical or wide, Playing from a play button up
   to a large card.
@@ -67,17 +72,17 @@ It is one small native program: no Electron, no web view, no background services
   in the Menu Bar with the battery percentage inside, outside or hidden.
 - **Windows** open and close with an animation; Scene cards fly in from where they sit.
 - **Settings** redesigned with a floating glass sidebar, and your own image as the Menu Bar logo.
-- **Own names** for every part: Deck, Visor, Menu Bar, Scene, Quick Search, Quick Panel, Overview and App Grid.
-- **Fixes**: Deck pins survive app updates (Microsoft Store and auto‑updating apps), closed apps can be removed from the
-  Deck, opening apps no longer freezes nexora, the Visor and Deck always stay above other windows, and text can no longer be
+- **Own names** for every part: Dock, Menubar, Menu Bar, Scene, Quick Search, Quick Panel, Overview and App Grid.
+- **Fixes**: Dock pins survive app updates (Microsoft Store and auto‑updating apps), closed apps can be removed from the
+  Dock, opening apps no longer freezes nexora, the Menubar and Dock always stay above other windows, and text can no longer be
   garbled by third‑party fonts.
 - **Lighter**: about a third of the memory of the previous development build.
 
 <details>
 <summary><b>In 0.3.0</b></summary>
 
-- A brand‑new Visor with **Play**, **Shelf** and **Timer** tabs, live lyrics, a music idle mode and download progress.
-- **Send to phone**: drop files on the Visor and scan a QR code with any Android or iPhone.
+- A brand‑new Menubar with **Play**, **Shelf** and **Timer** tabs, live lyrics, a music idle mode and download progress.
+- **Send to phone**: drop files on the Menubar and scan a QR code with any Android or iPhone.
 - Wi‑Fi and Bluetooth pickers, the nexora app icon and a **Buy me a coffee** button.
 </details>
 
@@ -89,17 +94,17 @@ Every part of nexora is independent. Keep only the pieces you like:
 
 | Part                    | Where to turn it off                                                            |
 | ----------------------- | ------------------------------------------------------------------------------- |
-| Deck                    | _Settings → Deck → Enable Deck_                                                 |
-| Visor                   | _Settings → Visor → Enable Visor_                                               |
+| Dock                    | _Settings → Dock → Enable Dock_                                                 |
+| Menubar                 | _Settings → Menubar → Enable Menubar_                                           |
 | Menu Bar                | _Settings → Menu Bar → Enable Menu Bar_                                         |
 | Widgets                 | Right‑click a widget → _Remove Widget_                                          |
 | Scene                   | _Settings → Scene_, or the Quick Panel control                                  |
 | Screen Corners          | _Settings → Screen Corners_ (set each corner to “None”)                         |
 | Windows taskbar         | _Settings → General → Hide the Windows taskbar_ (turn off to keep your taskbar) |
 | Window animations       | _Settings → General → Window animations_                                        |
-| Recent apps in the Deck | _Settings → Deck → Recent apps_                                                 |
+| Recent apps in the Dock | _Settings → Dock → Recent apps_                                                 |
 
-Use only the Deck with your normal taskbar, only the Visor, only the Menu Bar — any mix works.
+Use only the Dock with your normal taskbar, only the Menubar, only the Menu Bar — any mix works.
 
 _The paths above describe the current Settings window. It is being reorganised into the sidebar described in
 `docs/feature.md` (see `docs/decisions/0006-settings-window-information-architecture.md`); this table is updated when
@@ -127,12 +132,12 @@ Download from the **[Releases](https://github.com/abyalax/Nexora-Desktop/release
 ### Portable
 
 1. Extract the zip to a folder you keep, for example `Documents\nexora`.
-2. Double‑click `nexora.exe`.
+2. Double‑click `nexora.exe`.Nexora Settings
 
 ### First run
 
-- The Windows taskbar hides and the Deck appears (turn this off in _Settings → General_ if you prefer your taskbar).
-- Open **Settings**: right‑click the Deck → **nexora Settings…**, or click the logo in the Menu Bar.
+- The Windows taskbar hides and the Dock appears (turn this off in _Settings → General_ if you prefer your taskbar).
+- Open **Settings**: right‑click the Dock → **nexora Settings…**, or click the logo in the Menu Bar.
 - Language: _Settings → General → Language_ (**English** or **Indonesia**).
 
 ### Updating from 0.3.0
@@ -141,7 +146,7 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 
 ### Quit and uninstall
 
-- **Quit**: right‑click an empty part of the Deck (or the Start icon) → **Quit nexora**. The taskbar comes back automatically.
+- **Quit**: right‑click an empty part of the Dock (or the Start icon) → **Quit nexora**. The taskbar comes back automatically.
   If nexora is ever killed, `nexora-guard.exe` restores the taskbar and any windows it moved.
 - **Uninstall**: _Windows Settings → Apps → Installed apps → nexora → Uninstall_ (installer), or quit nexora and delete the folder
   (portable). Your settings are in `%APPDATA%\nexora`; delete that folder too for a clean removal.
@@ -151,48 +156,48 @@ Install 0.4.0 over the old version. Your settings, pinned apps and Quick Panel l
 ## 📖 How to use each feature
 
 <details open>
-<summary><b>🎛 Deck</b></summary>
+<summary><b>🎛 Dock</b></summary>
 
 - **Open / switch apps**: click an icon. Running apps have a dot. Hover to magnify; hover a running app for live window previews.
-- **Keep / remove**: right‑click an app → _Keep in Deck_ / _Remove from Deck_. Drag icons to reorder.
-- **Recent apps** you closed appear on the right; right‑click → _Remove from Deck_, or turn them off in _Settings → Deck_.
+- **Keep / remove**: right‑click an app → _Keep in Dock_ / _Remove from Dock_. Drag icons to reorder.
+- **Recent apps** you closed appear on the right; right‑click → _Remove from Dock_, or turn them off in _Settings → Dock_.
 - **Close an app**: right‑click it → **Close**. **Quit nexora** appears when you right‑click an empty area or the Start icon.
-- **Minimize** a window and it flies into the Deck with a **Funnel** (or **Scale**) effect.
+- **Minimize** a window and it flies into the Dock with a **Funnel** (or **Scale**) effect.
 - **App Grid** button, a **Downloads** stack and a glass **Trash** (right‑click → _Empty Trash_).
 - **Custom icons**: right‑click an app → _Change icon…_.
-- **Size, magnification, behaviour (Fixed · Overlay · Smart)**: _Settings → Deck_.
+- **Size, magnification, behaviour (Fixed · Overlay · Smart)**: _Settings → Dock_.
 </details>
 
 <details open>
-<summary><b>🕳 Visor</b></summary>
+<summary><b>🕳 Menubar</b></summary>
 
-The glass pill at the top center of the screen. Choose **Visor** (attached to the top edge) or **Capsule** (floating) in
-_Settings → Visor → Shape_.
+The glass pill at the top center of the screen. Choose **Menubar** (attached to the top edge) or **Capsule** (floating) in
+_Settings → Menubar → Shape_.
 
 <p align="center">
-  <img src="assets/screenshots/visor-capsule.png" alt="The Visor in the Capsule shape" width="480">
+  <img src="assets/screenshots/visor-capsule.png" alt="The Menubar in the Capsule shape" width="480">
 </p>
 
 - **Hover** to peek, **rest the cursor ~0.3 s** (or click) to open the panel. Scroll the mouse wheel to switch tabs.
 - **When idle**: a greeting with the time, date and battery; **music & lyrics** while a song is loaded; or just the pill.
 
 <p align="center">
-  <img src="assets/screenshots/notch-idle-greeting.png" alt="Visor idle: greeting" width="300">
-  <img src="assets/screenshots/notch-music-lyrics.png" alt="Visor idle: music & lyrics" width="480">
+  <img src="assets/screenshots/notch-idle-greeting.png" alt="Menubar idle: greeting" width="300">
+  <img src="assets/screenshots/notch-music-lyrics.png" alt="Menubar idle: music & lyrics" width="480">
 </p>
 
 - **Play tab**: song card (artwork, title, seekable progress, controls) and big **lyrics** that scroll with the song.
   Put your own `Artist - Title.lrc` files in `%APPDATA%\nexora\lyrics`, or let nexora look them up on [LRCLIB](https://lrclib.net).
 
 <p align="center">
-  <img src="assets/screenshots/notch-play.png" alt="Visor Play tab with song card and lyrics" width="560">
+  <img src="assets/screenshots/notch-play.png" alt="Menubar Play tab with song card and lyrics" width="560">
 </p>
 
 - **Downloads**: Microsoft Store, Steam and browser downloads with a progress ring.
-- **Shelf tab**: drag files onto the Visor and drop them on **Keep on Shelf** · **Send** · **Copy to…** · **Open with…**.
+- **Shelf tab**: drag files onto the Menubar and drop them on **Keep on Shelf** · **Send** · **Copy to…** · **Open with…**.
 
 <p align="center">
-  <img src="assets/screenshots/notch-drop-zones.png" alt="Drop zones when dragging files onto the Visor" width="480">
+  <img src="assets/screenshots/notch-drop-zones.png" alt="Drop zones when dragging files onto the Menubar" width="480">
 </p>
 
 - **Send to phone (Android & iPhone, no app)**: drop files on **Send**, scan the QR code with your phone’s camera and tap
@@ -203,7 +208,7 @@ _Settings → Visor → Shape_.
 </p>
 
 - **Timer tab**: a timer next to a calendar strip with your Windows calendar events.
-</details>
+</details>Nexora Settings
 
 <details open>
 <summary><b>📋 Menu Bar</b></summary>
@@ -284,7 +289,7 @@ _Settings → Visor → Shape_.
 <summary><b>🪟 Overview, App Grid, Screen Corners, HUD</b></summary>
 
 - **Overview** (`Ctrl` + `↑`): every window and your virtual desktops at a glance.
-- **App Grid** (`Ctrl` + `Shift` + `Space` or the Deck button): a full‑screen grid of installed apps.
+- **App Grid** (`Ctrl` + `Shift` + `Space` or the Dock button): a full‑screen grid of installed apps.
 - **Screen Corners**: move the pointer into a screen corner to run an action.
 - **Volume & brightness HUD**: a glass card with your output device name.
 
@@ -297,9 +302,9 @@ _Settings → Visor → Shape_.
 <summary><b>🎨 Appearance & ⚙️ Settings</b></summary>
 
 - _Settings → Appearance_: Auto · Light · Dark, accent color, icon style (Default · Dark · Clear · Tinted), the glass
-  material (**Blur**, **Crystal** or **Black**), a separate Visor material, blur, transparency, the **scale** of the Deck,
-  Visor, Menu Bar and Quick Panel, and an optional **icon pack** (`%APPDATA%\nexora\iconpack`, nothing is bundled).
-- Settings has a floating glass sidebar with search, back / forward buttons, English and Indonesian.
+  material (**Blur**, **Crystal** or **Black**), a separate Menubar material, blur, transparency, the **scale** of the Dock,
+  Menubar, Menu Bar and Quick Panel, and an optional **icon pack** (`%APPDATA%\nexora\iconpack`, nothing is bundled).
+- Settings has a floating glass sidebar with searcNexora Settingsrd buttons, English and Indonesian.
 - **Quick shortcuts**: `` Alt+` `` cycles windows of the same app, `Ctrl+Alt+H` hides, `Ctrl+Alt+M` minimizes,
   `Ctrl+Alt+Q` quits the active app (_Settings → General_).
 
@@ -329,7 +334,7 @@ The complete guide in Indonesian is in [`docs/PANDUAN.md`](docs/PANDUAN.md).
 Everything nexora knows stays on your PC, in `%APPDATA%\nexora`.
 
 - **Lyrics** are the only internet request nexora makes on its own: if a song has no local `.lrc` file, nexora asks
-  [LRCLIB](https://lrclib.net) using only the title, artist, album and length. You can turn it off (_Settings → Visor_).
+  [LRCLIB](https://lrclib.net) using only the title, artist, album and length. You can turn it off (_Settings → Menubar_).
 - **Send to phone** runs a tiny temporary web server on your **local network only**, under a random link, serving only the files
   you dropped. It stops when you click Done, after 15 idle minutes, or when nexora quits.
 - **Read‑only, on demand**: saved Wi‑Fi network names and signal strength, Bluetooth devices, calendar events, download
@@ -417,10 +422,10 @@ Useful flags: `--keep-taskbar`, `--no-dock`, `--no-island`, `--no-hud`, `--open-
 
 | Path                              | Contents                                                                                                   |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `crates/core`                     | Pure, unit‑tested logic: Visor state, lyrics, QR codes, Deck layout, widgets, settings, i18n, icons        |
+| `crates/core`                     | Pure, unit‑tested logic: Menubar state, lyrics, QR codes, Dock layout, widgets, settings, i18n, icons        |
 | `crates/platform`                 | Win32 / WinRT wrappers: windows, media, audio, Wi‑Fi, Bluetooth, downloads, icons, text, local send server |
 | `crates/ui`                       | The glass materials on `Windows.UI.Composition`, the shared graphics device and live window capture        |
-| `crates/app`                      | The `nexora` app: Deck, Visor, Menu Bar, Quick Panel, Quick Search, Scene, Widgets, Settings               |
+| `crates/app`                      | The `nexora` app: Dock, Menubar, Menu Bar, Quick Panel, Quick Search, Scene, Widgets, Settings               |
 | `crates/guard`                    | `nexora-guard`, the watchdog that restores the taskbar and moved windows                                   |
 | `docs/` · `installer/` · `tools/` | Indonesian user guide, installer and release script, taskbar safety test                                   |
 
@@ -431,7 +436,7 @@ variables, flags such as `--no-dock`) keep their former-codename words so existi
 
 ## ⚙️ Configuration & troubleshooting
 
-Settings live in `%APPDATA%\nexora\settings.cfg` (plain `key=value`), next to `pins.txt` (Deck), `icons.txt` (custom icons),
+Settings live in `%APPDATA%\nexora\settings.cfg` (plain `key=value`), next to `pins.txt` (Dock), `icons.txt` (custom icons),
 `cc_layout.txt` (Quick Panel), `widgets.txt` (widget positions), `actions.txt` (Quick Search quick keys),
 `stage_exclude.txt`, `lyrics\` and `nexora.log`. Set `NACRE_CONFIG_DIR` to use another folder.
 

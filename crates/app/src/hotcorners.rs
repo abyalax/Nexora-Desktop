@@ -102,6 +102,9 @@ fn run(a: HotAction) {
     HotAction::Stage => prefs::update(|s| s.stage = !s.stage),
     HotAction::Notifications => keys::chord(&[keys::WIN, 0x4E]),
     HotAction::Lock => launch::run("rundll32.exe", "user32.dll,LockWorkStation"),
+    HotAction::DisplaySleep => sys::display_off(),
+    HotAction::StartMenu => launch::toggle_start(false),
+    HotAction::WindowsWidgets => keys::chord(&[keys::WIN, 0x57]),
   }
 }
 

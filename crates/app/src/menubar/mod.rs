@@ -11,7 +11,7 @@ use crate::popup::Popup;
 use crate::{prefs, services};
 use nexora_core::menubar::items::{
   self, APP, BATT, BarInputs, CLOCK, CTRL, ITEM_MARGIN, LOGO, M_EDIT, M_FILE, M_HELP, M_VIEW, M_WIN, Menus, NATIVE0,
-  SEARCH, STAGEI, TextMetrics, WIFI,
+  SEARCH, STAGEI, Show, TextMetrics, WIFI,
 };
 use nexora_core::menubar::layout::{self as lay, Gap, Placed};
 use nexora_platform::icons::Bitmap;

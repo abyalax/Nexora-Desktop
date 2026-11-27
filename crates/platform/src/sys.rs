@@ -150,6 +150,20 @@ pub fn utc_offset_min() -> i32 {
   -(tz.Bias + dst)
 }
 
+/// Request that Windows turns off the displays. The operation is asynchronous and does not suspend the system.
+pub fn display_off() {
+  use windows::Win32::Foundation::{LPARAM, WPARAM};
+  use windows::Win32::UI::WindowsAndMessaging::{HWND_BROADCAST, PostMessageW, SC_MONITORPOWER, WM_SYSCOMMAND};
+  unsafe {
+    let _ = PostMessageW(
+      Some(HWND_BROADCAST),
+      WM_SYSCOMMAND,
+      WPARAM(SC_MONITORPOWER as usize),
+      LPARAM(2),
+    );
+  }
+}
+
 static TRIM_GEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 pub fn trim_memory() {

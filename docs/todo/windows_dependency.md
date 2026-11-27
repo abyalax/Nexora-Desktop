@@ -1,5 +1,13 @@
 This is TODO based on ../TODO.md, list ini khusus untuk task yang windows platform depend
 
+## Progress note — 2026-11-27
+
+This list separates implementation from validation. Several older rows described code as absent even though it is now in
+the tree; those implementation sub-items are checked below or in `TODO.md`. Unchecked Windows 11 behavior, installer,
+recovery, interactive-session, and footprint checks remain open until their QA procedures have actual results. This
+checkout can compile the Windows workspace (`cargo check --workspace` passed after the current platform changes), but that
+does not substitute for the manual checks.
+
 ## 1. Baseline, CI, dan alat uji (M1)
 - [x] **BASE-01**: jalankan empat perintah DoD di Windows 11 pada HEAD, catat yang gagal, dan perbaiki hanya yang memblokir build.
 - [x] **BASE-02**: sambungkan atau hapus enam file orphan `app/dock/{popups,magnify,surfaces,items,geometry,prefs_sync}.rs`, lalu putuskan nasib `DockConfig` (`behavior.rs`).
@@ -25,17 +33,18 @@ This is TODO based on ../TODO.md, list ini khusus untuk task yang windows platfo
 
 ## 4. Dock (M4)
 - [x] **D-1.4/1.5**: label selalu tampil, dan bounce saat launch.
-- [ ] **D-3.2**: drag diabaikan saat terkunci (QA).
-- [ ] **D-6.2/6.4**: popup preview membaca ukuran dan delay secara live; putuskan apakah "native preview" itu DWM thumbnail.
+- [x] **D-3.2 implementation**: app rejects drag start while locked (`dock/input.rs`); interactive QA remains open.
+- [x] **D-6.2/6.4 implementation/decision**: preview reads size and delay live; "native preview" means a DWM thumbnail for Dock and STG-06.
 - [ ] **D-7.5/7.7/7.8**: minimize biasa saat efek mati (QA), konten jendela live (`platform/wins/thumbnail.rs`), dan semantik "minimize into icon" (QA).
 - [ ] **D-8.2/8.5/8.6**: enumerasi shortcut Start Menu dan Desktop, Launchpad per monitor, serta di atas jendela vs sembunyikan jendela dan blur live.
 - [ ] **D-10.1/10.5/10.6/10.7/10.8**: pindahkan aturan visibilitas dari `app/dock/visibility.rs` ke core (butuh build untuk memastikan perilaku tidak berubah), hitung overlap (`wins/overlap.rs`), efek hide Move/Fade, reserve work area (QA: tidak ada sisa setelah ganti mode), dan ganti mode saat runtime.
 - [ ] **D-11.5…11.8**: penempatan per sisi layar, render vertikal, anchor tooltip/preview/popup yang berbalik per sisi, dan target minimize dari posisi baru.
-- [ ] **D-12.2/12.3/12.5**: daftar monitor dengan id stabil, rebuild saat hotplug (QA), dan select dari display yang terdeteksi.
+- [x] **D-12.2 implementation**: `platform/monitors.rs` enumerates monitor device ids, bounds, work areas, and primary state.
+- [ ] **D-12.3/12.5**: rebuild on hotplug (QA) and expose detected monitors in the display selector.
 - [ ] **D-13.4**: jendela hit-test tak terlihat (layered, no-activate, topmost).
 - [ ] **D-14.3/14.4**: plate dan efek cahaya ikon.
 - [ ] **D-15.3**: renderer refleksi, dengan cek footprint.
-- [ ] **D-16.2**: aksi platform untuk display sleep, Start Menu, dan Windows widget.
+- [x] **D-16.2**: aksi display sleep, Start Menu, and Widgets are wired in `hotcorners.rs` (`platform::sys::display_off`, key actions).
 - [ ] **D-17.2/17.3**: daftar isi folder, popup grid, double-click ke Explorer.
 - [ ] **Wiring modul core M4** (core + tes sudah ada, butuh build Windows + QA di `docs/qa/`):
   - `dock/edge.rs` → D-11.5…11.8 (penempatan, render vertikal, anchor popup via `popup_side`, target minimize).
@@ -73,7 +82,7 @@ Core M5 sudah selesai dan diuji di Linux (`cargo test -p nexora-core`); semua it
   - `finder/media.rs` → F-17.2 (`budget`, `label`, `fit`, `fg`; teks lirik dari `Lyrics::current`, warna dari `tint::from_art`).
 
 ## 6. Halaman bersama (M6)
-[ ] **Start on boot**: Registry sudah ada (`platform/startup.rs`); tinggal Scheduled Task, tes buat/hapus entri (`#[ignore]`), dan QA bahwa uninstaller `NEXORA.iss` menghapus semua metode. Core: `Settings::set_start_method`.
+[ ] **Start on boot**: Registry and Scheduled Task methods are implemented in `platform/startup.rs`; app applies the selected method in `mainwin::apply_autostart`, and `installer/NEXORA.iss` removes both entries at uninstall. An ignored create/delete test exists; run it and perform manual installer QA for both methods. Core: `Settings::set_start_method`.
 [ ] **Hide taskbar on boot**: sembunyikan/pulihkan taskbar per monitor di `platform/shell/taskbar.rs`, dipulihkan `nexora-guard` (REC-01). Core siap: `window_management/taskbar.rs` (`to_hide` untuk monitor yang disembunyikan, `to_restore` saat pilihan berubah).
 [ ] **Display font**: pasang font Inter dari `assets/fonts`, cek font terpasang di platform, lalu rendering teks memakai `shared::font::resolve` dan `text_scale` (live). Core siap.
 [ ] **STG gaps**: efek di `app/stage.rs` memakai `window_management/stage_options.rs`: icon di Finder, blur ikon latar, native preview, hidden mode (`strip_visible`), keep border, desktop icons 3 keadaan (`desktop_icons_visible`), kecepatan animasi, dan WAN-06 (`left_out_of_stage`). Asumsi yang perlu dikonfirmasi maintainer: arti "Default/Always show/Always hide" pada `HiddenMode`.
@@ -97,7 +106,7 @@ Core M7 selesai dan diuji di Linux (`cargo test -p nexora-core`): `shared/featur
 - [ ] jalankan tabel 16 baris di QA (15 fitur + `all`).
 
 ### QA-01 Satu `docs/qa/<id>.md` per perilaku khusus Windows
-- [x] indeks dan daftar yang belum ada: `docs/qa/README.md` (M4: 11 berkas, M5: 6 berkas).
+- [x] indeks dan prosedur M4/M5: `docs/qa/README.md` (semua berkas ditulis; hasil uji Windows 11 masih kosong).
 - [ ] tulis tiap berkas bersama perilakunya, lalu isi hasilnya di Windows 11.
 
 ### QA-02 Tes upgrade

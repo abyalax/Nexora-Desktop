@@ -179,6 +179,14 @@ cargo check --workspace
 
 ## 8. AI Agent Instructions
 
+### Runtime testing (Windows only)
+
+- In PowerShell set $env:NACRE_AGENT = "1" and $env:NACRE_CONFIG_DIR = "target\cfg-test", then run cargo run --features agent-debug -- --keep-taskbar --exit-after 60.
+- Use nexora-ctl --pid <PID> state and wait_idle before screenshots or layout assertions.
+- Exit through nexora-ctl --pid <PID> quit; do not terminate the process.
+- Keep injected input inside a Nexora window rectangle.
+- Runtime layout checks cover one primary monitor.
+
 When implementing or modifying code:
 
 1. Inspect existing modules and conventions before creating files.

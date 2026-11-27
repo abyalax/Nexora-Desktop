@@ -112,6 +112,21 @@ struct Win {
 
 thread_local! {
     static WIN: RefCell<Option<Box<Win>>> = const { RefCell::new(None) };
+    static AGENT_COMP: RefCell<Option<Compositor>> = const { RefCell::new(None) };
+}
+
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+pub fn bind_agent_compositor(comp: &Compositor) {
+  AGENT_COMP.with(|c| *c.borrow_mut() = Some(comp.clone()));
+}
+
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+pub fn open_agent(page: Option<u8>) {
+  AGENT_COMP.with(|c| {
+    if let Some(comp) = c.borrow().as_ref() {
+      open(comp, page);
+    }
+  });
 }
 
 pub fn open(comp: &Compositor, page: Option<u8>) {

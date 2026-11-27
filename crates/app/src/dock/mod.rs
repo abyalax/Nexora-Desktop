@@ -274,6 +274,39 @@ pub fn cli_commands(hwnd: HWND, add: Option<String>, icon: Option<(String, Strin
   });
 }
 
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+pub fn agent_state() -> Option<serde_json::Value> {
+  let h = HWND(DOCK_HWND.load(Ordering::Relaxed) as *mut _);
+  if h.0.is_null() {
+    return None;
+  }
+  with_dock(h, |d| {
+    let rect = d.card_screen_rect();
+    let icons: Vec<_> = d
+      .entries
+      .iter()
+      .zip(d.layout.cells.iter())
+      .filter_map(|(entry, cell)| {
+        let Entry::App(i) = entry else { return None };
+        let item = d.items.get(*i)?;
+        Some(serde_json::json!({
+          "id": item.key,
+          "running": item.running(),
+          "scale": cell.scale,
+          "rect": [d.win_pos.0 + cell.x as i32, d.win_pos.1 + d.icon_y as i32, cell.w as i32, d.m.icon as i32]
+        }))
+      })
+      .collect();
+    serde_json::json!({
+      "rect": [rect.0, rect.1, rect.2 - rect.0, rect.3 - rect.1],
+      "icons": icons,
+      "magnification": d.m.max_scale,
+      "animating": d.last_apply.elapsed() < Duration::from_millis(220) || d.state.starting || d.state.grace
+    })
+  })
+  .or_else(|| Some(serde_json::json!({"animating": true, "busy": true})))
+}
+
 fn metrics_from_prefs(dpi: f32) -> Metrics {
   let s = crate::prefs::get();
   Metrics::custom(s.dock_size as f32, s.dock_gap as f32, s.dock_zoom as f32 / 100.0, dpi)

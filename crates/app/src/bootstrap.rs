@@ -2,6 +2,8 @@
 //! running [`Application`]. A feature that fails to start is logged and skipped; the rest of the
 //! application keeps running (see `docs/feature.md`, cross-cutting rule 3).
 
+#[cfg(all(feature = "agent-debug", debug_assertions))]
+use crate::agent;
 use crate::application::Application;
 use crate::startup::{args::Args, demo, recovery, single_instance};
 use crate::{
@@ -76,8 +78,14 @@ fn initialize() -> Option<Application> {
       return None;
     }
   };
+  #[cfg(all(feature = "agent-debug", debug_assertions))]
+  settings_win::bind_agent_compositor(&host.compositor);
 
   let main_hwnd = mainwin::create().ok()?;
+  #[cfg(all(feature = "agent-debug", debug_assertions))]
+  if std::env::var("NACRE_AGENT").as_deref() == Ok("1") {
+    agent::start(main_hwnd);
+  }
   single_instance::listen(wake, main_hwnd);
   mainwin::add_tray(main_hwnd);
   if let Some(s) = args.exit_after {

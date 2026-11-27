@@ -185,10 +185,10 @@ The `nexora.exe` supports several command-line flags for development and testing
 # Keep Windows taskbar visible
 .\target\release\nexora.exe --keep-taskbar
 
-# Disable Deck
+# Disable Dock
 .\target\release\nexora.exe --no-dock
 
-# Disable Visor
+# Disable Menubar
 .\target\release\nexora.exe --no-island
 
 # Disable HUD (volume/brightness overlay)

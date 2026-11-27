@@ -172,58 +172,58 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
 
 ### Baseline and CI
 
-- [ ] **BASE-01** On Windows 11, run the four DoD commands at HEAD. Record what fails. Fix only what blocks the build.
+- [x] **BASE-01** On Windows 11, run the four DoD commands at HEAD. Record what fails. Fix only what blocks the build. All four passed on 2026-11-27; the initial test run found one missing English label, which was added before the passing rerun. Clippy reports existing `too_many_arguments` warnings.
 - [ ] **BASE-02** Resolve orphans:
-  - [ ] each of `app/dock/{popups,magnify,surfaces,items,geometry,prefs_sync}.rs`: wire into `mod.rs` or delete
-  - [ ] `core/dock/behavior.rs`: make `parse_bool` `pub(crate)`, add `pub mod behavior;`, run its 6 tests, then decide with
-    ADR-0004 whether `DockConfig` folds into `DockSettings` or stays composed
-- [ ] **BASE-03** Orphan guard: a small script that fails CI when a `*.rs` file has no matching `mod` declaration.
-- [ ] **BASE-04** `.github/workflows/ci.yml`: Ubuntu job `cargo test -p nexora-core`; Windows job fmt, clippy, test, check
+  - [x] each of `app/dock/{popups,magnify,surfaces,items,geometry,prefs_sync}.rs`: wire into `mod.rs` or delete
+  - [x] `core/dock/behavior.rs`: make `parse_bool` `pub(crate)`, add `pub mod behavior;`, run its 6 tests.
+  - [ ] Decide with ADR-0004 whether `DockConfig` folds into `DockSettings` or stays composed.
+- [x] **BASE-03** Orphan guard: a small script that fails CI when a `*.rs` file has no matching `mod` declaration. `python3.12 scripts/check_orphans.py` passed on 2026-11-27.
+- [x] **BASE-04** `.github/workflows/ci.yml`: Ubuntu job `cargo test -p nexora-core`; Windows job fmt, clippy, test, check
   for the workspace; Node job `node --test design/tests`.
-- [ ] **BASE-05** Add `rust-toolchain.toml` (listed in `architecture.md` §2, missing).
-- [ ] **BASE-06** Edition: migrate to 2024 per `AGENTS.md`, or amend `AGENTS.md` to 2021 (decide, then do).
-- [ ] **BASE-07** Test helpers in `core/tests/`: one macro that generates the five Co tests (default, clamp low/high,
+- [x] **BASE-05** Add `rust-toolchain.toml` (listed in `architecture.md` §2, missing).
+- [x] **BASE-06** Edition: migrate to 2024 per `AGENTS.md`, or amend `AGENTS.md` to 2021 (decide, then do). ADR-0009 keeps 2021 through M7.
+- [x] **BASE-07** Test helpers in `core/tests/`: one macro that generates the five Co tests (default, clamp low/high,
   garbage, round-trip) from a registry row, so a setting costs one line.
-- [ ] **BASE-08** Platform test convention: tests that need a live desktop use `#[ignore = "needs interactive session"]`;
+- [x] **BASE-08** Platform test convention: tests that need a live desktop use `#[ignore = "needs interactive session"]`;
   Windows runner runs `cargo test -p nexora-platform -- --ignored` on demand. Keep `media_fake.rs` style fakes for core-facing traits.
-- [ ] **BASE-09** `--settings-page <id>` flag next to `--open-settings`/`--exit-after`; smoke run per page must exit 0.
-- [ ] **BASE-10** `docs/qa/TEMPLATE.md`: preconditions, steps, expected result, restore check (taskbar, work area).
+- [x] **BASE-09** `--settings-page <id>` flag next to `--open-settings`/`--exit-after`; smoke run per page must exit 0. Settings page IDs 0–5 all started, answered `state`/`wait_idle`, and exited through `nexora-ctl` on 2026-11-27.
+- [x] **BASE-10** `docs/qa/TEMPLATE.md`: preconditions, steps, expected result, restore check (taskbar, work area).
 - [ ] **BASE-11** Run `tools/bench/m1-verify.ps1` for a baseline; record idle private memory (README claims ~15 MB) in
   `docs/bench.md`; re-run at the end of each milestone.
 
 ### Settings engine (core)
 
 - [ ] **ENG-01** Implement ADR-0004 (registry, non-default-only serialize). 0.4.0 fixtures must pass unchanged.
-- [ ] **ENG-02** Fixture policy: add `settings_0_5_0_*.cfg` per milestone; never edit existing fixtures.
-- [ ] **ENG-03** `GeneralSettings` (`takeover, autostart, lang, ui_scale, above_fullscreen, anim`) + test like `settings_sections.rs`.
-- [ ] **ENG-04** `AppearanceSettings` (`theme, accent, blur, style, transparency, refraction, win_shadow, icon_*`) + test.
-- [ ] **ENG-05** `StageSettings` (`stage, stage_*, switcher, hide_desktop_icons`) + test.
-- [ ] **ENG-06** `InputSettings` (`hot, mac_shortcuts, clipboard_history`) + test.
-- [ ] **ENG-07** `SurfaceGlass { custom, blur, transparency, border }` + `resolve(global, surface)`; tests: custom off → global.
-- [ ] **ENG-08** `ProgramList` (ADR-0005): parse `;` lists, normalize, match by exe/name. Tests: case, spaces, empty, duplicates,
+- [x] **ENG-02** Fixture policy: add `settings_0_5_0_*.cfg` per milestone; never edit existing fixtures. `settings_0_5_0_activities.cfg` is covered by `settings_extra` and section round-trip tests.
+- [x] **ENG-03** `GeneralSettings` (`takeover, autostart, lang, ui_scale, above_fullscreen, anim`) + test like `settings_sections.rs`.
+- [x] **ENG-04** `AppearanceSettings` (`theme, accent, blur, style, transparency, refraction, win_shadow, icon_*`) + test.
+- [x] **ENG-05** `StageSettings` (`stage, stage_*, switcher, hide_desktop_icons`) + test.
+- [x] **ENG-06** `InputSettings` (`hot, mac_shortcuts, clipboard_history`) + test.
+- [x] **ENG-07** `SurfaceGlass { custom, blur, transparency, border }` + `resolve(global, surface)`; tests: custom off → global.
+- [x] **ENG-08** `ProgramList` (ADR-0005): parse `;` lists, normalize, match by exe/name. Tests: case, spaces, empty, duplicates,
   trailing `;`, length cap.
-- [ ] **ENG-09** Setting dependencies (`customDockBlur` → enables its sliders; `iconEffect` → enables magnification only if it
+- [x] **ENG-09** Setting dependencies (`customDockBlur` → enables its sliders; `iconEffect` → enables magnification only if it
   magnifies). Pure function + tests, used by the UI to grey rows.
 - [ ] **ENG-10** i18n test: every catalogue label has English and Indonesian text.
-- [ ] **ENG-11** Limits for new text fields (greeting text uses fixed `ShortText`; decide the cap for new ones).
+- [x] **ENG-11** Limits for new text fields (greeting text uses fixed `ShortText`; decide the cap for new ones). `ShortText` caps UTF-8 text at 96 bytes; program lists separately cap entries in `settings/lists.rs`.
 
 ### Settings window (app/ui)
 
-- [ ] **WIN-01** Wide numeric slider row (min, max, step, unit; values to 1500 and fractional). Pure value↔position function in core, tested.
+- [x] **WIN-01** Wide numeric slider row (min, max, step, unit; values to 1500 and fractional). Pure value↔position function in core, tested (`NumericSlider`); activation and preview delays use 0–1500 ms rows.
 - [ ] **WIN-02** Select row for 6+ options (hot corner has 10, Dock display mode 8); keyboard navigation.
 - [ ] **WIN-03** Colour row (hex or RGB) for accent and Dock light colour.
-- [ ] **WIN-04** List/text row for `ProgramList` values.
+- [x] **WIN-04** List/text row for `ProgramList` values. Four `lists.cfg` collections have semicolon-separated text rows and save through `prefs::update_lists`.
 - [ ] **WIN-05** Grouped sidebar with sub-pages (Dock ▸ 5, Finder ▸ 7, Dynamic Island ▸ 2); replace `page: u8` with a `Page` enum.
-- [ ] **WIN-06** Disabled-row state driven by ENG-09.
-- [ ] **WIN-07** Sidebar search (the HTML has one). Optional.
+- [x] **WIN-06** Disabled-row state driven by ENG-09. Gated sliders dim and omit hit regions when disabled.
+- [x] **WIN-07** Sidebar search (the HTML has one). Optional. Implemented by `page_matches`, which filters pages by their group and row labels.
 
 ### HTML foundations
 
-- [ ] **HTM-01** Move `defaultSettings` and `prefPages` into `design/settings-schema.js` (no DOM) so Node can import it.
-- [ ] **HTM-02** `design/tests/schema.test.mjs` (`node --test`): no key in two sections (fails today: 15), every descriptor has a
+- [x] **HTM-01** Move `defaultSettings` and `prefPages` into `design/settings-schema.js` (no DOM) so Node can import it.
+- [x] **HTM-02** `design/tests/schema.test.mjs` (`node --test`): no key in two sections, every descriptor has a
   default and every default a descriptor, default inside range/options, option strings trimmed (fails today: `" system-ui"`),
   unique IDs.
-- [ ] **HTM-03** Fix the verified bugs: `--accent: var(--accent)`; the 15 duplicate `shared` keys; `" system-ui"`.
+- [x] **HTM-03** Fix the verified bugs: `--accent: var(--accent)`; the 15 duplicate `shared` keys; `" system-ui"`.
 - [ ] **HTM-04** Replace the `if (key === …)` chain in `updateSetting` with an `effects['section.key']` map. Add a script that
   prints unwired keys (167 today); the count may only go down.
 - [ ] **HTM-05** Stop loading Tailwind from a CDN (vendor it or precompile). Low priority.
@@ -594,15 +594,16 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 
 **D-3 Lock reorder**
 - [x] D-3.1 core: `reorder` refuses moves when locked; test `reorder_is_noop_when_locked`. Unpin by menu still works.
-- [ ] D-3.2 app: drag start ignored when locked (QA). · [ ] D-3.3 H.
+- [x] D-3.2 app: drag start is ignored when locked (`dock/input.rs`, `reorder::may_start_drag`). · [ ] QA and D-3.3 H.
 
 **D-5 Size, gap, margin, zoom** (ranges per SPEC-03)
 - [ ] D-5.1 widen/keep clamps in codec with tests · [ ] D-5.2 UI rows use WIN-01 sliders.
 
 **D-6 Window previews settings**
 - [x] D-6.1 core: size 120–520 step 10, delay 0–1500; codec tests. (`DockConfig` stores delay in 10 ms units up to 1000; widen.)
-- [ ] D-6.2 app: preview popup reads size/delay live. · [ ] D-6.3 ui: app name and window buttons toggles.
-- [ ] D-6.4 decide if "native preview" is the DWM thumbnail; STG-06 has the same label (one meaning or two?).
+- [x] D-6.2 app: preview popup reads size/delay live (`dock/preview.rs`, `dock/input.rs`).
+- [ ] D-6.3 ui: app name and window buttons toggles; D-6.2 Windows QA.
+- [x] D-6.4 decision: "native preview" means a live DWM thumbnail for both Dock and STG-06 (`platform/wins/thumbnail.rs`).
 - [ ] D-6.5 H.
 
 **D-7 Minimize effects**
@@ -618,7 +619,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 
 **D-8 Launchpad page**
 - [x] D-8.1 core: source filter (Added / +Start Menu / +Desktop / all). Tests.
-- [ ] D-8.2 platform: Start Menu and Desktop shortcut enumeration (check `platform/apps.rs`).
+- [x] D-8.2 platform: Start Menu and Desktop shortcut enumeration (`platform/apps.rs`, cached background load).
 - [x] D-8.3 core: deleted-programs filter via `ProgramList`. Test.
 - [x] D-8.4 core: grid from icon size + h/v spacing + screen size → columns/rows/pages. Tests.
 - [ ] D-8.5 Launchpad display + Follow Dock via `shared::monitors::pick`.
@@ -649,8 +650,8 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 
 **D-12 Hosting display**
 - [x] D-12.1 core: store a stable monitor id, not an index; `pick` falls back to primary when it is gone. Tests.
-- [ ] D-12.2 platform: monitor list with stable id and friendly name.
-- [ ] D-12.3 app: rebuild on display change / hotplug (QA).
+- [x] D-12.2 platform: monitor list with stable device id, bounds, work area, and primary status (`platform/monitors.rs`).
+- [x] D-12.3 app: Dock rebuild is scheduled for `WM_DISPLAYCHANGE`/`WM_DPICHANGED` (`dock/wndproc.rs`). · [ ] hotplug QA.
 - [ ] D-12.4 per ADR-0007: "All displays" semantics. · [ ] D-12.5 UI: select from detected displays (WIN-02).
 
 **D-13 Activation bar**
@@ -674,9 +675,9 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-15.4 H.
 
 **D-16 Hot corners**
-- [ ] D-16.1 core: add `HotAction` values the spec lists and the enum lacks (display sleep, Start Menu, Windows widget,
-  "Advanced" if defined). Legacy values parse. Tests. Settle "Show all windows" vs "Mission Control".
-- [ ] D-16.2 platform: each new action. · [ ] D-16.3 decide: spec/design offer bottom-left only; core has 4 corners.
+- [x] D-16.1 core: added display sleep, Start Menu, and Windows Widgets; legacy keys stay stable and `Mission` keeps the current Overview action.
+- [x] D-16.2 platform/app: added display-off request and Start/Widgets actions in `hotcorners.rs`.
+- [x] D-16.3 decision: retain all four configurable corners; existing settings and app already support four.
 
 **D-17 Folder icons**
 - [x] D-17.1 core: folder pin kind + grid layout (icon size 24–96). Tests: columns for a width.
@@ -698,7 +699,7 @@ was built or run on Windows.
   - [x] F-4.3 core: show time/date toggles + truncation in `menubar/layout.rs`. Tests. (`clock::format_clock`,
     `layout::ellipsize`)
   - [x] F-4.4 core: Wi-Fi/Bluetooth/hardware visibility toggles. Layout tests.
-  - [ ] F-4.5 app: call `format_clock` and `build_with` with `Show::from_settings` (the app still calls `format`/`build`).
+  - [x] F-4.5 app: call `format_clock` and `build_with` with `Show::from_settings` (app layout now applies Finder clock and visibility settings).
 - [ ] **F-7** Finder custom glass (APP-26…29): wire through `SurfaceGlass`.
 - [ ] **F-8 Auto-hide and maximized appearance**
   - [x] F-8.1 core: map auto-hide to `Mode::AutoHide` with inputs. Test. (`appearance::{mode, Signals, transition}`)
@@ -714,9 +715,8 @@ was built or run on Windows.
     in_corner, can_close}`)
   - [ ] F-10.2 platform posts `WM_CLOSE` to the maximized foreground window (QA).
 - [ ] **F-11 Tray**
-  - [ ] F-11.0 **spike** (no production code): how to enumerate and host tray icons; use the Windhawk analyses in `mods/`.
-    Output: a note with feasibility and the approach. Gates F-11.5…7. *Desk research is in the ADR-0007 addendum;
-    nothing in it is verified on Windows, so this stays open.*
+- [ ] F-11.0 **spike** (no production code): verify enumeration/hosting approach for tray icons on Windows; use the Windhawk analyses in `mods/`.
+  Output: a note with verified feasibility and approach. Gates F-11.5…7; desktop research alone is not enough.
   - [x] F-11.1 core: tray model (id, order, visible, overflow); lock reorder. Tests. (`tray::Tray`)
   - [x] F-11.2 core: "show all" vs overflow rule. Test. · [x] F-11.3 core: "new icon shows N s" timer with injected clock.
     Test.
@@ -724,8 +724,7 @@ was built or run on Windows.
   - [ ] F-11.5 platform: enumerate + change events. · [ ] F-11.6 app/ui: render, click forwarding, drag reorder.
   - [ ] F-11.7 rows TRY-01…04, FLB-06, FLB-08.
 - [ ] **F-12 Notifications**
-  - [ ] F-12.0 **spike**: which Windows API can read notifications for an unpackaged app (it may need package identity or a
-    user consent flow; verify before committing). *Desk research is in the ADR-0007 addendum; unverified, stays open.*
+- [ ] F-12.0 **spike**: verify which Windows API can read notifications for an unpackaged app and whether package identity or user consent is required.
   - [x] F-12.1 core: queue model (dedupe, TTL = duration setting). Tests. (`notifications::Queue`)
   - [ ] F-12.2 platform listener. · [ ] F-12.3 Finder menu. · [ ] F-12.4 hand over to I-13.
 - [ ] **F-13 Audio**
@@ -759,8 +758,9 @@ Core logic for every page below is done and tested (Linux). What is left is OS o
 - [ ] **GEN Start on boot**
   - [x] core enum with migration (`autostart=true` → Registry): `start_method`, `Settings::set_start_method`, `reconcile`.
   - [x] platform Registry (`platform/startup.rs`).
-  - [ ] platform Scheduled Task; tests create/delete entries (`#[ignore]`); QA: the uninstaller (`installer/NEXORA.iss`)
-    removes every method. "Service" is dropped per ADR-0007.
+  - [x] platform Scheduled Task creation/deletion and app selection of Registry vs Task; installer removes the task.
+  - [x] ignored Scheduled Task create/delete test (`startup::scheduled_task_roundtrip`).
+  - [ ] manual installer QA for Registry and Task methods. "Service" is dropped per ADR-0007.
 - [ ] **GEN Hide taskbar on boot**
   - [x] core scope enum + selection: `window_management/taskbar.rs` (`Scope`, `to_hide`, `to_restore`). Tests: none, all, dock display, display gone, restore diff.
   - [ ] platform per-monitor taskbar hide (`platform/shell/taskbar.rs`); `nexora-guard` restores it (REC-01).
@@ -797,7 +797,7 @@ English labels that were missing), QA files in `docs/qa/` (see `docs/qa/README.m
   - [x] app: `bootstrap.rs` runs every feature through `Startup`; `NEXORA_FAIL_FEATURE` forces a failure (not built on Windows)
   - [ ] QA run: `docs/qa/rec-02-feature-failure.md`
 - [ ] **QA-01** One `docs/qa/<id>.md` per Windows-only behavior (use BASE-10).
-  - [x] index: `docs/qa/README.md` · [ ] the 17 files it lists as missing (written with their behaviors, M4/M5)
+  - [x] index and procedures for all listed M4/M5 behaviors: `docs/qa/README.md` (written; Windows execution remains open)
 - [ ] **QA-02** Upgrade test: a real 0.4.0 `settings.cfg` loads in the new build, keeps all values, adds no keys until a
   new setting changes (ADR-0004), and a file saved by the new build is still readable by 0.4.0 semantics (unknown keys ignored).
   - [x] automated: `core/tests/upgrade_0_4_0.rs` · [ ] manual with a real file: `docs/qa/qa-02-upgrade.md`

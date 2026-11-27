@@ -1,12 +1,24 @@
 name: Windows CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
+  core:
+    name: Core tests (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Core tests
+        run: cargo test -p nexora-core
+
   windows:
     runs-on: windows-latest
     steps:
@@ -50,3 +62,15 @@ jobs:
         run: node --test "design/tests/*.test.mjs"
       - name: Schema parity Rust catalogue vs HTML (warning only, HTM-07)
         run: node scripts/schema_parity.mjs
+
+  platform-interactive:
+    name: Platform integration tests (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Ignored Windows platform tests
+        run: cargo test -p nexora-platform -- --ignored

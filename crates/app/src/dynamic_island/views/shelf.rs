@@ -370,7 +370,7 @@ pub(super) fn shelf_empty(p: &mut Painter, c: &ContainerVisual, f: Frame) {
   );
   p.text(
     c,
-    tr("Seret berkas ke Visor untuk menaruhnya di sini."),
+    tr("Seret berkas ke Menubar untuk menaruhnya di sini."),
     cx,
     top + h / 2.0 + p.px(22.0),
     12.0,

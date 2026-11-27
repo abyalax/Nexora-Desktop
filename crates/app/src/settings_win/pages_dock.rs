@@ -7,7 +7,7 @@ impl Win {
       (
         None,
         vec![
-          RowDef::Toggle(prefs::tr("Aktifkan Deck"), s.dock_enabled, Action::DockOn),
+          RowDef::Toggle(prefs::tr("Aktifkan Dock"), s.dock_enabled, Action::DockOn),
           RowDef::Seg(prefs::tr("Perilaku"), behaviors(true), beh_idx(s.dock).min(2)),
           RowDef::Seg(
             prefs::tr("Efek minimize"),
@@ -27,7 +27,12 @@ impl Win {
         vec![
           RowDef::Slider(prefs::tr("Ukuran ikon"), s.dock_size, 4),
           RowDef::Slider(prefs::tr("Jarak antar ikon"), s.dock_gap, 5),
-          RowDef::Slider(prefs::tr("Zoom saat hover"), s.dock_zoom, 6),
+          RowDef::GatedSlider(
+            prefs::tr("Zoom saat hover"),
+            s.dock_zoom,
+            6,
+            nexora_core::settings::Dependencies::from_settings(&s.extra).dock_magnification,
+          ),
           RowDef::Slider(prefs::tr("Jarak dari tepi bawah"), s.dock_margin, 7),
           RowDef::Slider(prefs::tr("Kebulatan sudut"), s.dock_round, 2),
         ],
@@ -186,10 +191,12 @@ impl Win {
           RowDef::Slider(prefs::tr("Lebar bar aktivasi"), s.extra.dock_act_bar_width as u8, 20),
           RowDef::Slider(prefs::tr("Tinggi bar aktivasi"), s.extra.dock_act_bar_height as u8, 21),
           RowDef::Slider(prefs::tr("Jarak bar aktivasi"), s.extra.dock_act_bar_distance as u8, 22),
-          RowDef::Slider(
+          RowDef::WideSlider(
             prefs::tr("Delay aktivasi mouse"),
-            (s.extra.dock_activation_delay / 6) as u8,
+            s.extra.dock_activation_delay as f32,
             23,
+            nexora_core::settings::NumericSlider::new(0.0, 1500.0, 10.0).unwrap_or_default(),
+            " ms",
           ),
         ],
       ),
@@ -256,7 +263,13 @@ impl Win {
             ((s.extra.preview_size - 120) / 4) as u8,
             24,
           ),
-          RowDef::Slider(prefs::tr("Delay preview"), (s.extra.preview_delay / 6) as u8, 25),
+          RowDef::WideSlider(
+            prefs::tr("Delay preview"),
+            s.extra.preview_delay as f32,
+            25,
+            nexora_core::settings::NumericSlider::new(0.0, 1500.0, 10.0).unwrap_or_default(),
+            " ms",
+          ),
           RowDef::Toggle(
             prefs::tr("Nama aplikasi"),
             s.extra.preview_app_name,

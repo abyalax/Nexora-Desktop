@@ -8,30 +8,36 @@ use crate::i18n::Lang;
 
 mod appearance;
 mod codec;
+mod dependencies;
 mod dock;
 mod enums;
 pub mod extra;
 mod finder;
 mod general;
+mod glass;
 mod input;
 mod island;
 pub mod lists;
 mod look;
+mod numeric_slider;
 pub mod preview;
 mod stage;
 mod text;
 
 pub use appearance::AppearanceSettings;
 pub(crate) use codec::parse_bool;
+pub use dependencies::Dependencies;
 pub use dock::DockSettings;
 pub use enums::*;
 pub use extra::Extra;
 pub use finder::FinderSettings;
 pub use general::GeneralSettings;
+pub use glass::{GlassValues, SurfaceGlass};
 pub use input::InputSettings;
 pub use island::IslandSettings;
 pub use lists::{ListKind, ProgramLists};
 pub use look::{Look, bar_look, look};
+pub use numeric_slider::NumericSlider;
 pub use stage::StageSettings;
 pub use text::ShortText;
 

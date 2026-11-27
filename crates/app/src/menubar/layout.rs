@@ -86,7 +86,13 @@ impl Bar {
       battery,
       battery_beside: prefs::get().battery_pct == 2,
     };
-    let (left, right) = items::build(&inputs, &BarMetrics(self));
+    let settings = prefs::get();
+    let (left, right) = items::build_with(
+      &inputs,
+      &Show::from_settings(&settings),
+      &items::Available::default(),
+      &BarMetrics(self),
+    );
     let gap = services::notch().map(|(l, r, _)| Gap {
       left: l as f32,
       right: r as f32,
@@ -123,6 +129,16 @@ impl Bar {
       hour: n.hour,
       minute: n.minute,
     };
-    nexora_core::menubar::clock::format(when, prefs::get().lang, prefs::get().clock_24h)
+    let settings = prefs::get();
+    nexora_core::finder::clock::format_clock(
+      when,
+      settings.lang,
+      nexora_core::finder::clock::ClockStyle {
+        show_time: settings.extra.finder_show_time,
+        show_date: settings.extra.finder_show_date,
+        time: nexora_core::finder::clock::TimeFormat::from_legacy(settings.clock_24h),
+        date: nexora_core::finder::clock::DateFormat::from_index(settings.extra.finder_date_format),
+      },
+    )
   }
 }

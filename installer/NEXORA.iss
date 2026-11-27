@@ -59,6 +59,9 @@ procedure StopNexora();
 var
   rc: Integer;
 begin
+  { Remove app-managed startup entries; missing entries are harmless. }
+  Exec(ExpandConstant('{sys}\schtasks.exe'), '/Delete /F /TN "Nexora Desktop"', '', SW_HIDE, ewWaitUntilTerminated, rc);
+  Exec(ExpandConstant('{sys}\reg.exe'), 'delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v nexora /f', '', SW_HIDE, ewWaitUntilTerminated, rc);
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM nexora.exe', '', SW_HIDE, ewWaitUntilTerminated, rc);
   Sleep(2500);
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM nexora-guard.exe', '', SW_HIDE, ewWaitUntilTerminated, rc);

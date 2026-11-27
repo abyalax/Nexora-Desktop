@@ -96,17 +96,18 @@ pub static TAKEOVER_ALLOWED: std::sync::atomic::AtomicBool = std::sync::atomic::
 
 pub fn apply_autostart() {
   use nexora_platform::startup;
-  let want = crate::prefs::get().autostart;
+  let method = crate::prefs::get().extra.start_method.min(2);
   let Ok(exe) = std::env::current_exe() else {
     return;
   };
-  let cur = startup::current();
-  let ok = match (want, &cur) {
-    (true, Some(c)) if *c == startup::command_for(&exe) => return,
-    (false, None) => return,
-    _ => startup::set(want, &exe),
-  };
-  nexora_platform::log::line("startup", &format!("autostart={want} hasil={ok:?}"));
+  // Keep the two supported mechanisms mutually exclusive, including when the user switches
+  // methods or disables startup after a previous version created the other entry.
+  let registry = startup::set(method == 1, &exe);
+  let scheduled = startup::set_scheduled_task(method == 2, &exe);
+  nexora_platform::log::line(
+    "startup",
+    &format!("method={method} registry={registry:?} scheduled={scheduled:?}"),
+  );
 }
 
 pub fn set_taskbar_hidden(on: bool) {
@@ -151,6 +152,17 @@ unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> 
     return LRESULT(0);
   }
   match msg {
+    #[cfg(all(feature = "agent-debug", debug_assertions))]
+    crate::agent::WM_AGENT_OPEN => {
+      match wp.0 {
+        1 => crate::settings_win::open_agent((lp.0 > 0).then_some(lp.0 as u8)),
+        2 => crate::spotlight::toggle(),
+        3 => crate::launchpad::toggle(),
+        4 => crate::controlcenter::toggle(0),
+        _ => {}
+      }
+      LRESULT(0)
+    }
     crate::prefs::WM_PREFS => {
       apply_autostart();
       if TAKEOVER_ALLOWED.load(Ordering::Relaxed) {

@@ -10,7 +10,7 @@
 //             1 = differences found and --strict was given
 //             2 = an input could not be read
 //
-// Until HTM-01 creates design/settings-schema.js, `defaultSettings` is read from design/nexora-v1.html.
+// `defaultSettings` and `prefPages` are imported from design/settings-schema.js; the HTML fallback supports older fixtures.
 // Pure functions are exported for design/tests/schema-parity.test.mjs; the CLI runs only when executed directly.
 
 import fs from "node:fs";
@@ -90,7 +90,7 @@ export function defaultSettingsFromHtml(html) {
   return JSON.parse(JSON.stringify(vm.runInNewContext(`(${extractObjectLiteral(html, "defaultSettings")})`)));
 }
 
-// design/settings-schema.js when it exists (HTM-01), otherwise the inline object in the HTML prototype.
+// Read design/settings-schema.js, falling back to inline HTML only for callers that pass an older fixture.
 export function loadDefaultSettings({ schema = DEFAULTS.schema, html = DEFAULTS.html } = {}) {
   if (fs.existsSync(schema)) {
     const mod = createRequire(import.meta.url)(schema);

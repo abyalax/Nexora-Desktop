@@ -213,11 +213,11 @@ impl Win {
       (
         None,
         vec![
-          RowDef::Toggle(prefs::tr("Aktifkan Visor"), s.notch_enabled, Action::NotchOn),
+          RowDef::Toggle(prefs::tr("Aktifkan Menubar"), s.notch_enabled, Action::NotchOn),
           RowDef::Seg(
             prefs::tr("Bentuk"),
             vec![
-              (prefs::tr("Visor"), Action::NotchShape(false)),
+              (prefs::tr("Menubar"), Action::NotchShape(false)),
               (prefs::tr("Capsule"), Action::NotchShape(true)),
             ],
             if s.notch_island { 1 } else { 0 },
@@ -225,13 +225,13 @@ impl Win {
           RowDef::Seg(prefs::tr("Perilaku"), behaviors(false), beh_idx(s.notch)),
           RowDef::Slider(prefs::tr("Kebulatan sudut"), s.notch_round, 3),
           RowDef::Toggle(
-            prefs::tr("Buka otomatis saat kursor di Visor"),
+            prefs::tr("Buka otomatis saat kursor di Menubar"),
             s.notch_hover_open,
             Action::HoverOpen,
           ),
         ],
       ),
-      (Some(prefs::tr("Saat Visor diam")), {
+      (Some(prefs::tr("Saat Menubar diam")), {
         let name = if s.greet_name.is_empty() {
           user_name()
         } else {
@@ -266,7 +266,7 @@ impl Win {
         Some(prefs::tr("Lirik")),
         vec![
           RowDef::Toggle(
-            prefs::tr("Tampilkan lirik di Visor"),
+            prefs::tr("Tampilkan lirik di Menubar"),
             s.lyrics_compact,
             Action::LyricsCompact,
           ),

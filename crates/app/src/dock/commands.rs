@@ -60,13 +60,13 @@ impl Dock {
       let can_pin = it.pinned || !it.path.contains('?');
       items.push(crate::menu::Item::action(
         CMD_PIN,
-        crate::prefs::tr(if it.pinned { "Hapus dari Deck" } else { "Simpan di Deck" }),
+        crate::prefs::tr(if it.pinned { "Hapus dari Dock" } else { "Simpan di Dock" }),
         can_pin,
       ));
       if !it.pinned && !it.running() {
         items.push(crate::menu::Item::action(
           CMD_FORGET,
-          crate::prefs::tr("Hapus dari Deck"),
+          crate::prefs::tr("Hapus dari Dock"),
           true,
         ));
       }
@@ -122,7 +122,7 @@ impl Dock {
     if general {
       items.push(crate::menu::Item::action(
         CMD_ADD,
-        crate::prefs::tr("Tambah app ke Deck…"),
+        crate::prefs::tr("Tambah app ke Dock…"),
         true,
       ));
       items.push(crate::menu::Item::action(

@@ -243,10 +243,13 @@ pub enum HotAction {
   Stage,
   Notifications,
   Lock,
+  DisplaySleep,
+  StartMenu,
+  WindowsWidgets,
 }
 
 impl HotAction {
-  pub const ALL: [HotAction; 7] = [
+  pub const ALL: [HotAction; 10] = [
     HotAction::None,
     HotAction::Mission,
     HotAction::Launchpad,
@@ -254,6 +257,9 @@ impl HotAction {
     HotAction::Stage,
     HotAction::Notifications,
     HotAction::Lock,
+    HotAction::DisplaySleep,
+    HotAction::StartMenu,
+    HotAction::WindowsWidgets,
   ];
 
   pub fn parse(s: &str) -> Option<HotAction> {
@@ -268,6 +274,9 @@ impl HotAction {
       HotAction::Stage => "stage",
       HotAction::Notifications => "notifications",
       HotAction::Lock => "lock",
+      HotAction::DisplaySleep => "display_sleep",
+      HotAction::StartMenu => "start_menu",
+      HotAction::WindowsWidgets => "windows_widgets",
     }
   }
   pub fn next(self) -> HotAction {
@@ -285,6 +294,9 @@ impl HotAction {
         | HotAction::Stage
         | HotAction::Notifications
         | HotAction::Lock
+        | HotAction::DisplaySleep
+        | HotAction::StartMenu
+        | HotAction::WindowsWidgets
     )
   }
 }
@@ -331,6 +343,16 @@ mod tests {
     assert_eq!(Material::parse("Opaque"), Some(Material::Black));
     assert_eq!(Material::parse("Translucent"), Some(Material::Blur));
     assert_eq!(Material::parse("sparkly"), None);
+  }
+
+  #[test]
+  fn hot_actions_keep_legacy_keys_and_round_trip_new_windows_actions() {
+    assert_eq!(HotAction::parse("mission"), Some(HotAction::Mission));
+    for action in HotAction::ALL {
+      assert_eq!(HotAction::parse(action.key()), Some(action));
+      assert!(action.is_known());
+    }
+    assert_eq!(HotAction::ALL.len(), 10);
   }
 
   #[test]

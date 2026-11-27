@@ -56,9 +56,9 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
         return LRESULT(0);
       }
       let started = with_win(|w| match w.hit(x, y) {
-        Some(Action::Slider(id, sx, sw)) => {
+        Some(Action::Slider(id, sx, sw, scale)) => {
           w.dragging = Some((id, sx, sw));
-          w.slide(id, x, sx, sw, false);
+          w.slide(id, x, sx, sw, false, scale);
           w.render();
           true
         }
@@ -85,7 +85,7 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
           return;
         }
         if let Some((id, sx, sw)) = w.dragging {
-          w.slide(id, x, sx, sw, false);
+          w.slide(id, x, sx, sw, false, None);
           return;
         }
         let mut t = TRACKMOUSEEVENT {
@@ -184,7 +184,7 @@ pub(super) unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: 
       let act = with_win(|w| {
         let was_pressed = w.press.take().is_some();
         if let Some((id, sx, sw)) = w.dragging.take() {
-          w.slide(id, x, sx, sw, true);
+          w.slide(id, x, sx, sw, true, None);
           w.render();
           return None;
         }
