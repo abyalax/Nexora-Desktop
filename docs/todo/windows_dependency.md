@@ -37,7 +37,8 @@ does not substitute for the manual checks.
 - [x] **D-6.2/6.4 implementation/decision**: preview reads size and delay live; "native preview" means a DWM thumbnail for Dock and STG-06.
 - [ ] **D-7.5/7.7/7.8**: minimize biasa saat efek mati (QA), konten jendela live (`platform/wins/thumbnail.rs`), dan semantik "minimize into icon" (QA).
 - [ ] **D-8.2/8.5/8.6**: enumerasi shortcut Start Menu dan Desktop, Launchpad per monitor, serta di atas jendela vs sembunyikan jendela dan blur live.
-- [ ] **D-10.1/10.5/10.6/10.7/10.8**: pindahkan aturan visibilitas dari `app/dock/visibility.rs` ke core (butuh build untuk memastikan perilaku tidak berubah), hitung overlap (`wins/overlap.rs`), efek hide Move/Fade, reserve work area (QA: tidak ada sisa setelah ganti mode), dan ganti mode saat runtime.
+- [x] **D-10.1**: aturan visibilitas Dock sudah di core (`core/dock/visibility.rs`, `dock/state.rs`) dengan tes; `app/dock/visibility.rs` hanya mengumpulkan `Surroundings` dan menjalankan efek.
+- [ ] **D-10.5/10.6/10.7/10.8**: hitung overlap (`wins/overlap.rs`), efek hide Move/Fade (QA), reserve work area (QA: tidak ada sisa setelah ganti mode), dan ganti mode saat runtime.
 - [ ] **D-11.5…11.8**: penempatan per sisi layar, render vertikal, anchor tooltip/preview/popup yang berbalik per sisi, dan target minimize dari posisi baru.
 - [x] **D-12.2 implementation**: `platform/monitors.rs` enumerates monitor device ids, bounds, work areas, and primary state.
 - [ ] **D-12.3/12.5**: rebuild on hotplug (QA) and expose detected monitors in the display selector.

@@ -576,10 +576,10 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] I-12.3 acceptance: `step()` still exhaustively tested (unchanged, tests green); no wake-ups beyond the minute tick when idle (not measured: needs Windows, see BASE-11)
 
 **I-15 Eye companion** (only if ADR-0007 accepts it)
-- [ ] I-15.1 core: pure timing model (glance interval in [min,max], chance 0–1, seeded RNG for tests)
-- [ ] I-15.2 core: theme and shape tables; tests for clamp and unknown names
-- [ ] I-15.3 ui: draw; app: pointer tracking within `eyeRadius`
-- [ ] I-15.4 settings rows ILB-10…17
+- [x] I-15.1 core: pure timing model (glance interval in [min,max], chance 0–1, seeded RNG for tests) — out of scope (ADR-0007: design-only, no I-15, no core timing model).
+- [x] I-15.2 core: theme and shape tables; tests for clamp and unknown names — out of scope (ADR-0007: design-only, no I-15, no core timing model).
+- [x] I-15.3 ui: draw; app: pointer tracking within `eyeRadius` — out of scope (ADR-0007: design-only, no I-15, no core timing model).
+- [x] I-15.4 settings rows ILB-10…17 — out of scope (ADR-0007: design-only, no I-15, no core timing model).
 
 **I-13 Notification surfacing**: after F-12.0 spike. Core queue model shared with F-12.
 
@@ -653,7 +653,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [x] D-12.1 core: store a stable monitor id, not an index; `pick` falls back to primary when it is gone. Tests.
 - [x] D-12.2 platform: monitor list with stable device id, bounds, work area, and primary status (`platform/monitors.rs`).
 - [x] D-12.3 app: Dock rebuild is scheduled for `WM_DISPLAYCHANGE`/`WM_DPICHANGED` (`dock/wndproc.rs`). · [ ] hotplug QA.
-- [ ] D-12.4 per ADR-0007: "All displays" semantics. · [ ] D-12.5 UI: select from detected displays (WIN-02).
+- [x] D-12.4 per ADR-0007: "All displays" semantics. Dropped (ADR-0007): the display list is Primary display plus each detected display. · [ ] D-12.5 UI: select from detected displays (WIN-02).
 
 **D-13 Activation bar**
 - [x] D-13.1 core: hit-test rect (edge, width, height, offset). Tests per edge and an oversized offset.
