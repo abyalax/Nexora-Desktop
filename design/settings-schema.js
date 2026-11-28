@@ -1,8 +1,8 @@
 const defaultSettings = {
   shared: {
-    enableFinder: true, enableDock: true, aboveFullscreen: true, globalScale: 1, globalBlur: 26,
+    enableFinder: false, enableDock: true, aboveFullscreen: true, globalScale: 1, globalBlur: 60,
     appearance: "dark", accentColor: "#63c7dc", startOnBoot: "Don't Start On Boot", hideTaskbarOnBoot: "none",
-    displayLanguage: "English", displayFont: "Segoe UI", globalFontScale: 1,
+    displayLanguage: "Indonesian", displayFont: "Segoe UI", globalFontScale: 1,
     customDockBlur: false, dockBlur: 22, dockTransparency: 62, pinnedReflections: false,
     reflectionBlur: 5, reflectionTransparency: 35, reflectionDistance: 3, reflectionGradientDistance: 8,
     customIconLabels: false, labelBlur: 18, labelTransparency: 70, labelBorderTransparency: 12,
@@ -13,16 +13,16 @@ const defaultSettings = {
     screenBrightness: 100, nightLight: false, nightLightIntensity: 25, screenTarget: "Primary display",
     launchpadCustomBlur: false, launchpadAboveWindows: false, launchpadBlurBackground: true, launchpadBlur: 24,
     trayAllFinder: false, trayAllDock: false, traySystemFinder: true, newTrayIconSeconds: 5,
-    stageIcon: true, stageWindowTitle: true, stageBlurIcons: true, stageClickDesktopHide: false,
-    stageAutoPauseMedia: true, stageNativePreview: true, stageDesktopIcons: "Auto Show Hide", stageAnimationSpeed: "1.0x",
+    stageIcon: true, stageWindowTitle: true, stageBlurIcons: true, stageClickDesktopHide: true,
+    stageAutoPauseMedia: false, stageNativePreview: true, stageDesktopIcons: "Auto Show Hide", stageAnimationSpeed: "1.0x",
     stageEnabled: false, stagePosition: "left", stageHiddenMode: "default", stageKeepBorder: false,
-    stageIconSize: 36, stageIconSpacing: 8, stageIconCount: 8,
+    stageIconSize: 36, stageIconSpacing: 20, stageIconCount: 6,
     windowAnimation: true, windowAnimationEffect: "scale", windowAnimationSpeed: "1.0x",
     excludedPrograms: "", programBlacklist: "", minimizeExcludedWindows: true
   },
   dock: {
-    iconSize: 48, iconEffect: "Scaling", iconMagnification: 1.4, iconLightIntensity: 35,
-    iconBackgroundLight: 25, iconBackgroundColor: "#63c7dc", iconSpacing: 8, edgeDistance: 8,
+    iconSize: 48, iconEffect: "Scaling", iconMagnification: 2, iconLightIntensity: 35,
+    iconBackgroundLight: 25, iconBackgroundColor: "#63c7dc", iconSpacing: 14, edgeDistance: 8,
     position: "bottom", display: "Primary display", launchpadIconSize: 52, launchpadHorizontalSpacing: 22,
     launchpadVerticalSpacing: 24, launchpadSources: "added", deletedStartMenuPrograms: "",
     launchpadDisplay: "Primary display", launchpadFollowDock: true, scaleMacIcons: true, doubleClickFolderFinder: true,
@@ -48,10 +48,10 @@ const defaultSettings = {
     autoPowerPlans: false, powerPlanPlugged: "balanced", powerPlanBattery: "balanced"
   },
   island: {
-    enabled: true, shape: "attached", displayMode: "Smart", openOnHover: true, idleStyle: "Toothless eyes",
-    greetingName: "", greetingText: "Hello!", material: "Glass", rounding: 28,
-    mediaLyrics: true, compactLyrics: true, onlineLyrics: false, downloads: true, fileShelf: true,
-    sendToPhone: false, timerCalendar: true, eyeEnabled: true, eyeTheme: "toothless", eyeShape: "toothless",
+    enabled: true, shape: "attached", displayMode: "Fixed", openOnHover: true, idleStyle: "Toothless eyes",
+    greetingName: "", greetingText: "Hello!", material: "Black", rounding: 50,
+    mediaLyrics: true, compactLyrics: true, onlineLyrics: true, downloads: true, fileShelf: true,
+    sendToPhone: true, timerCalendar: true, eyeEnabled: true, eyeTheme: "toothless", eyeShape: "toothless",
     eyeRadius: 280, eyeAutonomous: true, eyeGlanceChance: 78, eyeMinInterval: 5500, eyeMaxInterval: 11000
   }
 };
@@ -60,7 +60,7 @@ const prefPages = [
   {
     group: "System", name: "General", section: "shared", fields: [
       ["toggle", "Enable Finder", "enableFinder"], ["toggle", "Enable Dock", "enableDock"], ["toggle", "Stay above full-screen windows", "aboveFullscreen"],
-      ["range", "Global Interface Scale", "globalScale", .75, 1.5, .01], ["range", "Global Interface Blur Intensity", "globalBlur", 0, 48, 1],
+      ["range", "Global Interface Scale", "globalScale", .75, 2, .01], ["range", "Global Interface Blur Intensity", "globalBlur", 0, 100, 1],
       ["select", "Appearance", "appearance", ["light", "dark", "system"]], ["color", "Accent Color", "accentColor"],
       ["select", "Start On Boot Method", "startOnBoot", ["Don't Start On Boot", "Registry Value", "Scheduled Task", "Start as a Service"]],
       ["select", "Automatically hide the taskbar on boot", "hideTaskbarOnBoot", ["none", "allDisplays", "dockDisplay"]],
@@ -97,7 +97,7 @@ const prefPages = [
       ["toggle", "Show Stage Manager icon in Finder", "stageIcon"], ["toggle", "Show window title on mouseover", "stageWindowTitle"], ["toggle", "Blur background window icons", "stageBlurIcons"], ["toggle", "Click on the desktop to hide all windows", "stageClickDesktopHide"], ["toggle", "Automatically pause and play background window media", "stageAutoPauseMedia"], ["toggle", "Show native window preview on hover", "stageNativePreview"],
       ["select", "Show Desktop Icons", "stageDesktopIcons", ["Always Hide Icon", "Auto Show Hide", "Always Show"]], ["select", "Adjust Animation Speed", "stageAnimationSpeed", ["0.5x", "0.75x", "1.0x", "1.25x", "1.5x"]],
       ["toggle", "Open Stage Manager", "stageEnabled"], ["select", "Window list screen position", "stagePosition", ["left", "right"]], ["select", "Window List Show Hidden Mode", "stageHiddenMode", ["default", "alwaysShow", "alwaysHide"]], ["toggle", "Keep Window Border", "stageKeepBorder"],
-      ["range", "Window list icon size", "stageIconSize", 16, 80, 1], ["range", "Window list icon spacing", "stageIconSpacing", 0, 30, 1], ["range", "Number of window list icons", "stageIconCount", 1, 20, 1]
+      ["range", "Window list icon size", "stageIconSize", 16, 80, 1], ["range", "Window list icon spacing", "stageIconSpacing", 0, 60, 1], ["range", "Number of window list icons", "stageIconCount", 2, 10, 1]
     ]
   },
   {
@@ -109,9 +109,9 @@ const prefPages = [
   },
   {
     group: "Dock", name: "Look & Behavior", section: "dock", fields: [
-      ["range", "Icon size", "iconSize", 24, 96, 1], ["select", "Icon effect", "iconEffect", ["None", "Scaling", "Select", "Illumination", "Scaling and light", "Select and light"]],
+      ["range", "Icon size", "iconSize", 32, 72, 1], ["select", "Icon effect", "iconEffect", ["None", "Scaling", "Select", "Illumination", "Scaling and light", "Select and light"]],
       ["range", "Icon magnification", "iconMagnification", 1, 2.5, .05], ["range", "Icon light intensity", "iconLightIntensity", 0, 100, 1], ["range", "Icon background light intensity", "iconBackgroundLight", 0, 100, 1], ["color", "Icon background light color", "iconBackgroundColor"],
-      ["range", "Distance between icons", "iconSpacing", 0, 30, 1], ["range", "Dock distance from screen edge", "edgeDistance", 0, 80, 1], ["select", "Position on screen", "position", ["left", "bottom", "right", "top"]], ["select", "Display on screen", "display", ["Primary display", "All displays", "Display 1", "Display 2"]]
+      ["range", "Distance between icons", "iconSpacing", 0, 24, 1], ["range", "Dock distance from screen edge", "edgeDistance", 0, 60, 1], ["select", "Position on screen", "position", ["left", "bottom", "right", "top"]], ["select", "Display on screen", "display", ["Primary display", "All displays", "Display 1", "Display 2"]]
     ]
   },
   {
@@ -125,7 +125,7 @@ const prefPages = [
     group: "Dock", name: "Advanced", section: "dock", fields: [
       ["toggle", "Scale all icons to macOS standards", "scaleMacIcons"], ["toggle", "Double-click the folder icon to open in Finder", "doubleClickFolderFinder"], ["toggle", "Hide the open folder button", "hideOpenFolderButton"], ["toggle", "Lock icon dragging", "lockIconDragging"], ["toggle", "Show icon labels", "showIconLabels"], ["toggle", "Animate opening applications", "animateAppLaunch"], ["toggle", "Turn on window borders to prevent windows from hiding Dock and Finder", "preventWindowsCoverDock"], ["toggle", "Show indicators under running programs", "showRunningIndicators"], ["toggle", "Show icons of unpinned running programs", "showUnpinnedRunning"], ["toggle", "Separate unpinned running programs", "separateUnpinned"],
       ["select", "Bottom left hot-corner function", "bottomLeftHotCorner", ["Do nothing", "Show all windows", "Open Launchpad", "Put display to sleep", "Open Start Menu", "Show Desktop", "Open Mission Control", "Lock Screen", "Windows widget", "Advanced"]],
-      ["select", "Dock display mode", "displayMode", ["default", "overlay", "autoHide", "smartAutoHide", "alwaysShow", "onlyWith", "forceVisible", "desktopOnly"]],
+      ["select", "Dock display mode", "displayMode", ["default", "overlay", "autoHide", "smartAutoHide", "alwaysShow", "forceVisible", "desktopOnly"]],
       ["select", "Detection window", "detectionWindow", ["All Program Windows", "The Current Program Window"]], ["select", "Dock hidden effect", "hiddenEffect", ["Move", "Fade Away"]], ["select", "Dock activation trigger", "activationTrigger", ["The edge of the screen", "Activation bar", "The edge of the screen & Activation bar"]],
       ["range", "Activation bar width", "activationBarWidth", 1, 100, 1], ["range", "Activation bar height", "activationBarHeight", 1, 30, 1], ["range", "Activation bar distance from screen edge", "activationBarDistance", 0, 40, 1], ["range", "Mouse delay activates dock time (ms)", "mouseActivationDelay", 0, 1500, 10]
     ]
@@ -181,8 +181,8 @@ const prefPages = [
   },
   {
     group: "Dynamic Island", name: "Look & Behavior", section: "island", fields: [
-      ["toggle", "Enable Dynamic Island", "enabled"], ["select", "Shape", "shape", ["attached", "floating capsule"]], ["select", "Display mode", "displayMode", ["Fixed", "Smart", "On demand"]], ["toggle", "Open on hover", "openOnHover"],
-      ["select", "Idle style", "idleStyle", ["Minimal", "Toothless eyes", "Media", "Clock"]], ["text", "Greeting name", "greetingName"], ["text", "Greeting text", "greetingText"], ["select", "Material", "material", ["Glass", "Opaque", "Translucent"]], ["range", "Material rounding", "rounding", 0, 48, 1],
+      ["toggle", "Enable Dynamic Island", "enabled"], ["select", "Shape", "shape", ["attached", "floating capsule"]], ["select", "Display mode", "displayMode", ["Fixed", "Overlay", "Smart", "On demand"]], ["toggle", "Open on hover", "openOnHover"],
+      ["select", "Idle style", "idleStyle", ["Minimal", "Toothless eyes", "Media", "Clock"]], ["text", "Greeting name", "greetingName"], ["text", "Greeting text", "greetingText"], ["select", "Material", "material", ["Blur", "Glass", "Black"]], ["range", "Material rounding", "rounding", 0, 100, 1],
       ["toggle", "Show Toothless eye companion", "eyeEnabled"], ["select", "Eye color theme", "eyeTheme", ["toothless", "ocean", "sunset", "violet", "crimson", "ice"]], ["select", "Eye shape", "eyeShape", ["toothless", "round", "wide", "almond", "softTriangle"]],
       ["range", "Eye perception radius (px)", "eyeRadius", 120, 500, 10], ["toggle", "Autonomous eye glances", "eyeAutonomous"], ["range", "Autonomous glance chance (%)", "eyeGlanceChance", 0, 100, 1], ["range", "Minimum glance interval (ms)", "eyeMinInterval", 1000, 20000, 250], ["range", "Maximum glance interval (ms)", "eyeMaxInterval", 2000, 30000, 250]
     ]

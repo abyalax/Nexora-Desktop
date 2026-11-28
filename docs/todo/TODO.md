@@ -149,15 +149,15 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
   Display, Hardware Status, Island Activities (27 settings have no spec row).
 - [x] **SPEC-02** Create `docs/settings_catalog.md` (generated from §5; 175 in scope, 8 deferred, 1 dropped) from the tables in §5 (id, label, key, type, range, default, owner
   section, capability). Link it from `feature.md`.
-- [x] **SPEC-03** Reconcile design vs core, recorded in `docs/spec_reconciliation.md` (the design-side edits are applied by HTM-01…). Proposed rule: for an **existing** setting, core's range/default wins and the
+- [x] **SPEC-03** Reconcile design vs core (design-side rows applied and pinned by `design/tests/reconciliation.test.mjs`), recorded in `docs/spec_reconciliation.md` (the design-side edits are applied by HTM-01…). Proposed rule: for an **existing** setting, core's range/default wins and the
   design changes; for a **new** setting, the design wins. One commit per row:
-  - [x] `dock_size` 32–72 vs 24–96 · [ ] `dock_gap` 0–24 vs 0–30 · [ ] `dock_margin` 0–60 vs 0–80
-  - [x] `notch_round` 0–100 vs 0–48 · [ ] `blur` 0–100 vs 0–48 · [ ] `ui_scale` 100/125/150 vs 0.75–1.5 slider
-  - [x] `accent` palette index vs hex · [ ] `autostart` bool vs 4 methods · [ ] `takeover` bool vs 3 states
-  - [x] `hide_desktop_icons` bool vs 3 states · [ ] `stage_speed` percent vs 5 steps · [ ] `stage_size` card size vs icon size
+  - [x] `dock_size` 32–72 vs 24–96 · [x] `dock_gap` 0–24 vs 0–30 · [x] `dock_margin` 0–60 vs 0–80
+  - [x] `notch_round` 0–100 vs 0–48 · [x] `blur` 0–100 vs 0–48 · [x] `ui_scale` 100/125/150 vs 0.75–1.5 slider
+  - [x] `accent` palette index vs hex · [x] `autostart` bool vs 4 methods · [x] `takeover` bool vs 3 states
+  - [x] `hide_desktop_icons` bool vs 3 states · [x] `stage_speed` percent vs 5 steps · [x] `stage_size` card size vs icon size (core keeps 70–260; the design's `stageIconSize` stays 16–80 because the HTML draws it as a 36 px icon, so it needs the real window-list card to change; see windows_dependency STG gaps)
   - [x] `above_fullscreen` ("always above full-screen") vs spec "automatically exit when playing full screen" (looks opposite)
-  - [x] `notch_idle` 3 styles vs 4 · [ ] `Behavior` Fixed/Overlay/Smart vs spec Fixed/Smart/On demand
-  - [x] `Material` Blur/Glass/Black vs Glass/Opaque/Translucent · [ ] `HotAction` 7 values vs 10
+  - [x] `notch_idle` 3 styles vs 4 · [x] `Behavior` Fixed/Overlay/Smart vs spec Fixed/Smart/On demand
+  - [x] `Material` Blur/Glass/Black vs Glass/Opaque/Translucent · [x] `HotAction` 7 values vs 10
   - [x] defaults: `menubar` false vs `enableFinder` true · `Lang::Id` vs English · `lyrics_online` true vs false ·
     `notch_send` true vs false · `DockConfig` defaults (labels, separate, light intensity, delay) vs design
 - [x] **SPEC-04** Re-verify every ✅/🟡/⬜ in `feature_checkpoint.md` (stale rows fixed and ⬜ rows spot-checked; the full ✅ audit needs Windows: BASE-01, BASE-12) (derived at commit `1e95f83`). Known stale: step 6;
