@@ -47,11 +47,13 @@ fn primary() -> Option<HWND> {
 
 fn secondaries() -> Vec<HWND> {
   unsafe extern "system" fn each(hwnd: HWND, lparam: LPARAM) -> BOOL {
-    let out = &mut *(lparam.0 as *mut Vec<HWND>);
-    if class_of(hwnd) == SECONDARY_CLASS {
-      out.push(hwnd);
+    unsafe {
+      let out = &mut *(lparam.0 as *mut Vec<HWND>);
+      if class_of(hwnd) == SECONDARY_CLASS {
+        out.push(hwnd);
+      }
+      BOOL(1)
     }
-    BOOL(1)
   }
   let mut out: Vec<HWND> = Vec::new();
   unsafe {
@@ -164,6 +166,10 @@ pub fn restore_marker(m: &Marker) -> bool {
     place_and_show(s, m.secondary_rect(s.0 as isize));
     ok &= unsafe { IsWindowVisible(s).as_bool() } && rect_of(s).is_some_and(|r| r.is_placed());
   }
+  crate::log::line(
+    "taskbar",
+    &format!("restore_marker: hidden_monitors={:?}", m.hidden_monitors),
+  );
   ok
 }
 
@@ -187,7 +193,7 @@ pub fn recover_leftover(path: &Path) -> bool {
   ok
 }
 
-pub fn hide(marker_path: &Path, guard_exe: &Path) -> Result<(), String> {
+pub fn hide(marker_path: &Path, guard_exe: &Path, hidden_monitor_ids: Vec<String>) -> Result<(), String> {
   if is_hidden() {
     reassert();
     return Ok(());
@@ -207,6 +213,7 @@ pub fn hide(marker_path: &Path, guard_exe: &Path) -> Result<(), String> {
       m.secondaries.push((s.0 as isize, r));
     }
   }
+  m.hidden_monitors = hidden_monitor_ids;
 
   write_marker(marker_path, &m).map_err(|e| format!("marker: {e}"))?;
   if let Err(e) = super::guard_spawn::spawn_once(guard_exe, pid, marker_path) {

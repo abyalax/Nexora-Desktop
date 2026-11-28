@@ -6,7 +6,7 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::core::w;
 
 unsafe extern "system" fn demo_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  DefWindowProcW(h, m, w, l)
+  unsafe { DefWindowProcW(h, m, w, l) }
 }
 
 pub fn create(host: &nexora_ui::host::Host) -> windows::core::Result<nexora_ui::host::Surface> {

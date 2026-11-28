@@ -18,38 +18,40 @@ struct State {
 }
 
 unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  let st = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut State;
-  match m {
-    WM_MOUSEMOVE if !st.is_null() => {
-      let s = &mut *st;
-      if !s.inside {
-        s.inside = true;
-        let mut t = TRACKMOUSEEVENT {
-          cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
-          dwFlags: TME_LEAVE,
-          hwndTrack: h,
-          dwHoverTime: 0,
-        };
-        let _ = TrackMouseEvent(&mut t);
-        let _ = PostMessageW(Some(s.target), s.enter, WPARAM(0), LPARAM(0));
+  unsafe {
+    let st = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut State;
+    match m {
+      WM_MOUSEMOVE if !st.is_null() => {
+        let s = &mut *st;
+        if !s.inside {
+          s.inside = true;
+          let mut t = TRACKMOUSEEVENT {
+            cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+            dwFlags: TME_LEAVE,
+            hwndTrack: h,
+            dwHoverTime: 0,
+          };
+          let _ = TrackMouseEvent(&mut t);
+          let _ = PostMessageW(Some(s.target), s.enter, WPARAM(0), LPARAM(0));
+        }
+        LRESULT(0)
       }
-      LRESULT(0)
-    }
-    WM_MOUSELEAVE if !st.is_null() => {
-      let s = &mut *st;
-      s.inside = false;
-      let _ = PostMessageW(Some(s.target), s.leave, WPARAM(0), LPARAM(0));
-      LRESULT(0)
-    }
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_NCDESTROY => {
-      if !st.is_null() {
-        drop(Box::from_raw(st));
-        SetWindowLongPtrW(h, GWLP_USERDATA, 0);
+      WM_MOUSELEAVE if !st.is_null() => {
+        let s = &mut *st;
+        s.inside = false;
+        let _ = PostMessageW(Some(s.target), s.leave, WPARAM(0), LPARAM(0));
+        LRESULT(0)
       }
-      DefWindowProcW(h, m, w, l)
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_NCDESTROY => {
+        if !st.is_null() {
+          drop(Box::from_raw(st));
+          SetWindowLongPtrW(h, GWLP_USERDATA, 0);
+        }
+        DefWindowProcW(h, m, w, l)
+      }
+      _ => DefWindowProcW(h, m, w, l),
     }
-    _ => DefWindowProcW(h, m, w, l),
   }
 }
 

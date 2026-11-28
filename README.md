@@ -13,7 +13,7 @@
 
 <p align="center">
   <b>A modern glass desktop for Windows 11.</b><br>
-  Dock · Menubar · Menu Bar · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust, about 15 MB of RAM.
+  Dock · Menubar · Menu Bar · Quick Panel · Quick Search · Scene · Widgets — native, written in Rust.
 </p>
 
 <p align="center">
@@ -52,8 +52,9 @@ The repository is also the in-progress Rust rewrite of `MacOS_Dock_TD` and the t
 tracking live in this single native app. See [`docs/rewrite_status.md`](docs/rewrite_status.md) for the current mapping
 and the remaining platform work.
 
-It is one small native program: no Electron, no web view, no background services, no account. At idle it uses about
-**15 MB** of private memory.
+It is one small native program: no Electron, no web view, no background services, no account. The Windows 11 M1
+measurement recorded **22.36 MB** private memory after 30 seconds idle in an optimized build with `nexora-ctl` QA
+control enabled; memory use varies with the Windows session. See [`docs/bench.md`](docs/bench.md).
 
 <p align="center">
   <img src="assets/screenshots/desktop.png" alt="nexora desktop: Dock, Menu Bar, Menubar and widgets" width="900">

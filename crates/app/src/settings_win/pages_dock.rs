@@ -12,8 +12,9 @@ impl Win {
           RowDef::Seg(
             prefs::tr("Efek minimize"),
             vec![
-              (prefs::tr("Funnel"), Action::MinEffect(0)),
+              (prefs::tr("Genie"), Action::MinEffect(0)),
               (prefs::tr("Skala"), Action::MinEffect(1)),
+              (prefs::tr("Suck"), Action::MinEffect(2)),
             ],
             s.min_effect as usize,
           ),

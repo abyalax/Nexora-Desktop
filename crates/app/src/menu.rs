@@ -218,60 +218,62 @@ fn xy(lp: LPARAM) -> (f32, f32) {
 }
 
 unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
-  match m {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_MOUSEMOVE => {
-      let (x, y) = xy(l);
-      let mut t = TRACKMOUSEEVENT {
-        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
-        dwFlags: TME_LEAVE,
-        hwndTrack: h,
-        dwHoverTime: 0,
-      };
-      let _ = TrackMouseEvent(&mut t);
-      LIVE.with(|c| {
-        if let Some(live) = c.borrow_mut().as_mut() {
-          let hit = row_at(live, x, y).filter(|i| live.rows[*i].2.toggle.is_none());
-          if hit != live.hover {
-            set_hover(live, hit);
+  unsafe {
+    let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
+    match m {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_MOUSEMOVE => {
+        let (x, y) = xy(l);
+        let mut t = TRACKMOUSEEVENT {
+          cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+          dwFlags: TME_LEAVE,
+          hwndTrack: h,
+          dwHoverTime: 0,
+        };
+        let _ = TrackMouseEvent(&mut t);
+        LIVE.with(|c| {
+          if let Some(live) = c.borrow_mut().as_mut() {
+            let hit = row_at(live, x, y).filter(|i| live.rows[*i].2.toggle.is_none());
+            if hit != live.hover {
+              set_hover(live, hit);
+            }
           }
-        }
-      });
-      LRESULT(0)
-    }
-    WM_MOUSELEAVE => {
-      LIVE.with(|c| {
-        if let Some(live) = c.borrow_mut().as_mut() {
-          if live.hover.is_some() {
-            set_hover(live, None);
-          }
-        }
-      });
-      LRESULT(0)
-    }
-    WM_LBUTTONUP | WM_RBUTTONUP => {
-      let (x, y) = xy(l);
-      let picked = LIVE.with(|c| {
-        c.borrow().as_ref().and_then(|live| {
-          row_at(live, x, y).map(|i| (live.rows[i].2.id, live.rows[i].2.keep_open || live.owner_hides))
-        })
-      });
-      if let Some((id, keep)) = picked {
-        if !keep {
-          nexora_platform::input::end_dismiss();
-          let _ = ShowWindow(h, SW_HIDE);
-        }
-        let _ = PostMessageW(Some(target), MENU_PICK, WPARAM(id), LPARAM(0));
+        });
+        LRESULT(0)
       }
-      LRESULT(0)
+      WM_MOUSELEAVE => {
+        LIVE.with(|c| {
+          if let Some(live) = c.borrow_mut().as_mut() {
+            if live.hover.is_some() {
+              set_hover(live, None);
+            }
+          }
+        });
+        LRESULT(0)
+      }
+      WM_LBUTTONUP | WM_RBUTTONUP => {
+        let (x, y) = xy(l);
+        let picked = LIVE.with(|c| {
+          c.borrow().as_ref().and_then(|live| {
+            row_at(live, x, y).map(|i| (live.rows[i].2.id, live.rows[i].2.keep_open || live.owner_hides))
+          })
+        });
+        if let Some((id, keep)) = picked {
+          if !keep {
+            nexora_platform::input::end_dismiss();
+            let _ = ShowWindow(h, SW_HIDE);
+          }
+          let _ = PostMessageW(Some(target), MENU_PICK, WPARAM(id), LPARAM(0));
+        }
+        LRESULT(0)
+      }
+      WM_TIMER if w.0 == T_HIDE => {
+        let _ = KillTimer(Some(h), T_HIDE);
+        let _ = ShowWindow(h, SW_HIDE);
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(h, m, w, l),
     }
-    WM_TIMER if w.0 == T_HIDE => {
-      let _ = KillTimer(Some(h), T_HIDE);
-      let _ = ShowWindow(h, SW_HIDE);
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(h, m, w, l),
   }
 }
 
@@ -324,6 +326,15 @@ impl Menu {
 
   pub fn set_card(&mut self, card: Option<Card>) {
     self.card = card;
+  }
+
+  /// Card menus (the net menu) are the Nexora menus; every other menu is a context menu.
+  fn surface(&self) -> crate::prefs::Surface {
+    if self.card.is_some() {
+      crate::prefs::Surface::NexoraMenus
+    } else {
+      crate::prefs::Surface::ContextMenus
+    }
   }
 
   pub fn show_card(
@@ -393,7 +404,7 @@ impl Menu {
     let refresh = self.popup.is_visible();
     let card = self.card;
     let radius = card.map_or(13.0, |c| c.radius) * d;
-    let look = crate::prefs::look(crate::prefs::Role::Themed);
+    let look = crate::prefs::surface_look(crate::prefs::Role::Themed, self.surface());
     let base = GlassParams::dark((10.0, 10.0), radius);
     let _ = self.popup.panel.set_params(crate::prefs::apply(base, &look));
     let ink: [u8; 3] = if look.dark { [255, 255, 255] } else { [24, 24, 28] };

@@ -179,6 +179,7 @@ fn sections_cover_every_setting_except_widget_style() {
   base.dock_settings().apply(&mut s);
   base.finder_settings().apply(&mut s);
   base.island_settings().apply(&mut s);
+  s.schema_version = base.schema_version;
   s.widget_style = base.widget_style;
   s.extra = base.extra;
   assert_eq!(s, base);

@@ -409,6 +409,8 @@ const EN: &[(&str, &str)] = &[
   ("Folder lirik (.lrc)", "Lyrics folder (.lrc)"),
   ("Pintar", "Smart"),
   ("Funnel", "Funnel"),
+  ("Genie", "Genie"),
+  ("Suck", "Suck"),
   ("Tidur sekarang?", "Sleep now?"),
   ("Mulai ulang komputer sekarang?", "Restart the computer now?"),
   ("Matikan komputer sekarang?", "Shut down the computer now?"),

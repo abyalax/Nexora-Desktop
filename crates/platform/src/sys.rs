@@ -175,10 +175,10 @@ pub fn trim_memory() {
 
 pub fn trim_later(ms: u64) {
   use std::sync::atomic::Ordering;
-  let gen = TRIM_GEN.fetch_add(1, Ordering::Relaxed) + 1;
+  let r#gen = TRIM_GEN.fetch_add(1, Ordering::Relaxed) + 1;
   let _ = std::thread::Builder::new().name("nexora-trim".into()).spawn(move || {
     std::thread::sleep(std::time::Duration::from_millis(ms));
-    if TRIM_GEN.load(Ordering::Relaxed) == gen {
+    if TRIM_GEN.load(Ordering::Relaxed) == r#gen {
       trim_memory();
     }
   });

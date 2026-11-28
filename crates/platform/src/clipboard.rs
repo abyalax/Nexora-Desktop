@@ -70,66 +70,70 @@ fn opted_out(exclude: bool, can_include: Option<&[u8]>) -> bool {
 }
 
 unsafe fn read_text(hwnd: HWND) -> Option<String> {
-  for _ in 0..6 {
-    if OpenClipboard(Some(hwnd)).is_ok() {
-      let r = (|| {
-        let has = |name| {
-          let f = RegisterClipboardFormatW(name);
-          (f != 0 && IsClipboardFormatAvailable(f).is_ok()).then_some(f)
-        };
-        let can = has(w!("CanIncludeInClipboardHistory")).map(|f| {
-          let Ok(h) = GetClipboardData(f) else {
-            return Vec::new();
+  unsafe {
+    for _ in 0..6 {
+      if OpenClipboard(Some(hwnd)).is_ok() {
+        let r = (|| {
+          let has = |name| {
+            let f = RegisterClipboardFormatW(name);
+            (f != 0 && IsClipboardFormatAvailable(f).is_ok()).then_some(f)
           };
-          let g = windows::Win32::Foundation::HGLOBAL(h.0);
-          let p = GlobalLock(g) as *const u8;
-          if p.is_null() {
-            return Vec::new();
+          let can = has(w!("CanIncludeInClipboardHistory")).map(|f| {
+            let Ok(h) = GetClipboardData(f) else {
+              return Vec::new();
+            };
+            let g = windows::Win32::Foundation::HGLOBAL(h.0);
+            let p = GlobalLock(g) as *const u8;
+            if p.is_null() {
+              return Vec::new();
+            }
+            let v = std::slice::from_raw_parts(p, GlobalSize(g).min(4)).to_vec();
+            let _ = GlobalUnlock(g);
+            v
+          });
+          if opted_out(
+            has(w!("ExcludeClipboardContentFromMonitorProcessing")).is_some(),
+            can.as_deref(),
+          ) {
+            return None;
           }
-          let v = std::slice::from_raw_parts(p, GlobalSize(g).min(4)).to_vec();
-          let _ = GlobalUnlock(g);
-          v
-        });
-        if opted_out(
-          has(w!("ExcludeClipboardContentFromMonitorProcessing")).is_some(),
-          can.as_deref(),
-        ) {
-          return None;
-        }
-        if IsClipboardFormatAvailable(CF_UNICODETEXT).is_err() {
-          return None;
-        }
-        let h = GetClipboardData(CF_UNICODETEXT).ok()?;
-        let p = GlobalLock(windows::Win32::Foundation::HGLOBAL(h.0)) as *const u16;
-        if p.is_null() {
-          return None;
-        }
-        let mut n = 0usize;
-        while *p.add(n) != 0 && n < 200_000 {
-          n += 1;
-        }
-        let s = String::from_utf16_lossy(std::slice::from_raw_parts(p, n));
-        let _ = GlobalUnlock(windows::Win32::Foundation::HGLOBAL(h.0));
-        Some(s)
-      })();
-      let _ = CloseClipboard();
-      return r;
+          if IsClipboardFormatAvailable(CF_UNICODETEXT).is_err() {
+            return None;
+          }
+          let h = GetClipboardData(CF_UNICODETEXT).ok()?;
+          let p = GlobalLock(windows::Win32::Foundation::HGLOBAL(h.0)) as *const u16;
+          if p.is_null() {
+            return None;
+          }
+          let mut n = 0usize;
+          while *p.add(n) != 0 && n < 200_000 {
+            n += 1;
+          }
+          let s = String::from_utf16_lossy(std::slice::from_raw_parts(p, n));
+          let _ = GlobalUnlock(windows::Win32::Foundation::HGLOBAL(h.0));
+          Some(s)
+        })();
+        let _ = CloseClipboard();
+        return r;
+      }
+      std::thread::sleep(std::time::Duration::from_millis(12));
     }
-    std::thread::sleep(std::time::Duration::from_millis(12));
+    None
   }
-  None
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  if msg == WM_CLIPBOARDUPDATE {
-    if ENABLED.load(Ordering::Relaxed) {
-      if let Some(t) = read_text(hwnd) {
-        push(&mut HISTORY.lock().unwrap(), &t, now_secs());
+  unsafe {
+    if msg == WM_CLIPBOARDUPDATE {
+      if ENABLED.load(Ordering::Relaxed) {
+        if let Some(t) = read_text(hwnd) {
+          push(&mut HISTORY.lock().unwrap(), &t, now_secs());
+        }
       }
+      return LRESULT(0);
     }
-    return LRESULT(0);
+    DefWindowProcW(hwnd, msg, wp, lp)
   }
-  DefWindowProcW(hwnd, msg, wp, lp)
 }
 
 pub fn init() -> windows_core::Result<()> {
@@ -223,24 +227,26 @@ mod tests {
   }
 
   unsafe fn put(text: &str, can_include: Option<u32>) {
-    assert!(OpenClipboard(None).is_ok());
-    let _ = EmptyClipboard();
-    let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
-    let h = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).unwrap();
-    std::ptr::copy_nonoverlapping(wide.as_ptr(), GlobalLock(h) as *mut u16, wide.len());
-    let _ = GlobalUnlock(h);
-    SetClipboardData(CF_UNICODETEXT, Some(windows::Win32::Foundation::HANDLE(h.0))).unwrap();
-    if let Some(v) = can_include {
-      let h = GlobalAlloc(GMEM_MOVEABLE, 4).unwrap();
-      std::ptr::copy_nonoverlapping(v.to_le_bytes().as_ptr(), GlobalLock(h) as *mut u8, 4);
+    unsafe {
+      assert!(OpenClipboard(None).is_ok());
+      let _ = EmptyClipboard();
+      let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
+      let h = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).unwrap();
+      std::ptr::copy_nonoverlapping(wide.as_ptr(), GlobalLock(h) as *mut u16, wide.len());
       let _ = GlobalUnlock(h);
-      SetClipboardData(
-        RegisterClipboardFormatW(w!("CanIncludeInClipboardHistory")),
-        Some(windows::Win32::Foundation::HANDLE(h.0)),
-      )
-      .unwrap();
+      SetClipboardData(CF_UNICODETEXT, Some(windows::Win32::Foundation::HANDLE(h.0))).unwrap();
+      if let Some(v) = can_include {
+        let h = GlobalAlloc(GMEM_MOVEABLE, 4).unwrap();
+        std::ptr::copy_nonoverlapping(v.to_le_bytes().as_ptr(), GlobalLock(h) as *mut u8, 4);
+        let _ = GlobalUnlock(h);
+        SetClipboardData(
+          RegisterClipboardFormatW(w!("CanIncludeInClipboardHistory")),
+          Some(windows::Win32::Foundation::HANDLE(h.0)),
+        )
+        .unwrap();
+      }
+      let _ = CloseClipboard();
     }
-    let _ = CloseClipboard();
   }
 
   #[test]

@@ -26,10 +26,12 @@ pub struct Shadow {
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_NCHITTEST => LRESULT(HTTRANSPARENT as isize),
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
+  unsafe {
+    match msg {
+      WM_NCHITTEST => LRESULT(HTTRANSPARENT as isize),
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
+    }
   }
 }
 

@@ -209,9 +209,11 @@ impl Fx {
 }
 
 pub(super) unsafe extern "system" fn shadow_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_NCHITTEST => LRESULT(-1),
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
+  unsafe {
+    match msg {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_NCHITTEST => LRESULT(-1),
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
+    }
   }
 }

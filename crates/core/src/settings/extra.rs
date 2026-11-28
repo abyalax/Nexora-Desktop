@@ -36,6 +36,8 @@ pub enum Kind {
 pub struct Spec {
   pub key: &'static str,
   pub kind: Kind,
+  pub owner: super::registry::Owner,
+  pub legacy: bool,
 }
 
 /// `#rrggbb` or `rrggbb` (exactly six hex digits). Anything else is garbage and the caller keeps its old value.
@@ -49,10 +51,10 @@ fn parse_hex_color(v: &str) -> Option<u32> {
 
 macro_rules! extra_settings {
   (
-    bool { $($b:ident : $bd:expr,)* }
-    int { $($i:ident : $imin:expr, $imax:expr, $idef:expr;)* }
-    choice { $($c:ident : [$($cn:literal),+], $cdef:expr;)* }
-    color { $($k:ident : $kdef:expr;)* }
+    bool { $($b:ident : $bd:expr_2021,)* }
+    int { $($i:ident : $imin:expr_2021, $imax:expr_2021, $idef:expr_2021;)* }
+    choice { $($c:ident : [$($cn:literal),+], $cdef:expr_2021;)* }
+    color { $($k:ident : $kdef:expr_2021;)* }
   ) => {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     pub struct Extra {
@@ -71,10 +73,10 @@ macro_rules! extra_settings {
     impl Extra {
       /// Every row, in file order.
       pub const SPECS: &'static [Spec] = &[
-        $(Spec { key: stringify!($b), kind: Kind::Bool { default: $bd } },)*
-        $(Spec { key: stringify!($i), kind: Kind::Int { min: $imin, max: $imax, default: $idef } },)*
-        $(Spec { key: stringify!($c), kind: Kind::Choice { names: &[$($cn),+], default: $cdef } },)*
-        $(Spec { key: stringify!($k), kind: Kind::Color { default: $kdef } },)*
+        $(Spec { key: stringify!($b), kind: Kind::Bool { default: $bd }, owner: super::registry::extra_owner(stringify!($b)), legacy: false },)*
+        $(Spec { key: stringify!($i), kind: Kind::Int { min: $imin, max: $imax, default: $idef }, owner: super::registry::extra_owner(stringify!($i)), legacy: false },)*
+        $(Spec { key: stringify!($c), kind: Kind::Choice { names: &[$($cn),+], default: $cdef }, owner: super::registry::extra_owner(stringify!($c)), legacy: false },)*
+        $(Spec { key: stringify!($k), kind: Kind::Color { default: $kdef }, owner: super::registry::extra_owner(stringify!($k)), legacy: false },)*
       ];
 
       /// Apply one `key=value` line. Returns `false` when `key` is not an extra key.

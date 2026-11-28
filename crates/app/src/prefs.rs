@@ -125,6 +125,22 @@ fn apply_custom(l: &mut Look, blur: u16, transparency: u16) {
   l.tint[0] = (255.0 * (1.0 - transparency.min(100) as f32 / 100.0)).round() as u8;
 }
 
+pub use nexora_core::settings::Surface;
+
+/// `look(role)` with the surface's own blur and transparency applied while its "custom values" switch is on.
+/// Dock and Finder have their own wiring in [`look`] and [`bar_look`]; use this for Labels, ContextMenus,
+/// NexoraMenus, FolderGrid and Launchpad.
+pub fn surface_look(role: Role, surface: Surface) -> Look {
+  let mut l = look(role);
+  if let Some(c) = get().extra.custom_glass(surface) {
+    match c.transparency {
+      Some(t) => apply_custom(&mut l, c.blur, t),
+      None => l.blur_sigma = c.blur.min(50) as f32,
+    }
+  }
+  l
+}
+
 pub fn bar_look() -> Look {
   let s = get();
   let mut l = settings::bar_look(&s, sys::apps_dark());
@@ -180,7 +196,12 @@ pub fn apply(base: GlassParams, l: &Look) -> GlassParams {
 }
 
 pub fn ui_scale() -> f32 {
-  get().ui_scale.clamp(75, 200) as f32 / 100.0
+  get().ui_scale.clamp(50, 200) as f32 / 100.0
+}
+
+pub fn text_scale() -> f32 {
+  let s = get();
+  nexora_core::shared::font::text_scale(s.ui_scale.clamp(50, 200), s.extra.font_scale)
 }
 
 pub fn round(role: Role) -> f32 {

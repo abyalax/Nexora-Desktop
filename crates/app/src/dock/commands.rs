@@ -153,13 +153,16 @@ impl Dock {
       "dock",
       &format!("menu: kursor=({},{}) bawah={bottom} dari klik x={x}", pt.x, pt.y),
     );
-    if let Some(m) = self.menu.as_mut() {
-      if let Err(e) = m.show(&self.comp, &self.gfx, items, pt.x, bottom) {
-        log::line("menu", &format!("gagal: {e}"));
+    match self.menu.as_mut() {
+      Some(m) => {
+        if let Err(e) = m.show(&self.comp, &self.gfx, items, pt.x, bottom) {
+          log::line("menu", &format!("gagal: {e}"));
+          self.on_menu_close();
+        }
+      }
+      _ => {
         self.on_menu_close();
       }
-    } else {
-      self.on_menu_close();
     }
   }
 
@@ -202,13 +205,16 @@ impl Dock {
       let _ = GetCursorPos(&mut pt);
     }
     let bottom = self.win_pos.1 + self.card_y as i32 - (6.0 * self.dpi) as i32;
-    if let Some(m) = self.menu.as_mut() {
-      if let Err(e) = m.show(&self.comp, &self.gfx, items, pt.x, bottom) {
-        log::line("menu", &format!("gagal: {e}"));
+    match self.menu.as_mut() {
+      Some(m) => {
+        if let Err(e) = m.show(&self.comp, &self.gfx, items, pt.x, bottom) {
+          log::line("menu", &format!("gagal: {e}"));
+          self.on_menu_close();
+        }
+      }
+      _ => {
         self.on_menu_close();
       }
-    } else {
-      self.on_menu_close();
     }
   }
 

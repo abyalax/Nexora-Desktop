@@ -12,7 +12,7 @@ use windows_core::Result;
 use windows_numerics::{Vector2, Vector3};
 
 unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  DefWindowProcW(h, m, w, l)
+  unsafe { DefWindowProcW(h, m, w, l) }
 }
 
 pub struct Tooltip {
@@ -48,7 +48,8 @@ fn tail_bitmap(t: i32, c: Color) -> Vec<u8> {
 
 impl Tooltip {
   pub fn new(comp: &Compositor, dpi: f32, screen_w: i32) -> Result<Tooltip> {
-    let glass = crate::prefs::glass((10.0, 10.0), 10.0, crate::prefs::Role::Dark);
+    let look = crate::prefs::surface_look(crate::prefs::Role::Dark, crate::prefs::Surface::Labels);
+    let glass = crate::prefs::apply(GlassParams::dark((10.0, 10.0), 10.0), &look);
     let popup = Popup::new(comp, w!("NacreTooltip"), Some(proc), WS_EX_TRANSPARENT, glass)?;
     let text = comp.CreateSpriteVisual()?;
     popup.content.Children()?.InsertAtTop(&text)?;

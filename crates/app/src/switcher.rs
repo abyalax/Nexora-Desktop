@@ -135,44 +135,46 @@ fn uninstall() {
 }
 
 unsafe extern "system" fn ll_proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  if code >= 0 {
-    let k = &*(lp.0 as *const KBDLLHOOKSTRUCT);
-    let down = wp.0 as u32 == WM_KEYDOWN || wp.0 as u32 == WM_SYSKEYDOWN;
-    let up = wp.0 as u32 == WM_KEYUP || wp.0 as u32 == WM_SYSKEYUP;
-    let alt = k.flags.0 & LLKHF_ALTDOWN.0 != 0;
-    let open = OPEN.load(Ordering::Relaxed);
-    let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
-    if !target.0.is_null() {
-      let vk = k.vkCode as u16;
-      if vk == VK_TAB.0 && down && (alt || open) {
-        let shift = GetKeyState(VK_SHIFT.0 as i32) < 0;
-        let _ = PostMessageW(
-          Some(target),
-          if shift { WM_PREV } else { WM_NEXT },
-          WPARAM(0),
-          LPARAM(0),
-        );
-        return LRESULT(1);
-      }
-      if open && down && vk == VK_ESCAPE.0 {
-        let _ = PostMessageW(Some(target), WM_CANCEL, WPARAM(0), LPARAM(0));
-        return LRESULT(1);
-      }
-      if open && down && (vk == VK_RIGHT.0 || vk == VK_LEFT.0) {
-        let _ = PostMessageW(
-          Some(target),
-          if vk == VK_RIGHT.0 { WM_NEXT } else { WM_PREV },
-          WPARAM(0),
-          LPARAM(0),
-        );
-        return LRESULT(1);
-      }
-      if open && up && (vk == VK_LMENU.0 || vk == VK_RMENU.0) {
-        let _ = PostMessageW(Some(target), WM_COMMIT, WPARAM(0), LPARAM(0));
+  unsafe {
+    if code >= 0 {
+      let k = &*(lp.0 as *const KBDLLHOOKSTRUCT);
+      let down = wp.0 as u32 == WM_KEYDOWN || wp.0 as u32 == WM_SYSKEYDOWN;
+      let up = wp.0 as u32 == WM_KEYUP || wp.0 as u32 == WM_SYSKEYUP;
+      let alt = k.flags.0 & LLKHF_ALTDOWN.0 != 0;
+      let open = OPEN.load(Ordering::Relaxed);
+      let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
+      if !target.0.is_null() {
+        let vk = k.vkCode as u16;
+        if vk == VK_TAB.0 && down && (alt || open) {
+          let shift = GetKeyState(VK_SHIFT.0 as i32) < 0;
+          let _ = PostMessageW(
+            Some(target),
+            if shift { WM_PREV } else { WM_NEXT },
+            WPARAM(0),
+            LPARAM(0),
+          );
+          return LRESULT(1);
+        }
+        if open && down && vk == VK_ESCAPE.0 {
+          let _ = PostMessageW(Some(target), WM_CANCEL, WPARAM(0), LPARAM(0));
+          return LRESULT(1);
+        }
+        if open && down && (vk == VK_RIGHT.0 || vk == VK_LEFT.0) {
+          let _ = PostMessageW(
+            Some(target),
+            if vk == VK_RIGHT.0 { WM_NEXT } else { WM_PREV },
+            WPARAM(0),
+            LPARAM(0),
+          );
+          return LRESULT(1);
+        }
+        if open && up && (vk == VK_LMENU.0 || vk == VK_RMENU.0) {
+          let _ = PostMessageW(Some(target), WM_COMMIT, WPARAM(0), LPARAM(0));
+        }
       }
     }
+    CallNextHookEx(None, code, wp, lp)
   }
-  CallNextHookEx(None, code, wp, lp)
 }
 
 fn name_of(w: &nexora_core::dock::items::Win) -> String {
@@ -521,41 +523,45 @@ impl Ctl {
 }
 
 unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    prefs::WM_PREFS => {
-      sync();
-      LRESULT(0)
+  unsafe {
+    match msg {
+      prefs::WM_PREFS => {
+        sync();
+        LRESULT(0)
+      }
+      WM_INSTALL => {
+        install();
+        LRESULT(0)
+      }
+      WM_NEXT | WM_PREV => {
+        let open = OPEN.load(Ordering::Relaxed);
+        with(|c| {
+          if c.ui.is_some() {
+            c.step(if msg == WM_NEXT { 1 } else { -1 });
+          } else if !open {
+            c.open(msg == WM_PREV);
+          }
+        });
+        LRESULT(0)
+      }
+      WM_COMMIT => {
+        with(|c| c.commit());
+        LRESULT(0)
+      }
+      WM_CANCEL => {
+        with(|c| c.close());
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    WM_INSTALL => {
-      install();
-      LRESULT(0)
-    }
-    WM_NEXT | WM_PREV => {
-      let open = OPEN.load(Ordering::Relaxed);
-      with(|c| {
-        if c.ui.is_some() {
-          c.step(if msg == WM_NEXT { 1 } else { -1 });
-        } else if !open {
-          c.open(msg == WM_PREV);
-        }
-      });
-      LRESULT(0)
-    }
-    WM_COMMIT => {
-      with(|c| c.commit());
-      LRESULT(0)
-    }
-    WM_CANCEL => {
-      with(|c| c.close());
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }
 
 unsafe extern "system" fn sw_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
+  unsafe {
+    match msg {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
+    }
   }
 }

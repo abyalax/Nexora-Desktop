@@ -34,8 +34,10 @@ mod store {
   }
 
   unsafe fn slot<F: Copy>(p: *mut c_void, i: usize) -> F {
-    let vt = *(p as *const *const *const c_void);
-    std::mem::transmute_copy(&*vt.add(i))
+    unsafe {
+      let vt = *(p as *const *const *const c_void);
+      std::mem::transmute_copy(&*vt.add(i))
+    }
   }
 
   type GetPtr = unsafe extern "system" fn(*mut c_void, *mut *mut c_void) -> HRESULT;

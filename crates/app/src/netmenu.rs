@@ -151,8 +151,13 @@ pub fn show(comp: &Compositor, which: Which, anchor: Anchor, dpi: f32) {
     let h = n.hwnd.0 as isize;
     if n.radios.is_none() {
       n.radios = Some(radio::spawn(post(h, WM_RADIO)));
-    } else if let Some(r) = &n.radios {
-      let _ = r.commands.send(radio::Cmd::Refresh);
+    } else {
+      match &n.radios {
+        Some(r) => {
+          let _ = r.commands.send(radio::Cmd::Refresh);
+        }
+        _ => {}
+      }
     }
     match which {
       Which::Wifi => {
@@ -469,85 +474,87 @@ impl Net {
 }
 
 unsafe extern "system" fn proc(h: HWND, m: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match m {
-    MENU_PICK => {
-      let id = wp.0;
-      with(|n| n.pick(id));
-      LRESULT(0)
-    }
-    MENU_CLOSE => {
-      with(|n| n.close());
-      LRESULT(0)
-    }
-    WM_TIMER if wp.0 == T_LIVE => {
-      with(|n| n.live_signal());
-      LRESULT(0)
-    }
-    WM_WIFI => {
-      with(|n| {
-        if let Some(s) = &n.scanner {
-          while let Ok(r) = s.results.try_recv() {
-            n.scan = Some(r);
-          }
-        }
-        if n.open.map(|o| o.0) == Some(Which::Wifi) {
-          n.render();
-        }
-      });
-      LRESULT(0)
-    }
-    WM_BT => {
-      with(|n| {
-        if let Some(w) = &n.watcher {
-          while let Ok(d) = w.lists.try_recv() {
-            n.devices = Some(d);
-          }
-        }
-        if let Some((addr, want, since)) = n.pending {
-          let done = n
-            .devices
-            .as_ref()
-            .is_some_and(|d| d.iter().any(|x| x.addr == addr && x.connected == want));
-          if done || since.elapsed() > std::time::Duration::from_secs(12) {
-            n.pending = None;
-          }
-        }
-        if n.open.map(|o| o.0) == Some(Which::Bluetooth) {
-          n.render();
-        }
-      });
-      LRESULT(0)
-    }
-    WM_RADIO => {
-      let notify = with(|n| {
-        let before = n.radio;
-        if let Some(r) = &n.radios {
-          while let Ok(s) = r.snapshots.try_recv() {
-            n.radio = s;
-          }
-        }
-        if before.wifi != Some(true) && n.radio.wifi == Some(true) {
-          if let Some(s) = &n.scanner {
-            let _ = s.commands.send(wifi::Cmd::Scan);
-          }
-        }
-        if n.radio.bluetooth == Some(true) && before.bluetooth != Some(true) {
-          if let Some(w) = &n.watcher {
-            let _ = w.commands.send(bt::Cmd::Refresh);
-          }
-        }
-        if n.open.is_some() {
-          n.render();
-        }
-        std::mem::take(&mut n.toggled)
-      })
-      .unwrap_or(false);
-      if notify {
-        crate::menubar::refresh_radios();
-        crate::controlcenter::refresh_radios();
+  unsafe {
+    match m {
+      MENU_PICK => {
+        let id = wp.0;
+        with(|n| n.pick(id));
+        LRESULT(0)
       }
-      LRESULT(0)
+      MENU_CLOSE => {
+        with(|n| n.close());
+        LRESULT(0)
+      }
+      WM_TIMER if wp.0 == T_LIVE => {
+        with(|n| n.live_signal());
+        LRESULT(0)
+      }
+      WM_WIFI => {
+        with(|n| {
+          if let Some(s) = &n.scanner {
+            while let Ok(r) = s.results.try_recv() {
+              n.scan = Some(r);
+            }
+          }
+          if n.open.map(|o| o.0) == Some(Which::Wifi) {
+            n.render();
+          }
+        });
+        LRESULT(0)
+      }
+      WM_BT => {
+        with(|n| {
+          if let Some(w) = &n.watcher {
+            while let Ok(d) = w.lists.try_recv() {
+              n.devices = Some(d);
+            }
+          }
+          if let Some((addr, want, since)) = n.pending {
+            let done = n
+              .devices
+              .as_ref()
+              .is_some_and(|d| d.iter().any(|x| x.addr == addr && x.connected == want));
+            if done || since.elapsed() > std::time::Duration::from_secs(12) {
+              n.pending = None;
+            }
+          }
+          if n.open.map(|o| o.0) == Some(Which::Bluetooth) {
+            n.render();
+          }
+        });
+        LRESULT(0)
+      }
+      WM_RADIO => {
+        let notify = with(|n| {
+          let before = n.radio;
+          if let Some(r) = &n.radios {
+            while let Ok(s) = r.snapshots.try_recv() {
+              n.radio = s;
+            }
+          }
+          if before.wifi != Some(true) && n.radio.wifi == Some(true) {
+            if let Some(s) = &n.scanner {
+              let _ = s.commands.send(wifi::Cmd::Scan);
+            }
+          }
+          if n.radio.bluetooth == Some(true) && before.bluetooth != Some(true) {
+            if let Some(w) = &n.watcher {
+              let _ = w.commands.send(bt::Cmd::Refresh);
+            }
+          }
+          if n.open.is_some() {
+            n.render();
+          }
+          std::mem::take(&mut n.toggled)
+        })
+        .unwrap_or(false);
+        if notify {
+          crate::menubar::refresh_radios();
+          crate::controlcenter::refresh_radios();
+        }
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(h, m, wp, lp),
     }
-    _ => DefWindowProcW(h, m, wp, lp),
   }
 }

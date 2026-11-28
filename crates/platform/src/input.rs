@@ -11,30 +11,32 @@ static MSG: AtomicU32 = AtomicU32::new(0);
 static RECT: [std::sync::atomic::AtomicI32; 4] = [const { std::sync::atomic::AtomicI32::new(0) }; 4];
 
 unsafe extern "system" fn proc(code: i32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  if code >= 0 {
-    let m = wp.0 as u32;
-    if matches!(m, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN | WM_XBUTTONDOWN) {
-      let pt = (*(lp.0 as *const MSLLHOOKSTRUCT)).pt;
-      let (l, t, r, b) = (
-        RECT[0].load(Ordering::Relaxed),
-        RECT[1].load(Ordering::Relaxed),
-        RECT[2].load(Ordering::Relaxed),
-        RECT[3].load(Ordering::Relaxed),
-      );
-      let inside = pt.x >= l && pt.x < r && pt.y >= t && pt.y < b;
-      if !inside {
-        let packed = ((pt.y as i16 as u16 as u32) << 16) | (pt.x as i16 as u16 as u32);
-        let _ = PostMessageW(
-          Some(HWND(TARGET.load(Ordering::Relaxed) as *mut _)),
-          MSG.load(Ordering::Relaxed),
-          WPARAM(0),
-          LPARAM(packed as isize),
+  unsafe {
+    if code >= 0 {
+      let m = wp.0 as u32;
+      if matches!(m, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN | WM_XBUTTONDOWN) {
+        let pt = (*(lp.0 as *const MSLLHOOKSTRUCT)).pt;
+        let (l, t, r, b) = (
+          RECT[0].load(Ordering::Relaxed),
+          RECT[1].load(Ordering::Relaxed),
+          RECT[2].load(Ordering::Relaxed),
+          RECT[3].load(Ordering::Relaxed),
         );
-        return LRESULT(1);
+        let inside = pt.x >= l && pt.x < r && pt.y >= t && pt.y < b;
+        if !inside {
+          let packed = ((pt.y as i16 as u16 as u32) << 16) | (pt.x as i16 as u16 as u32);
+          let _ = PostMessageW(
+            Some(HWND(TARGET.load(Ordering::Relaxed) as *mut _)),
+            MSG.load(Ordering::Relaxed),
+            WPARAM(0),
+            LPARAM(packed as isize),
+          );
+          return LRESULT(1);
+        }
       }
     }
+    CallNextHookEx(None, code, wp, lp)
   }
-  CallNextHookEx(None, code, wp, lp)
 }
 
 pub fn begin_dismiss(rect: (i32, i32, i32, i32), target: isize, msg: u32) {

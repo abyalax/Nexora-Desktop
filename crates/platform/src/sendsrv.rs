@@ -269,7 +269,8 @@ mod tests {
   use super::*;
 
   fn server(tag: &str) -> Server {
-    std::env::set_var("NACRE_SEND_LOOPBACK", "1");
+    // TODO: Audit that the environment access only happens in single-threaded code.
+    unsafe { std::env::set_var("NACRE_SEND_LOOPBACK", "1") };
     let p = std::env::temp_dir().join(format!("nacre-send-{tag}-{}.txt", std::process::id()));
     std::fs::write(&p, b"halo").unwrap();
     start(&[p.to_string_lossy().to_string()], true, || {}).unwrap()

@@ -299,49 +299,51 @@ impl Fx {
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_FX => {
-      with_fx(|fx| fx.on_event(wp.0 as u32, lp.0));
-      LRESULT(0)
-    }
-    prefs::WM_PREFS => {
-      with_fx(|fx| fx.apply_prefs());
-      LRESULT(0)
-    }
-    WM_TIMER => {
-      let id = wp.0;
-      match id {
-        T_HIDE | T_CAPTURE | T_RESTORE | T_SHADOW | T_OPEN_END => {
-          let _ = KillTimer(Some(hwnd), id);
-        }
-        _ => {}
+  unsafe {
+    match msg {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_FX => {
+        with_fx(|fx| fx.on_event(wp.0 as u32, lp.0));
+        LRESULT(0)
       }
-      with_fx(|fx| match id {
-        T_SHADOW => {
-          let t = fx.shadow_target;
-          if t != 0 {
-            fx.update_shadow(t, true);
+      prefs::WM_PREFS => {
+        with_fx(|fx| fx.apply_prefs());
+        LRESULT(0)
+      }
+      WM_TIMER => {
+        let id = wp.0;
+        match id {
+          T_HIDE | T_CAPTURE | T_RESTORE | T_SHADOW | T_OPEN_END => {
+            let _ = KillTimer(Some(hwnd), id);
           }
+          _ => {}
         }
-        T_SHADOW_WATCH => fx.watch_shadow(),
-        T_OPEN_POLL => fx.poll_open(),
-        T_OPEN_END => fx.end_open(),
-        T_CAPTURE | T_REFRESH => fx.capture_current(),
-        T_HIDE => {
-          fx.hide_overlay();
-          fx.pending_restore = None;
-        }
-        T_RESTORE => {
-          if let Some((t, dock)) = fx.pending_restore {
-            let ok = focus::activate(t, dock);
-            log::line("fx", &format!("restore hwnd={t} ok={ok}"));
+        with_fx(|fx| match id {
+          T_SHADOW => {
+            let t = fx.shadow_target;
+            if t != 0 {
+              fx.update_shadow(t, true);
+            }
           }
-        }
-        _ => {}
-      });
-      LRESULT(0)
+          T_SHADOW_WATCH => fx.watch_shadow(),
+          T_OPEN_POLL => fx.poll_open(),
+          T_OPEN_END => fx.end_open(),
+          T_CAPTURE | T_REFRESH => fx.capture_current(),
+          T_HIDE => {
+            fx.hide_overlay();
+            fx.pending_restore = None;
+          }
+          T_RESTORE => {
+            if let Some((t, dock)) = fx.pending_restore {
+              let ok = focus::activate(t, dock);
+              log::line("fx", &format!("restore hwnd={t} ok={ok}"));
+            }
+          }
+          _ => {}
+        });
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

@@ -1,4 +1,5 @@
 use crate::paths;
+use crate::prefs;
 use crate::startup::single_instance;
 use nexora_platform::shell::taskbar;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -112,7 +113,30 @@ pub fn apply_autostart() {
 
 pub fn set_taskbar_hidden(on: bool) {
   if on {
-    if let Err(e) = taskbar::hide(&paths::marker(), &paths::guard_exe()) {
+    let displays = nexora_platform::monitors::list();
+    let domain_displays: Vec<_> = displays
+      .iter()
+      .map(|monitor| nexora_core::shared::monitors::Monitor {
+        id: &monitor.id,
+        bounds: nexora_core::shared::geometry::Rect::new(
+          monitor.bounds.0 as f32,
+          monitor.bounds.1 as f32,
+          (monitor.bounds.2 - monitor.bounds.0) as f32,
+          (monitor.bounds.3 - monitor.bounds.1) as f32,
+        ),
+        primary: monitor.primary,
+      })
+      .collect();
+    let dock_monitor = displays
+      .iter()
+      .find(|monitor| monitor.primary)
+      .map_or("", |monitor| monitor.id.as_str());
+    let scope = nexora_core::window_management::taskbar::Scope::from_index(prefs::get().extra.taskbar_scope as u8);
+    let hidden_monitor_ids = nexora_core::window_management::taskbar::to_hide(scope, &domain_displays, dock_monitor)
+      .into_iter()
+      .filter_map(|index| displays.get(index).map(|monitor| monitor.id.clone()))
+      .collect();
+    if let Err(e) = taskbar::hide(&paths::marker(), &paths::guard_exe(), hidden_monitor_ids) {
       nexora_platform::log::line("taskbar", &format!("hide gagal: {e}"));
     }
   } else {
@@ -143,75 +167,77 @@ fn show_menu(hwnd: HWND) {
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  let tc = TASKBAR_CREATED.load(Ordering::Relaxed);
-  if tc != 0 && msg == tc {
-    add_tray(hwnd);
-    taskbar::reassert();
-    crate::dock::request_appbar_resync();
-    nexora_platform::log::line("shell", "TaskbarCreated");
-    return LRESULT(0);
-  }
-  match msg {
-    #[cfg(all(feature = "agent-debug", debug_assertions))]
-    crate::agent::WM_AGENT_OPEN => {
-      match wp.0 {
-        1 => crate::settings_win::open_agent((lp.0 > 0).then_some(lp.0 as u8)),
-        2 => crate::spotlight::toggle(),
-        3 => crate::launchpad::toggle(),
-        4 => crate::controlcenter::toggle(0),
-        _ => {}
-      }
-      LRESULT(0)
+  unsafe {
+    let tc = TASKBAR_CREATED.load(Ordering::Relaxed);
+    if tc != 0 && msg == tc {
+      add_tray(hwnd);
+      taskbar::reassert();
+      crate::dock::request_appbar_resync();
+      nexora_platform::log::line("shell", "TaskbarCreated");
+      return LRESULT(0);
     }
-    crate::prefs::WM_PREFS => {
-      apply_autostart();
-      if TAKEOVER_ALLOWED.load(Ordering::Relaxed) {
-        let p = crate::prefs::get();
-        let want = p.takeover && p.dock_enabled;
-        if want != taskbar::is_hidden() {
-          nexora_platform::log::line("taskbar", &format!("pengaturan mode penuh → {want}"));
-          set_taskbar_hidden(want);
+    match msg {
+      #[cfg(all(feature = "agent-debug", debug_assertions))]
+      crate::agent::WM_AGENT_OPEN => {
+        match wp.0 {
+          1 => crate::settings_win::open_agent((lp.0 > 0).then_some(lp.0 as u8)),
+          2 => crate::spotlight::toggle(),
+          3 => crate::launchpad::toggle(),
+          4 => crate::controlcenter::toggle(0),
+          _ => {}
         }
+        LRESULT(0)
       }
-      LRESULT(0)
-    }
-    WM_TRAY => {
-      if (lp.0 as u32 & 0xFFFF) == WM_RBUTTONUP || (lp.0 as u32 & 0xFFFF) == WM_CONTEXTMENU {
-        show_menu(hwnd);
-      }
-      LRESULT(0)
-    }
-    WM_COMMAND => {
-      match wp.0 & 0xFFFF {
-        ID_TOGGLE_TASKBAR => set_taskbar_hidden(!taskbar::is_hidden()),
-        ID_QUIT => {
-          let _ = DestroyWindow(hwnd);
+      crate::prefs::WM_PREFS => {
+        apply_autostart();
+        if TAKEOVER_ALLOWED.load(Ordering::Relaxed) {
+          let p = crate::prefs::get();
+          let want = p.takeover && p.dock_enabled;
+          if want != taskbar::is_hidden() {
+            nexora_platform::log::line("taskbar", &format!("pengaturan mode penuh → {want}"));
+            set_taskbar_hidden(want);
+          }
         }
-        _ => {}
+        LRESULT(0)
       }
-      LRESULT(0)
-    }
-    single_instance::WM_WAKE => {
-      nexora_platform::log::line("instance", "peluncuran kedua terdeteksi");
-      LRESULT(0)
-    }
-    WM_TIMER if wp.0 == TIMER_EXIT => {
-      let _ = DestroyWindow(hwnd);
-      LRESULT(0)
-    }
-    WM_ENDSESSION => {
-      if wp.0 != 0 {
+      WM_TRAY => {
+        if (lp.0 as u32 & 0xFFFF) == WM_RBUTTONUP || (lp.0 as u32 & 0xFFFF) == WM_CONTEXTMENU {
+          show_menu(hwnd);
+        }
+        LRESULT(0)
+      }
+      WM_COMMAND => {
+        match wp.0 & 0xFFFF {
+          ID_TOGGLE_TASKBAR => set_taskbar_hidden(!taskbar::is_hidden()),
+          ID_QUIT => {
+            let _ = DestroyWindow(hwnd);
+          }
+          _ => {}
+        }
+        LRESULT(0)
+      }
+      single_instance::WM_WAKE => {
+        nexora_platform::log::line("instance", "peluncuran kedua terdeteksi");
+        LRESULT(0)
+      }
+      WM_TIMER if wp.0 == TIMER_EXIT => {
+        let _ = DestroyWindow(hwnd);
+        LRESULT(0)
+      }
+      WM_ENDSESSION => {
+        if wp.0 != 0 {
+          taskbar::restore();
+        }
+        LRESULT(0)
+      }
+      WM_DESTROY => {
+        crate::fx::restore_all();
         taskbar::restore();
+        remove_tray(hwnd);
+        PostQuitMessage(0);
+        LRESULT(0)
       }
-      LRESULT(0)
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    WM_DESTROY => {
-      crate::fx::restore_all();
-      taskbar::restore();
-      remove_tray(hwnd);
-      PostQuitMessage(0);
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

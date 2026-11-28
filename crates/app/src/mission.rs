@@ -485,82 +485,86 @@ impl Mc {
 }
 
 unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_HOTKEY => {
-      toggle();
-      LRESULT(0)
+  unsafe {
+    match msg {
+      WM_HOTKEY => {
+        toggle();
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }
 
 unsafe extern "system" fn mc_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_TIMER if wp.0 == T_ANIM => {
-      with_mc(|m| m.step());
-      LRESULT(0)
-    }
-    WM_MOUSEMOVE => {
-      let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
-      with_mc(|m| {
-        let i = m.tile_at(x, y);
-        m.set_hover(i);
-      });
-      LRESULT(0)
-    }
-    WM_KEYDOWN => {
-      if wp.0 as u16 == VK_ESCAPE.0 {
-        close();
+  unsafe {
+    match msg {
+      WM_TIMER if wp.0 == T_ANIM => {
+        with_mc(|m| m.step());
+        LRESULT(0)
       }
-      LRESULT(0)
-    }
-    WM_LBUTTONUP => {
-      let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
-      let in_r = |r: &Rect| x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
-      let desk = with_mc(|m| {
-        if let Some(p) = m.plus.filter(in_r) {
-          let _ = p;
-          return Some(Err(()));
+      WM_MOUSEMOVE => {
+        let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
+        with_mc(|m| {
+          let i = m.tile_at(x, y);
+          m.set_hover(i);
+        });
+        LRESULT(0)
+      }
+      WM_KEYDOWN => {
+        if wp.0 as u16 == VK_ESCAPE.0 {
+          close();
         }
-        m.desks
-          .iter()
-          .find(|(r, _)| in_r(r))
-          .map(|(_, i)| Ok((*i as i32) - (m.cur_desk as i32)))
-      })
-      .flatten();
-      if let Some(act) = desk {
-        close();
-        match act {
-          Err(()) => nexora_platform::keys::chord(&[nexora_platform::keys::WIN, nexora_platform::keys::CTRL, 0x44]),
-          Ok(delta) => {
-            for _ in 0..delta.abs() {
-              nexora_platform::keys::chord(&[
-                nexora_platform::keys::WIN,
-                nexora_platform::keys::CTRL,
-                if delta > 0 { 0x27 } else { 0x25 },
-              ]);
+        LRESULT(0)
+      }
+      WM_LBUTTONUP => {
+        let (x, y) = ((lp.0 as i16) as f32, ((lp.0 >> 16) as i16) as f32);
+        let in_r = |r: &Rect| x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+        let desk = with_mc(|m| {
+          if let Some(p) = m.plus.filter(in_r) {
+            let _ = p;
+            return Some(Err(()));
+          }
+          m.desks
+            .iter()
+            .find(|(r, _)| in_r(r))
+            .map(|(_, i)| Ok((*i as i32) - (m.cur_desk as i32)))
+        })
+        .flatten();
+        if let Some(act) = desk {
+          close();
+          match act {
+            Err(()) => nexora_platform::keys::chord(&[nexora_platform::keys::WIN, nexora_platform::keys::CTRL, 0x44]),
+            Ok(delta) => {
+              for _ in 0..delta.abs() {
+                nexora_platform::keys::chord(&[
+                  nexora_platform::keys::WIN,
+                  nexora_platform::keys::CTRL,
+                  if delta > 0 { 0x27 } else { 0x25 },
+                ]);
+              }
             }
           }
+          return LRESULT(0);
         }
-        return LRESULT(0);
+        let target = with_mc(|m| m.tile_at(x, y).map(|i| m.tiles[i].hwnd)).flatten();
+        close();
+        if let Some(h) = target {
+          focus::activate(h, 0);
+        }
+        LRESULT(0)
       }
-      let target = with_mc(|m| m.tile_at(x, y).map(|i| m.tiles[i].hwnd)).flatten();
-      close();
-      if let Some(h) = target {
-        focus::activate(h, 0);
+      WM_ACTIVATE => {
+        if (wp.0 & 0xFFFF) == 0 {
+          let _ = PostMessageW(Some(hwnd), WM_APP + 90, WPARAM(0), LPARAM(0));
+        }
+        LRESULT(0)
       }
-      LRESULT(0)
-    }
-    WM_ACTIVATE => {
-      if (wp.0 & 0xFFFF) == 0 {
-        let _ = PostMessageW(Some(hwnd), WM_APP + 90, WPARAM(0), LPARAM(0));
+      m if m == WM_APP + 90 => {
+        close();
+        LRESULT(0)
       }
-      LRESULT(0)
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    m if m == WM_APP + 90 => {
-      close();
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

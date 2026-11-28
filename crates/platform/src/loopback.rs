@@ -41,24 +41,26 @@ enum Sample {
 }
 
 unsafe fn sample_kind(fmt: *const WAVEFORMATEX) -> Option<Sample> {
-  let f = &*fmt;
-  let tag = f.wFormatTag;
-  let bits = f.wBitsPerSample;
-  match (tag, bits) {
-    (3, 32) => Some(Sample::F32),
-    (1, 16) => Some(Sample::I16),
-    (1, 32) => Some(Sample::I32),
-    (0xFFFE, _) if f.cbSize >= 22 => {
-      let ext = &*(fmt as *const WAVEFORMATEXTENSIBLE);
-      let sub = ext.SubFormat.data1;
-      match (sub, bits) {
-        (3, 32) => Some(Sample::F32),
-        (1, 16) => Some(Sample::I16),
-        (1, 32) => Some(Sample::I32),
-        _ => None,
+  unsafe {
+    let f = &*fmt;
+    let tag = f.wFormatTag;
+    let bits = f.wBitsPerSample;
+    match (tag, bits) {
+      (3, 32) => Some(Sample::F32),
+      (1, 16) => Some(Sample::I16),
+      (1, 32) => Some(Sample::I32),
+      (0xFFFE, _) if f.cbSize >= 22 => {
+        let ext = &*(fmt as *const WAVEFORMATEXTENSIBLE);
+        let sub = ext.SubFormat.data1;
+        match (sub, bits) {
+          (3, 32) => Some(Sample::F32),
+          (1, 16) => Some(Sample::I16),
+          (1, 32) => Some(Sample::I32),
+          _ => None,
+        }
       }
+      _ => None,
     }
-    _ => None,
   }
 }
 

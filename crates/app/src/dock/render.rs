@@ -134,10 +134,15 @@ impl Dock {
       match v {
         Ok(mut v) => {
           if let Kind::App { path } = &v.kind {
-            if let Some(s) = self.surfaces.get(path) {
-              let _ = v.set_surface(&self.comp, s);
-            } else if self.requested.insert(path.clone()) {
-              let _ = self.worker.requests.send(path.clone());
+            match self.surfaces.get(path) {
+              Some(s) => {
+                let _ = v.set_surface(&self.comp, s);
+              }
+              _ => {
+                if self.requested.insert(path.clone()) {
+                  let _ = self.worker.requests.send(path.clone());
+                }
+              }
             }
           }
           self.views.push(v);
@@ -416,14 +421,15 @@ impl Dock {
       .panel
       .set_radius(22.0 * self.dpi * crate::prefs::round(crate::prefs::Role::Dock));
     let pd = crate::prefs::apply(base, &dark);
+    let surface = |s| crate::prefs::apply(base, &crate::prefs::surface_look(crate::prefs::Role::Dark, s));
     if let Some(t) = self.tooltip.as_mut() {
-      t.apply_look(pd);
+      t.apply_look(surface(crate::prefs::Surface::Labels));
     }
     if let Some(p) = self.preview.as_mut() {
       let _ = p.panel_mut().set_params(pd);
     }
     if let Some(m) = self.menu.as_mut() {
-      m.apply_look(pd);
+      m.apply_look(surface(crate::prefs::Surface::ContextMenus));
     }
   }
 
@@ -439,10 +445,23 @@ impl Dock {
 
     let px = (13.0 * self.dpi).round() as i32;
     let style = nexora_platform::text::Style { px, weight: 400 };
-    let (tw, th) = nexora_platform::text::measure(text, &style);
+    let p = crate::prefs::get();
+    let (tw, th) = nexora_platform::text::measure_with_font_and_scale(
+      text,
+      &style,
+      p.extra.display_font,
+      crate::prefs::text_scale(),
+    );
     let tw = tw.min((self.m.icon * 3.0) as i32);
 
-    let Some(bitmap) = nexora_platform::text::render(text, &style, tw, th) else {
+    let Some(bitmap) = nexora_platform::text::render_with_font_and_scale(
+      text,
+      &style,
+      p.extra.display_font,
+      crate::prefs::text_scale(),
+      tw,
+      th,
+    ) else {
       return Err(windows_core::Error::from(windows::Win32::Foundation::WIN32_ERROR(0)));
     };
 

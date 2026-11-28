@@ -20,37 +20,39 @@ static TARGET: AtomicIsize = AtomicIsize::new(0);
 static INSIDE: AtomicBool = AtomicBool::new(false);
 
 unsafe extern "system" fn proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
-  match m {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_MOUSEMOVE => {
-      if !INSIDE.swap(true, Ordering::Relaxed) {
-        let mut t = TRACKMOUSEEVENT {
-          cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
-          dwFlags: TME_LEAVE,
-          hwndTrack: h,
-          dwHoverTime: 0,
-        };
-        let _ = TrackMouseEvent(&mut t);
-        let _ = PostMessageW(Some(target), PREVIEW_ENTER, WPARAM(0), LPARAM(0));
+  unsafe {
+    let target = HWND(TARGET.load(Ordering::Relaxed) as *mut _);
+    match m {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_MOUSEMOVE => {
+        if !INSIDE.swap(true, Ordering::Relaxed) {
+          let mut t = TRACKMOUSEEVENT {
+            cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+            dwFlags: TME_LEAVE,
+            hwndTrack: h,
+            dwHoverTime: 0,
+          };
+          let _ = TrackMouseEvent(&mut t);
+          let _ = PostMessageW(Some(target), PREVIEW_ENTER, WPARAM(0), LPARAM(0));
+        }
+        LRESULT(0)
       }
-      LRESULT(0)
+      WM_MOUSELEAVE => {
+        INSIDE.store(false, Ordering::Relaxed);
+        let _ = PostMessageW(Some(target), PREVIEW_LEAVE, WPARAM(0), LPARAM(0));
+        LRESULT(0)
+      }
+      WM_LBUTTONUP => {
+        let _ = PostMessageW(
+          Some(target),
+          PREVIEW_CLICK,
+          WPARAM((l.0 as i16) as isize as usize),
+          LPARAM(0),
+        );
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(h, m, w, l),
     }
-    WM_MOUSELEAVE => {
-      INSIDE.store(false, Ordering::Relaxed);
-      let _ = PostMessageW(Some(target), PREVIEW_LEAVE, WPARAM(0), LPARAM(0));
-      LRESULT(0)
-    }
-    WM_LBUTTONUP => {
-      let _ = PostMessageW(
-        Some(target),
-        PREVIEW_CLICK,
-        WPARAM((l.0 as i16) as isize as usize),
-        LPARAM(0),
-      );
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(h, m, w, l),
   }
 }
 

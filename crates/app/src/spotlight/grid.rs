@@ -114,33 +114,44 @@ impl Spot {
         }
         let iy = y0 + 6.0 * d;
         if thumbs {
-          if let Some((s, tw, th)) = self.thumb_for(&row.path, icon) {
-            self.sprite(area, &s, cx - tw / 2.0, iy + (icon - th) / 2.0, tw, th, 1.0);
-          } else if let Some(s) = self.icon_surface(&row.path, (icon * 1.2) as i32) {
-            self.sprite(
-              area,
-              &s,
-              cx - icon * 0.35,
-              iy + icon * 0.15,
-              icon * 0.7,
-              icon * 0.7,
-              1.0,
-            );
-          }
-        } else if let Some(s) = self.icon_surface(&row.path, (icon * 1.6) as i32) {
-          self.sprite(area, &s, cx - icon / 2.0, iy, icon, icon, 1.0);
-        } else {
-          self.rect(
-            area,
-            (cx - icon / 2.0, iy, icon, icon),
-            icon * 0.23,
-            Color {
-              A: 60,
-              R: fg[0],
-              G: fg[1],
-              B: fg[2],
+          match self.thumb_for(&row.path, icon) {
+            Some((s, tw, th)) => {
+              self.sprite(area, &s, cx - tw / 2.0, iy + (icon - th) / 2.0, tw, th, 1.0);
+            }
+            _ => match self.icon_surface(&row.path, (icon * 1.2) as i32) {
+              Some(s) => {
+                self.sprite(
+                  area,
+                  &s,
+                  cx - icon * 0.35,
+                  iy + icon * 0.15,
+                  icon * 0.7,
+                  icon * 0.7,
+                  1.0,
+                );
+              }
+              _ => {}
             },
-          );
+          }
+        } else {
+          match self.icon_surface(&row.path, (icon * 1.6) as i32) {
+            Some(s) => {
+              self.sprite(area, &s, cx - icon / 2.0, iy, icon, icon, 1.0);
+            }
+            _ => {
+              self.rect(
+                area,
+                (cx - icon / 2.0, iy, icon, icon),
+                icon * 0.23,
+                Color {
+                  A: 60,
+                  R: fg[0],
+                  G: fg[1],
+                  B: fg[2],
+                },
+              );
+            }
+          }
         }
         let lpx = (12.0 * d).round() as i32;
         let lw = self.text_w(&row.title, lpx, 400).min(cw - 10.0 * d);
@@ -240,20 +251,23 @@ impl Spot {
           },
         );
       }
-      if let Some(s) = self.icon_surface(&row.path, (icon * 1.6) as i32) {
-        self.sprite(content, &s, cx - icon / 2.0, cy0 + 8.0 * d, icon, icon, 1.0);
-      } else {
-        self.rect(
-          content,
-          (cx - icon / 2.0, cy0 + 8.0 * d, icon, icon),
-          icon * 0.23,
-          Color {
-            A: 60,
-            R: fg[0],
-            G: fg[1],
-            B: fg[2],
-          },
-        );
+      match self.icon_surface(&row.path, (icon * 1.6) as i32) {
+        Some(s) => {
+          self.sprite(content, &s, cx - icon / 2.0, cy0 + 8.0 * d, icon, icon, 1.0);
+        }
+        _ => {
+          self.rect(
+            content,
+            (cx - icon / 2.0, cy0 + 8.0 * d, icon, icon),
+            icon * 0.23,
+            Color {
+              A: 60,
+              R: fg[0],
+              G: fg[1],
+              B: fg[2],
+            },
+          );
+        }
       }
       let lw = self
         .text_w(&row.title, (13.0 * d).round() as i32, 400)

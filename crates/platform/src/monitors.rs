@@ -25,50 +25,54 @@ fn rect(r: RECT) -> (i32, i32, i32, i32) {
 }
 
 unsafe fn friendly_name(id: &str) -> String {
-  let id: Vec<u16> = id.encode_utf16().chain(std::iter::once(0)).collect();
-  let mut device = DISPLAY_DEVICEW {
-    cb: std::mem::size_of::<DISPLAY_DEVICEW>() as u32,
-    ..Default::default()
-  };
-  if !EnumDisplayDevicesW(PCWSTR(id.as_ptr()), 0, &mut device, 0).as_bool() {
-    return String::new();
+  unsafe {
+    let id: Vec<u16> = id.encode_utf16().chain(std::iter::once(0)).collect();
+    let mut device = DISPLAY_DEVICEW {
+      cb: std::mem::size_of::<DISPLAY_DEVICEW>() as u32,
+      ..Default::default()
+    };
+    if !EnumDisplayDevicesW(PCWSTR(id.as_ptr()), 0, &mut device, 0).as_bool() {
+      return String::new();
+    }
+    let end = device
+      .DeviceString
+      .iter()
+      .position(|c| *c == 0)
+      .unwrap_or(device.DeviceString.len());
+    String::from_utf16_lossy(&device.DeviceString[..end])
   }
-  let end = device
-    .DeviceString
-    .iter()
-    .position(|c| *c == 0)
-    .unwrap_or(device.DeviceString.len());
-  String::from_utf16_lossy(&device.DeviceString[..end])
 }
 
 unsafe extern "system" fn collect(monitor: HMONITOR, _dc: HDC, _rect: *mut RECT, data: LPARAM) -> BOOL {
-  let out = &mut *(data.0 as *mut Vec<Monitor>);
-  let mut info = MONITORINFOEXW {
-    monitorInfo: MONITORINFO {
-      cbSize: std::mem::size_of::<MONITORINFOEXW>() as u32,
+  unsafe {
+    let out = &mut *(data.0 as *mut Vec<Monitor>);
+    let mut info = MONITORINFOEXW {
+      monitorInfo: MONITORINFO {
+        cbSize: std::mem::size_of::<MONITORINFOEXW>() as u32,
+        ..Default::default()
+      },
       ..Default::default()
-    },
-    ..Default::default()
-  };
-  if !GetMonitorInfoW(monitor, &mut info as *mut MONITORINFOEXW as *mut MONITORINFO).as_bool() {
-    return BOOL(1);
+    };
+    if !GetMonitorInfoW(monitor, &mut info as *mut MONITORINFOEXW as *mut MONITORINFO).as_bool() {
+      return BOOL(1);
+    }
+    let end = info
+      .szDevice
+      .iter()
+      .position(|c| *c == 0)
+      .unwrap_or(info.szDevice.len());
+    let id = String::from_utf16_lossy(&info.szDevice[..end]);
+    if !id.is_empty() {
+      out.push(Monitor {
+        name: friendly_name(&id),
+        id,
+        bounds: rect(info.monitorInfo.rcMonitor),
+        work_area: rect(info.monitorInfo.rcWork),
+        primary: info.monitorInfo.dwFlags & 1 != 0,
+      });
+    }
+    BOOL(1)
   }
-  let end = info
-    .szDevice
-    .iter()
-    .position(|c| *c == 0)
-    .unwrap_or(info.szDevice.len());
-  let id = String::from_utf16_lossy(&info.szDevice[..end]);
-  if !id.is_empty() {
-    out.push(Monitor {
-      name: friendly_name(&id),
-      id,
-      bounds: rect(info.monitorInfo.rcMonitor),
-      work_area: rect(info.monitorInfo.rcWork),
-      primary: info.monitorInfo.dwFlags & 1 != 0,
-    });
-  }
-  BOOL(1)
 }
 
 /// Enumerate active displays in Windows' current monitor order.

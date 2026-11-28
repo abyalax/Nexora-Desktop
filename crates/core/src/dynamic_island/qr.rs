@@ -62,14 +62,14 @@ fn gf_mul(a: u8, b: u8) -> u8 {
 }
 
 pub fn rs_ecc(data: &[u8], n: usize) -> Vec<u8> {
-  let mut gen = vec![0u8; n];
-  gen[n - 1] = 1;
+  let mut r#gen = vec![0u8; n];
+  r#gen[n - 1] = 1;
   let mut root = 1u8;
   for _ in 0..n {
     for j in 0..n {
-      gen[j] = gf_mul(gen[j], root);
+      r#gen[j] = gf_mul(r#gen[j], root);
       if j + 1 < n {
-        gen[j] ^= gen[j + 1];
+        r#gen[j] ^= r#gen[j + 1];
       }
     }
     root = gf_mul(root, 2);
@@ -79,7 +79,7 @@ pub fn rs_ecc(data: &[u8], n: usize) -> Vec<u8> {
     let factor = b ^ rem[0];
     rem.remove(0);
     rem.push(0);
-    for (r, g) in rem.iter_mut().zip(&gen) {
+    for (r, g) in rem.iter_mut().zip(&r#gen) {
       *r ^= gf_mul(*g, factor);
     }
   }

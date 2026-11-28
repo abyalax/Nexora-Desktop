@@ -1,70 +1,74 @@
-# Milestone 1 Memory Baseline Verification Script
-# Measures idle memory usage of Nexora Desktop application
-
+# M1 release baseline. Uses the agent control channel for an orderly shutdown.
 param(
-    [string]$OutputFile = "docs/bench.md"
+    [string]$OutputFile = "docs/bench.md",
+    [int]$SettleSeconds = 30
 )
 
 $ErrorActionPreference = "Stop"
+$repo = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
+Push-Location $repo
+$env:NACRE_AGENT = "1"
+$env:NACRE_CONFIG_DIR = "target/cfg-bench"
+# The control pipe is intentionally gated by debug_assertions; keep release optimization for the measurement.
+$env:CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS = "true"
+$process = $null
+$ctl = Join-Path $repo "target/release/nexora-ctl.exe"
 
-Write-Host "=== Nexora Desktop M1 Memory Baseline ===" -ForegroundColor Cyan
-Write-Host "Starting memory measurement..." -ForegroundColor Yellow
+try {
+    cargo build --release --features agent-debug --bin nexora --bin nexora-ctl
+    if ($LASTEXITCODE -ne 0) { throw "Release build failed ($LASTEXITCODE)" }
 
-# Build the project in release mode for accurate measurements
-Write-Host "Building release version..." -ForegroundColor Yellow
-cargo build --release
+    $app = Join-Path $repo "target/release/nexora.exe"
+    $process = Start-Process -FilePath $app -ArgumentList @("--keep-taskbar", "--exit-after", "120") -PassThru -WindowStyle Hidden
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build failed"
-    exit 1
+    $deadline = (Get-Date).AddSeconds(30)
+    do {
+        Start-Sleep -Milliseconds 500
+        $process.Refresh()
+        if ($process.HasExited) { throw "Nexora exited during startup ($($process.ExitCode))" }
+        & $ctl --pid $process.Id state *> $null
+        $ready = $LASTEXITCODE -eq 0
+    } while (-not $ready -and (Get-Date) -lt $deadline)
+    if (-not $ready) { throw "nexora-ctl could not read runtime state" }
+
+    & $ctl --pid $process.Id wait_idle
+    if ($LASTEXITCODE -ne 0) { throw "Nexora did not become idle" }
+    Start-Sleep -Seconds $SettleSeconds
+    $process.Refresh()
+    if ($process.HasExited) { throw "Nexora exited before measurement" }
+
+    $memory = Get-Process -Id $process.Id
+    $workingSet = [math]::Round($memory.WorkingSet64 / 1MB, 2)
+    $privateMemory = [math]::Round($memory.PrivateMemorySize64 / 1MB, 2)
+    $virtualMemory = [math]::Round($memory.VirtualMemorySize64 / 1MB, 2)
+}
+finally {
+    if ($null -ne $process) {
+        $process.Refresh()
+        if (-not $process.HasExited) {
+            & $ctl --pid $process.Id quit *> $null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "nexora-ctl quit failed; Nexora has --exit-after 120 as a fallback" }
+            try { Wait-Process -Id $process.Id -Timeout 10 -ErrorAction Stop } catch { }
+        }
+    }
+    Pop-Location
 }
 
-# Start the application
-Write-Host "Starting Nexora Desktop..." -ForegroundColor Yellow
-$process = Start-Process -FilePath "target/release/nexora.exe" -PassThru
-
-# Wait for application to stabilize (30 seconds)
-Write-Host "Waiting 30 seconds for application to stabilize..." -ForegroundColor Yellow
-Start-Sleep -Seconds 30
-
-# Get memory usage
-$memoryInfo = Get-Process -Id $process.Id | Select-Object Id, ProcessName, @{
-    Name = "WorkingSetMB"
-    Expression = { [math]::Round($_.WorkingSet64 / 1MB, 2) }
-}, @{
-    Name = "PrivateMemoryMB"
-    Expression = { [math]::Round($_.PrivateMemorySize64 / 1MB, 2) }
-}, @{
-    Name = "VirtualMemoryMB"
-    Expression = { [math]::Round($_.VirtualMemorySize64 / 1MB, 2) }
-}
-
-Write-Host "`nMemory Usage:" -ForegroundColor Green
-Write-Host "  Working Set: $($memoryInfo.WorkingSetMB) MB"
-Write-Host "  Private Memory: $($memoryInfo.PrivateMemoryMB) MB"
-Write-Host "  Virtual Memory: $($memoryInfo.VirtualMemoryMB) MB"
-
-# Stop the application
-Write-Host "`nStopping application..." -ForegroundColor Yellow
-Stop-Process -Id $process.Id -Force
-
-# Record results in markdown
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"
 $entry = @"
 ## M1 Baseline - $timestamp
 
-- Working Set: $($memoryInfo.WorkingSetMB) MB
-- Private Memory: $($memoryInfo.PrivateMemoryMB) MB
-- Virtual Memory: $($memoryInfo.VirtualMemoryMB) MB
+- Working Set: $workingSet MB
+- Private Memory: $privateMemory MB
+- Virtual Memory: $virtualMemory MB
+- Runtime: optimized release with debug assertions for agent control, idle after ${SettleSeconds}s, primary display
+- Shutdown: nexora-ctl quit; isolated configuration at target/cfg-bench
 
 "@
-
-# Append to docs/bench.md
-if (Test-Path $OutputFile) {
-    Add-Content -Path $OutputFile -Value $entry
+$outputPath = Join-Path $repo $OutputFile
+if (Test-Path $outputPath) {
+    Add-Content -Path $outputPath -Value $entry
 } else {
-    Set-Content -Path $OutputFile -Value "# Nexora Desktop Memory Benchmarks`n`n$entry"
+    Set-Content -Path $outputPath -Value "# Nexora Desktop Memory Benchmarks`n`n$entry"
 }
-
-Write-Host "`nResults saved to $OutputFile" -ForegroundColor Green
-Write-Host "=== Verification Complete ===" -ForegroundColor Cyan
+Write-Host "Recorded release memory baseline in $outputPath"

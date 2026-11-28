@@ -1,6 +1,6 @@
-//! QA-04 / ENG-10: every label the app passes to `tr("…")` has an English translation, so
-//! switching to English never shows Indonesian text on any page. Scans the app sources as text,
-//! so it runs on Linux without building the Windows-only crates.
+//! QA-04 / ENG-10: every label the app passes to `tr("…")` is a known Indonesian catalogue key
+//! and has an English translation, so neither language falls back to an untranslated label. Scans
+//! app sources as text, so it runs without building the Windows-only crates.
 
 use nexora_core::i18n::{Lang, is_known, tr};
 use std::path::{Path, PathBuf};
@@ -93,8 +93,11 @@ fn every_app_label_has_an_english_translation() {
     let Ok(text) = std::fs::read_to_string(f) else { continue };
     for l in labels(&text) {
       checked += 1;
+      let file = f.file_name().unwrap().to_string_lossy();
+      // Catalogue keys are the Indonesian source strings; membership guarantees the paired
+      // English value exists. `tr` takes a &'static str because app labels are literals.
       if !is_known(&l) {
-        missing.push(format!("{}: {l:?}", f.file_name().unwrap().to_string_lossy()));
+        missing.push(format!("{file}: {l:?} (missing Indonesian key or English translation)"));
       }
     }
   }
@@ -106,7 +109,7 @@ fn every_app_label_has_an_english_translation() {
   missing.dedup();
   assert!(
     missing.is_empty(),
-    "{} label(s) lack English:\n{}",
+    "{} missing label translation(s):\n{}",
     missing.len(),
     missing.join("\n")
   );

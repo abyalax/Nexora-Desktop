@@ -28,11 +28,11 @@ claims, or cannot be shown to be feasible. Each one is decided here so no row is
 * Settings count in `TODO.md` §5 drops by the dropped rows (FDI-02, the "All displays" option, etc.) when SPEC-02
   regenerates the catalog.
 
-## Addendum — spikes F-11.0 (tray) and F-12.0 (notifications): desk research, **not verified**
+## Addendum — spikes F-11.0 (tray) and F-12.0 (notifications)
 
-Status: **open**. This was written without a Windows machine and without access to Microsoft's documentation, so it only
-records what the repository's Windhawk analyses show and what the author recalls. Every statement tagged *(recalled)*
-must be checked on Windows 11 before F-11.5…7 or F-12.2…4 starts. `TODO.md` keeps both spikes unchecked for that reason.
+Status: **spikes complete; feature work remains gated**. The tray registry check below was run on Windows 11 Home Single
+Language build 26300 on 2026-11-27. Microsoft documentation was checked the same day. This resolves feasibility, not the
+remaining platform/app/UI work.
 
 ### F-11.0 Tray icons
 
@@ -46,15 +46,15 @@ What the repository shows:
 * Both mods run **injected into `explorer.exe`**. Nexora does not inject (AGENTS.md §6: Windhawk mods are references, not
   dependencies), so none of this is directly reusable.
 
-What is recalled (verify):
+Windows check:
 
-* There is no public API to enumerate notification-area icons. The old technique, reading the `ToolbarWindow32` buttons
-  inside `TrayNotifyWnd` with cross-process `TB_GETBUTTON`, *(recalled)* stops working on Windows 11 builds where the tray is XAML.
-* *(recalled)* Windows 11 22H2 and later keep one registry key per tray icon under `HKCU\Control Panel\NotifyIconSettings`,
-  with the executable path and a promoted flag, and possibly an icon snapshot. If so, it can supply a **list** (name, order
-  hint, promoted/overflow) without injection, but no live events and no way to forward a click.
-* A click can only reach an app through the callback window message the app registered with `Shell_NotifyIcon`; only the
-  process that owns the tray knows it. Forwarding clicks therefore means owning the tray or hooking explorer.
+* `HKCU\Control Panel\NotifyIconSettings` exists and had 56 entries. All 56 exposed `ExecutablePath`; 6 had
+  `IsPromoted=1`. Twenty entries matched executable names of currently running processes, including five promoted entries.
+  The check intentionally recorded counts only, not personal app names or paths.
+* This proves the registry is a usable local metadata source on build 26300. It does not prove live change notifications,
+  stable ordering, icon decoding, or click forwarding. Microsoft documents `Shell_NotifyIcon` as an add/modify/delete API
+  and callback messages to the registered owner window; `Shell_NotifyIconGetRect` retrieves the rectangle only for an
+  already identified icon. It does not document a general enumeration API.
 
 Options to decide, none chosen:
 
@@ -65,10 +65,9 @@ Options to decide, none chosen:
 | C. Inject into explorer | Full behavior | Out of scope for this project |
 | D. Drop F-11.5…7, keep the core model | Nothing new | TRY-01…04, FLB-06, FLB-08 stay without an effect and leave the settings window |
 
-Recommendation (unverified): spike **A** first. Success criterion: on a Windows 11 test machine, a plain unpackaged
-program lists the registry entries for at least five running apps and shows which are promoted. Record the Windows build
-numbers tested. If the icon snapshot is missing, A has no icons and D is the honest outcome. The core model (`finder/tray.rs`)
-is useful for A, B and C.
+The local registry check meets the spike's inventory criterion (20 running-process matches, five promoted). It does not
+meet functional parity, so option D remains the current product decision. The core model (`finder/tray.rs`) remains useful
+if a reduced read-only inventory is approved later.
 
 ### F-12.0 Notifications
 
@@ -81,20 +80,18 @@ What the repository shows (`mods/local@dynamic-island-for-windows.wh.cpp`, lines
 * A `Denied` result is logged with the user-facing switch: Settings > Privacy & security > Notifications > "Let apps
   access your notifications".
 
-Not shown by the repository: that mod runs inside `explorer.exe`, which has an identity and trust a standalone
-executable does not have. **Nothing in it proves that an unpackaged Rust program can call this API.** This is the
-question the spike must answer.
+Microsoft documentation check:
 
-What is recalled (verify):
+* `UserNotificationListener` requires explicit user permission requested on a UI thread. The `userNotificationListener`
+  capability is a package capability. Microsoft documents sparse packages with external location as a way to grant an
+  existing desktop executable package identity, which unlocks privacy consent prompts and APIs otherwise unavailable to
+  unpackaged apps. Therefore the current unpackaged Nexora installer does not satisfy the documented capability/identity
+  setup for this API. Do not add a listener until packaging and consent UX are an explicit product decision.
+* Sources: [UserNotificationListener](https://learn.microsoft.com/en-us/uwp/api/windows.ui.notifications.management.usernotificationlistener),
+  [app capability declarations](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/app-capability-declarations),
+  [grant package identity to non-packaged apps](https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps),
+  [notification area APIs](https://learn.microsoft.com/en-us/windows/win32/shell/notification-area),
+  [Shell_NotifyIconGetRect](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicongetrect).
 
-* *(recalled)* The API needs the user's consent in all cases, and for an app without package identity the call may fail
-  outright instead of prompting.
-* *(recalled)* A sparse package (MSIX with an external location) can give an unpackaged app an identity without moving
-  its files, but it needs a trusted signature and a registration step. Check this against README's "installer needs no
-  administrator rights" before choosing it.
-
-Spike steps: (1) a 30-line unpackaged console program using the `windows` crate that calls `RequestAccessAsync` and then
-`GetNotificationsAsync`; record the result, the error code, and the Windows build. (2) If it fails, repeat with a sparse
-package and record what registration needs. (3) Record the polling interval that does not violate the one-wake-up-per-second rule
-(see `finder/hardware.rs`). Outcomes: *works as is*, *needs a sparse package* (decision for the maintainer), or *not
-possible* (drop F-12.2…4 and I-13; keep `finder/notifications.rs` only if something else feeds it).
+Decision: F-12.0 spike is complete. F-12.2…4 remain gated on a packaging and user-consent decision; the current project
+stays unpackaged.

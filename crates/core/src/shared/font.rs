@@ -32,7 +32,7 @@ pub fn resolve(index: u8, is_installed: impl Fn(&str) -> bool) -> &'static str {
     .unwrap_or(LAST_RESORT)
 }
 
-/// Text scale: UI scale (percent, 75–200) times font scale (percent, 75–150), as a factor clamped to 0.5–3.0.
+/// Text scale: UI scale (percent, 50–200) times font scale (percent, 75–150), as a factor clamped to 0.5–3.0.
 pub fn text_scale(ui_scale_pct: u8, font_scale_pct: u16) -> f32 {
   let f = (ui_scale_pct as f32 / 100.0) * (font_scale_pct as f32 / 100.0);
   f.clamp(0.5, 3.0)

@@ -11,20 +11,22 @@ use windows::core::HSTRING;
 pub const ICON_FACE: &str = "Segoe Fluent Icons";
 
 pub fn text_face() -> &'static str {
+  text_face_with_index(0)
+}
+
+pub fn text_face_with_index(display_index: u8) -> &'static str {
   static FACE: std::sync::OnceLock<&'static str> = std::sync::OnceLock::new();
   FACE.get_or_init(|| {
     let bundled = load_bundled_fonts();
-    let segoe_var = font_exists("Segoe UI Variable Text");
-    let face = pick_face(bundled, segoe_var);
-    crate::log::line(
-      "font",
-      &format!(
-        "selected font: {} (bundled: {}, segoe_var: {})",
-        face, bundled, segoe_var
-      ),
-    );
+    let face = resolve_display_font(display_index, bundled);
+    crate::log::line("font", &format!("selected font: {} (bundled: {})", face, bundled));
     face
   })
+}
+
+fn resolve_display_font(display_index: u8, bundled_inter: bool) -> &'static str {
+  use nexora_core::shared::font;
+  font::resolve(display_index, |f| font_exists(f) || (bundled_inter && f == "Inter"))
 }
 
 pub fn pick_face(bundled_inter: bool, segoe_variable: bool) -> &'static str {
@@ -82,8 +84,10 @@ fn font_exists(face: &str) -> bool {
   use windows::Win32::Foundation::LPARAM;
   use windows::Win32::Graphics::Gdi::{EnumFontFamiliesExW, LOGFONTW, TEXTMETRICW};
   unsafe extern "system" fn found(_: *const LOGFONTW, _: *const TEXTMETRICW, _: u32, lp: LPARAM) -> i32 {
-    *(lp.0 as *mut bool) = true;
-    0
+    unsafe {
+      *(lp.0 as *mut bool) = true;
+      0
+    }
   }
   unsafe {
     let dc = CreateCompatibleDC(None);
@@ -127,14 +131,15 @@ fn font(style: &Style, face: &str) -> windows::Win32::Graphics::Gdi::HFONT {
   }
 }
 
-pub fn measure(text: &str, style: &Style) -> (i32, i32) {
+fn measure_scaled_with_face(text: &str, style: &Style, face: &str, scale: f32) -> (i32, i32) {
   unsafe {
     let dc = CreateCompatibleDC(None);
+    let scaled_px = (style.px as f32 * scale).round() as i32;
     let big = Style {
-      px: style.px * SS,
+      px: scaled_px * SS,
       weight: style.weight,
     };
-    let f = font(&big, text_face());
+    let f = font(&big, face);
     let old = SelectObject(dc, HGDIOBJ(f.0));
     let wide: Vec<u16> = text.encode_utf16().collect();
     let mut sz = SIZE::default();
@@ -142,37 +147,88 @@ pub fn measure(text: &str, style: &Style) -> (i32, i32) {
     SelectObject(dc, old);
     let _ = DeleteObject(HGDIOBJ(f.0));
     let _ = DeleteDC(dc);
-    ((sz.cx + SS - 1) / SS, (sz.cy + SS - 1) / SS)
+    let scaled_w = ((sz.cx as f32 / scale) + SS as f32 - 1.0) / SS as f32;
+    let scaled_h = ((sz.cy as f32 / scale) + SS as f32 - 1.0) / SS as f32;
+    (scaled_w as i32, scaled_h as i32)
   }
+}
+
+pub fn measure(text: &str, style: &Style) -> (i32, i32) {
+  measure_scaled_with_face(text, style, text_face(), 1.0)
 }
 
 pub fn render(text: &str, style: &Style, w: i32, h: i32) -> Option<Bitmap> {
-  render_face(text, style, text_face(), w, h)
+  render_with_scale(text, style, text_face(), 1.0, w, h)
 }
 
-pub fn render_face(text: &str, style: &Style, face: &str, w: i32, h: i32) -> Option<Bitmap> {
+pub fn render_with_font_and_scale(
+  text: &str,
+  style: &Style,
+  display_index: u8,
+  scale: f32,
+  w: i32,
+  h: i32,
+) -> Option<Bitmap> {
+  render_with_scale(text, style, text_face_with_index(display_index), scale, w, h)
+}
+
+pub fn measure_with_font_and_scale(text: &str, style: &Style, display_index: u8, scale: f32) -> (i32, i32) {
+  let face = text_face_with_index(display_index);
+  measure_scaled_with_face(text, style, face, scale)
+}
+
+pub fn render_with_scale(text: &str, style: &Style, face: &str, scale: f32, w: i32, h: i32) -> Option<Bitmap> {
   if w <= 0 || h <= 0 || text.is_empty() {
     return None;
   }
+  let scaled_px = (style.px as f32 * scale).round() as i32;
+
+  // For scale < 1.0, render directly without supersampling
+  if scale < 1.0 {
+    return render_raw(
+      text,
+      &Style {
+        px: scaled_px,
+        weight: style.weight,
+      },
+      face,
+      w,
+      h,
+    );
+  }
+
+  // For scale >= 1.0, use supersampling for better quality
   let big = render_raw(
     text,
     &Style {
-      px: style.px * SS,
+      px: scaled_px * SS,
       weight: style.weight,
     },
     face,
-    w * SS,
-    h * SS,
+    (w as f32 * scale).round() as i32,
+    (h as f32 * scale).round() as i32,
   )?;
   let (w, h, s) = (w as usize, h as usize, SS as usize);
+  let big_w = big.w as usize;
   let mut out = vec![0u8; w * h * 4];
   for y in 0..h {
     for x in 0..w {
       let mut sum = 0u32;
       for dy in 0..s {
-        let row = ((y * s + dy) * w * s + x * s) * 4;
+        let src_y = y * s + dy;
+        if src_y >= big.h as usize {
+          continue;
+        }
+        let row = (src_y * big_w + x * s) * 4;
         for dx in 0..s {
-          sum += big.bgra[row + dx * 4 + 3] as u32;
+          let src_x = x * s + dx;
+          if src_x >= big_w {
+            continue;
+          }
+          let idx = row + src_x * 4 + 3;
+          if idx < big.bgra.len() {
+            sum += big.bgra[idx] as u32;
+          }
         }
       }
       let a = (sum / (s * s) as u32) as u8;
@@ -184,6 +240,10 @@ pub fn render_face(text: &str, style: &Style, face: &str, w: i32, h: i32) -> Opt
     h: h as u32,
     bgra: out,
   })
+}
+
+pub fn render_face(text: &str, style: &Style, face: &str, w: i32, h: i32) -> Option<Bitmap> {
+  render_with_scale(text, style, face, 1.0, w, h)
 }
 
 const SS: i32 = 3;

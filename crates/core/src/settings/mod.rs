@@ -21,6 +21,7 @@ pub mod lists;
 mod look;
 mod numeric_slider;
 pub mod preview;
+pub mod registry;
 mod stage;
 mod text;
 
@@ -32,7 +33,7 @@ pub use enums::*;
 pub use extra::Extra;
 pub use finder::FinderSettings;
 pub use general::GeneralSettings;
-pub use glass::{GlassValues, SurfaceGlass};
+pub use glass::{CustomGlass, GlassValues, Surface, SurfaceGlass};
 pub use input::InputSettings;
 pub use island::IslandSettings;
 pub use lists::{ListKind, ProgramLists};
@@ -46,6 +47,8 @@ pub type MenubarSettings = FinderSettings;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Settings {
+  /// On-disk schema version; absent version lines load as 1, new settings use the current version.
+  pub schema_version: u16,
   pub takeover: bool,
   pub dock: Behavior,
   pub notch: Behavior,
@@ -117,6 +120,7 @@ pub struct Settings {
 impl Default for Settings {
   fn default() -> Self {
     Settings {
+      schema_version: CURRENT_SETTINGS_VERSION,
       takeover: true,
       dock: Behavior::Fixed,
       notch: Behavior::Fixed,
@@ -185,6 +189,9 @@ impl Default for Settings {
     }
   }
 }
+
+/// Version emitted for newly-created settings files. Existing unversioned files remain version 1.
+pub const CURRENT_SETTINGS_VERSION: u16 = 2;
 
 #[cfg(test)]
 mod tests {
@@ -443,6 +450,7 @@ menubar_material=true
     let again = Settings::parse(&s.serialize());
     assert_eq!((again.ui_scale, again.notch_island, again.widget_style), (125, true, 1));
     assert_eq!(Settings::parse("ui_scale=999").ui_scale, 200);
+    assert_eq!(Settings::parse("ui_scale=25").ui_scale, 75);
     assert_eq!(Settings::default().ui_scale, 100);
     assert_eq!(
       Settings::parse(&Settings::parse("battery_pct=2").serialize()).battery_pct,

@@ -82,11 +82,6 @@ impl Win {
       s.icon_pack,
       Action::IconPack,
     ));
-    let scale_idx = match s.ui_scale {
-      0..=112 => 0,
-      113..=137 => 1,
-      _ => 2,
-    };
     let e = s.extra;
     let mut custom: Vec<RowDef> = Vec::new();
     // Dependent sliders remain visible and dimmed while their custom override is off.
@@ -195,14 +190,12 @@ impl Win {
     vec![
       (
         None,
-        vec![RowDef::Seg(
+        vec![RowDef::WideSlider(
           prefs::tr("Skala Dock, Menubar, Menu Bar & Quick Panel"),
-          vec![
-            ("100%", Action::UiScale(100)),
-            ("125%", Action::UiScale(125)),
-            ("150%", Action::UiScale(150)),
-          ],
-          scale_idx,
+          s.ui_scale as f32,
+          26,
+          nexora_core::settings::NumericSlider::new(50.0, 200.0, 5.0).unwrap(),
+          "%",
         )],
       ),
       (

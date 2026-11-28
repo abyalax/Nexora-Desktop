@@ -23,28 +23,36 @@ Names, in start order: `dock`, `notch`, `mission`, `launchpad`, `macshortcuts`, 
 - The process does not exit or hang, and Quit restores the taskbar (see REC-01).
 - With `all`, no feature is active but the tray icon and Quit still work.
 
-## Result (fill in)
-| Forced feature | Others OK | Log line seen | Quit OK |
-| -------------- | --------- | ------------- | ------- |
-| dock           |           |               |         |
-| notch          |           |               |         |
-| mission        |           |               |         |
-| launchpad      |           |               |         |
-| macshortcuts   |           |               |         |
-| clipboard      |           |               |         |
-| spotlight      |           |               |         |
-| stage          |           |               |         |
-| controlcenter  |           |               |         |
-| switcher       |           |               |         |
-| menubar        |           |               |         |
-| topmost        |           |               |         |
-| hotcorner      |           |               |         |
-| fx             |           |               |         |
-| widgets        |           |               |         |
-| all            |           |               |         |
+## Result
+
+Windows 11 · 2026-11-27 · debug build with `agent-debug`. Each run used a fresh `target/cfg-rec02-<case>-<guid>` config directory,
+`NACRE_AGENT=1`, `NEXORA_FAIL_FEATURE=<case>`, and `--keep-taskbar --exit-after 60`. For each case, `nexora-ctl state` and
+`wait_idle` succeeded before `nexora-ctl quit`; the isolated `nexora.log` contains the expected forced-failure marker(s) and
+normal `exit: exit`, `appbar ok`, `fx ok`, and `taskbar ok` cleanup lines. This confirms startup/control-channel survival and
+the restore path. It does not verify every non-forced feature's visible behavior.
+
+| Forced feature | Startup/control OK | Expected log line(s) | `nexora-ctl quit` |
+| -------------- | ------------------ | -------------------- | ----------------- |
+| dock           | yes                | 1                    | yes               |
+| notch          | yes                | 1                    | yes               |
+| mission        | yes                | 1                    | yes               |
+| launchpad      | yes                | 1                    | yes               |
+| macshortcuts   | yes                | 1                    | yes               |
+| clipboard      | yes                | 1                    | yes               |
+| spotlight      | yes                | 1                    | yes               |
+| stage          | yes                | 1                    | yes               |
+| controlcenter  | yes                | 1                    | yes               |
+| switcher       | yes                | 1                    | yes               |
+| menubar        | yes                | 1                    | yes               |
+| topmost        | yes                | 1                    | yes               |
+| hotcorner      | yes                | 1                    | yes               |
+| fx             | yes                | 1                    | yes               |
+| widgets        | yes                | 1                    | yes               |
+| all            | yes                | 15                   | yes               |
 
 ## Notes
 Release builds use `panic = "abort"` (workspace `Cargo.toml`), so a panic inside a feature still ends the process; this test covers
 `Err` returns only. A panic is the REC-01 "panic" path.
 
 ## Date / tester
+2026-11-27 / Codex (nexora-ctl agent-control run)

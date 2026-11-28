@@ -84,7 +84,7 @@ Core M5 sudah selesai dan diuji di Linux (`cargo test -p nexora-core`); semua it
 ## 6. Halaman bersama (M6)
 [ ] **Start on boot**: Registry and Scheduled Task methods are implemented in `platform/startup.rs`; app applies the selected method in `mainwin::apply_autostart`, and `installer/NEXORA.iss` removes both entries at uninstall. An ignored create/delete test exists; run it and perform manual installer QA for both methods. Core: `Settings::set_start_method`.
 [ ] **Hide taskbar on boot**: sembunyikan/pulihkan taskbar per monitor di `platform/shell/taskbar.rs`, dipulihkan `nexora-guard` (REC-01). Core siap: `window_management/taskbar.rs` (`to_hide` untuk monitor yang disembunyikan, `to_restore` saat pilihan berubah).
-[ ] **Display font**: pasang font Inter dari `assets/fonts`, cek font terpasang di platform, lalu rendering teks memakai `shared::font::resolve` dan `text_scale` (live). Core siap.
+[x] **Display font**: pasang font Inter dari `assets/fonts`, cek font terpasang di platform, lalu rendering teks memakai `shared::font::resolve` dan `text_scale` (live). Core siap.
 [ ] **STG gaps**: efek di `app/stage.rs` memakai `window_management/stage_options.rs`: icon di Finder, blur ikon latar, native preview, hidden mode (`strip_visible`), keep border, desktop icons 3 keadaan (`desktop_icons_visible`), kecepatan animasi, dan WAN-06 (`left_out_of_stage`). Asumsi yang perlu dikonfirmasi maintainer: arti "Default/Always show/Always hide" pada `HiddenMode`.
 [ ] **WAN**: terapkan `window_management/animation.rs` (`frame`, `duration`, `should_animate`) di `app/fx.rs` dan `app/motion.rs`.
 [ ] **SCR**: jendela overlay click-through (`dim_alpha`, `night_light`) atau gamma ramp (`gamma_gain`); target monitor lewat `screen::targets`; gamma wajib punya jalur restore di `nexora-guard`.
@@ -118,9 +118,18 @@ Core M7 selesai dan diuji di Linux (`cargo test -p nexora-core`): `shared/featur
 - [ ] tidak ada timer lebih cepat dari 1 detik saat idle (I-12.3, F-15.2).
 
 ### Lain-lain
-- [ ] **ADR-0009**: migrasi edition 2024 (`cargo fix --edition`), baru bisa diverifikasi dengan build Windows.
+- [x] **ADR-0009**: migrasi edition 2024 (`cargo fix --edition`), baru bisa diverifikasi dengan build Windows.
 - [ ] **QA-05**: audit baris ✅ di `feature_checkpoint.md` terhadap perilaku Windows (§8 sudah memuat status M7).
 - [ ] **L3, L4, L5, L7** di rencana tes: tes platform (`#[ignore]`), smoke `--settings-page`, QA manual, dan footprint.
 
 ## 8. Paritas HTML (M8)
 Tidak ada task M8 yang bergantung pada Windows. **HTM-07** (`scripts/schema_parity.mjs`, tes `design/tests/schema-parity.test.mjs`, job CI `design`) berjalan dengan Node di Linux dan Windows, jadi dikerjakan dan diverifikasi di sini, bukan di daftar ini.
+
+## 9. Appearance per permukaan (D-15.1)
+Kabel kode ada untuk Label ikon, Menu konteks, Menu Nexora (selain Dock dan Finder yang sudah ada), diketik-periksa untuk
+`x86_64-pc-windows-msvc` saja. Belum pernah dijalankan di Windows.
+- [ ] jalankan [`qa/appearance-surfaces.md`](../qa/appearance-surfaces.md) dan catat hasilnya.
+- [ ] **Folder grid** (`custom_folder_grid`): belum ada jendela folder yang memakai kaca; baris tersimpan tetapi tidak berefek.
+- [ ] **Launchpad** (`launchpad_custom_blur`): `launchpad.rs` tidak menggambar kaca sendiri; belum ada konsumen.
+- [ ] **Refleksi yang disematkan** dan **Warna wallpaper Finder** (`wallpaper_tint`): belum ada renderer (D-15.3, F-7).
+- [ ] kolom **border** tiap permukaan belum dipakai: arti nilainya (opasitas atau transparansi garis tepi) perlu diputuskan.

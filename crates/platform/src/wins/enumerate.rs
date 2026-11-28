@@ -51,21 +51,23 @@ pub fn exe_path_of_running(name: &str) -> Option<String> {
     seen: Vec<u32>,
   }
   unsafe extern "system" fn cb(hwnd: HWND, lp: LPARAM) -> BOOL {
-    let f = &mut *(lp.0 as *mut Find);
-    let mut pid = 0u32;
-    GetWindowThreadProcessId(hwnd, Some(&mut pid));
-    if pid == 0 || f.seen.contains(&pid) {
-      return BOOL(1);
-    }
-    f.seen.push(pid);
-    if let Some(path) = exe_path_of_pid(pid) {
-      let file = path.rsplit('\\').next().unwrap_or("").to_ascii_lowercase();
-      if file == f.name {
-        f.found = Some(path);
-        return BOOL(0);
+    unsafe {
+      let f = &mut *(lp.0 as *mut Find);
+      let mut pid = 0u32;
+      GetWindowThreadProcessId(hwnd, Some(&mut pid));
+      if pid == 0 || f.seen.contains(&pid) {
+        return BOOL(1);
       }
+      f.seen.push(pid);
+      if let Some(path) = exe_path_of_pid(pid) {
+        let file = path.rsplit('\\').next().unwrap_or("").to_ascii_lowercase();
+        if file == f.name {
+          f.found = Some(path);
+          return BOOL(0);
+        }
+      }
+      BOOL(1)
     }
-    BOOL(1)
   }
   let mut f = Find {
     name: name.to_ascii_lowercase(),
@@ -95,61 +97,63 @@ struct Ctx {
 }
 
 unsafe extern "system" fn each(hwnd: HWND, lparam: LPARAM) -> BOOL {
-  let ctx = &mut *(lparam.0 as *mut Ctx);
-  if !IsWindowVisible(hwnd).as_bool() || is_cloaked(hwnd) {
-    return BOOL(1);
-  }
-  let title = text_of(hwnd);
-  if title.is_empty() || title == "Program Manager" {
-    return BOOL(1);
-  }
-  let ex = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
-  let app_window = ex & WS_EX_APPWINDOW.0 != 0;
-  if ex & WS_EX_TOOLWINDOW.0 != 0 && !app_window {
-    return BOOL(1);
-  }
-  if !app_window {
-    if let Ok(owner) = GetWindow(hwnd, GW_OWNER) {
-      if !owner.0.is_null() && IsWindowVisible(owner).as_bool() {
-        return BOOL(1);
-      }
-    }
-  }
-  let mut pid = 0u32;
-  GetWindowThreadProcessId(hwnd, Some(&mut pid));
-  if pid == 0 || pid == ctx.own_pid {
-    return BOOL(1);
-  }
-  let Some(path) = exe_path_of_pid(pid) else {
-    return BOOL(1);
-  };
-  let lower = path.to_lowercase();
-  let file = lower.rsplit('\\').next().unwrap_or("");
-  if HIDDEN_EXES.contains(&file) {
-    return BOOL(1);
-  }
-  let class = class_of(hwnd);
-  if file == "explorer.exe" && class != "CabinetWClass" && class != "ExploreWClass" {
-    return BOOL(1);
-  }
-  let mut path = path;
-  if file == "applicationframehost.exe" {
-    if class != "ApplicationFrameWindow" {
+  unsafe {
+    let ctx = &mut *(lparam.0 as *mut Ctx);
+    if !IsWindowVisible(hwnd).as_bool() || is_cloaked(hwnd) {
       return BOOL(1);
     }
-    path = match super::identity::aumid(hwnd.0 as isize) {
-      Some(id) => super::identity::shell_path(&id),
-      None => format!("{path}?{title}"),
+    let title = text_of(hwnd);
+    if title.is_empty() || title == "Program Manager" {
+      return BOOL(1);
+    }
+    let ex = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+    let app_window = ex & WS_EX_APPWINDOW.0 != 0;
+    if ex & WS_EX_TOOLWINDOW.0 != 0 && !app_window {
+      return BOOL(1);
+    }
+    if !app_window {
+      if let Ok(owner) = GetWindow(hwnd, GW_OWNER) {
+        if !owner.0.is_null() && IsWindowVisible(owner).as_bool() {
+          return BOOL(1);
+        }
+      }
+    }
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(hwnd, Some(&mut pid));
+    if pid == 0 || pid == ctx.own_pid {
+      return BOOL(1);
+    }
+    let Some(path) = exe_path_of_pid(pid) else {
+      return BOOL(1);
     };
+    let lower = path.to_lowercase();
+    let file = lower.rsplit('\\').next().unwrap_or("");
+    if HIDDEN_EXES.contains(&file) {
+      return BOOL(1);
+    }
+    let class = class_of(hwnd);
+    if file == "explorer.exe" && class != "CabinetWClass" && class != "ExploreWClass" {
+      return BOOL(1);
+    }
+    let mut path = path;
+    if file == "applicationframehost.exe" {
+      if class != "ApplicationFrameWindow" {
+        return BOOL(1);
+      }
+      path = match super::identity::aumid(hwnd.0 as isize) {
+        Some(id) => super::identity::shell_path(&id),
+        None => format!("{path}?{title}"),
+      };
+    }
+    let name = super::names::friendly(&path);
+    ctx.out.push(Win {
+      hwnd: hwnd.0 as isize,
+      path,
+      title,
+      name,
+    });
+    BOOL(1)
   }
-  let name = super::names::friendly(&path);
-  ctx.out.push(Win {
-    hwnd: hwnd.0 as isize,
-    path,
-    title,
-    name,
-  });
-  BOOL(1)
 }
 
 pub fn list(own_pid: u32) -> Vec<Win> {

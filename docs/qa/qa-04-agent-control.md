@@ -27,6 +27,8 @@ returns a desktop PNG, and exits on the control command.
 - Pass: `screenshot all` wrote a 1920 × 1080 PNG.
 - Pass: `quit` returned success and the Nexora process exited.
 - Pass: startup page smoke IDs 0–5 each started, answered `state` and `wait_idle`, and exited via `quit`.
+- Pass: after the Finder settings wiring update, a fresh build repeated pages 0–5; each reported state, became idle, and exited through `quit`.
+- Pass: latest smoke PID 1712 reported Deck `[592,972,736,107]`, Menubar `[0,0,1920,48]`, and Visor `[845,0,1075,42]`; `open settings 0` succeeded.
 - Limitation: the captured desktop had the terminal in front of Settings, so the screenshot does not verify Settings visually.
 
 ## Recovery check

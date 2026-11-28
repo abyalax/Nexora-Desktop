@@ -14,7 +14,7 @@ Dock seharusnya tidak memiliki space antara window user space dan dock
 Terdapat unnecessary space antara window user space dan dock
 
 ## Evidence
-[Screenshot%202026-11-27%20093552.png](./evidence/Screenshot%202026-11-27%20093552.png)
+[001-window-border](./evidence/001-window-border.png)
 
 ## Acceptance Criteria
 - [ ] remove space between dock and  window user space

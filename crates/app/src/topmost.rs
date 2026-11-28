@@ -74,16 +74,18 @@ pub fn init() -> windows_core::Result<()> {
 }
 
 unsafe extern "system" fn collect(h: HWND, lp: LPARAM) -> BOOL {
-  let v = &mut *(lp.0 as *mut Vec<isize>);
-  let mut pid = 0u32;
-  GetWindowThreadProcessId(h, Some(&mut pid));
-  if pid == std::process::id()
-    && IsWindowVisible(h).as_bool()
-    && GetWindowLongW(h, GWL_EXSTYLE) as u32 & WS_EX_TOPMOST.0 != 0
-  {
-    v.push(h.0 as isize);
+  unsafe {
+    let v = &mut *(lp.0 as *mut Vec<isize>);
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(h, Some(&mut pid));
+    if pid == std::process::id()
+      && IsWindowVisible(h).as_bool()
+      && GetWindowLongW(h, GWL_EXSTYLE) as u32 & WS_EX_TOPMOST.0 != 0
+    {
+      v.push(h.0 as isize);
+    }
+    BOOL(1)
   }
-  BOOL(1)
 }
 
 const BASE_LAYERS: [&str; 5] = [
@@ -135,17 +137,19 @@ pub fn raise_all() {
 }
 
 unsafe extern "system" fn ctl_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_RAISE => {
-      SetTimer(Some(hwnd), T_RAISE, 50, None);
-      SetTimer(Some(hwnd), T_RAISE2, 600, None);
-      LRESULT(0)
+  unsafe {
+    match msg {
+      WM_RAISE => {
+        SetTimer(Some(hwnd), T_RAISE, 50, None);
+        SetTimer(Some(hwnd), T_RAISE2, 600, None);
+        LRESULT(0)
+      }
+      WM_TIMER => {
+        let _ = KillTimer(Some(hwnd), wp.0);
+        raise_all();
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    WM_TIMER => {
-      let _ = KillTimer(Some(hwnd), wp.0);
-      raise_all();
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

@@ -170,22 +170,24 @@ pub fn shutdown() {
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    WM_HOTKEY => {
-      match wp.0 as i32 {
-        ID_NEXT => cycle(false),
-        ID_PREV => cycle(true),
-        ID_HIDE => hide_foreground_app(),
-        ID_MIN => minimize_foreground(),
-        ID_QUIT => quit_foreground_app(),
-        _ => {}
+  unsafe {
+    match msg {
+      WM_HOTKEY => {
+        match wp.0 as i32 {
+          ID_NEXT => cycle(false),
+          ID_PREV => cycle(true),
+          ID_HIDE => hide_foreground_app(),
+          ID_MIN => minimize_foreground(),
+          ID_QUIT => quit_foreground_app(),
+          _ => {}
+        }
+        LRESULT(0)
       }
-      LRESULT(0)
+      m if m == prefs::WM_PREFS => {
+        register(hwnd);
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    m if m == prefs::WM_PREFS => {
-      register(hwnd);
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

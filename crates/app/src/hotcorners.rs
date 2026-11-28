@@ -109,30 +109,32 @@ fn run(a: HotAction) {
 }
 
 unsafe extern "system" fn proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
-  match msg {
-    prefs::WM_PREFS => {
-      apply();
-      LRESULT(0)
-    }
-    m if (ENTER_BASE..ENTER_BASE + 8).contains(&m) && (m - ENTER_BASE) % 2 == 0 => {
-      let i = ((m - ENTER_BASE) / 2) as usize;
-      SetTimer(Some(hwnd), T_DWELL + i, 250, None);
-      LRESULT(0)
-    }
-    m if (LEAVE_BASE..LEAVE_BASE + 8).contains(&m) && (m - LEAVE_BASE) % 2 == 0 => {
-      let i = ((m - LEAVE_BASE) / 2) as usize;
-      let _ = KillTimer(Some(hwnd), T_DWELL + i);
-      LRESULT(0)
-    }
-    WM_TIMER if (T_DWELL..T_DWELL + 4).contains(&wp.0) => {
-      let i = wp.0 - T_DWELL;
-      let _ = KillTimer(Some(hwnd), wp.0);
-      let down = GetAsyncKeyState(VK_LBUTTON.0 as i32) < 0 || GetAsyncKeyState(VK_RBUTTON.0 as i32) < 0;
-      if !down {
-        run(prefs::get().hot[i]);
+  unsafe {
+    match msg {
+      prefs::WM_PREFS => {
+        apply();
+        LRESULT(0)
       }
-      LRESULT(0)
+      m if (ENTER_BASE..ENTER_BASE + 8).contains(&m) && (m - ENTER_BASE) % 2 == 0 => {
+        let i = ((m - ENTER_BASE) / 2) as usize;
+        SetTimer(Some(hwnd), T_DWELL + i, 250, None);
+        LRESULT(0)
+      }
+      m if (LEAVE_BASE..LEAVE_BASE + 8).contains(&m) && (m - LEAVE_BASE) % 2 == 0 => {
+        let i = ((m - LEAVE_BASE) / 2) as usize;
+        let _ = KillTimer(Some(hwnd), T_DWELL + i);
+        LRESULT(0)
+      }
+      WM_TIMER if (T_DWELL..T_DWELL + 4).contains(&wp.0) => {
+        let i = wp.0 - T_DWELL;
+        let _ = KillTimer(Some(hwnd), wp.0);
+        let down = GetAsyncKeyState(VK_LBUTTON.0 as i32) < 0 || GetAsyncKeyState(VK_RBUTTON.0 as i32) < 0;
+        if !down {
+          run(prefs::get().hot[i]);
+        }
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(hwnd, msg, wp, lp),
     }
-    _ => DefWindowProcW(hwnd, msg, wp, lp),
   }
 }

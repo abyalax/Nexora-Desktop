@@ -15,8 +15,12 @@ Keep the README claim (about 15 MB idle private memory) honest, and catch always
 ## Expected behavior
 Private memory within a few MB of the previous row; no timer faster than 1 s while idle.
 
-## Results table (fill in; no value has been measured yet)
-| Milestone | Commit | Idle private MB | Idle wake-ups > 1/s | Date |
+## Results
+| Milestone | Source | Idle private MB | Idle wake-ups > 1/s | Date |
 | --------- | ------ | --------------- | ------------------- | ---- |
-| M1        |        |                 |                     |      |
-| M7        |        |                 |                     |      |
+| M1        | `ef842b7` + workspace changes | 22.36 | Not measured | 2026-11-27 |
+| M7        | — | — | — | — |
+
+The M1 value is from an optimized release with debug assertions enabled so the process could exit through
+`nexora-ctl quit`. The baseline is therefore measured with the agent control channel enabled; no ETW/Process Monitor
+idle wake-up trace was collected.

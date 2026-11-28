@@ -18,6 +18,7 @@ pub struct Marker {
   pub pid: u32,
   pub primary: Option<Rect>,
   pub secondaries: Vec<(isize, Rect)>,
+  pub hidden_monitors: Vec<String>,
 }
 
 impl Marker {
@@ -27,6 +28,7 @@ impl Marker {
       pid,
       primary: None,
       secondaries: Vec::new(),
+      hidden_monitors: Vec::new(),
     }
   }
 
@@ -43,6 +45,9 @@ impl Marker {
         r.left, r.top, r.right, r.bottom
       ));
     }
+    for m in &self.hidden_monitors {
+      s.push_str(&format!("hidden_monitor={}\n", m));
+    }
     s
   }
 
@@ -51,6 +56,7 @@ impl Marker {
     let mut pid = None;
     let mut primary = None;
     let mut secondaries = Vec::new();
+    let mut hidden_monitors = Vec::new();
     for line in text.lines() {
       let line = line.trim();
       if let Some(v) = line.strip_prefix("abstate=") {
@@ -63,6 +69,8 @@ impl Marker {
         let parts: Vec<&str> = v.split(',').collect();
         let (h, rest) = parts.split_first()?;
         secondaries.push((h.parse().ok()?, parse_rect(rest)?));
+      } else if let Some(v) = line.strip_prefix("hidden_monitor=") {
+        hidden_monitors.push(v.to_string());
       }
     }
     Some(Marker {
@@ -70,6 +78,7 @@ impl Marker {
       pid: pid?,
       primary,
       secondaries,
+      hidden_monitors,
     })
   }
 
@@ -125,6 +134,7 @@ mod tests {
           },
         ),
       ],
+      hidden_monitors: vec!["PRIMARY".to_string(), "SECONDARY".to_string()],
     }
   }
 

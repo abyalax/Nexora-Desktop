@@ -266,7 +266,7 @@ impl Spot {
       self.files.clear();
       return;
     }
-    let (gen, shared) = (self.files_gen, self.shared_files.clone());
+    let (r#gen, shared) = (self.files_gen, self.shared_files.clone());
     let h = CTL
       .with(|c| c.borrow().as_ref().map(|c| c.hwnd.0 as isize))
       .unwrap_or(0);
@@ -274,8 +274,8 @@ impl Spot {
       let hits = filesearch::search(&q);
       {
         let mut g = shared.lock().unwrap();
-        if gen >= g.0 {
-          *g = (gen, hits);
+        if r#gen >= g.0 {
+          *g = (r#gen, hits);
         }
       }
       unsafe {

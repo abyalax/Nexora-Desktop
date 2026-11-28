@@ -60,40 +60,42 @@ unsafe extern "system" fn callback(
   _thread: u32,
   _time: u32,
 ) {
-  if hwnd.0.is_null() || id_object != 0 || id_child != 0 {
-    return;
-  }
-  if matches!(
-    event,
-    EVENT_SYSTEM_FOREGROUND
-      | EVENT_SYSTEM_MINIMIZESTART
-      | EVENT_SYSTEM_MINIMIZEEND
-      | EVENT_OBJECT_DESTROY
-      | EVENT_SYSTEM_MOVESIZEEND
-      | EVENT_OBJECT_SHOW
-      | EVENT_OBJECT_UNCLOAKED
-  ) || (event == EVENT_OBJECT_LOCATIONCHANGE && hwnd == GetForegroundWindow())
-  {
-    let fx: Vec<fn(u32, isize)> = FX_CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
-    for f in fx {
-      f(event, hwnd.0 as isize);
+  unsafe {
+    if hwnd.0.is_null() || id_object != 0 || id_child != 0 {
+      return;
     }
-  }
-  if event == EVENT_OBJECT_UNCLOAKED {
-    return;
-  }
-  if event == EVENT_OBJECT_LOCATIONCHANGE && hwnd != GetForegroundWindow() {
-    return;
-  }
-  if event == EVENT_SYSTEM_FOREGROUND {
-    focus_map()
-      .get_or_insert_with(HashMap::new)
-      .insert(hwnd.0 as isize, now_ms());
-    EXTERNAL_FG.store(hwnd.0 as isize, Ordering::Relaxed);
-  }
-  let list: Vec<fn()> = CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
-  for f in list {
-    f();
+    if matches!(
+      event,
+      EVENT_SYSTEM_FOREGROUND
+        | EVENT_SYSTEM_MINIMIZESTART
+        | EVENT_SYSTEM_MINIMIZEEND
+        | EVENT_OBJECT_DESTROY
+        | EVENT_SYSTEM_MOVESIZEEND
+        | EVENT_OBJECT_SHOW
+        | EVENT_OBJECT_UNCLOAKED
+    ) || (event == EVENT_OBJECT_LOCATIONCHANGE && hwnd == GetForegroundWindow())
+    {
+      let fx: Vec<fn(u32, isize)> = FX_CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
+      for f in fx {
+        f(event, hwnd.0 as isize);
+      }
+    }
+    if event == EVENT_OBJECT_UNCLOAKED {
+      return;
+    }
+    if event == EVENT_OBJECT_LOCATIONCHANGE && hwnd != GetForegroundWindow() {
+      return;
+    }
+    if event == EVENT_SYSTEM_FOREGROUND {
+      focus_map()
+        .get_or_insert_with(HashMap::new)
+        .insert(hwnd.0 as isize, now_ms());
+      EXTERNAL_FG.store(hwnd.0 as isize, Ordering::Relaxed);
+    }
+    let list: Vec<fn()> = CALLBACKS.lock().unwrap_or_else(|e| e.into_inner()).clone();
+    for f in list {
+      f();
+    }
   }
 }
 

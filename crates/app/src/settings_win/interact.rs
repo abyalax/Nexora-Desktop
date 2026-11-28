@@ -93,7 +93,7 @@ impl Win {
       23 => (0.0, 1500.0, " ms"),
       24 => (0.0, 100.0, " dp"),
       25 => (0.0, 1500.0, " ms"),
-      26 => (1.0, 15.0, " s"),
+      26 => (50.0, 200.0, "%"),
       27 => (0.0, 30.0, " s"),
       // Appearance sliders (APP-02..APP-33)
       28 | 40 | 44 | 47 | 50 => (0.0, 50.0, ""),
@@ -192,6 +192,7 @@ impl Win {
       prefs::update_with(save, |s| match id {
         23 => s.extra.dock_activation_delay = value,
         25 => s.extra.preview_delay = value,
+        26 => s.ui_scale = value as u8,
         _ => {}
       });
       return;

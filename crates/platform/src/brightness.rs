@@ -143,12 +143,15 @@ pub fn spawn(notify: impl Fn() + Send + Sync + 'static) -> Brightness {
     let Ok(con) = WMIConnection::with_namespace_path("root\\WMI", com) else {
       return;
     };
-    if let Some(v) = read(&con) {
-      LEVEL.store(v as i32, Ordering::Relaxed);
-      n1();
-    } else {
-      crate::log::line("brightness", "panel tidak mendukung kecerahan WMI");
-      return;
+    match read(&con) {
+      Some(v) => {
+        LEVEL.store(v as i32, Ordering::Relaxed);
+        n1();
+      }
+      _ => {
+        crate::log::line("brightness", "panel tidak mendukung kecerahan WMI");
+        return;
+      }
     }
     while let Ok(cmd) = rx.recv() {
       match cmd {

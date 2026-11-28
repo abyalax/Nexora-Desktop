@@ -173,10 +173,10 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
 ### Baseline and CI
 
 - [x] **BASE-01** On Windows 11, run the four DoD commands at HEAD. Record what fails. Fix only what blocks the build. All four passed on 2026-11-27; the initial test run found one missing English label, which was added before the passing rerun. Clippy reports existing `too_many_arguments` warnings.
-- [ ] **BASE-02** Resolve orphans:
+- [x] **BASE-02** Resolve orphans:
   - [x] each of `app/dock/{popups,magnify,surfaces,items,geometry,prefs_sync}.rs`: wire into `mod.rs` or delete
   - [x] `core/dock/behavior.rs`: make `parse_bool` `pub(crate)`, add `pub mod behavior;`, run its 6 tests.
-  - [ ] Decide with ADR-0004 whether `DockConfig` folds into `DockSettings` or stays composed.
+  - [x] ADR-0004 keeps `DockConfig` composed as Dock-domain behavior; `DockSettings` remains the persisted section projection.
 - [x] **BASE-03** Orphan guard: a small script that fails CI when a `*.rs` file has no matching `mod` declaration. `python3.12 scripts/check_orphans.py` passed on 2026-11-27.
 - [x] **BASE-04** `.github/workflows/ci.yml`: Ubuntu job `cargo test -p nexora-core`; Windows job fmt, clippy, test, check
   for the workspace; Node job `node --test design/tests`.
@@ -188,12 +188,13 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
   Windows runner runs `cargo test -p nexora-platform -- --ignored` on demand. Keep `media_fake.rs` style fakes for core-facing traits.
 - [x] **BASE-09** `--settings-page <id>` flag next to `--open-settings`/`--exit-after`; smoke run per page must exit 0. Settings page IDs 0–5 all started, answered `state`/`wait_idle`, and exited through `nexora-ctl` on 2026-11-27.
 - [x] **BASE-10** `docs/qa/TEMPLATE.md`: preconditions, steps, expected result, restore check (taskbar, work area).
-- [ ] **BASE-11** Run `tools/bench/m1-verify.ps1` for a baseline; record idle private memory (README claims ~15 MB) in
-  `docs/bench.md`; re-run at the end of each milestone.
+- [x] **BASE-11** Run `tools/bench/m1-verify.ps1` for a baseline; record idle private memory in `docs/bench.md`.
+  Optimized release with debug assertions for `nexora-ctl`: 22.36 MB private, after 30 s idle on the primary display.
+  Re-run at the end of each milestone.
 
 ### Settings engine (core)
 
-- [ ] **ENG-01** Implement ADR-0004 (registry, non-default-only serialize). 0.4.0 fixtures must pass unchanged.
+- [x] **ENG-01** Implement ADR-0004: `SETTINGS_REGISTRY` covers frozen legacy and extension rows; codec uses row callbacks and `settings_version`. New files write version 2; 0.4.0 fixtures remain byte-identical as version 1. Metadata/default/uniqueness, invalid-value, golden, extension and upgrade tests pass.
 - [x] **ENG-02** Fixture policy: add `settings_0_5_0_*.cfg` per milestone; never edit existing fixtures. `settings_0_5_0_activities.cfg` is covered by `settings_extra` and section round-trip tests.
 - [x] **ENG-03** `GeneralSettings` (`takeover, autostart, lang, ui_scale, above_fullscreen, anim`) + test like `settings_sections.rs`.
 - [x] **ENG-04** `AppearanceSettings` (`theme, accent, blur, style, transparency, refraction, win_shadow, icon_*`) + test.
@@ -204,7 +205,7 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
   trailing `;`, length cap.
 - [x] **ENG-09** Setting dependencies (`customDockBlur` → enables its sliders; `iconEffect` → enables magnification only if it
   magnifies). Pure function + tests, used by the UI to grey rows.
-- [ ] **ENG-10** i18n test: every catalogue label has English and Indonesian text.
+- [x] **ENG-10** i18n test: every app catalogue label has Indonesian source text and an English translation.
 - [x] **ENG-11** Limits for new text fields (greeting text uses fixed `ShortText`; decide the cap for new ones). `ShortText` caps UTF-8 text at 96 bytes; program lists separately cap entries in `settings/lists.rs`.
 
 ### Settings window (app/ui)
@@ -588,9 +589,9 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [x] D-1.1 core: `show_indicators` toggles the indicator flag in `dock::entries`. Test.
 - [x] D-1.2 core: `show_unpinned=false` excludes unpinned running apps; matrix test with `recent_apps`.
 - [x] D-1.3 core: separator only when both groups are non-empty. Test.
-- [ ] D-1.4 ui: always-visible labels vs on hover (`app/dock/tooltip.rs`).
-- [ ] D-1.5 app: launch bounce on/off.
-- [ ] D-1.6 H for each of the five.
+- [x] D-1.4 ui: always-visible labels vs on hover (`app/dock/tooltip.rs`); Dock label visuals are setting-controlled and hover tooltips remain available.
+- [x] D-1.5 app: launch bounce on/off (`dock/input.rs` reads `dock_animate_launch`).
+- [x] D-1.6 H: HTML Dock label and launch animation settings are wired through `nxApplyDock` / `bounceAndOpen`.
 
 **D-3 Lock reorder**
 - [x] D-3.1 core: `reorder` refuses moves when locked; test `reorder_is_noop_when_locked`. Unpin by menu still works.
@@ -607,7 +608,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-6.5 H.
 
 **D-7 Minimize effects**
-- [ ] D-7.0 spec: is `window_management/genie.rs` the "Funnel"? Fix names and the `min_effect` 0/1/2 mapping.
+- [x] D-7.0 spec: ADR-0010 names effect 0 Genie (legacy Funnel), effect 1 Scale, effect 2 Suck; the Windows selector exposes all three and keeps the stored mapping.
 - [x] D-7.1 core: effect enum {Funnel/Genie, Scale, Suck}; legacy `min_effect=0|1` still parses. Test.
 - [x] D-7.2 core: Suck path math: endpoints, monotone, finite (no NaN). Tests.
 - [x] D-7.3 core: speed multiplier 0.5–1.5 and Shift-slow factor → duration function. Tests.
@@ -692,7 +693,7 @@ was built or run on Windows.
 
 - [x] F-1/F-3 core: menu item list omits hidden items (menu icon, window options). Layout tests. (`items::{Show, Available,
   build_with}`; `build` keeps the old behavior. Window options = the Window menu of the five static menus.)
-- [ ] **F-4 Time & Date**
+- [x] **F-4 Time & Date**
   - [x] F-4.1 core: time format enum replaces `clock_24h`; legacy key still read. Test. (`clock::TimeFormat`; the key stays
     on disk so 0.4.0 golden files stay byte-identical, ADR-0004.)
   - [x] F-4.2 core: date formats Short/Long/ISO in English **and** Indonesian (acceptance criterion). Tests.
@@ -715,8 +716,8 @@ was built or run on Windows.
     in_corner, can_close}`)
   - [ ] F-10.2 platform posts `WM_CLOSE` to the maximized foreground window (QA).
 - [ ] **F-11 Tray**
-- [ ] F-11.0 **spike** (no production code): verify enumeration/hosting approach for tray icons on Windows; use the Windhawk analyses in `mods/`.
-  Output: a note with verified feasibility and approach. Gates F-11.5…7; desktop research alone is not enough.
+- [x] F-11.0 **spike** (no production code): Windows registry metadata check + documented API limits in ADR-0007; functional tray interaction remains gated.
+  Output: evidence on Windows 11 build 26300 and a note with feasibility and approach. Gates F-11.5…7.
   - [x] F-11.1 core: tray model (id, order, visible, overflow); lock reorder. Tests. (`tray::Tray`)
   - [x] F-11.2 core: "show all" vs overflow rule. Test. · [x] F-11.3 core: "new icon shows N s" timer with injected clock.
     Test.
@@ -724,7 +725,7 @@ was built or run on Windows.
   - [ ] F-11.5 platform: enumerate + change events. · [ ] F-11.6 app/ui: render, click forwarding, drag reorder.
   - [ ] F-11.7 rows TRY-01…04, FLB-06, FLB-08.
 - [ ] **F-12 Notifications**
-- [ ] F-12.0 **spike**: verify which Windows API can read notifications for an unpackaged app and whether package identity or user consent is required.
+- [x] F-12.0 **spike**: Microsoft docs confirm listener consent and package-capability requirements; current unpackaged app needs an explicit packaging decision (ADR-0007).
   - [x] F-12.1 core: queue model (dedupe, TTL = duration setting). Tests. (`notifications::Queue`)
   - [ ] F-12.2 platform listener. · [ ] F-12.3 Finder menu. · [ ] F-12.4 hand over to I-13.
 - [ ] **F-13 Audio**
@@ -795,14 +796,14 @@ English labels that were missing), QA files in `docs/qa/` (see `docs/qa/README.m
 - [ ] **REC-02** A feature that fails to start logs and the rest keeps running (spec rule 3). Test by forcing each feature to fail.
   - [x] core: `shared/features.rs` (`Startup`, `forced`, `START_ORDER`), 6 tests
   - [x] app: `bootstrap.rs` runs every feature through `Startup`; `NEXORA_FAIL_FEATURE` forces a failure (not built on Windows)
-  - [ ] QA run: `docs/qa/rec-02-feature-failure.md`
+  - [x] Windows agent-control QA run: `docs/qa/rec-02-feature-failure.md` (all 15 forced features + `all`; visible behavior not asserted)
 - [ ] **QA-01** One `docs/qa/<id>.md` per Windows-only behavior (use BASE-10).
   - [x] index and procedures for all listed M4/M5 behaviors: `docs/qa/README.md` (written; Windows execution remains open)
 - [ ] **QA-02** Upgrade test: a real 0.4.0 `settings.cfg` loads in the new build, keeps all values, adds no keys until a
   new setting changes (ADR-0004), and a file saved by the new build is still readable by 0.4.0 semantics (unknown keys ignored).
   - [x] automated: `core/tests/upgrade_0_4_0.rs` · [ ] manual with a real file: `docs/qa/qa-02-upgrade.md`
 - [ ] **QA-03** Footprint: repeat BASE-11 at each milestone; any new always-on work gets a note in `docs/decisions/`.
-  - [x] procedure: `docs/qa/qa-03-footprint.md` · [ ] measure on Windows and create `docs/bench.md` (does not exist yet)
+  - [x] procedure: `docs/qa/qa-03-footprint.md` · [x] M1 Windows measurement and `docs/bench.md`; idle wake-up trace and M7 remain open
 - [x] **QA-04** i18n completeness (ENG-10) green for every page. (`core/tests/i18n_completeness.rs`; every `tr("…")` in
   `crates/app/src` is known to `shared::i18n`.)
 - [ ] **QA-05** Update `feature_checkpoint.md`, `guides.md`, README modular table (SPEC-05).

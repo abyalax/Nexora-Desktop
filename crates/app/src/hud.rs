@@ -85,37 +85,39 @@ fn xy_y(lp: LPARAM) -> f32 {
 }
 
 unsafe extern "system" fn bar_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-  let ctl = HWND(CTL.load(Ordering::Relaxed) as *mut _);
-  let idx = GetWindowLongPtrW(h, GWLP_USERDATA) as usize;
-  let post = |kind: usize, y: f32| {
-    let _ = PostMessageW(
-      Some(ctl),
-      HUD_MOUSE,
-      WPARAM(((idx.saturating_sub(1)) << 8) | kind),
-      LPARAM(y as isize),
-    );
-  };
-  match m {
-    WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
-    WM_MOUSEMOVE if idx > 0 => {
-      post(K_MOVE, xy_y(l));
-      LRESULT(0)
+  unsafe {
+    let ctl = HWND(CTL.load(Ordering::Relaxed) as *mut _);
+    let idx = GetWindowLongPtrW(h, GWLP_USERDATA) as usize;
+    let post = |kind: usize, y: f32| {
+      let _ = PostMessageW(
+        Some(ctl),
+        HUD_MOUSE,
+        WPARAM(((idx.saturating_sub(1)) << 8) | kind),
+        LPARAM(y as isize),
+      );
+    };
+    match m {
+      WM_MOUSEACTIVATE => LRESULT(MA_NOACTIVATE as isize),
+      WM_MOUSEMOVE if idx > 0 => {
+        post(K_MOVE, xy_y(l));
+        LRESULT(0)
+      }
+      WM_MOUSELEAVE if idx > 0 => {
+        post(K_LEAVE, 0.0);
+        LRESULT(0)
+      }
+      WM_LBUTTONDOWN if idx > 0 => {
+        SetCapture(h);
+        post(K_DOWN, xy_y(l));
+        LRESULT(0)
+      }
+      WM_LBUTTONUP if idx > 0 => {
+        let _ = ReleaseCapture();
+        post(K_UP, xy_y(l));
+        LRESULT(0)
+      }
+      _ => DefWindowProcW(h, m, w, l),
     }
-    WM_MOUSELEAVE if idx > 0 => {
-      post(K_LEAVE, 0.0);
-      LRESULT(0)
-    }
-    WM_LBUTTONDOWN if idx > 0 => {
-      SetCapture(h);
-      post(K_DOWN, xy_y(l));
-      LRESULT(0)
-    }
-    WM_LBUTTONUP if idx > 0 => {
-      let _ = ReleaseCapture();
-      post(K_UP, xy_y(l));
-      LRESULT(0)
-    }
-    _ => DefWindowProcW(h, m, w, l),
   }
 }
 
@@ -138,24 +140,26 @@ impl Hud {
       let hi: HINSTANCE = GetModuleHandleW(None)?.into();
       let ctl_class = w!("NacreHudCtl");
       unsafe extern "system" fn ctl_proc(h: HWND, m: u32, w: WPARAM, l: LPARAM) -> LRESULT {
-        match m {
-          WM_VOLUME
-          | WM_BRIGHT
-          | HUD_MOUSE
-          | WM_TIMER
-          | STRIP_L_ENTER
-          | STRIP_L_LEAVE
-          | STRIP_R_ENTER
-          | STRIP_R_LEAVE
-          | WM_DISPLAYCHANGE
-          | crate::prefs::WM_PREFS => {
-            let p = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut Hud;
-            if !p.is_null() {
-              (*p).on_message(m, w, l);
+        unsafe {
+          match m {
+            WM_VOLUME
+            | WM_BRIGHT
+            | HUD_MOUSE
+            | WM_TIMER
+            | STRIP_L_ENTER
+            | STRIP_L_LEAVE
+            | STRIP_R_ENTER
+            | STRIP_R_LEAVE
+            | WM_DISPLAYCHANGE
+            | crate::prefs::WM_PREFS => {
+              let p = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut Hud;
+              if !p.is_null() {
+                (*p).on_message(m, w, l);
+              }
+              LRESULT(0)
             }
-            LRESULT(0)
+            _ => DefWindowProcW(h, m, w, l),
           }
-          _ => DefWindowProcW(h, m, w, l),
         }
       }
       RegisterClassW(&WNDCLASSW {

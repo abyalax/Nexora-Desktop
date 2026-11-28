@@ -36,80 +36,84 @@ fn clean(s: &str) -> String {
 }
 
 unsafe fn item_text(m: HMENU, pos: u32) -> String {
-  let mut buf = [0u16; 256];
-  let n = GetMenuStringW(m, pos, Some(&mut buf), MF_BYPOSITION);
-  String::from_utf16_lossy(&buf[..n.max(0) as usize])
+  unsafe {
+    let mut buf = [0u16; 256];
+    let n = GetMenuStringW(m, pos, Some(&mut buf), MF_BYPOSITION);
+    String::from_utf16_lossy(&buf[..n.max(0) as usize])
+  }
 }
 
 unsafe fn collect(m: HMENU, depth: u8, out: &mut Vec<Entry>) {
-  let n = GetMenuItemCount(Some(m));
-  if n <= 0 || depth > 2 {
-    return;
-  }
-  for i in 0..n as u32 {
-    let mut info = MENUITEMINFOW {
-      cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
-      fMask: MIIM_ID | MIIM_FTYPE | MIIM_STATE | MIIM_SUBMENU,
-      ..Default::default()
-    };
-    if GetMenuItemInfoW(m, i, true, &mut info).is_err() {
-      continue;
+  unsafe {
+    let n = GetMenuItemCount(Some(m));
+    if n <= 0 || depth > 2 {
+      return;
     }
-    if info.fType.0 & MFT_SEPARATOR.0 != 0 {
-      if out.last().map(|e| !e.separator).unwrap_or(false) {
+    for i in 0..n as u32 {
+      let mut info = MENUITEMINFOW {
+        cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
+        fMask: MIIM_ID | MIIM_FTYPE | MIIM_STATE | MIIM_SUBMENU,
+        ..Default::default()
+      };
+      if GetMenuItemInfoW(m, i, true, &mut info).is_err() {
+        continue;
+      }
+      if info.fType.0 & MFT_SEPARATOR.0 != 0 {
+        if out.last().map(|e| !e.separator).unwrap_or(false) {
+          out.push(Entry {
+            id: 0,
+            label: String::new(),
+            accel: String::new(),
+            enabled: false,
+            checked: false,
+            separator: true,
+            depth,
+            header: false,
+          });
+        }
+        continue;
+      }
+      if info.fType.0 & MFT_OWNERDRAW.0 != 0 {
+        continue;
+      }
+      let text = item_text(m, i);
+      let (label, accel) = match text.split_once('\t') {
+        Some((l, a)) => (clean(l), a.to_string()),
+        None => (clean(&text), String::new()),
+      };
+      if label.is_empty() {
+        continue;
+      }
+      let enabled = info.fState.0 & (MFS_DISABLED.0 | MFS_GRAYED.0) == 0;
+      let checked = info.fState.0 & MFS_CHECKED.0 != 0;
+      if !info.hSubMenu.0.is_null() {
         out.push(Entry {
           id: 0,
-          label: String::new(),
+          label,
           accel: String::new(),
           enabled: false,
           checked: false,
-          separator: true,
+          separator: false,
+          depth,
+          header: true,
+        });
+        collect(info.hSubMenu, depth + 1, out);
+      } else {
+        out.push(Entry {
+          id: info.wID,
+          label,
+          accel,
+          enabled,
+          checked,
+          separator: false,
           depth,
           header: false,
         });
       }
-      continue;
     }
-    if info.fType.0 & MFT_OWNERDRAW.0 != 0 {
-      continue;
+    while out.last().map(|e| e.separator).unwrap_or(false) {
+      out.pop();
     }
-    let text = item_text(m, i);
-    let (label, accel) = match text.split_once('\t') {
-      Some((l, a)) => (clean(l), a.to_string()),
-      None => (clean(&text), String::new()),
-    };
-    if label.is_empty() {
-      continue;
-    }
-    let enabled = info.fState.0 & (MFS_DISABLED.0 | MFS_GRAYED.0) == 0;
-    let checked = info.fState.0 & MFS_CHECKED.0 != 0;
-    if !info.hSubMenu.0.is_null() {
-      out.push(Entry {
-        id: 0,
-        label,
-        accel: String::new(),
-        enabled: false,
-        checked: false,
-        separator: false,
-        depth,
-        header: true,
-      });
-      collect(info.hSubMenu, depth + 1, out);
-    } else {
-      out.push(Entry {
-        id: info.wID,
-        label,
-        accel,
-        enabled,
-        checked,
-        separator: false,
-        depth,
-        header: false,
-      });
-    }
-  }
-  while out.last().map(|e| e.separator).unwrap_or(false) {
-    out.pop();
   }
 }
 

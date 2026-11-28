@@ -56,7 +56,6 @@ pub(super) enum Action {
   Slider(u8, f32, f32, Option<nexora_core::settings::NumericSlider>),
   MenuLogoPick,
   MenuLogoReset,
-  UiScale(u8),
   NotchShape(bool),
   WidgetStyle(u8),
   WidgetGallery,
