@@ -134,4 +134,32 @@ mod tests {
     assert_eq!(s.widget_style, 1);
     assert_eq!(s.battery_pct, Settings::default().battery_pct);
   }
+
+  #[test]
+  fn dock_modes_round_trip_by_key_and_old_values_stay_stable() {
+    for b in Behavior::DOCK_ALL {
+      let s = Settings::parse(&format!("dock={}\n", b.key()));
+      assert_eq!(s.dock, b);
+      assert_eq!(Settings::parse(&s.serialize()).dock, b);
+    }
+    // D-10.3: the on-disk values of the 0.4.0 modes did not change.
+    assert_eq!(Behavior::Fixed.key(), "fixed");
+    assert_eq!(Behavior::Overlay.key(), "overlay");
+    assert_eq!(Behavior::Smart.key(), "smart");
+  }
+
+  #[test]
+  fn the_island_ignores_dock_only_modes() {
+    let s = Settings::parse("notch=forcevisible\n");
+    assert_eq!(s.notch, Settings::default().notch);
+    assert_eq!(Settings::parse("notch=ondemand\n").notch, Behavior::OnDemand);
+  }
+
+  #[test]
+  fn dock_only_modes_do_not_reserve_the_work_area() {
+    for b in [Behavior::AlwaysShow, Behavior::ForceVisible, Behavior::DesktopOnly] {
+      assert!(!b.reserves(), "{b:?}");
+    }
+    assert_eq!(Behavior::DOCK_ALL.len(), 7);
+  }
 }

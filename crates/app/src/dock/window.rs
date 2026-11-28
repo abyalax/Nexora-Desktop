@@ -139,7 +139,7 @@ impl Dock {
         dragging: None,
         overlap: Overlap::default(),
         tier,
-        strip: if mode == Mode::Always {
+        strip: if !mode.can_hide() {
           None
         } else {
           Strip::new(hwnd, STRIP_ENTER, STRIP_LEAVE).ok()

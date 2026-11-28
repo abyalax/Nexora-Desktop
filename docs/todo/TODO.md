@@ -630,9 +630,9 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 **D-9 Icon plates**: confirm `scaleMacIcons` = `dock_plates`; if yes alias, if no add. Test with `shared::iconplate`.
 
 **D-10 Display behavior**
-- [ ] D-10.1 characterization tests, then move Dock-specific rules from `app/dock/visibility.rs` to `core/dock/visibility.rs` (spec §2.4 marks this ⬜). No behavior change.
-- [ ] D-10.2 spec: define "Only display with…".
-- [ ] D-10.3 core: modes AlwaysShow, ForceVisible, DesktopOnly; on-disk `dock=` values stay stable. Table test: mode × inputs → visible.
+- [x] D-10.1 characterization tests, then move Dock-specific rules from `app/dock/visibility.rs` to `core/dock/visibility.rs` (spec §2.4 marks this ⬜). No behavior change. The rules (`wants_hidden`, `transition`, `DockState::next_transition`) are in core with tests; `app/dock/visibility.rs` only gathers `Surroundings` and performs the effect.
+- [x] D-10.2 spec: define "Only display with…". Decided: dropped (ADR-0007: the spec text is cut off and defines no behavior); the Dock has 7 modes.
+- [x] D-10.3 core: modes AlwaysShow, ForceVisible, DesktopOnly; on-disk `dock=` values stay stable. Table test: mode × inputs → visible. `Behavior::{AlwaysShow, ForceVisible, DesktopOnly}` (keys `alwaysshow`, `forcevisible`, `desktoponly`), `Mode::{Forced, DesktopOnly}`, `Behavior::DOCK_ALL` (7 modes), table test `mode_by_situation_table`. The Island ignores the Dock-only values. UI row and the desktop-in-front signal are Windows work (windows_dependency §4).
 - [x] D-10.4 core: detection scope (All windows / Current window) as an input to `overlapped`. Test with window lists.
 - [ ] D-10.5 platform: overlap computation honoring scope (`wins/overlap.rs`).
 - [ ] D-10.6 ui/app: hide effect Move vs Fade.

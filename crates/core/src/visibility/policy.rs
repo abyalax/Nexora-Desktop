@@ -3,6 +3,10 @@ pub enum Mode {
   Always,
   AutoHide,
   OnDemand,
+  /// Never hides, not even for a full-screen app (Dock "Always force visibility", D-10.3).
+  Forced,
+  /// Visible only while the desktop is in front (Dock "Display only on the desktop", D-10.3).
+  DesktopOnly,
 }
 
 impl Mode {
@@ -11,8 +15,15 @@ impl Mode {
       "always" | "fixed" => Some(Mode::Always),
       "auto" | "smart" | "auto-hide" => Some(Mode::AutoHide),
       "peek" | "demand" => Some(Mode::OnDemand),
+      "forced" | "force" => Some(Mode::Forced),
+      "desktop" | "desktop-only" => Some(Mode::DesktopOnly),
       _ => None,
     }
+  }
+
+  /// False for the modes that keep the surface up, so the host needs no reveal strip or dwell timer for them.
+  pub fn can_hide(self) -> bool {
+    !matches!(self, Mode::Always | Mode::Forced)
   }
 }
 
@@ -24,9 +35,14 @@ pub struct Inputs {
   pub starting: bool,
   pub fullscreen: bool,
   pub revealing: bool,
+  /// The desktop is in front (no app window is the foreground). Only `Mode::DesktopOnly` reads it.
+  pub desktop: bool,
 }
 
 pub fn should_hide(mode: Mode, i: &Inputs) -> bool {
+  if mode == Mode::Forced {
+    return false;
+  }
   if i.revealing {
     return false;
   }
@@ -40,6 +56,8 @@ pub fn should_hide(mode: Mode, i: &Inputs) -> bool {
     Mode::Always => false,
     Mode::AutoHide => i.overlapped && !i.interacting && !i.edge_armed,
     Mode::OnDemand => !i.interacting && !i.edge_armed,
+    Mode::DesktopOnly => !i.desktop && !i.interacting && !i.edge_armed,
+    Mode::Forced => false,
   }
 }
 
@@ -187,5 +205,109 @@ mod tests {
     assert_eq!(transition_to(false, false), Transition::Show);
     assert_eq!(transition_to(true, false), Transition::Keep);
     assert_eq!(transition_to(false, true), Transition::Keep);
+  }
+
+  /// D-10.3: table of mode x situation -> hidden. Rows are the situations, columns the five modes in this order:
+  /// Always, AutoHide, OnDemand, Forced, DesktopOnly.
+  #[test]
+  fn mode_by_situation_table() {
+    let modes = [
+      Mode::Always,
+      Mode::AutoHide,
+      Mode::OnDemand,
+      Mode::Forced,
+      Mode::DesktopOnly,
+    ];
+    let rows: [(&str, Inputs, [bool; 5]); 8] = [
+      ("idle, app in front", i(), [false, false, true, false, true]),
+      (
+        "idle, desktop in front",
+        Inputs { desktop: true, ..i() },
+        [false, false, true, false, false],
+      ),
+      (
+        "window covers it",
+        Inputs {
+          overlapped: true,
+          ..i()
+        },
+        [false, true, true, false, true],
+      ),
+      (
+        "pointer on it",
+        Inputs {
+          interacting: true,
+          overlapped: true,
+          ..i()
+        },
+        [false, false, false, false, false],
+      ),
+      (
+        "edge armed",
+        Inputs {
+          edge_armed: true,
+          overlapped: true,
+          ..i()
+        },
+        [false, false, false, false, false],
+      ),
+      (
+        "full screen",
+        Inputs {
+          fullscreen: true,
+          desktop: true,
+          ..i()
+        },
+        [true, true, true, false, true],
+      ),
+      (
+        "full screen, pointer on it",
+        Inputs {
+          fullscreen: true,
+          interacting: true,
+          ..i()
+        },
+        [false, false, false, false, false],
+      ),
+      (
+        "starting up",
+        Inputs { starting: true, ..i() },
+        [false, false, false, false, false],
+      ),
+    ];
+    for (name, inputs, expected) in rows {
+      for (mode, want) in modes.into_iter().zip(expected) {
+        assert_eq!(should_hide(mode, &inputs), want, "{mode:?} when {name}");
+      }
+    }
+  }
+
+  #[test]
+  fn only_always_and_forced_never_need_a_reveal_strip() {
+    assert!(!Mode::Always.can_hide() && !Mode::Forced.can_hide());
+    assert!(Mode::AutoHide.can_hide() && Mode::OnDemand.can_hide() && Mode::DesktopOnly.can_hide());
+  }
+
+  #[test]
+  fn revealing_wins_over_every_mode_but_never_hides_a_forced_one() {
+    for mode in [
+      Mode::Always,
+      Mode::AutoHide,
+      Mode::OnDemand,
+      Mode::Forced,
+      Mode::DesktopOnly,
+    ] {
+      assert!(
+        !should_hide(
+          mode,
+          &Inputs {
+            revealing: true,
+            fullscreen: true,
+            ..i()
+          }
+        ),
+        "{mode:?}"
+      );
+    }
   }
 }

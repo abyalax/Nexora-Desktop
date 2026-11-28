@@ -12,6 +12,8 @@ impl Dock {
       overlapped: self.overlap.overlapped,
       fullscreen: self.overlap.fullscreen,
       dragging: self.dragging.is_some(),
+      // D-10.5: the platform overlap pass does not report the desktop-in-front state yet.
+      ..Surroundings::default()
     }
   }
 

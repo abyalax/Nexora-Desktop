@@ -7,6 +7,12 @@ pub enum Behavior {
   Smart,
   /// Island only: hidden until summoned (spec "On demand", ILB-03). Maps to `Mode::OnDemand`.
   OnDemand,
+  /// Dock only: stays on screen, does not reserve the work area (D-10.3 "Always show").
+  AlwaysShow,
+  /// Dock only: never hides, not even for a full-screen app (D-10.3 "Always force visibility").
+  ForceVisible,
+  /// Dock only: shown only while the desktop is in front (D-10.3 "Display only on the desktop").
+  DesktopOnly,
 }
 
 impl Behavior {
@@ -16,6 +22,9 @@ impl Behavior {
       "overlay" | "menimpa" => Some(Behavior::Overlay),
       "smart" | "autohide" | "auto-hide" | "auto" | "peek" | "hidden" => Some(Behavior::Smart),
       "ondemand" | "on_demand" | "on-demand" | "on demand" | "demand" => Some(Behavior::OnDemand),
+      "alwaysshow" | "always_show" | "always-show" | "always show" => Some(Behavior::AlwaysShow),
+      "forcevisible" | "force_visible" | "force-visible" | "force visible" => Some(Behavior::ForceVisible),
+      "desktoponly" | "desktop_only" | "desktop-only" | "desktop only" => Some(Behavior::DesktopOnly),
       _ => None,
     }
   }
@@ -26,14 +35,19 @@ impl Behavior {
       Behavior::Overlay => "overlay",
       Behavior::Smart => "smart",
       Behavior::OnDemand => "ondemand",
+      Behavior::AlwaysShow => "alwaysshow",
+      Behavior::ForceVisible => "forcevisible",
+      Behavior::DesktopOnly => "desktoponly",
     }
   }
 
   pub fn mode(self) -> Mode {
     match self {
-      Behavior::Fixed | Behavior::Overlay => Mode::Always,
+      Behavior::Fixed | Behavior::Overlay | Behavior::AlwaysShow => Mode::Always,
       Behavior::Smart => Mode::AutoHide,
       Behavior::OnDemand => Mode::OnDemand,
+      Behavior::ForceVisible => Mode::Forced,
+      Behavior::DesktopOnly => Mode::DesktopOnly,
     }
   }
 
@@ -43,8 +57,25 @@ impl Behavior {
 
   pub const ALL: [Behavior; 4] = [Behavior::Fixed, Behavior::Overlay, Behavior::Smart, Behavior::OnDemand];
 
-  /// Modes the Dock offers today (D-10 adds more later). The Island offers all of [`Behavior::ALL`].
+  /// Modes the Dock settings window offers today (three segments). The Island offers all of [`Behavior::ALL`].
   pub const DOCK: [Behavior; 3] = [Behavior::Fixed, Behavior::Overlay, Behavior::Smart];
+
+  /// The seven Dock display modes of ADR-0007 in settings-catalogue order (DAD-12): Default, Overlay, Auto-hide,
+  /// Smart auto-hide, Always show, Always force visibility, Display only on the desktop.
+  pub const DOCK_ALL: [Behavior; 7] = [
+    Behavior::Fixed,
+    Behavior::Overlay,
+    Behavior::OnDemand,
+    Behavior::Smart,
+    Behavior::AlwaysShow,
+    Behavior::ForceVisible,
+    Behavior::DesktopOnly,
+  ];
+
+  /// The Island has no use for the Dock-only modes.
+  pub fn island_ok(self) -> bool {
+    Behavior::ALL.contains(&self)
+  }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -308,12 +339,15 @@ mod tests {
   #[test]
   fn behavior_maps_to_visibility_modes_exhaustively() {
     // I-12.1: one mapping, every variant listed so a new variant fails to compile here first.
-    for b in Behavior::ALL {
+    for b in Behavior::DOCK_ALL {
       let (mode, reserves) = match b {
         Behavior::Fixed => (Mode::Always, true),
         Behavior::Overlay => (Mode::Always, false),
         Behavior::Smart => (Mode::AutoHide, false),
         Behavior::OnDemand => (Mode::OnDemand, false),
+        Behavior::AlwaysShow => (Mode::Always, false),
+        Behavior::ForceVisible => (Mode::Forced, false),
+        Behavior::DesktopOnly => (Mode::DesktopOnly, false),
       };
       assert_eq!(b.mode(), mode, "{b:?}");
       assert_eq!(b.reserves(), reserves, "{b:?}");

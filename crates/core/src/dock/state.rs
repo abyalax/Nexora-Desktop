@@ -35,6 +35,7 @@ pub struct Surroundings {
   pub overlapped: bool,
   pub fullscreen: bool,
   pub dragging: bool,
+  pub desktop: bool,
 }
 
 impl DockState {
@@ -67,6 +68,7 @@ impl DockState {
       starting: self.starting,
       revealing: self.revealing,
       off: self.off,
+      desktop: around.desktop,
     }
   }
 

@@ -30,6 +30,8 @@ pub struct Signals {
   pub revealing: bool,
   /// The Dock is switched off by the user.
   pub off: bool,
+  /// The desktop is in front (read by the desktop-only mode).
+  pub desktop: bool,
 }
 
 impl Signals {
@@ -46,6 +48,7 @@ impl Signals {
       starting: self.starting,
       fullscreen: self.fullscreen,
       revealing: self.revealing,
+      desktop: self.desktop,
     }
   }
 }
@@ -64,7 +67,7 @@ pub fn transition(mode: Mode, signals: &Signals, shown: bool) -> Transition {
 
 /// Entering the strip starts the reveal dwell timer unless the Dock is always visible.
 pub fn arms_dwell_on_enter(mode: Mode) -> bool {
-  mode != Mode::Always
+  mode.can_hide()
 }
 
 #[cfg(test)]

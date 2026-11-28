@@ -394,7 +394,7 @@ impl Dock {
       let was_appbar = self.opts.appbar;
       self.opts.mode = mode;
       self.opts.appbar = appbar;
-      if mode == Mode::Always {
+      if !mode.can_hide() {
         self.strip = None;
         self.state.edge_armed = false;
       } else if self.strip.is_none() {

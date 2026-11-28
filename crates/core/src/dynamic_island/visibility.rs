@@ -43,6 +43,7 @@ impl Signals {
       starting: self.starting,
       fullscreen: self.fullscreen,
       revealing: false,
+      desktop: false,
     }
   }
 }

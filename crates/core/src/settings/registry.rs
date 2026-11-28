@@ -182,7 +182,21 @@ macro_rules! bool_hot_row {
 pub const LEGACY: &[Entry] = &[
   bool_row!("takeover", takeover, General, "true"),
   enum_row!("dock", dock, Behavior, Dock, "fixed"),
-  enum_row!("notch", notch, Behavior, Island, "fixed"),
+  row!(
+    "notch",
+    Island,
+    Kind::Enum,
+    "fixed",
+    |s: &mut Settings, v: &str, _state: &mut ParseState| {
+      // The Island offers fewer modes than the Dock; a Dock-only value in the Island key is garbage.
+      if let Some(value) = Behavior::parse(v).filter(|b| b.island_ok()) {
+        s.notch = value;
+      }
+    },
+    |s: &Settings, out: &mut String| {
+      let _ = writeln!(out, "notch={}", s.notch.key());
+    }
+  ),
   int_row!("blur", blur, Appearance, 0, 100, "60"),
   row!(
     "style",

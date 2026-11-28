@@ -439,5 +439,7 @@ pub(super) fn beh_idx(b: Behavior) -> usize {
     Behavior::Smart => 2,
     // Only the Island offers this segment; a Dock file that says `ondemand` shows the last Dock option.
     Behavior::OnDemand => 3,
+    // D-10.3 modes are not segments yet (the Dock row becomes a select, WIN-02); a file that holds one shows the last segment.
+    Behavior::AlwaysShow | Behavior::ForceVisible | Behavior::DesktopOnly => 3,
   }
 }
