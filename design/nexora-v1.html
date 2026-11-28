@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NexoraMenuBar Desktop OS — Alkateri</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       --blur-intensity: 26px;
@@ -711,6 +710,8 @@
     /* zoom for font scaling (menu bar + settings text) */
     header.fixed, #pref-content { zoom: var(--font-scale, 1); }
   </style>
+  <!-- HTM-05: precompiled utilities (design/tailwind.config.js). Placed last so the cascade matches the old Play CDN, which appended its style after the page style. -->
+  <link rel="stylesheet" href="tailwind.css">
 </head>
 
 <body>
@@ -2752,9 +2753,7 @@
       activePrefPage = page.name; activePrefGroup = page.group;
       document.getElementById("pref-title").textContent = page.name;
       document.getElementById("pref-group").textContent = page.group;
-      const sections = [];
-      for (let i = 0; i < page.fields.length; i += 6) sections.push(page.fields.slice(i, i + 6));
-      document.getElementById("pref-content").innerHTML = sections.map((items, i) => `<div class="pref-card"><div class="pref-section-title">${i === 0 ? page.name : "More options"}</div>${items.map(f => prefControl(page.section, f)).join("")}</div>`).join("");
+      document.getElementById("pref-content").innerHTML = window.NEXORA_SETTINGS_SCHEMA.pageCards(page).map(card => `<div class="pref-card"><div class="pref-section-title">${card.title}</div>${card.fields.map(f => prefControl(page.section, f)).join("")}</div>`).join("");
       renderPrefSidebar(document.getElementById("pref-search")?.value || "");
     }
     function filterPrefSidebar(value) { renderPrefSidebar(value); }
@@ -2764,16 +2763,21 @@
       const [g, n] = name.includes("/") ? name.split("/") : [undefined, name];
       renderPrefPage(n, g);
     }
+    // HTM-04: side effects of one setting, looked up by "section.key". Add a row here instead of another `if`.
+    // Settings with no row are applied by the section-wide pass in nxApplyFor. `node scripts/unwired_keys.mjs` lists keys the page never reads.
+    const settingEffects = {
+      "shared.globalScale": v => setGlobalScale(v),
+      "shared.globalBlur": v => setGlobalBlur(v),
+      "shared.accentColor": v => document.documentElement.style.setProperty("--accent", v),
+      "shared.appearance": v => { document.documentElement.dataset.theme = v; },
+      "island.eyeAutonomous": v => { if (v) scheduleNexoraEyeGlance(); }
+    };
+    // Effects that run for every key of a section, before the per-key row.
+    const sectionEffects = { island: () => applyIslandSettings() };
     function updateSetting(section, key, value, live = false) {
       NexoraSettings[section][key] = value;
-      if (key === "globalScale") setGlobalScale(value);
-      if (key === "globalBlur") setGlobalBlur(value);
-      if (section === "island") {
-        applyIslandSettings();
-        if (key === "eyeAutonomous" && value) scheduleNexoraEyeGlance();
-      }
-      if (section === "shared" && key === "accentColor") document.documentElement.style.setProperty("--accent", value);
-      if (section === "shared" && key === "appearance") document.documentElement.dataset.theme = value;
+      sectionEffects[section]?.();
+      settingEffects[`${section}.${key}`]?.(value);
       const output = document.getElementById(`pref-${section}-${key}-value`);
       if (output) output.textContent = value;
       nxApplyFor(section, key);

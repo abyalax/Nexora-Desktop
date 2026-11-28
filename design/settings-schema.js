@@ -194,6 +194,33 @@ const prefPages = [
   }
 ];
 
-const schema = { defaultSettings, prefPages };
+// HTM-06: where each spec section starts on a page (docs/feature.md section 2). A page with no entry is one card.
+// The first field always opens a card, titled by the page name unless it has an entry here.
+const pageSections = {
+  "System/General": { enableFinder: "Menu Bar and Dock", globalScale: "Interface", appearance: "Appearance", startOnBoot: "Startup, language and font" },
+  "System/Appearance": {
+    customDockBlur: "Dock glass", pinnedReflections: "Reflections", customIconLabels: "Icon labels", customContextMenus: "Context menus",
+    customFolderGrid: "Folder grid", customNexoraMenus: "Nexora menus", customFinderBlur: "Menu Bar", launchpadCustomBlur: "Launchpad"
+  },
+  "System/Stage Manager": { stageIcon: "Options", stageDesktopIcons: "Desktop icons and speed", stageEnabled: "Window list", stageIconSize: "Window list icons" },
+  "Dock/Look & Behavior": { iconSize: "Icons", iconSpacing: "Placement" },
+  "Dock/Advanced": { scaleMacIcons: "Icons and indicators", bottomLeftHotCorner: "Hot corner", displayMode: "Display behavior", activationBarWidth: "Activation bar" },
+  "Finder/Look & Behavior": { menuIcon: "Menu Bar", lockTrayDragging: "Tray", inputMethodMenu: "Menu items", lyricsMenu: "Music player" },
+  "Dynamic Island/Look & Behavior": { enabled: "Island", idleStyle: "Idle and appearance", eyeEnabled: "Eye companion" }
+};
+for (const page of prefPages) page.starts = pageSections[`${page.group}/${page.name}`] || {};
+
+// Cards of a page: [{ title, fields }]. A new card opens at every field named in `starts`.
+function pageCards(page) {
+  const cards = [];
+  page.fields.forEach((field, i) => {
+    const title = page.starts[field[2]];
+    if (i === 0 || title) cards.push({ title: title || page.name, fields: [] });
+    cards[cards.length - 1].fields.push(field);
+  });
+  return cards;
+}
+
+const schema = { defaultSettings, prefPages, pageCards };
 if (typeof window !== 'undefined') window.NEXORA_SETTINGS_SCHEMA = schema;
 if (typeof module === 'object' && module.exports) module.exports = schema;

@@ -225,10 +225,10 @@ SPEC-01…05 are merged into `docs/`. Code work that these decisions unlock is i
   default and every default a descriptor, default inside range/options, option strings trimmed (fails today: `" system-ui"`),
   unique IDs.
 - [x] **HTM-03** Fix the verified bugs: `--accent: var(--accent)`; the 15 duplicate `shared` keys; `" system-ui"`.
-- [ ] **HTM-04** Replace the `if (key === …)` chain in `updateSetting` with an `effects['section.key']` map. Add a script that
+- [x] **HTM-04** Replace the `if (key === …)` chain in `updateSetting` with an `effects['section.key']` map. Add a script that
   prints unwired keys (167 today); the count may only go down.
-- [ ] **HTM-05** Stop loading Tailwind from a CDN (vendor it or precompile). Low priority.
-- [ ] **HTM-06** Group setting cards by spec section instead of "every 6 fields".
+- [x] **HTM-05** Stop loading Tailwind from a CDN (vendor it or precompile). Low priority. Precompiled to `design/tailwind.css` (rebuild command in `design/tailwind.config.js`).
+- [x] **HTM-06** Group setting cards by spec section instead of "every 6 fields". `starts` per page in `design/settings-schema.js`, `pageCards()`, tests in `design/tests/sections.test.mjs`.
 
 ---
 

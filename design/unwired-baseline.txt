@@ -1,0 +1,12 @@
+# Design keys the HTML never reads (scripts/unwired_keys.mjs). Remove a line when its key is wired.
+dock.launchpadDisplay
+finder.powerPlanBattery
+island.compactLyrics
+island.greetingName
+island.greetingText
+island.idleStyle
+island.material
+island.onlineLyrics
+island.rounding
+shared.reflectionBlur
+shared.screenTarget
