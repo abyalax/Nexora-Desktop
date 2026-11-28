@@ -162,4 +162,21 @@ mod tests {
     }
     assert_eq!(Behavior::DOCK_ALL.len(), 7);
   }
+
+  /// D-5.1: the Dock size, gap, zoom and margin clamp at both ends of their SPEC-03 ranges.
+  #[test]
+  fn dock_metrics_clamp_at_both_ends() {
+    let low = Settings::parse("dock_size=-9\ndock_gap=-9\ndock_zoom=-9\ndock_margin=-9\n");
+    assert_eq!(
+      (low.dock_size, low.dock_gap, low.dock_zoom, low.dock_margin),
+      (32, 0, 100, 0)
+    );
+    let high = Settings::parse("dock_size=999\ndock_gap=999\ndock_zoom=999\ndock_margin=999\n");
+    assert_eq!(
+      (high.dock_size, high.dock_gap, high.dock_zoom, high.dock_margin),
+      (72, 24, 250, 60)
+    );
+    let garbage = Settings::parse("dock_size=big\ndock_gap=\n");
+    assert_eq!((garbage.dock_size, garbage.dock_gap), (48, 14));
+  }
 }

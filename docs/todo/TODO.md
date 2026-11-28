@@ -598,7 +598,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [x] D-3.2 app: drag start is ignored when locked (`dock/input.rs`, `reorder::may_start_drag`). · [ ] QA and D-3.3 H.
 
 **D-5 Size, gap, margin, zoom** (ranges per SPEC-03)
-- [ ] D-5.1 widen/keep clamps in codec with tests · [ ] D-5.2 UI rows use WIN-01 sliders.
+- [x] D-5.1 widen/keep clamps in codec with tests (`dock_metrics_clamp_at_both_ends`) · [ ] D-5.2 UI rows use WIN-01 sliders.
 
 **D-6 Window previews settings**
 - [x] D-6.1 core: size 120–520 step 10, delay 0–1500; codec tests. (`DockConfig` stores delay in 10 ms units up to 1000; widen.)
@@ -627,7 +627,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-8.6 above windows vs hide; live blur vs pre-render (APP-30…33).
 - [ ] D-8.7 H.
 
-**D-9 Icon plates**: confirm `scaleMacIcons` = `dock_plates`; if yes alias, if no add. Test with `shared::iconplate`.
+**D-9 Icon plates**: confirm `scaleMacIcons` = `dock_plates`; if yes alias, if no add. Test with `shared::iconplate`. Decided: alias, no new key (ADR-0010); Windows QA confirms the meaning.
 
 **D-10 Display behavior**
 - [x] D-10.1 characterization tests, then move Dock-specific rules from `app/dock/visibility.rs` to `core/dock/visibility.rs` (spec §2.4 marks this ⬜). No behavior change. The rules (`wants_hidden`, `transition`, `DockState::next_transition`) are in core with tests; `app/dock/visibility.rs` only gathers `Surroundings` and performs the effect.
@@ -662,7 +662,7 @@ OS/window work follows; HTML last. Statuses come from `feature_checkpoint.md` an
 - [ ] D-13.4 app: invisible hit window (layered, no-activate, topmost). · [ ] D-13.5 H.
 
 **D-14 Icon effects and light**
-- [ ] D-14.0 BASE-02 done first (`IconEffect` tests run).
+- [x] D-14.0 BASE-02 done first (`IconEffect` tests run).
 - [x] D-14.1 core: scale curve per effect: None → 1.0, Select → 1.0, monotone falloff, symmetric. Tests.
 - [x] D-14.2 core: UI dependency: zoom only matters when the effect magnifies (`effective_zoom`, exists in draft).
 - [ ] D-14.3 ui: select plate. · [ ] D-14.4 ui: light glow (intensity, background intensity, RGB).
